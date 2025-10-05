@@ -1,26 +1,36 @@
 use super::*;
-use core::ops::Deref;
 
 #[repr(transparent)]
 pub struct BasicString(*const u16);
 
-impl Deref for BasicString {
-    type Target = [u16];
+impl BasicString {
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
 
-    fn deref(&self) -> &[u16] {
-        let len = if self.0.is_null() {
+    pub fn len(&self) -> usize {
+        if self.0.is_null() {
             0
         } else {
             unsafe { SysStringLen(self.0) as usize }
-        };
+        }
+    }
 
-        if len > 0 {
-            unsafe { core::slice::from_raw_parts(self.0, len) }
+    pub fn as_wide(&self) -> &[u16] {
+        let len = self.len();
+        if len != 0 {
+            unsafe { core::slice::from_raw_parts(self.as_ptr(), len) }
         } else {
-            // This ensures that if `as_ptr` is called on the slice that the resulting pointer
-            // will still refer to a null-terminated string.
+            &[]
+        }
+    }
+
+    pub fn as_ptr(&self) -> *const u16 {
+        if !self.is_empty() {
+            self.0
+        } else {
             const EMPTY: [u16; 1] = [0];
-            &EMPTY[..0]
+            EMPTY.as_ptr()
         }
     }
 }

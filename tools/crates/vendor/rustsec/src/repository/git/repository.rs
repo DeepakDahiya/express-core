@@ -141,10 +141,10 @@ impl Repository {
             .ok()
             .map(|repo| repo.to_thread_local())
             .filter(|repo| {
-                repo.find_remote("origin").is_ok_and(|remote| {
+                repo.find_remote("origin").map_or(false, |remote| {
                     remote
                         .url(DIR)
-                        .is_some_and(|remote_url| remote_url.to_bstring() == url)
+                        .map_or(false, |remote_url| remote_url.to_bstring() == url)
                 })
             })
             .or_else(|| gix::open_opts(&path, open_with_complete_config).ok());
@@ -194,7 +194,7 @@ impl Repository {
             Self::perform_fetch(&mut repo)?;
         }
 
-        repo.object_cache_size_if_unset(OBJECT_CACHE_SIZE);
+        repo.object_cache_size_if_unset(4 * 1024 * 1024);
         let repo = Self { repo };
 
         let latest_commit = Commit::from_repo_head(&repo)?;
@@ -215,7 +215,7 @@ impl Repository {
     /// Open a repository at the given path
     pub fn open<P: Into<PathBuf>>(into_path: P) -> Result<Self, Error> {
         let path = into_path.into();
-        let mut repo = gix::open(&path).map_err(|err| {
+        let repo = gix::open(&path).map_err(|err| {
             format_err!(
                 ErrorKind::Repo,
                 "failed to open repository at '{}': {}",
@@ -223,8 +223,6 @@ impl Repository {
                 err
             )
         })?;
-
-        repo.object_cache_size_if_unset(OBJECT_CACHE_SIZE);
 
         // TODO: Figure out how to detect if the worktree has modifications
         // as gix currently doesn't have a status/state summary like git2 has
@@ -239,7 +237,7 @@ impl Repository {
     /// Path to the local checkout of a git repository
     pub fn path(&self) -> &Path {
         // Safety: Would fail if this is a bare repo, which we aren't
-        self.repo.workdir().unwrap()
+        self.repo.work_dir().unwrap()
     }
 
     /// Determines if the tree pointed to by `HEAD` contains the specified path
@@ -250,7 +248,7 @@ impl Repository {
                 .ok()?
                 .tree()
                 .ok()?
-                .lookup_entry_by_path(path)
+                .lookup_entry_by_path(path, &mut Vec::new())
                 .ok()
                 .map(|_e| true)
         };
@@ -297,7 +295,7 @@ impl Repository {
         let remote_head_id = tame_index::utils::git::write_fetch_head(&repo, &outcome, &remote)
             .map_err(Error::from_tame)?;
 
-        use gix::refs::{Target, transaction as tx};
+        use gix::refs::{transaction as tx, Target};
 
         // In all (hopefully?) cases HEAD is a symbolic reference to
         // refs/heads/<branch> which is a peeled commit id, if that's the case
@@ -352,5 +350,3 @@ impl Repository {
         Ok(())
     }
 }
-
-const OBJECT_CACHE_SIZE: usize = 4 * 1024 * 1024;

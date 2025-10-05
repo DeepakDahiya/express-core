@@ -4,9 +4,9 @@
 // purpose with or without fee is hereby granted, provided that the above
 // copyright notice and this permission notice appear in all copies.
 //
-// THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+// THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHORS DISCLAIM ALL WARRANTIES
 // WITH REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF
-// MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY
+// MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHORS BE LIABLE FOR ANY
 // SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
 // WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION
 // OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
@@ -44,21 +44,14 @@ pub enum Tag {
 
 impl From<Tag> for usize {
     fn from(tag: Tag) -> Self {
-        Self::from(Tag::into(tag))
+        tag as Self
     }
 }
 
 impl From<Tag> for u8 {
     fn from(tag: Tag) -> Self {
-        Tag::into(tag)
-    }
-}
-
-// `impl From<Tag> for u8` but as a `const fn`.
-impl Tag {
-    pub const fn into(self) -> u8 {
-        self as u8
-    }
+        tag as Self
+    } // XXX: narrowing conversion.
 }
 
 pub fn expect_tag_and_get_value<'a>(

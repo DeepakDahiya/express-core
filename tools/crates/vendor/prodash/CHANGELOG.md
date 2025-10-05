@@ -5,126 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## 29.0.2 (2025-04-13)
-
-Update `bytesize` from v1 to v2.
-
-### Commit Statistics
-
-<csr-read-only-do-not-edit/>
-
- - 3 commits contributed to the release.
- - 0 commits were understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' were seen in commit messages
-
-### Commit Details
-
-<csr-read-only-do-not-edit/>
-
-<details><summary>view details</summary>
-
- * **Uncategorized**
-    - Update changelog prior to release ([`2216036`](https://github.com/byron/prodash/commit/221603660fbf5d5fa14fbc6674c6d460017b769f))
-    - Merge pull request #33 from EliahKagan/bump-bytesize ([`4ff81bf`](https://github.com/byron/prodash/commit/4ff81bf9f61d161a50485c95fb7f3ed9386115c4))
-    - Bump `bytesize` from major version 1 to 2 ([`61dfa7d`](https://github.com/byron/prodash/commit/61dfa7d779e26e4cbbb6e6fa7fdc14294224bfba))
-</details>
-
-## 29.0.1 (2025-03-11)
-
-<csr-id-88d33994876c7b2454cb1d827ebb2933bdecddd2/>
-<csr-id-373b6b1d0a95cff3085bda46ab629728d4fd6e43/>
-
-### Other
-
- - <csr-id-88d33994876c7b2454cb1d827ebb2933bdecddd2/> switch from `humantime` to `jiff`
-   Since prodash switched over to Jiff, Jiff has grown support for the
-   "friendly" duration format. It is meant to be a replacement for
-   `humantime` formatting of durations.
- - <csr-id-373b6b1d0a95cff3085bda46ab629728d4fd6e43/> bump jiff to 0.2
-
-### Commit Statistics
-
-<csr-read-only-do-not-edit/>
-
- - 6 commits contributed to the release.
- - 2 commits were understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' were seen in commit messages
-
-### Thanks Clippy
-
-<csr-read-only-do-not-edit/>
-
-[Clippy](https://github.com/rust-lang/rust-clippy) helped 1 time to make code idiomatic. 
-
-### Commit Details
-
-<csr-read-only-do-not-edit/>
-
-<details><summary>view details</summary>
-
- * **Uncategorized**
-    - Release prodash v29.0.1 ([`58ea133`](https://github.com/byron/prodash/commit/58ea1339d263638b5fa041b86eccd305d28a743a))
-    - Merge pull request #32 from BurntSushi/ag/moar-jiff ([`eaf1c26`](https://github.com/byron/prodash/commit/eaf1c26169a89fca693e5cbf8be4f1cd5fccbf25))
-    - Thanks clippy ([`521c6e1`](https://github.com/byron/prodash/commit/521c6e16464778ca468996fbc6d66c4ffa6d4edb))
-    - Switch from `humantime` to `jiff` ([`88d3399`](https://github.com/byron/prodash/commit/88d33994876c7b2454cb1d827ebb2933bdecddd2))
-    - Bump jiff to 0.2 ([`373b6b1`](https://github.com/byron/prodash/commit/373b6b1d0a95cff3085bda46ab629728d4fd6e43))
-    - Remove unused feature ([`9c476cf`](https://github.com/byron/prodash/commit/9c476cf1a3f31d79d49e56c80b3d2eff7c3f618d))
-</details>
-
-## 29.0.0 (2024-07-29)
-
-<csr-id-5f066f26e347d80edd3cc9480d362b39ce762bd6/>
-<csr-id-aab09862ce8ff64d3c9bafd099e81df89c4c1670/>
-
-### Chore
-
- - <csr-id-5f066f26e347d80edd3cc9480d362b39ce762bd6/> update ratatui to 0.26.0
-   Requires an update to tui-react / crosstermion to work
-
-### Other
-
- - <csr-id-aab09862ce8ff64d3c9bafd099e81df89c4c1670/> switch from `time` to `jiff`
-   This swaps out `time` in favor of `jiff` for getting and formatting the
-   local time.
-   
-   Note that this does add the `%Z` to the format string, which will write
-   out time zone abbreviations like `EDT` along with the local datetime
-   itself. The `time` crate doesn't support this, but jiff's tzdb
-   integration let's it do it.
-
-### New Features (BREAKING)
-
- - <csr-id-f3c3122a571512d0d90edced6f1057f395c9d39f/> upgrade `ratatui` to v0.26
-
-### Commit Statistics
-
-<csr-read-only-do-not-edit/>
-
- - 9 commits contributed to the release.
- - 3 commits were understood as [conventional](https://www.conventionalcommits.org).
- - 0 issues like '(#ID)' were seen in commit messages
-
-### Commit Details
-
-<csr-read-only-do-not-edit/>
-
-<details><summary>view details</summary>
-
- * **Uncategorized**
-    - Release prodash v29.0.0 ([`4583a59`](https://github.com/byron/prodash/commit/4583a593d35e248b828dd486b7a6e8305b1a538c))
-    - Upgrade dependencies ([`a5dab6e`](https://github.com/byron/prodash/commit/a5dab6e11760acb413663b74bebe0348b6d3ade8))
-    - Merge branch 'ag/jiff' ([`87f66fb`](https://github.com/byron/prodash/commit/87f66fb59923584905fe463bf6579f56459c4efb))
-    - Switch from `time` to `jiff` ([`aab0986`](https://github.com/byron/prodash/commit/aab09862ce8ff64d3c9bafd099e81df89c4c1670))
-    - Fix CI ([`10800f3`](https://github.com/byron/prodash/commit/10800f3ee3518d5c95e83c8dbe9bbc25da362bd1))
-    - Upgrade `ratatui` to v0.26 ([`f3c3122`](https://github.com/byron/prodash/commit/f3c3122a571512d0d90edced6f1057f395c9d39f))
-    - Avoid running benchmarks on CI for faster runs ([`73bce79`](https://github.com/byron/prodash/commit/73bce79cdfb651ae6ddcb09e297f33389302c40e))
-    - Update to latest versions of `tui-react` and `crosstermion` ([`0cca41f`](https://github.com/byron/prodash/commit/0cca41f4a7a9e6fae995a802b551daa0d3d5ec12))
-    - Update ratatui to 0.26.0 ([`5f066f2`](https://github.com/byron/prodash/commit/5f066f26e347d80edd3cc9480d362b39ce762bd6))
-</details>
-
 ## 28.0.0 (2023-12-29)
-
-<csr-id-18686dbd32e6920ab5d7271c32481f7f41eae4de/>
 
 ### Chore (BREAKING)
 
@@ -134,7 +15,7 @@ Update `bytesize` from v1 to v2.
 
 <csr-read-only-do-not-edit/>
 
- - 2 commits contributed to the release.
+ - 1 commit contributed to the release.
  - 21 days passed between releases.
  - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
@@ -146,7 +27,6 @@ Update `bytesize` from v1 to v2.
 <details><summary>view details</summary>
 
  * **Uncategorized**
-    - Release prodash v28.0.0 ([`986909c`](https://github.com/byron/prodash/commit/986909cc4eef785c4f5e9f5f8184723a21ccb721))
     - Upgrade `ratatui` and `crosstermion` to latest versions. ([`18686db`](https://github.com/byron/prodash/commit/18686dbd32e6920ab5d7271c32481f7f41eae4de))
 </details>
 
@@ -170,7 +50,8 @@ Update `bytesize` from v1 to v2.
 
 <csr-read-only-do-not-edit/>
 
- - 8 commits contributed to the release.
+ - 8 commits contributed to the release over the course of 44 calendar days.
+ - 89 days passed between releases.
  - 2 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
 
@@ -363,7 +244,7 @@ and no change of the progress information itself.
 
 <csr-read-only-do-not-edit/>
 
- - 4 commits contributed to the release.
+ - 4 commits contributed to the release over the course of 2 calendar days.
  - 37 days passed between releases.
  - 2 commits were understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
@@ -461,6 +342,7 @@ and no change of the progress information itself.
 <csr-read-only-do-not-edit/>
 
  - 4 commits contributed to the release.
+ - 60 days passed between releases.
  - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
 
@@ -696,6 +578,7 @@ Most notably, `parking_lot` was upgraded to the latest version.
 <csr-read-only-do-not-edit/>
 
  - 4 commits contributed to the release.
+ - 37 days passed between releases.
  - 1 commit was understood as [conventional](https://www.conventionalcommits.org).
  - 0 issues like '(#ID)' were seen in commit messages
 
@@ -1441,7 +1324,7 @@ Most notably, `parking_lot` was upgraded to the latest version.
     - Remove crosstermion, it now lives in https://github.com/Byron/tui-crates ([`f560f84`](https://github.com/byron/prodash/commit/f560f84436c1bd2b5af8b0af44e8e86200d22cc2))
 </details>
 
-## v13.0.0 (2021-05-03)
+## v13.0.0 (2021-05-02)
 
 <csr-id-e3665a2100fba190fc0f047ff05f2904f4dcaf4a/>
 <csr-id-c91d410e8d6242b78c44119155b5fc3b2956d111/>
@@ -2347,7 +2230,7 @@ One might argue that the flush should happen in the terminal instance itself, bu
     - Bump patch level ([`f8b06a6`](https://github.com/byron/prodash/commit/f8b06a6a298928caaf2a6e6e9b2e3135d0ae443b))
 </details>
 
-## v4.0.4 (2020-06-30)
+## v4.0.4 (2020-06-29)
 
 - Simplify `message()` trait bounds
 
@@ -2954,7 +2837,7 @@ a redraw manually.
     - ETA messages in blocked unbounded tasks ([`d42c0d5`](https://github.com/byron/prodash/commit/d42c0d52f803595a48594a91b3278ce57ff8b95b))
 </details>
 
-## v1.1.6 (2020-03-03)
+## v1.1.6 (2020-03-02)
 
 * improve API symmetry by providing a `Tree::name()` to accompany `Tree::set_name(…)`
 
@@ -2978,7 +2861,7 @@ a redraw manually.
     - Put changelog into lib.rs, where it already was :) ([`dfc810b`](https://github.com/byron/prodash/commit/dfc810b7b012e536353ceeed61f2ca7ed935930d))
 </details>
 
-## v1.1.5 (2020-02-24)
+## v1.1.5 (2020-02-23)
 
 * Flush stdout when the TUI stopped running. That way, the alternate/original screen will be shown right away.
 

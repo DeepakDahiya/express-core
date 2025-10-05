@@ -11,12 +11,11 @@
 
 [package]
 edition = "2021"
-rust-version = "1.74"
+rust-version = "1.60"
 name = "windows-registry"
-version = "0.5.3"
+version = "0.2.0"
 authors = ["Microsoft"]
 build = false
-autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -31,32 +30,21 @@ repository = "https://github.com/microsoft/windows-rs"
 default-target = "x86_64-pc-windows-msvc"
 targets = []
 
-[features]
-default = ["std"]
-std = [
-    "windows-result/std",
-    "windows-strings/std",
-]
-
 [lib]
 name = "windows_registry"
 path = "src/lib.rs"
 
-[dependencies.windows-link]
-version = "0.1.3"
-default-features = false
-
 [dependencies.windows-result]
-version = "0.3.4"
-default-features = false
+version = "0.2.0"
 
 [dependencies.windows-strings]
-version = "0.4.2"
-default-features = false
+version = "0.1.0"
+
+[dependencies.windows-targets]
+version = "0.52.6"
 
 [lints.rust]
 missing_docs = "warn"
-unsafe_op_in_unsafe_fn = "warn"
 
 [lints.rust.rust_2018_idioms]
 level = "warn"
@@ -65,4 +53,4 @@ priority = -1
 [lints.rust.unexpected_cfgs]
 level = "warn"
 priority = 0
-check-cfg = ["cfg(windows_raw_dylib, windows_slim_errors)"]
+check-cfg = ["cfg(windows_raw_dylib, windows_debugger_visualizer, windows_slim_errors)"]

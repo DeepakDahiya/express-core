@@ -1,5 +1,4 @@
 #![allow(
-    clippy::elidable_lifetime_names,
     clippy::map_unwrap_or,
     clippy::needless_lifetimes,
     clippy::uninlined_format_args
@@ -8,19 +7,8 @@
 use syn::punctuated::{Pair, Punctuated};
 use syn::{parse_quote, GenericParam, Generics, Lifetime, LifetimeParam, Token};
 
-macro_rules! punctuated {
-    ($($e:expr,)+) => {{
-        let mut seq = ::syn::punctuated::Punctuated::new();
-        $(
-            seq.push($e);
-        )+
-        seq
-    }};
-
-    ($($e:expr),+) => {
-        punctuated!($($e,)+)
-    };
-}
+#[macro_use]
+mod macros;
 
 macro_rules! check_exact_size_iterator {
     ($iter:expr) => {{

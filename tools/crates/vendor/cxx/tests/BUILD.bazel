@@ -37,7 +37,6 @@ cc_library(
         ":module/source",
     ],
     hdrs = ["ffi/tests.h"],
-    linkstatic = True,
     deps = [
         ":bridge/include",
         ":module/include",

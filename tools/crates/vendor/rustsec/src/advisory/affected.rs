@@ -2,12 +2,12 @@
 //! of impacted systems/functions/usages.
 
 use crate::{
-    Map,
     error::{Error, ErrorKind},
+    Map,
 };
 use platforms::target::{Arch, OS};
 use semver::VersionReq;
-use serde::{Deserialize, Deserializer, Serialize, Serializer, de::Error as DeError};
+use serde::{de::Error as DeError, Deserialize, Deserializer, Serialize, Serializer};
 use std::{
     fmt::{self, Display},
     slice,

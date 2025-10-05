@@ -3,7 +3,6 @@ use alloc::vec::Vec;
 
 use pki_types::CertificateDer;
 
-use crate::conn::kernel::KernelState;
 use crate::crypto::SupportedKxGroup;
 use crate::enums::{AlertDescription, ContentType, HandshakeType, ProtocolVersion};
 use crate::error::{Error, InvalidMessage, PeerMisbehaved};
@@ -12,9 +11,9 @@ use crate::log::{debug, error, warn};
 use crate::msgs::alert::AlertMessagePayload;
 use crate::msgs::base::Payload;
 use crate::msgs::codec::Codec;
-use crate::msgs::enums::{AlertLevel, KeyUpdateRequest};
+use crate::msgs::enums::{AlertLevel, ExtensionType, KeyUpdateRequest};
 use crate::msgs::fragmenter::MessageFragmenter;
-use crate::msgs::handshake::{CertificateChain, HandshakeMessagePayload, ProtocolName};
+use crate::msgs::handshake::{CertificateChain, HandshakeMessagePayload};
 use crate::msgs::message::{
     Message, MessagePayload, OutboundChunks, OutboundOpaqueMessage, OutboundPlainMessage,
     PlainMessage,
@@ -25,7 +24,7 @@ use crate::suites::{PartiallyExtractedSecrets, SupportedCipherSuite};
 use crate::tls12::ConnectionSecrets;
 use crate::unbuffered::{EncryptError, InsufficientSizeError};
 use crate::vecbuf::ChunkVecBuffer;
-use crate::{quic, record_layer};
+use crate::{quic, record_layer, PeerIncompatible};
 
 /// Connection state common to both client and server connections.
 pub struct CommonState {
@@ -35,14 +34,12 @@ pub struct CommonState {
     pub(crate) record_layer: record_layer::RecordLayer,
     pub(crate) suite: Option<SupportedCipherSuite>,
     pub(crate) kx_state: KxState,
-    pub(crate) alpn_protocol: Option<ProtocolName>,
+    pub(crate) alpn_protocol: Option<Vec<u8>>,
     pub(crate) aligned_handshake: bool,
     pub(crate) may_send_application_data: bool,
     pub(crate) may_receive_application_data: bool,
     pub(crate) early_traffic: bool,
     sent_fatal_alert: bool,
-    /// If we signaled end of stream.
-    pub(crate) has_sent_close_notify: bool,
     /// If the peer has signaled end of stream.
     pub(crate) has_received_close_notify: bool,
     #[cfg(feature = "std")]
@@ -60,7 +57,6 @@ pub struct CommonState {
     temper_counters: TemperCounters,
     pub(crate) refresh_traffic_keys_pending: bool,
     pub(crate) fips: bool,
-    pub(crate) tls13_tickets_received: u32,
 }
 
 impl CommonState {
@@ -78,7 +74,6 @@ impl CommonState {
             may_receive_application_data: false,
             early_traffic: false,
             sent_fatal_alert: false,
-            has_sent_close_notify: false,
             has_received_close_notify: false,
             #[cfg(feature = "std")]
             has_seen_eof: false,
@@ -93,7 +88,6 @@ impl CommonState {
             temper_counters: TemperCounters::default(),
             refresh_traffic_keys_pending: false,
             fips: false,
-            tls13_tickets_received: 0,
         }
     }
 
@@ -262,9 +256,7 @@ impl CommonState {
                         self.refresh_traffic_keys_pending = true;
                     }
                     _ => {
-                        error!(
-                            "traffic keys exhausted, closing connection to prevent security failure"
-                        );
+                        error!("traffic keys exhausted, closing connection to prevent security failure");
                         self.send_close_notify();
                         return Err(EncryptError::EncryptExhausted);
                     }
@@ -367,9 +359,7 @@ impl CommonState {
                         self.refresh_traffic_keys_pending = true;
                     }
                     _ => {
-                        error!(
-                            "traffic keys exhausted, closing connection to prevent security failure"
-                        );
+                        error!("traffic keys exhausted, closing connection to prevent security failure");
                         self.send_close_notify();
                         return;
                     }
@@ -505,7 +495,7 @@ impl CommonState {
     }
 
     fn send_warning_alert(&mut self, desc: AlertDescription) {
-        warn!("Sending warning alert {desc:?}");
+        warn!("Sending warning alert {:?}", desc);
         self.send_warning_alert_no_log(desc);
     }
 
@@ -583,7 +573,6 @@ impl CommonState {
         }
         debug!("Sending warning alert {:?}", AlertDescription::CloseNotify);
         self.sent_fatal_alert = true;
-        self.has_sent_close_notify = true;
         self.send_warning_alert_no_log(AlertDescription::CloseNotify);
     }
 
@@ -870,10 +859,6 @@ pub(crate) trait State<Data>: Send + Sync {
 
     fn handle_decrypt_error(&self) {}
 
-    fn into_external_state(self: Box<Self>) -> Result<Box<dyn KernelState + 'static>, Error> {
-        Err(Error::HandshakeNotComplete)
-    }
-
     fn into_owned(self: Box<Self>) -> Box<dyn State<Data> + 'static>;
 }
 
@@ -913,6 +898,35 @@ enum Limit {
     #[cfg(feature = "std")]
     Yes,
     No,
+}
+
+#[derive(Debug)]
+pub(super) struct RawKeyNegotiationParams {
+    pub(super) peer_supports_raw_key: bool,
+    pub(super) local_expects_raw_key: bool,
+    pub(super) extension_type: ExtensionType,
+}
+
+impl RawKeyNegotiationParams {
+    pub(super) fn validate_raw_key_negotiation(&self) -> RawKeyNegotationResult {
+        match (self.local_expects_raw_key, self.peer_supports_raw_key) {
+            (true, true) => RawKeyNegotationResult::Negotiated(self.extension_type),
+            (false, false) => RawKeyNegotationResult::NotNegotiated,
+            (true, false) => RawKeyNegotationResult::Err(Error::PeerIncompatible(
+                PeerIncompatible::IncorrectCertificateTypeExtension,
+            )),
+            (false, true) => RawKeyNegotationResult::Err(Error::PeerIncompatible(
+                PeerIncompatible::UnsolicitedCertificateTypeExtension,
+            )),
+        }
+    }
+}
+
+#[derive(Debug)]
+pub(crate) enum RawKeyNegotationResult {
+    Negotiated(ExtensionType),
+    NotNegotiated,
+    Err(Error),
 }
 
 /// Tracking technically-allowed protocol actions

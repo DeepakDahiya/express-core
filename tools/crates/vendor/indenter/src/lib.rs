@@ -90,7 +90,7 @@
 //! # }
 //! ```
 #![cfg_attr(not(feature = "std"), no_std)]
-#![doc(html_root_url = "https://docs.rs/indenter/0.3.4")]
+#![doc(html_root_url = "https://docs.rs/indenter/0.3.3")]
 #![warn(
     missing_debug_implementations,
     missing_docs,
@@ -98,6 +98,7 @@
     rust_2018_idioms,
     unreachable_pub,
     bad_style,
+    const_err,
     dead_code,
     improper_ctypes,
     non_shorthand_field_patterns,
@@ -105,6 +106,7 @@
     overflowing_literals,
     path_statements,
     patterns_in_fns_without_body,
+    private_in_public,
     unconditional_recursion,
     unused,
     unused_allocation,
@@ -112,7 +114,6 @@
     unused_parens,
     while_true
 )]
-
 use core::fmt;
 
 /// The set of supported formats for indentation
@@ -154,7 +155,6 @@ pub enum Format<'a> {
 #[allow(missing_debug_implementations)]
 pub struct Indented<'a, D: ?Sized> {
     inner: &'a mut D,
-    line_number: usize,
     needs_indent: bool,
     format: Format<'a>,
 }
@@ -203,25 +203,23 @@ where
     T: fmt::Write + ?Sized,
 {
     fn write_str(&mut self, s: &str) -> fmt::Result {
-        for (i, line) in s.split('\n').enumerate() {
-            if i > 0 {
+        for (ind, line) in s.split('\n').enumerate() {
+            if ind > 0 {
                 self.inner.write_char('\n')?;
                 self.needs_indent = true;
             }
 
             if self.needs_indent {
-                // Don't render the line unless it actually has text on it
+                // Don't render the line unless its actually got text on it
                 if line.is_empty() {
                     continue;
                 }
 
-                self.format
-                    .insert_indentation(self.line_number, &mut self.inner)?;
-                self.line_number += 1;
+                self.format.insert_indentation(ind, &mut self.inner)?;
                 self.needs_indent = false;
             }
 
-            self.inner.write_str(line)?;
+            self.inner.write_fmt(format_args!("{}", line))?;
         }
 
         Ok(())
@@ -232,7 +230,6 @@ where
 pub fn indented<D: ?Sized>(f: &mut D) -> Indented<'_, D> {
     Indented {
         inner: f,
-        line_number: 0,
         needs_indent: true,
         format: Format::Uniform {
             indentation: "    ",
@@ -431,17 +428,6 @@ mod tests {
     }
 
     #[test]
-    fn empty_lines() {
-        let input = "\n\n\nverify\n\nthis";
-        let expected = "\n\n\n  verify\n\n  this";
-        let output = &mut String::new();
-
-        write!(indented(output).with_str("  "), "{}", input).unwrap();
-
-        assert_eq!(expected, output);
-    }
-
-    #[test]
     fn trailing_newlines() {
         let input = "verify\nthis\n";
         let expected = "  verify\n  this\n";
@@ -459,24 +445,6 @@ mod tests {
         let output = &mut String::new();
 
         write!(indented(output).with_str("  "), "{} and {}", input, input).unwrap();
-
-        assert_eq!(expected, output);
-    }
-
-    #[test]
-    fn several_interpolations_keep_monotonic_line_numbers() {
-        let input = '\n';
-        let expected = "verify\n this\n  and this";
-        let output = &mut String::new();
-
-        write!(
-            indented(output).with_format(Format::Custom {
-                inserter: &mut move |line_no, f| { write!(f, "{:spaces$}", "", spaces = line_no) }
-            }),
-            "verify{}this{0}and this",
-            input
-        )
-        .unwrap();
 
         assert_eq!(expected, output);
     }

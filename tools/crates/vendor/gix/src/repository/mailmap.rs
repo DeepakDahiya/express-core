@@ -1,4 +1,5 @@
-use crate::{config::tree::Mailmap, Id};
+use crate::config::tree::{Key, Mailmap};
+use crate::Id;
 
 impl crate::Repository {
     // TODO: tests
@@ -32,7 +33,7 @@ impl crate::Repository {
                 .map(Id::detach)
                 .ok()
         });
-        match self.workdir() {
+        match self.work_dir() {
             None => {
                 blob_id = blob_id.or_else(|| {
                     self.head().ok().and_then(|mut head| {
@@ -67,7 +68,7 @@ impl crate::Repository {
 
         let configured_path = self
             .config_snapshot()
-            .trusted_path(&Mailmap::FILE)
+            .trusted_path(Mailmap::FILE.logical_name().as_str())
             .and_then(|res| res.map_err(|e| err.get_or_insert(e.into())).ok());
 
         if let Some(mut file) =

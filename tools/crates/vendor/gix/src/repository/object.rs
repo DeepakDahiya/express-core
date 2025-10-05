@@ -2,8 +2,8 @@
 use std::ops::DerefMut;
 
 use gix_hash::ObjectId;
-use gix_object::{Exists, Find, FindExt, Write};
-use gix_odb::{Header, HeaderExt};
+use gix_object::{Exists, Find, FindExt};
+use gix_odb::{Header, HeaderExt, Write};
 use gix_ref::{
     transaction::{LogChange, PreviousValue, RefLog},
     FullName,
@@ -12,23 +12,7 @@ use smallvec::SmallVec;
 
 use crate::{commit, ext::ObjectIdExt, object, tag, Blob, Commit, Id, Object, Reference, Tag, Tree};
 
-/// Tree editing
-#[cfg(feature = "tree-editor")]
-impl crate::Repository {
-    /// Return an editor for adjusting the tree at `id`.
-    ///
-    /// This can be the [empty tree id](ObjectId::empty_tree) to build a tree from scratch.
-    #[doc(alias = "treebuilder", alias = "git2")]
-    pub fn edit_tree(
-        &self,
-        id: impl Into<ObjectId>,
-    ) -> Result<object::tree::Editor<'_>, crate::repository::edit_tree::Error> {
-        let tree = self.find_tree(id)?;
-        Ok(tree.edit()?)
-    }
-}
-
-/// Find objects of various kins
+/// Methods related to object creation.
 impl crate::Repository {
     /// Find the object with `id` in the object database or return an error if it could not be found.
     ///
@@ -109,7 +93,7 @@ impl crate::Repository {
     #[doc(alias = "exists", alias = "git2")]
     pub fn has_object(&self, id: impl AsRef<gix_hash::oid>) -> bool {
         let id = id.as_ref();
-        if id.to_owned().is_empty_tree() {
+        if id == ObjectId::empty_tree(self.object_hash()) {
             true
         } else {
             self.objects.exists(id)
@@ -154,26 +138,32 @@ impl crate::Repository {
             None => Ok(None),
         }
     }
-}
 
-/// Write objects of any type.
-impl crate::Repository {
+    fn shared_empty_buf(&self) -> std::cell::RefMut<'_, Vec<u8>> {
+        let mut bufs = self.bufs.borrow_mut();
+        if bufs.last().is_none() {
+            bufs.push(Vec::with_capacity(512));
+        }
+        std::cell::RefMut::map(bufs, |bufs| {
+            let buf = bufs.last_mut().expect("we assure one is present");
+            buf.clear();
+            buf
+        })
+    }
+
     /// Write the given object into the object database and return its object id.
     ///
     /// Note that we hash the object in memory to avoid storing objects that are already present. That way,
     /// we avoid writing duplicate objects using slow disks that will eventually have to be garbage collected.
     pub fn write_object(&self, object: impl gix_object::WriteTo) -> Result<Id<'_>, object::write::Error> {
-        let mut buf = self.empty_reusable_buffer();
-        object
-            .write_to(buf.deref_mut())
-            .map_err(|err| Box::new(err) as Box<dyn std::error::Error + Send + Sync + 'static>)?;
+        let mut buf = self.shared_empty_buf();
+        object.write_to(buf.deref_mut()).expect("write to memory works");
 
         self.write_object_inner(&buf, object.kind())
     }
 
     fn write_object_inner(&self, buf: &[u8], kind: gix_object::Kind) -> Result<Id<'_>, object::write::Error> {
-        let oid = gix_object::compute_hash(self.object_hash(), kind, buf)
-            .map_err(|err| Box::new(err) as Box<dyn std::error::Error + Send + Sync>)?;
+        let oid = gix_object::compute_hash(self.object_hash(), kind, buf);
         if self.objects.exists(&oid) {
             return Ok(oid.attach(self));
         }
@@ -190,8 +180,7 @@ impl crate::Repository {
     /// pre-hashing the data, and checking if the object is already present.
     pub fn write_blob(&self, bytes: impl AsRef<[u8]>) -> Result<Id<'_>, object::write::Error> {
         let bytes = bytes.as_ref();
-        let oid = gix_object::compute_hash(self.object_hash(), gix_object::Kind::Blob, bytes)
-            .map_err(|err| Box::new(err) as Box<dyn std::error::Error + Send + Sync>)?;
+        let oid = gix_object::compute_hash(self.object_hash(), gix_object::Kind::Blob, bytes);
         if self.objects.exists(&oid) {
             return Ok(oid.attach(self));
         }
@@ -207,17 +196,18 @@ impl crate::Repository {
     /// we avoid writing duplicate objects using slow disks that will eventually have to be garbage collected.
     ///
     /// If that is prohibitive, use the object database directly.
-    pub fn write_blob_stream(&self, mut bytes: impl std::io::Read) -> Result<Id<'_>, object::write::Error> {
-        let mut buf = self.empty_reusable_buffer();
-        std::io::copy(&mut bytes, buf.deref_mut())
-            .map_err(|err| Box::new(err) as Box<dyn std::error::Error + Send + Sync>)?;
+    pub fn write_blob_stream(
+        &self,
+        mut bytes: impl std::io::Read + std::io::Seek,
+    ) -> Result<Id<'_>, object::write::Error> {
+        let mut buf = self.shared_empty_buf();
+        std::io::copy(&mut bytes, buf.deref_mut()).expect("write to memory works");
 
         self.write_blob_stream_inner(&buf)
     }
 
     fn write_blob_stream_inner(&self, buf: &[u8]) -> Result<Id<'_>, object::write::Error> {
-        let oid = gix_object::compute_hash(self.object_hash(), gix_object::Kind::Blob, buf)
-            .map_err(|err| Box::new(err) as Box<dyn std::error::Error + Send + Sync>)?;
+        let oid = gix_object::compute_hash(self.object_hash(), gix_object::Kind::Blob, buf);
         if self.objects.exists(&oid) {
             return Ok(oid.attach(self));
         }
@@ -227,10 +217,7 @@ impl crate::Repository {
             .map_err(Into::into)
             .map(|oid| oid.attach(self))
     }
-}
 
-/// Create commits and tags
-impl crate::Repository {
     /// Create a tag reference named `name` (without `refs/tags/` prefix) pointing to a newly created tag object
     /// which in turn points to `target` and return the newly created reference.
     ///
@@ -249,7 +236,7 @@ impl crate::Repository {
             target: target.as_ref().into(),
             target_kind,
             name: name.as_ref().into(),
-            tagger: tagger.map(|t| t.to_owned()).transpose()?,
+            tagger: tagger.map(|t| t.to_owned()),
             message: message.as_ref().into(),
             pgp_signature: None,
         };
@@ -257,7 +244,7 @@ impl crate::Repository {
         self.tag_reference(name, tag_id, constraint).map_err(Into::into)
     }
 
-    /// Similar to [`commit(…)`](crate::Repository::commit()), but allows to create the commit with `committer` and `author` specified.
+    /// Similar to [`commit(…)`][crate::Repository::commit()], but allows to create the commit with `committer` and `author` specified.
     ///
     /// This forces setting the commit time and author time by hand. Note that typically, committer and author are the same.
     pub fn commit_as<'a, 'c, Name, E>(
@@ -310,42 +297,35 @@ impl crate::Repository {
         };
 
         let commit_id = self.write_object(&commit)?;
-        self.edit_references_as(
-            Some(RefEdit {
-                change: Change::Update {
-                    log: LogChange {
-                        mode: RefLog::AndReference,
-                        force_create_reflog: false,
-                        message: crate::reference::log::message(
-                            "commit",
-                            commit.message.as_ref(),
-                            commit.parents.len(),
-                        ),
-                    },
-                    expected: match commit.parents.first().map(|p| Target::Object(*p)) {
-                        Some(previous) => {
-                            if reference.as_bstr() == "HEAD" {
-                                PreviousValue::MustExistAndMatch(previous)
-                            } else {
-                                PreviousValue::ExistingMustMatch(previous)
-                            }
-                        }
-                        None => PreviousValue::MustNotExist,
-                    },
-                    new: Target::Object(commit_id.inner),
+        self.edit_reference(RefEdit {
+            change: Change::Update {
+                log: LogChange {
+                    mode: RefLog::AndReference,
+                    force_create_reflog: false,
+                    message: crate::reference::log::message("commit", commit.message.as_ref(), commit.parents.len()),
                 },
-                name: reference,
-                deref: true,
-            }),
-            Some(committer),
-        )?;
+                expected: match commit.parents.first().map(|p| Target::Object(*p)) {
+                    Some(previous) => {
+                        if reference.as_bstr() == "HEAD" {
+                            PreviousValue::MustExistAndMatch(previous)
+                        } else {
+                            PreviousValue::ExistingMustMatch(previous)
+                        }
+                    }
+                    None => PreviousValue::MustNotExist,
+                },
+                new: Target::Object(commit_id.inner),
+            },
+            name: reference,
+            deref: true,
+        })?;
         Ok(commit_id)
     }
 
     /// Create a new commit object with `message` referring to `tree` with `parents`, and point `reference`
     /// to it. The commit is written without message encoding field, which can be assumed to be UTF-8.
     /// `author` and `committer` fields are pre-set from the configuration, which can be altered
-    /// [temporarily](crate::Repository::config_snapshot_mut()) before the call if required.
+    /// [temporarily][crate::Repository::config_snapshot_mut()] before the call if required.
     ///
     /// `reference` will be created if it doesn't exist, and can be `"HEAD"` to automatically write-through to the symbolic reference
     /// that `HEAD` points to if it is not detached. For this reason, detached head states cannot be created unless the `HEAD` is detached
@@ -355,11 +335,6 @@ impl crate::Repository {
     /// If there is no parent, the `reference` is expected to not exist yet.
     ///
     /// The method fails immediately if a `reference` lock can't be acquired.
-    ///
-    /// ### Writing a commit without `reference` update
-    ///
-    /// If the reference shouldn't be updated, use [`Self::write_object()`] along with a newly created [`crate::objs::Object`] whose fields
-    /// can be fully defined.
     pub fn commit<Name, E>(
         &self,
         reference: Name,

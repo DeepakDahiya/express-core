@@ -7,8 +7,7 @@ use crate::key::Key;
 use crate::repr::{Decor, Formatted};
 use crate::{Array, InlineTable, InternalString, RawString};
 
-/// For [`Key`]/Value pairs under a [`Table`][crate::Table] header or inside another
-/// Value
+/// Representation of a TOML Value (as part of a Key/Value Pair).
 #[derive(Debug, Clone)]
 pub enum Value {
     /// A string value.
@@ -241,11 +240,7 @@ impl FromStr for Value {
 
     /// Parses a value from a &str
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let mut value = crate::parser::parse_value(s)?;
-        // Only take the repr and not decor, as its probably not intended
-        value.decor_mut().clear();
-        value.despan(s);
-        Ok(value)
+        crate::parser::parse_value(s)
     }
 }
 

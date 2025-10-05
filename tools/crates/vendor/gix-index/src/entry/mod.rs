@@ -20,6 +20,7 @@ pub enum Stage {
 pub type StageRaw = u32;
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod mode;
 
 mod flags;
@@ -27,6 +28,7 @@ pub(crate) use flags::at_rest;
 pub use flags::Flags;
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod stat;
 mod write;
 
@@ -34,7 +36,7 @@ use bitflags::bitflags;
 
 bitflags! {
     /// The kind of file of an entry.
-    #[derive(Copy, Clone, Debug, PartialEq, Eq, Ord, PartialOrd)]
+    #[derive(Copy, Clone, Debug, PartialEq, Eq)]
     pub struct Mode: u32 {
         /// directory (only used for sparse checkouts), equivalent to a tree, which is _excluded_ from the index via
         /// cone-mode.
@@ -108,21 +110,8 @@ mod _impls {
     use std::cmp::Ordering;
 
     use bstr::BStr;
-    use gix_object::tree::EntryKind;
 
-    use crate::{entry, Entry, State};
-
-    impl From<EntryKind> for entry::Mode {
-        fn from(value: EntryKind) -> Self {
-            match value {
-                EntryKind::Tree => entry::Mode::DIR,
-                EntryKind::Blob => entry::Mode::FILE,
-                EntryKind::BlobExecutable => entry::Mode::FILE_EXECUTABLE,
-                EntryKind::Link => entry::Mode::SYMLINK,
-                EntryKind::Commit => entry::Mode::COMMIT,
-            }
-        }
-    }
+    use crate::{Entry, State};
 
     impl Entry {
         /// Compare one entry to another by their path, by comparing only their common path portion byte by byte, then resorting to

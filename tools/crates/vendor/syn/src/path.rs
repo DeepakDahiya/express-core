@@ -379,11 +379,11 @@ pub(crate) mod parsing {
                                     }
                                     bounds.push_value({
                                         let allow_precise_capture = false;
-                                        let allow_const = true;
+                                        let allow_tilde_const = true;
                                         TypeParamBound::parse_single(
                                             input,
                                             allow_precise_capture,
-                                            allow_const,
+                                            allow_tilde_const,
                                         )?
                                     });
                                     if !input.peek(Token![+]) {

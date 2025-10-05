@@ -1,12 +1,15 @@
 //! User and Group ID types.
 
+#![allow(unsafe_code)]
+
 use crate::backend::c;
-use crate::ffi;
 
 /// A group identifier as a raw integer.
-pub type RawGid = ffi::c_uint;
+#[cfg(not(target_os = "wasi"))]
+pub type RawGid = c::gid_t;
 /// A user identifier as a raw integer.
-pub type RawUid = ffi::c_uint;
+#[cfg(not(target_os = "wasi"))]
+pub type RawUid = c::uid_t;
 
 /// `uid_t`—A Unix user ID.
 #[repr(transparent)]
@@ -24,18 +27,11 @@ impl Uid {
 
     /// Converts a `RawUid` into a `Uid`.
     ///
-    /// `raw` must be the value of a valid Unix user ID, and not `-1`.
-    #[inline]
-    pub fn from_raw(raw: RawUid) -> Self {
-        debug_assert_ne!(raw, !0);
-        Self(raw)
-    }
-
-    /// Converts a `RawUid` into a `Uid`.
+    /// # Safety
     ///
-    /// `raw` must be the value of a valid Unix user ID, and not `-1`.
+    /// `raw` must be the value of a valid Unix user ID.
     #[inline]
-    pub const fn from_raw_unchecked(raw: RawUid) -> Self {
+    pub const unsafe fn from_raw(raw: RawUid) -> Self {
         Self(raw)
     }
 
@@ -45,7 +41,7 @@ impl Uid {
         self.0
     }
 
-    /// Test whether this uid represents the root user ([`Uid::ROOT`]).
+    /// Test whether this uid represents the root user (uid 0).
     #[inline]
     pub const fn is_root(self) -> bool {
         self.0 == Self::ROOT.0
@@ -58,18 +54,11 @@ impl Gid {
 
     /// Converts a `RawGid` into a `Gid`.
     ///
-    /// `raw` must be the value of a valid Unix group ID, and not `-1`.
-    #[inline]
-    pub fn from_raw(raw: RawGid) -> Self {
-        debug_assert_ne!(raw, !0);
-        Self(raw)
-    }
-
-    /// Converts a `RawGid` into a `Gid`.
+    /// # Safety
     ///
-    /// `raw` must be the value of a valid Unix group ID, and not `-1`.
+    /// `raw` must be the value of a valid Unix group ID.
     #[inline]
-    pub const fn from_raw_unchecked(raw: RawGid) -> Self {
+    pub const unsafe fn from_raw(raw: RawGid) -> Self {
         Self(raw)
     }
 
@@ -79,7 +68,7 @@ impl Gid {
         self.0
     }
 
-    /// Test whether this gid represents the root group ([`Gid::ROOT`]).
+    /// Test whether this gid represents the root group (gid 0).
     #[inline]
     pub const fn is_root(self) -> bool {
         self.0 == Self::ROOT.0
@@ -88,10 +77,7 @@ impl Gid {
 
 // Return the raw value of the IDs. In case of `None` it returns `!0` since it
 // has the same bit pattern as `-1` indicating no change to the owner/group ID.
-pub(crate) fn translate_fchown_args(
-    owner: Option<Uid>,
-    group: Option<Gid>,
-) -> (c::uid_t, c::gid_t) {
+pub(crate) fn translate_fchown_args(owner: Option<Uid>, group: Option<Gid>) -> (RawUid, RawGid) {
     let ow = match owner {
         Some(o) => o.as_raw(),
         None => !0,
@@ -102,18 +88,11 @@ pub(crate) fn translate_fchown_args(
         None => !0,
     };
 
-    (ow as c::uid_t, gr as c::gid_t)
+    (ow, gr)
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_sizes() {
-        assert_eq_size!(RawUid, u32);
-        assert_eq_size!(RawGid, u32);
-        assert_eq_size!(RawUid, libc::uid_t);
-        assert_eq_size!(RawGid, libc::gid_t);
-    }
+#[test]
+fn test_sizes() {
+    assert_eq_size!(RawUid, u32);
+    assert_eq_size!(RawGid, u32);
 }

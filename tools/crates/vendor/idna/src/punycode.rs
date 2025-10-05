@@ -277,7 +277,7 @@ where
     phantom: PhantomData<C>,
 }
 
-impl<T: PunycodeCodeUnit + Copy, C: PunycodeCaller> Iterator for Decode<'_, T, C> {
+impl<'a, T: PunycodeCodeUnit + Copy, C: PunycodeCaller> Iterator for Decode<'a, T, C> {
     type Item = char;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -309,7 +309,7 @@ impl<T: PunycodeCodeUnit + Copy, C: PunycodeCaller> Iterator for Decode<'_, T, C
     }
 }
 
-impl<T: PunycodeCodeUnit + Copy, C: PunycodeCaller> ExactSizeIterator for Decode<'_, T, C> {
+impl<'a, T: PunycodeCodeUnit + Copy, C: PunycodeCaller> ExactSizeIterator for Decode<'a, T, C> {
     fn len(&self) -> usize {
         self.len - self.position
     }
@@ -350,7 +350,7 @@ pub(crate) enum PunycodeEncodeError {
 
 impl From<core::fmt::Error> for PunycodeEncodeError {
     fn from(_: core::fmt::Error) -> Self {
-        Self::Sink
+        PunycodeEncodeError::Sink
     }
 }
 

@@ -9,8 +9,7 @@ use std::fmt::{self, Display, Formatter};
     target_os = "linux",
     target_os = "macos",
     target_os = "netbsd",
-    target_os = "openbsd",
-    target_os = "cygwin"
+    target_os = "openbsd"
 ))]
 use std::process::{Command, Output};
 
@@ -41,7 +40,6 @@ impl Display for Bitness {
     target_os = "dragonfly",
     target_os = "freebsd",
     target_os = "linux",
-    target_os = "cygwin",
     target_os = "macos",
 ))]
 pub fn get() -> Bitness {
@@ -109,8 +107,7 @@ pub fn get() -> Bitness {
         target_os = "linux",
         target_os = "macos",
         target_os = "netbsd",
-        target_os = "openbsd",
-        target_os = "cygwin"
+        target_os = "openbsd"
     )
 ))]
 mod tests {

@@ -1,8 +1,6 @@
-use std::{
-    env,
-    path::{Path, PathBuf},
-    process::{Command, Stdio},
-};
+use std::env;
+use std::path::{Path, PathBuf};
+use std::process::{Command, Stdio};
 
 use bstr::{BStr, BString, ByteSlice};
 use once_cell::sync::Lazy;

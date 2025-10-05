@@ -43,10 +43,7 @@ pub fn ask(prompt: &str, opts: &Options<'_>) -> Result<String, Error> {
                     return Ok(stdout);
                 }
             }
-            Err(err) => eprintln!(
-                "Cannot run askpass program: '{askpass}' with error: {err}",
-                askpass = askpass.display()
-            ),
+            Err(err) => eprintln!("Cannot run askpass program: {askpass:?} with error: {err}"),
         }
     }
     imp::ask(prompt, opts)

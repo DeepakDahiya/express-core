@@ -1,10 +1,12 @@
-use crate::tz::{db::special_time_zone, TimeZone, TimeZoneNameIter};
+use alloc::{string::String, vec::Vec};
 
-pub(crate) struct Database;
+use crate::tz::TimeZone;
 
-impl Database {
-    pub(crate) fn new() -> Database {
-        Database
+pub(crate) struct BundledZoneInfo;
+
+impl BundledZoneInfo {
+    pub(crate) fn new() -> BundledZoneInfo {
+        BundledZoneInfo
     }
 
     pub(crate) fn reset(&self) {
@@ -15,9 +17,6 @@ impl Database {
     pub(crate) fn get(&self, name: &str) -> Option<TimeZone> {
         #[cfg(feature = "std")]
         if let Some(tz) = self::global::get(name) {
-            return Some(tz);
-        }
-        if let Some(tz) = special_time_zone(name) {
             return Some(tz);
         }
         let (canonical_name, tzif) = lookup(name)?;
@@ -37,8 +36,8 @@ impl Database {
         Some(tz)
     }
 
-    pub(crate) fn available<'d>(&'d self) -> TimeZoneNameIter<'d> {
-        TimeZoneNameIter::from_iter(available())
+    pub(crate) fn available(&self) -> Vec<String> {
+        available().into_iter().map(String::from).collect()
     }
 
     pub(crate) fn is_definitively_empty(&self) -> bool {
@@ -46,7 +45,7 @@ impl Database {
     }
 }
 
-impl core::fmt::Debug for Database {
+impl core::fmt::Debug for BundledZoneInfo {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(f, "Bundled(available)")
     }

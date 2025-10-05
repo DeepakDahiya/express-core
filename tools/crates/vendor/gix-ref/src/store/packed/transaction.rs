@@ -1,4 +1,5 @@
-use std::{borrow::Cow, fmt::Formatter, io::Write};
+use std::borrow::Cow;
+use std::{fmt::Formatter, io::Write};
 
 use crate::{
     file,
@@ -272,6 +273,7 @@ pub(crate) fn buffer_into_transaction(
 }
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod prepare {
     /// The error used in [`Transaction::prepare(…)`][crate::file::Transaction::prepare()].
     #[derive(Debug, thiserror::Error)]
@@ -285,6 +287,7 @@ pub mod prepare {
 }
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod commit {
     use crate::store_impl::packed;
 

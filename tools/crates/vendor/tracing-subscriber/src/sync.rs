@@ -54,12 +54,4 @@ mod parking_lot_impl {
             Ok(self.inner.write())
         }
     }
-
-    impl<T: Default> Default for RwLock<T> {
-        fn default() -> Self {
-            RwLock {
-                inner: parking_lot::RwLock::default(),
-            }
-        }
-    }
 }

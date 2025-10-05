@@ -1,4 +1,4 @@
-use super::{FileLock, IndexCache, cache::ValidCacheEntry};
+use super::{cache::ValidCacheEntry, FileLock, IndexCache};
 use crate::{Error, HttpError, IndexKrate, KrateName};
 
 /// The default URL of the crates.io HTTP index
@@ -188,7 +188,7 @@ impl SparseIndex {
         write_cache_entry: bool,
         lock: &FileLock,
     ) -> Result<Option<IndexKrate>, Error> {
-        use http::{StatusCode, header};
+        use http::{header, StatusCode};
         let (parts, body) = response.into_parts();
 
         match parts.status {

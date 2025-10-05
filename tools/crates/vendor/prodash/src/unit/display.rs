@@ -117,7 +117,7 @@ impl What {
     }
 }
 
-impl UnitDisplay<'_> {
+impl<'a> UnitDisplay<'a> {
     /// Display everything, values and the unit.
     pub fn all(&mut self) -> &Self {
         self.display = What::ValuesAndUnit;
@@ -135,7 +135,7 @@ impl UnitDisplay<'_> {
     }
 }
 
-impl fmt::Display for UnitDisplay<'_> {
+impl<'a> fmt::Display for UnitDisplay<'a> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let unit: &dyn DisplayValue = self.parent.as_display_value();
         let mode = self.parent.mode;

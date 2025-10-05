@@ -1,19 +1,18 @@
 use core::fmt::Debug;
-use core::{iter, slice, str};
+use core::{iter, mem, slice, str};
 
 use crate::elf;
 use crate::endian::{self, Endianness, U32Bytes};
-use crate::pod::{self, Pod};
+use crate::pod::Pod;
 use crate::read::{
-    self, gnu_compression, CompressedData, CompressedFileRange, CompressionFormat, Error,
-    ObjectSection, ReadError, ReadRef, RelocationMap, SectionFlags, SectionIndex, SectionKind,
-    StringTable,
+    self, Bytes, CompressedData, CompressedFileRange, CompressionFormat, Error, ObjectSection,
+    ReadError, ReadRef, SectionFlags, SectionIndex, SectionKind, StringTable,
 };
 
 use super::{
     AttributesSection, CompressionHeader, ElfFile, ElfSectionRelocationIterator, FileHeader,
-    GnuHashTable, HashTable, NoteIterator, RelocationSections, RelrIterator, SymbolTable,
-    VerdefIterator, VerneedIterator, VersionTable,
+    GnuHashTable, HashTable, NoteIterator, RelocationSections, SymbolTable, VerdefIterator,
+    VerneedIterator, VersionTable,
 };
 
 /// The table of section headers in an ELF file.
@@ -21,22 +20,13 @@ use super::{
 /// Also includes the string table used for the section names.
 ///
 /// Returned by [`FileHeader::sections`].
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy)]
 pub struct SectionTable<'data, Elf: FileHeader, R = &'data [u8]>
 where
     R: ReadRef<'data>,
 {
     sections: &'data [Elf::SectionHeader],
     strings: StringTable<'data, R>,
-}
-
-impl<'data, Elf: FileHeader, R: ReadRef<'data>> Default for SectionTable<'data, Elf, R> {
-    fn default() -> Self {
-        SectionTable {
-            sections: &[],
-            strings: StringTable::default(),
-        }
-    }
 }
 
 impl<'data, Elf: FileHeader, R: ReadRef<'data>> SectionTable<'data, Elf, R> {
@@ -47,22 +37,9 @@ impl<'data, Elf: FileHeader, R: ReadRef<'data>> SectionTable<'data, Elf, R> {
     }
 
     /// Iterate over the section headers.
-    ///
-    /// This includes the null section at index 0, which you will usually need to skip.
     #[inline]
     pub fn iter(&self) -> slice::Iter<'data, Elf::SectionHeader> {
         self.sections.iter()
-    }
-
-    /// Iterate over the section headers and their indices.
-    ///
-    /// This includes the null section at index 0, which you will usually need to skip.
-    #[inline]
-    pub fn enumerate(&self) -> impl Iterator<Item = (SectionIndex, &'data Elf::SectionHeader)> {
-        self.sections
-            .iter()
-            .enumerate()
-            .map(|(i, section)| (SectionIndex(i), section))
     }
 
     /// Return true if the section table is empty.
@@ -77,13 +54,8 @@ impl<'data, Elf: FileHeader, R: ReadRef<'data>> SectionTable<'data, Elf, R> {
         self.sections.len()
     }
 
-    /// Get the section header at the given index.
-    ///
-    /// Returns an error for the null section at index 0.
+    /// Return the section header at the given index.
     pub fn section(&self, index: SectionIndex) -> read::Result<&'data Elf::SectionHeader> {
-        if index == SectionIndex(0) {
-            return Err(read::Error("Invalid ELF section index"));
-        }
         self.sections
             .get(index.0)
             .read_error("Invalid ELF section index")
@@ -96,8 +68,10 @@ impl<'data, Elf: FileHeader, R: ReadRef<'data>> SectionTable<'data, Elf, R> {
         &self,
         endian: Elf::Endian,
         name: &[u8],
-    ) -> Option<(SectionIndex, &'data Elf::SectionHeader)> {
-        self.enumerate()
+    ) -> Option<(usize, &'data Elf::SectionHeader)> {
+        self.sections
+            .iter()
+            .enumerate()
             .find(|(_, section)| self.section_name(endian, section) == Ok(name))
     }
 
@@ -105,14 +79,13 @@ impl<'data, Elf: FileHeader, R: ReadRef<'data>> SectionTable<'data, Elf, R> {
     pub fn section_name(
         &self,
         endian: Elf::Endian,
-        section: &Elf::SectionHeader,
+        section: &'data Elf::SectionHeader,
     ) -> read::Result<&'data [u8]> {
         section.name(endian, self.strings)
     }
 
     /// Return the string table at the given section index.
     ///
-    /// Returns an empty string table if the index is 0.
     /// Returns an error if the section is not a string table.
     #[inline]
     pub fn strings(
@@ -121,9 +94,6 @@ impl<'data, Elf: FileHeader, R: ReadRef<'data>> SectionTable<'data, Elf, R> {
         data: R,
         index: SectionIndex,
     ) -> read::Result<StringTable<'data, R>> {
-        if index == SectionIndex(0) {
-            return Ok(StringTable::default());
-        }
         self.section(index)?
             .strings(endian, data)?
             .read_error("Invalid ELF string section type")
@@ -141,12 +111,16 @@ impl<'data, Elf: FileHeader, R: ReadRef<'data>> SectionTable<'data, Elf, R> {
     ) -> read::Result<SymbolTable<'data, Elf, R>> {
         debug_assert!(sh_type == elf::SHT_DYNSYM || sh_type == elf::SHT_SYMTAB);
 
-        let (index, section) = match self.enumerate().find(|s| s.1.sh_type(endian) == sh_type) {
+        let (index, section) = match self
+            .iter()
+            .enumerate()
+            .find(|s| s.1.sh_type(endian) == sh_type)
+        {
             Some(s) => s,
             None => return Ok(SymbolTable::default()),
         };
 
-        SymbolTable::parse(endian, data, self, index, section)
+        SymbolTable::parse(endian, data, self, SectionIndex(index), section)
     }
 
     /// Return the symbol table at the given section index.
@@ -360,20 +334,8 @@ where
     Elf: FileHeader,
     R: ReadRef<'data>,
 {
-    file: &'file ElfFile<'data, Elf, R>,
-    iter: iter::Enumerate<slice::Iter<'data, Elf::SectionHeader>>,
-}
-
-impl<'data, 'file, Elf, R> ElfSectionIterator<'data, 'file, Elf, R>
-where
-    Elf: FileHeader,
-    R: ReadRef<'data>,
-{
-    pub(super) fn new(file: &'file ElfFile<'data, Elf, R>) -> Self {
-        let mut iter = file.sections.iter().enumerate();
-        iter.next(); // Skip null section.
-        ElfSectionIterator { file, iter }
-    }
+    pub(super) file: &'file ElfFile<'data, Elf, R>,
+    pub(super) iter: iter::Enumerate<slice::Iter<'data, Elf::SectionHeader>>,
 }
 
 impl<'data, 'file, Elf, R> Iterator for ElfSectionIterator<'data, 'file, Elf, R>
@@ -414,73 +376,6 @@ where
 }
 
 impl<'data, 'file, Elf: FileHeader, R: ReadRef<'data>> ElfSection<'data, 'file, Elf, R> {
-    /// Get the ELF file containing this section.
-    pub fn elf_file(&self) -> &'file ElfFile<'data, Elf, R> {
-        self.file
-    }
-
-    /// Get the raw ELF section header.
-    pub fn elf_section_header(&self) -> &'data Elf::SectionHeader {
-        self.section
-    }
-
-    /// Get the index of the relocation section that references this section.
-    ///
-    /// Returns `None` if there are no relocations.
-    /// Returns an error if there are multiple relocation sections that reference this section.
-    pub fn elf_relocation_section_index(&self) -> read::Result<Option<SectionIndex>> {
-        let Some(relocation_index) = self.file.relocations.get(self.index) else {
-            return Ok(None);
-        };
-        if self.file.relocations.get(relocation_index).is_some() {
-            return Err(Error(
-                "Unsupported ELF section with multiple relocation sections",
-            ));
-        }
-        Ok(Some(relocation_index))
-    }
-
-    /// Get the relocation section that references this section.
-    ///
-    /// Returns `None` if there are no relocations.
-    /// Returns an error if there are multiple relocation sections that reference this section.
-    pub fn elf_relocation_section(&self) -> read::Result<Option<&'data Elf::SectionHeader>> {
-        let Some(relocation_index) = self.elf_relocation_section_index()? else {
-            return Ok(None);
-        };
-        self.file.sections.section(relocation_index).map(Some)
-    }
-
-    /// Get the `Elf::Rel` entries that apply to this section.
-    ///
-    /// Returns an empty slice if there are no relocations.
-    /// Returns an error if there are multiple relocation sections that reference this section.
-    pub fn elf_linked_rel(&self) -> read::Result<&'data [Elf::Rel]> {
-        let Some(relocation_section) = self.elf_relocation_section()? else {
-            return Ok(&[]);
-        };
-        // The linked symbol table was already checked when self.file.relocations was created.
-        let Some((rel, _)) = relocation_section.rel(self.file.endian, self.file.data)? else {
-            return Ok(&[]);
-        };
-        Ok(rel)
-    }
-
-    /// Get the `Elf::Rela` entries that apply to this section.
-    ///
-    /// Returns an empty slice if there are no relocations.
-    /// Returns an error if there are multiple relocation sections that reference this section.
-    pub fn elf_linked_rela(&self) -> read::Result<&'data [Elf::Rela]> {
-        let Some(relocation_section) = self.elf_relocation_section()? else {
-            return Ok(&[]);
-        };
-        // The linked symbol table was already checked when self.file.relocations was created.
-        let Some((rela, _)) = relocation_section.rela(self.file.endian, self.file.data)? else {
-            return Ok(&[]);
-        };
-        Ok(rela)
-    }
-
     fn bytes(&self) -> read::Result<&'data [u8]> {
         self.section
             .data(self.file.endian, self.file.data)
@@ -509,19 +404,46 @@ impl<'data, 'file, Elf: FileHeader, R: ReadRef<'data>> ElfSection<'data, 'file, 
         }
     }
 
-    // Try GNU-style "ZLIB" header decompression.
+    /// Try GNU-style "ZLIB" header decompression.
     fn maybe_compressed_gnu(&self) -> read::Result<Option<CompressedFileRange>> {
-        if !self
-            .name()
-            .map_or(false, |name| name.starts_with(".zdebug_"))
-        {
+        let name = match self.name() {
+            Ok(name) => name,
+            // I think it's ok to ignore this error?
+            Err(_) => return Ok(None),
+        };
+        if !name.starts_with(".zdebug_") {
             return Ok(None);
         }
         let (section_offset, section_size) = self
-            .file_range()
+            .section
+            .file_range(self.file.endian)
             .read_error("Invalid ELF GNU compressed section type")?;
-        gnu_compression::compressed_file_range(self.file.data, section_offset, section_size)
-            .map(Some)
+        let mut offset = section_offset;
+        let data = self.file.data;
+        // Assume ZLIB-style uncompressed data is no more than 4GB to avoid accidentally
+        // huge allocations. This also reduces the chance of accidentally matching on a
+        // .debug_str that happens to start with "ZLIB".
+        if data
+            .read_bytes(&mut offset, 8)
+            .read_error("ELF GNU compressed section is too short")?
+            != b"ZLIB\0\0\0\0"
+        {
+            return Err(Error("Invalid ELF GNU compressed section header"));
+        }
+        let uncompressed_size = data
+            .read::<U32Bytes<_>>(&mut offset)
+            .read_error("ELF GNU compressed section is too short")?
+            .get(endian::BigEndian)
+            .into();
+        let compressed_size = section_size
+            .checked_sub(offset - section_offset)
+            .read_error("ELF GNU compressed section is too short")?;
+        Ok(Some(CompressedFileRange {
+            format: CompressionFormat::Zlib,
+            offset,
+            compressed_size,
+            uncompressed_size,
+        }))
     }
 }
 
@@ -592,13 +514,13 @@ where
         self.compressed_file_range()?.data(self.file.data)
     }
 
-    fn name_bytes(&self) -> read::Result<&'data [u8]> {
+    fn name_bytes(&self) -> read::Result<&[u8]> {
         self.file
             .sections
             .section_name(self.file.endian, self.section)
     }
 
-    fn name(&self) -> read::Result<&'data str> {
+    fn name(&self) -> read::Result<&str> {
         let name = self.name_bytes()?;
         str::from_utf8(name)
             .ok()
@@ -654,9 +576,7 @@ where
             | elf::SHT_DYNAMIC
             | elf::SHT_REL
             | elf::SHT_DYNSYM
-            | elf::SHT_GROUP
-            | elf::SHT_SYMTAB_SHNDX
-            | elf::SHT_RELR => SectionKind::Metadata,
+            | elf::SHT_GROUP => SectionKind::Metadata,
             _ => SectionKind::Elf(sh_type),
         }
     }
@@ -667,10 +587,6 @@ where
             file: self.file,
             relocations: None,
         }
-    }
-
-    fn relocation_map(&self) -> read::Result<RelocationMap> {
-        RelocationMap::new(self.file, self)
     }
 
     fn flags(&self) -> SectionFlags {
@@ -707,26 +623,6 @@ pub trait SectionHeader: Debug + Pod {
         strings
             .get(self.sh_name(endian))
             .read_error("Invalid ELF section name offset")
-    }
-
-    /// Get the `sh_link` field as a section index.
-    ///
-    /// This may return a null section index, and does not check for validity.
-    fn link(&self, endian: Self::Endian) -> SectionIndex {
-        SectionIndex(self.sh_link(endian) as usize)
-    }
-
-    /// Return true if the `SHF_INFO_LINK` flag is set.
-    fn has_info_link(&self, endian: Self::Endian) -> bool {
-        self.sh_flags(endian).into() & u64::from(elf::SHF_INFO_LINK) != 0
-    }
-
-    /// Get the `sh_info` field as a section index.
-    ///
-    /// This does not check the `SHF_INFO_LINK` flag.
-    /// This may return a null section index, and does not check for validity.
-    fn info_link(&self, endian: Self::Endian) -> SectionIndex {
-        SectionIndex(self.sh_info(endian) as usize)
     }
 
     /// Return the offset and size of the section in the file.
@@ -767,7 +663,8 @@ pub trait SectionHeader: Debug + Pod {
         endian: Self::Endian,
         data: R,
     ) -> read::Result<&'data [T]> {
-        pod::slice_from_all_bytes(self.data(endian, data)?)
+        let mut data = self.data(endian, data).map(Bytes)?;
+        data.read_slice(data.len() / mem::size_of::<T>())
             .read_error("Invalid ELF section size or offset")
     }
 
@@ -831,7 +728,8 @@ pub trait SectionHeader: Debug + Pod {
         let rel = self
             .data_as_array(endian, data)
             .read_error("Invalid ELF relocation section offset or size")?;
-        Ok(Some((rel, self.link(endian))))
+        let link = SectionIndex(self.sh_link(endian) as usize);
+        Ok(Some((rel, link)))
     }
 
     /// Return the `Elf::Rela` entries in the section.
@@ -851,26 +749,8 @@ pub trait SectionHeader: Debug + Pod {
         let rela = self
             .data_as_array(endian, data)
             .read_error("Invalid ELF relocation section offset or size")?;
-        Ok(Some((rela, self.link(endian))))
-    }
-
-    /// Return the `Elf::Relr` entries in the section.
-    ///
-    /// Returns `Ok(None)` if the section does not contain relative relocations.
-    /// Returns `Err` for invalid values.
-    fn relr<'data, R: ReadRef<'data>>(
-        &self,
-        endian: Self::Endian,
-        data: R,
-    ) -> read::Result<Option<RelrIterator<'data, Self::Elf>>> {
-        if self.sh_type(endian) != elf::SHT_RELR {
-            return Ok(None);
-        }
-        let data = self
-            .data_as_array(endian, data)
-            .read_error("Invalid ELF relocation section offset or size")?;
-        let relrs = RelrIterator::new(endian, data);
-        Ok(Some(relrs))
+        let link = SectionIndex(self.sh_link(endian) as usize);
+        Ok(Some((rela, link)))
     }
 
     /// Return entries in a dynamic section.
@@ -890,7 +770,8 @@ pub trait SectionHeader: Debug + Pod {
         let dynamic = self
             .data_as_array(endian, data)
             .read_error("Invalid ELF dynamic section offset or size")?;
-        Ok(Some((dynamic, self.link(endian))))
+        let link = SectionIndex(self.sh_link(endian) as usize);
+        Ok(Some((dynamic, link)))
     }
 
     /// Return a note iterator for the section data.
@@ -927,11 +808,19 @@ pub trait SectionHeader: Debug + Pod {
         if self.sh_type(endian) != elf::SHT_GROUP {
             return Ok(None);
         }
-        let msg = "Invalid ELF group section offset or size";
-        let data = self.data(endian, data).read_error(msg)?;
-        let (flag, data) = pod::from_bytes::<U32Bytes<_>>(data).read_error(msg)?;
-        let sections = pod::slice_from_all_bytes(data).read_error(msg)?;
-        Ok(Some((flag.get(endian), sections)))
+        let mut data = self
+            .data(endian, data)
+            .read_error("Invalid ELF group section offset or size")
+            .map(Bytes)?;
+        let flag = data
+            .read::<U32Bytes<_>>()
+            .read_error("Invalid ELF group section offset or size")?
+            .get(endian);
+        let count = data.len() / mem::size_of::<U32Bytes<Self::Endian>>();
+        let sections = data
+            .read_slice(count)
+            .read_error("Invalid ELF group section offset or size")?;
+        Ok(Some((flag, sections)))
     }
 
     /// Return the header of a SysV hash section.
@@ -973,7 +862,8 @@ pub trait SectionHeader: Debug + Pod {
             .data(endian, data)
             .read_error("Invalid ELF hash section offset or size")?;
         let hash = HashTable::parse(endian, data)?;
-        Ok(Some((hash, self.link(endian))))
+        let link = SectionIndex(self.sh_link(endian) as usize);
+        Ok(Some((hash, link)))
     }
 
     /// Return the header of a GNU hash section.
@@ -1015,7 +905,8 @@ pub trait SectionHeader: Debug + Pod {
             .data(endian, data)
             .read_error("Invalid ELF GNU hash section offset or size")?;
         let hash = GnuHashTable::parse(endian, data)?;
-        Ok(Some((hash, self.link(endian))))
+        let link = SectionIndex(self.sh_link(endian) as usize);
+        Ok(Some((hash, link)))
     }
 
     /// Return the contents of a `SHT_GNU_VERSYM` section.
@@ -1035,7 +926,8 @@ pub trait SectionHeader: Debug + Pod {
         let versym = self
             .data_as_array(endian, data)
             .read_error("Invalid ELF GNU versym section offset or size")?;
-        Ok(Some((versym, self.link(endian))))
+        let link = SectionIndex(self.sh_link(endian) as usize);
+        Ok(Some((versym, link)))
     }
 
     /// Return an iterator for the entries of a `SHT_GNU_VERDEF` section.
@@ -1055,10 +947,8 @@ pub trait SectionHeader: Debug + Pod {
         let verdef = self
             .data(endian, data)
             .read_error("Invalid ELF GNU verdef section offset or size")?;
-        Ok(Some((
-            VerdefIterator::new(endian, verdef),
-            self.link(endian),
-        )))
+        let link = SectionIndex(self.sh_link(endian) as usize);
+        Ok(Some((VerdefIterator::new(endian, verdef), link)))
     }
 
     /// Return an iterator for the entries of a `SHT_GNU_VERNEED` section.
@@ -1078,10 +968,8 @@ pub trait SectionHeader: Debug + Pod {
         let verneed = self
             .data(endian, data)
             .read_error("Invalid ELF GNU verneed section offset or size")?;
-        Ok(Some((
-            VerneedIterator::new(endian, verneed),
-            self.link(endian),
-        )))
+        let link = SectionIndex(self.sh_link(endian) as usize);
+        Ok(Some((VerneedIterator::new(endian, verneed), link)))
     }
 
     /// Return the contents of a `SHT_GNU_ATTRIBUTES` section.

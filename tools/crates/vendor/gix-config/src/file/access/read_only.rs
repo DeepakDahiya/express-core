@@ -8,7 +8,7 @@ use crate::{
     file::{
         self,
         write::{extract_newline, platform_newline},
-        Metadata, SectionId,
+        Metadata, MetadataFilter, SectionId,
     },
     lookup,
     parse::Event,
@@ -232,7 +232,7 @@ impl<'event> File<'event> {
         name: &str,
         subsection_name: Option<&BStr>,
     ) -> Result<&file::Section<'event>, lookup::existing::Error> {
-        self.section_filter(name, subsection_name, |_| true)?
+        self.section_filter(name, subsection_name, &mut |_| true)?
             .ok_or(lookup::existing::Error::SectionMissing)
     }
 
@@ -252,7 +252,7 @@ impl<'event> File<'event> {
         &'a self,
         name: &str,
         subsection_name: Option<&BStr>,
-        mut filter: impl FnMut(&Metadata) -> bool,
+        filter: &mut MetadataFilter,
     ) -> Result<Option<&'a file::Section<'event>>, lookup::existing::Error> {
         Ok(self
             .section_ids_by_name_and_subname(name.as_ref(), subsection_name)?
@@ -270,7 +270,7 @@ impl<'event> File<'event> {
     pub fn section_filter_by_key<'a>(
         &'a self,
         section_key: &BStr,
-        filter: impl FnMut(&Metadata) -> bool,
+        filter: &mut MetadataFilter,
     ) -> Result<Option<&'a file::Section<'event>>, lookup::existing::Error> {
         let key =
             crate::parse::section::unvalidated::Key::parse(section_key).ok_or(lookup::existing::Error::KeyMissing)?;
@@ -312,10 +312,7 @@ impl<'event> File<'event> {
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     #[must_use]
-    pub fn sections_by_name<'a>(
-        &'a self,
-        name: &'a str,
-    ) -> Option<impl Iterator<Item = &'a file::Section<'event>> + 'a> {
+    pub fn sections_by_name<'a>(&'a self, name: &'a str) -> Option<impl Iterator<Item = &file::Section<'event>> + '_> {
         self.section_ids_by_name(name).ok().map(move |ids| {
             ids.map(move |id| {
                 self.sections
@@ -331,7 +328,7 @@ impl<'event> File<'event> {
     pub fn sections_and_ids_by_name<'a>(
         &'a self,
         name: &'a str,
-    ) -> Option<impl Iterator<Item = (&'a file::Section<'event>, SectionId)> + 'a> {
+    ) -> Option<impl Iterator<Item = (&file::Section<'event>, SectionId)> + '_> {
         self.section_ids_by_name(name).ok().map(move |ids| {
             ids.map(move |id| {
                 (
@@ -349,8 +346,8 @@ impl<'event> File<'event> {
     pub fn sections_by_name_and_filter<'a>(
         &'a self,
         name: &'a str,
-        mut filter: impl FnMut(&Metadata) -> bool + 'a,
-    ) -> Option<impl Iterator<Item = &'a file::Section<'event>> + 'a> {
+        filter: &'a mut MetadataFilter,
+    ) -> Option<impl Iterator<Item = &file::Section<'event>> + '_> {
         self.section_ids_by_name(name).ok().map(move |ids| {
             ids.filter_map(move |id| {
                 let s = self
@@ -408,11 +405,6 @@ impl<'event> File<'event> {
     /// Return an iterator over all sections and their ids, in order of occurrence in the file itself.
     pub fn sections_and_ids(&self) -> impl Iterator<Item = (&file::Section<'event>, SectionId)> + '_ {
         self.section_order.iter().map(move |id| (&self.sections[id], *id))
-    }
-
-    /// Return an iterator over all section ids, in order of occurrence in the file itself.
-    pub fn section_ids(&mut self) -> impl Iterator<Item = SectionId> + '_ {
-        self.section_order.iter().copied()
     }
 
     /// Return an iterator over all sections along with non-section events that are placed right after them,

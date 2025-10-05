@@ -35,15 +35,11 @@ impl From<Error> for io::Error {
 }
 
 pub(crate) fn header_field_multi_line(name: &[u8], value: &[u8], out: &mut dyn io::Write) -> io::Result<()> {
-    let mut lines = value.as_bstr().lines_with_terminator();
-    out.write_all(name)?;
-    out.write_all(SPACE)?;
-    out.write_all(lines.next().ok_or(Error::EmptyValue)?)?;
+    let mut lines = value.as_bstr().split_str(b"\n");
+    trusted_header_field(name, lines.next().ok_or(Error::EmptyValue)?, out)?;
     for line in lines {
         out.write_all(SPACE)?;
         out.write_all(line)?;
-    }
-    if !value.ends_with_str(b"\n") {
         out.write_all(NL)?;
     }
     Ok(())

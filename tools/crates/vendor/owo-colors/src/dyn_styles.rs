@@ -26,14 +26,14 @@ macro_rules! color_methods {
         $(
             #[$fg_meta]
             #[must_use]
-            pub const fn $fg_method(mut self) -> Self {
+            pub fn $fg_method(mut self) -> Self {
                 self.fg = Some(DynColors::Ansi(AnsiColors::$color));
                 self
             }
 
             #[$fg_meta]
             #[must_use]
-            pub const fn $bg_method(mut self) -> Self {
+            pub fn $bg_method(mut self) -> Self {
                 self.bg = Some(DynColors::Ansi(AnsiColors::$color));
                 self
             }
@@ -46,8 +46,8 @@ macro_rules! style_methods {
         $(
             #[$meta]
             #[must_use]
-            pub const fn $name(mut self) -> Self {
-                self.style_flags = self.style_flags.$set_name(true);
+            pub fn $name(mut self) -> Self {
+                self.style_flags.$set_name(true);
                 self
             }
         )*
@@ -64,9 +64,8 @@ pub struct Styled<T> {
     pub style: Style,
 }
 
-/// A pre-computed style that can be applied to a struct using [`OwoColorize::style`].
-///
-/// Its interface mimics that of [`OwoColorize`], but instead of chaining methods on your
+/// A pre-computed style that can be applied to a struct using [`OwoColorize::style`]. Its
+/// interface mimicks that of [`OwoColorize`], but instead of chaining methods on your
 /// object, you instead chain them on the `Style` object before applying it.
 ///
 /// ```rust
@@ -79,7 +78,7 @@ pub struct Styled<T> {
 ///
 /// println!("{}", "red text, white background, struck through".style(my_style));
 /// ```
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Default, Copy, Clone, PartialEq)]
 pub struct Style {
     pub(crate) fg: Option<DynColors>,
     pub(crate) bg: Option<DynColors>,
@@ -88,16 +87,8 @@ pub struct Style {
 }
 
 #[repr(transparent)]
-#[derive(Debug, Copy, Clone, PartialEq)]
+#[derive(Debug, Default, Copy, Clone, PartialEq)]
 pub(crate) struct StyleFlags(pub(crate) u8);
-
-impl StyleFlags {
-    #[must_use]
-    #[inline]
-    const fn is_plain(&self) -> bool {
-        self.0 == 0
-    }
-}
 
 const DIMMED_SHIFT: u8 = 0;
 const ITALIC_SHIFT: u8 = 1;
@@ -111,25 +102,18 @@ const STRIKETHROUGH_SHIFT: u8 = 7;
 macro_rules! style_flags_methods {
     ($(($shift:ident, $name:ident, $set_name:ident)),* $(,)?) => {
         $(
-            #[must_use]
-            const fn $name(&self) -> bool {
+            fn $name(&self) -> bool {
                 ((self.0 >> $shift) & 1) != 0
             }
 
-            #[must_use]
-            const fn $set_name(mut self, $name: bool) -> Self {
+            fn $set_name(&mut self, $name: bool) {
                 self.0 = (self.0 & !(1 << $shift)) | (($name as u8) << $shift);
-                self
             }
         )*
     };
 }
 
 impl StyleFlags {
-    const fn new() -> Self {
-        Self(0)
-    }
-
     style_flags_methods! {
         (DIMMED_SHIFT, dimmed, set_dimmed),
         (ITALIC_SHIFT, italic, set_italic),
@@ -142,39 +126,15 @@ impl StyleFlags {
     }
 }
 
-impl Default for StyleFlags {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl Style {
     /// Create a new style to be applied later
     #[must_use]
-    pub const fn new() -> Self {
-        Self {
-            fg: None,
-            bg: None,
-            bold: false,
-            style_flags: StyleFlags::new(),
-        }
+    pub fn new() -> Self {
+        Self::default()
     }
 
-    /// Apply the style to a given struct to output.
-    ///
-    /// # Example
-    ///
-    /// Usage in const contexts:
-    ///
-    /// ```rust
-    /// use owo_colors::{OwoColorize, Style, Styled};
-    ///
-    /// const STYLED_TEXT: Styled<&'static str> = Style::new().bold().italic().style("bold and italic text");
-    ///
-    /// println!("{}", STYLED_TEXT);
-    /// # assert_eq!(format!("{}", STYLED_TEXT), "\u{1b}[1;3mbold and italic text\u{1b}[0m");
-    /// ```
-    pub const fn style<T>(&self, target: T) -> Styled<T> {
+    /// Apply the style to a given struct to output
+    pub fn style<T>(&self, target: T) -> Styled<T> {
         Styled {
             target,
             style: *self,
@@ -189,8 +149,8 @@ impl Style {
     /// println!("{}", "red foreground".fg::<Red>());
     /// ```
     #[must_use]
-    pub const fn fg<C: Color>(mut self) -> Self {
-        self.fg = Some(C::DYN_COLORS_EQUIVALENT);
+    pub fn fg<C: Color>(mut self) -> Self {
+        self.fg = Some(C::into_dyncolors());
         self
     }
 
@@ -202,8 +162,8 @@ impl Style {
     /// println!("{}", "black background".bg::<Black>());
     /// ```
     #[must_use]
-    pub const fn bg<C: Color>(mut self) -> Self {
-        self.bg = Some(C::DYN_COLORS_EQUIVALENT);
+    pub fn bg<C: Color>(mut self) -> Self {
+        self.bg = Some(C::into_dyncolors());
         self
     }
 
@@ -213,7 +173,7 @@ impl Style {
     /// If you wish to actively change the terminal color back to the default, see
     /// [`Style::default_color`].
     #[must_use]
-    pub const fn remove_fg(mut self) -> Self {
+    pub fn remove_fg(mut self) -> Self {
         self.fg = None;
         self
     }
@@ -224,7 +184,7 @@ impl Style {
     /// If you wish to actively change the terminal color back to the default, see
     /// [`Style::on_default_color`].
     #[must_use]
-    pub const fn remove_bg(mut self) -> Self {
+    pub fn remove_bg(mut self) -> Self {
         self.bg = None;
         self
     }
@@ -293,7 +253,7 @@ impl Style {
 
     /// Make the text bold
     #[must_use]
-    pub const fn bold(mut self) -> Self {
+    pub fn bold(mut self) -> Self {
         self.bold = true;
         self
     }
@@ -303,7 +263,7 @@ impl Style {
         (dimmed, set_dimmed),
         /// Make the text italicized
         (italic, set_italic),
-        /// Make the text underlined
+        /// Make the text italicized
         (underline, set_underline),
         /// Make the text blink
         (blink, set_blink),
@@ -317,82 +277,60 @@ impl Style {
         (strikethrough, set_strikethrough),
     }
 
-    #[must_use]
-    const fn set_effect(mut self, effect: Effect, to: bool) -> Self {
+    fn set_effect(&mut self, effect: Effect, to: bool) {
         use Effect::*;
         match effect {
-            Bold => {
-                self.bold = to;
-            }
-            Dimmed => {
-                // This somewhat contorted construction is required because const fns can't take
-                // mutable refs as of Rust 1.81.
-                self.style_flags = self.style_flags.set_dimmed(to);
-            }
-            Italic => {
-                self.style_flags = self.style_flags.set_italic(to);
-            }
-            Underline => {
-                self.style_flags = self.style_flags.set_underline(to);
-            }
-            Blink => {
-                self.style_flags = self.style_flags.set_blink(to);
-            }
-            BlinkFast => {
-                self.style_flags = self.style_flags.set_blink_fast(to);
-            }
-            Reversed => {
-                self.style_flags = self.style_flags.set_reversed(to);
-            }
-            Hidden => {
-                self.style_flags = self.style_flags.set_hidden(to);
-            }
-            Strikethrough => {
-                self.style_flags = self.style_flags.set_strikethrough(to);
-            }
+            Bold => self.bold = to,
+            Dimmed => self.style_flags.set_dimmed(to),
+            Italic => self.style_flags.set_italic(to),
+            Underline => self.style_flags.set_underline(to),
+            Blink => self.style_flags.set_blink(to),
+            BlinkFast => self.style_flags.set_blink_fast(to),
+            Reversed => self.style_flags.set_reversed(to),
+            Hidden => self.style_flags.set_hidden(to),
+            Strikethrough => self.style_flags.set_strikethrough(to),
         }
-        self
     }
 
-    #[must_use]
-    const fn set_effects(mut self, mut effects: &[Effect], to: bool) -> Self {
-        // This is basically a for loop that also works in const contexts.
-        while let [first, rest @ ..] = effects {
-            self = self.set_effect(*first, to);
-            effects = rest;
+    fn set_effects(&mut self, effects: &[Effect], to: bool) {
+        for e in effects {
+            self.set_effect(*e, to)
         }
-        self
     }
 
     /// Apply a given effect from the style
     #[must_use]
-    pub const fn effect(self, effect: Effect) -> Self {
-        self.set_effect(effect, true)
+    pub fn effect(mut self, effect: Effect) -> Self {
+        self.set_effect(effect, true);
+        self
     }
 
     /// Remove a given effect from the style
     #[must_use]
-    pub const fn remove_effect(self, effect: Effect) -> Self {
-        self.set_effect(effect, false)
+    pub fn remove_effect(mut self, effect: Effect) -> Self {
+        self.set_effect(effect, false);
+        self
     }
 
     /// Apply a given set of effects to the style
     #[must_use]
-    pub const fn effects(self, effects: &[Effect]) -> Self {
-        self.set_effects(effects, true)
+    pub fn effects(mut self, effects: &[Effect]) -> Self {
+        self.set_effects(effects, true);
+        self
     }
 
     /// Remove a given set of effects from the style
     #[must_use]
-    pub const fn remove_effects(self, effects: &[Effect]) -> Self {
-        self.set_effects(effects, false)
+    pub fn remove_effects(mut self, effects: &[Effect]) -> Self {
+        self.set_effects(effects, false);
+        self
     }
 
     /// Disables all the given effects from the style
     #[must_use]
-    pub const fn remove_all_effects(mut self) -> Self {
+    pub fn remove_all_effects(mut self) -> Self {
         self.bold = false;
-        self.style_flags = StyleFlags::new();
+        self.style_flags = StyleFlags::default();
         self
     }
 
@@ -407,7 +345,6 @@ impl Style {
     /// ```
     #[must_use]
     pub fn color<Color: DynColor>(mut self, color: Color) -> Self {
-        // Can't be const because `get_dyncolors_fg` is a trait method.
         self.fg = Some(color.get_dyncolors_fg());
         self
     }
@@ -423,14 +360,13 @@ impl Style {
     /// ```
     #[must_use]
     pub fn on_color<Color: DynColor>(mut self, color: Color) -> Self {
-        // Can't be const because `get_dyncolors_bg` is a trait method.
         self.bg = Some(color.get_dyncolors_bg());
         self
     }
 
     /// Set the foreground color to a specific RGB value.
     #[must_use]
-    pub const fn fg_rgb<const R: u8, const G: u8, const B: u8>(mut self) -> Self {
+    pub fn fg_rgb<const R: u8, const G: u8, const B: u8>(mut self) -> Self {
         self.fg = Some(DynColors::Rgb(R, G, B));
 
         self
@@ -438,7 +374,7 @@ impl Style {
 
     /// Set the background color to a specific RGB value.
     #[must_use]
-    pub const fn bg_rgb<const R: u8, const G: u8, const B: u8>(mut self) -> Self {
+    pub fn bg_rgb<const R: u8, const G: u8, const B: u8>(mut self) -> Self {
         self.bg = Some(DynColors::Rgb(R, G, B));
 
         self
@@ -446,61 +382,24 @@ impl Style {
 
     /// Sets the foreground color to an RGB value.
     #[must_use]
-    pub const fn truecolor(mut self, r: u8, g: u8, b: u8) -> Self {
+    pub fn truecolor(mut self, r: u8, g: u8, b: u8) -> Self {
         self.fg = Some(DynColors::Rgb(r, g, b));
         self
     }
 
     /// Sets the background color to an RGB value.
     #[must_use]
-    pub const fn on_truecolor(mut self, r: u8, g: u8, b: u8) -> Self {
+    pub fn on_truecolor(mut self, r: u8, g: u8, b: u8) -> Self {
         self.bg = Some(DynColors::Rgb(r, g, b));
         self
     }
 
-    /// Returns true if the style does not apply any formatting.
+    /// Returns if the style does not apply any formatting
     #[must_use]
     #[inline]
-    pub const fn is_plain(&self) -> bool {
+    pub fn is_plain(&self) -> bool {
         let s = &self;
-        !(s.fg.is_some() || s.bg.is_some() || s.bold) && s.style_flags.is_plain()
-    }
-
-    /// Returns a formatter for the style's ANSI prefix.
-    ///
-    /// This can be used to separate out the prefix and suffix of a style.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use owo_colors::Style;
-    /// use std::fmt::Write;
-    ///
-    /// let style = Style::new().red().on_blue();
-    /// let prefix = style.prefix_formatter();
-    /// let suffix = style.suffix_formatter();
-    ///
-    /// // Write the prefix and suffix separately.
-    /// let mut output = String::new();
-    /// write!(output, "{}", prefix);
-    /// output.push_str("Hello");
-    /// write!(output, "{}", suffix);
-    ///
-    /// assert_eq!(output, "\x1b[31;44mHello\x1b[0m");
-    /// ```
-    pub const fn prefix_formatter(&self) -> StylePrefixFormatter {
-        StylePrefixFormatter(*self)
-    }
-
-    /// Returns a formatter for the style's ANSI suffix.
-    ///
-    /// This can be used to separate out the prefix and suffix of a style.
-    ///
-    /// # Example
-    ///
-    /// See [`Style::prefix_formatter`].
-    pub const fn suffix_formatter(&self) -> StyleSuffixFormatter {
-        StyleSuffixFormatter(*self)
+        !(s.fg.is_some() || s.bg.is_some() || s.bold || s.style_flags != StyleFlags::default())
     }
 
     /// Applies the ANSI-prefix for this style to the given formatter
@@ -528,7 +427,6 @@ impl Style {
                 f.write_str(";")?;
             }
             <DynColors as DynColor>::fmt_raw_ansi_bg(&bg, f)?;
-            semicolon = true;
         }
 
         if format_effect {
@@ -588,63 +486,18 @@ impl Style {
     }
 }
 
-/// Formatter for the prefix of a [`Style`].
-///
-/// This is used to get the ANSI escape codes for the style without
-/// the suffix, which is useful for formatting the prefix separately.
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[must_use = "this formatter does nothing unless displayed"]
-pub struct StylePrefixFormatter(Style);
-
-impl fmt::Display for StylePrefixFormatter {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.0.fmt_prefix(f)
-    }
-}
-
-/// Formatter for the suffix of a [`Style`].
-///
-/// This is used to get the ANSI escape codes for the style without
-/// the prefix, which is useful for formatting the suffix separately.
-#[derive(Debug, Clone, Copy, PartialEq)]
-#[must_use = "this formatter does nothing unless displayed"]
-pub struct StyleSuffixFormatter(Style);
-
-impl fmt::Display for StyleSuffixFormatter {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.0.fmt_suffix(f)
-    }
-}
-
-impl Default for Style {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 /// Helper to create [`Style`]s more ergonomically
-pub const fn style() -> Style {
+pub fn style() -> Style {
     Style::new()
 }
 
 impl<T> Styled<T> {
     /// Returns a reference to the inner value to be styled
-    pub const fn inner(&self) -> &T {
+    pub fn inner(&self) -> &T {
         &self.target
     }
 
-    /// Returns a mutable reference to the inner value to be styled.
-    ///
-    /// *This method is const on Rust 1.83+.*
-    #[cfg(const_mut_refs)]
-    pub const fn inner_mut(&mut self) -> &mut T {
-        &mut self.target
-    }
-
-    /// Returns a mutable reference to the inner value to be styled.
-    ///
-    /// *This method is const on Rust 1.83+.*
-    #[cfg(not(const_mut_refs))]
+    /// Returns a mutable reference to the inner value to be styled
     pub fn inner_mut(&mut self) -> &mut T {
         &mut self.target
     }
@@ -682,10 +535,18 @@ mod tests {
     use super::*;
     use crate::{AnsiColors, OwoColorize};
 
-    #[test]
-    fn size_of() {
-        let size = std::mem::size_of::<Style>();
-        assert_eq!(size, 10, "size of Style should be 10 bytes");
+    struct StylePrefixOnly(Style);
+    impl fmt::Display for StylePrefixOnly {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            self.0.fmt_prefix(f)
+        }
+    }
+
+    struct StyleSuffixOnly(Style);
+    impl fmt::Display for StyleSuffixOnly {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            self.0.fmt_suffix(f)
+        }
     }
 
     #[test]
@@ -707,10 +568,10 @@ mod tests {
         println!("{}", &s2);
         assert_eq!(&s2, "\u{1b}[97;44;1;2;3;4;5;9mTEST\u{1b}[0m");
 
-        let prefix = format!("{}", style.prefix_formatter());
+        let prefix = format!("{}", StylePrefixOnly(style));
         assert_eq!(&prefix, "\u{1b}[97;44;1;2;3;4;5;9m");
 
-        let suffix = format!("{}", style.suffix_formatter());
+        let suffix = format!("{}", StyleSuffixOnly(style));
         assert_eq!(&suffix, "\u{1b}[0m");
     }
 

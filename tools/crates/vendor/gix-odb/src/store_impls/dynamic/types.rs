@@ -61,7 +61,7 @@ impl PackId {
                     midx <= Self::max_packs_in_multi_index(),
                     "There shouldn't be more than 2^16 packs per multi-index"
                 );
-                (self.index as gix_pack::data::Id | (1 << 15)) | (midx << 16) as gix_pack::data::Id
+                ((self.index as gix_pack::data::Id | 1 << 15) | midx << 16) as gix_pack::data::Id
             }
         }
     }
@@ -84,11 +84,10 @@ impl PackId {
 /// An index that changes only if the packs directory changes and its contents is re-read.
 #[derive(Default)]
 pub struct SlotMapIndex {
-    /// The index into the slot map at which we expect an index or pack file. Neither of these might be already loaded.
+    /// The index into the slot map at which we expect an index or pack file. Neither of these might be loaded yet.
     pub(crate) slot_indices: Vec<usize>,
-    /// A list of loose object databases as resolved by their alternates file in the `object_directory`.
-    /// The first entry is this repository's directory for the loose file database.
-    /// All other entries are the loose stores of alternates.
+    /// A list of loose object databases as resolved by their alternates file in the `object_directory`. The first entry is this objects
+    /// directory loose file database. All other entries are the loose stores of alternates.
     /// It's in an Arc to be shared to Handles, but not to be shared across SlotMapIndices.
     pub(crate) loose_dbs: Arc<Vec<crate::loose::Store>>,
 
@@ -223,7 +222,7 @@ impl<T: Clone> OnDiskFile<T> {
         match std::mem::replace(&mut self.state, OnDiskFileState::Missing) {
             OnDiskFileState::Loaded(v) => self.state = OnDiskFileState::Garbage(v),
             other @ (OnDiskFileState::Garbage(_) | OnDiskFileState::Unloaded | OnDiskFileState::Missing) => {
-                self.state = other;
+                self.state = other
             }
         }
     }

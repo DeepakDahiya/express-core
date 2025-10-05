@@ -4,25 +4,12 @@ use std::{env, fmt, fs};
 
 #[cfg(feature = "bindgen")]
 fn generate_bindings(defs: Vec<&str>, headerpaths: Vec<PathBuf>) {
-    use bindgen::RustTarget;
-
     let bindings = bindgen::Builder::default().header("zstd.h");
-
     #[cfg(feature = "zdict_builder")]
     let bindings = bindings.header("zdict.h");
-
-    #[cfg(feature = "seekable")]
-    let bindings = bindings.header("zstd_seekable.h");
-
     let bindings = bindings
-        .layout_tests(false)
         .blocklist_type("max_align_t")
         .size_t_is_usize(true)
-        .rust_target(
-            RustTarget::stable(64, 0)
-                .ok()
-                .expect("Could not get 1.64.0 version"),
-        )
         .use_core()
         .rustified_enum(".*")
         .clang_args(
@@ -38,8 +25,8 @@ fn generate_bindings(defs: Vec<&str>, headerpaths: Vec<PathBuf>) {
         .clang_arg("-DZDICT_STATIC_LINKING_ONLY")
         .clang_arg("-DZSTD_RUST_BINDINGS_EXPERIMENTAL");
 
-    #[cfg(feature = "seekable")]
-    let bindings = bindings.blocklist_function("ZSTD_seekable_initFile");
+    #[cfg(not(feature = "std"))]
+    let bindings = bindings.ctypes_prefix("libc");
 
     let bindings = bindings.generate().expect("Unable to generate bindings");
 
@@ -107,8 +94,6 @@ fn compile_zstd() {
         "zstd/lib/common",
         "zstd/lib/compress",
         "zstd/lib/decompress",
-        #[cfg(feature = "seekable")]
-        "zstd/contrib/seekable_format",
         #[cfg(feature = "zdict_builder")]
         "zstd/lib/dictBuilder",
         #[cfg(feature = "legacy")]
@@ -150,8 +135,7 @@ fn compile_zstd() {
     // See: https://github.com/gyscos/zstd-rs/pull/209
     let need_wasm_shim = !cfg!(feature = "no_wasm_shim")
         && env::var("TARGET").map_or(false, |target| {
-            target == "wasm32-unknown-unknown"
-                || target.starts_with("wasm32-wasi")
+            target == "wasm32-unknown-unknown" || target.starts_with("wasm32-wasi")
         });
 
     if need_wasm_shim {
@@ -229,7 +213,7 @@ fn compile_zstd() {
      * 7+: events at every position (*very* verbose)
      */
     #[cfg(feature = "debug")]
-    if !need_wasm_shim {
+    if !is_wasm {
         config.define("DEBUGLEVEL", Some("5"));
     }
 

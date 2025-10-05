@@ -1,4 +1,4 @@
-// spell-checker:ignore sles, AOSCOS
+// spell-checker:ignore sles
 
 use std::{fmt, fs::File, io::Read, path::Path};
 
@@ -95,7 +95,7 @@ static DISTRIBUTIONS: [ReleaseInfo; 6] = [
                     "alpine" => Some(Type::Alpine),
                     "amzn" => Some(Type::Amazon),
                     //"antergos" => Antergos
-                    "aosc" => Some(Type::AOSC),
+                    //"aosc" => AOSC
                     "arch" => Some(Type::Arch),
                     "archarm" => Some(Type::Arch),
                     "artix" => Some(Type::Artix),
@@ -115,7 +115,6 @@ static DISTRIBUTIONS: [ReleaseInfo; 6] = [
                     "kali" => Some(Type::Kali),
                     //"mageia" => Mageia
                     //"manjaro" => Manjaro
-                    "manjaro-arm" => Some(Type::Manjaro),
                     "linuxmint" => Some(Type::Mint),
                     "mariner" => Some(Type::Mariner),
                     //"nexus" => Nexus
@@ -274,17 +273,6 @@ mod tests {
     }
 
     #[test]
-    fn aosc_os_release() {
-        let root = "src/linux/tests/AOSCOS";
-
-        let info = retrieve(&DISTRIBUTIONS, root).unwrap();
-        assert_eq!(info.os_type(), Type::AOSC);
-        assert_eq!(info.version, Version::Semantic(12, 1, 3));
-        assert_eq!(info.edition, None);
-        assert_eq!(info.codename, None);
-    }
-
-    #[test]
     fn arch_os_release() {
         let root = "src/linux/tests/Arch";
 
@@ -434,17 +422,6 @@ mod tests {
         let info = retrieve(&DISTRIBUTIONS, root).unwrap();
         assert_eq!(info.os_type(), Type::Kali);
         assert_eq!(info.version, Version::Semantic(2023, 2, 0));
-        assert_eq!(info.edition, None);
-        assert_eq!(info.codename, None);
-    }
-
-    #[test]
-    fn manjaro_arm_release() {
-        let root = "src/linux/tests/ManjaroArm";
-
-        let info = retrieve(&DISTRIBUTIONS, root).unwrap();
-        assert_eq!(info.os_type(), Type::Manjaro);
-        assert_eq!(info.version, Version::Unknown);
         assert_eq!(info.edition, None);
         assert_eq!(info.codename, None);
     }

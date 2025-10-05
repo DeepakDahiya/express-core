@@ -1,5 +1,5 @@
 use crate::syntax::atom::Atom::{self, *};
-use crate::syntax::{primitive, Type, Types};
+use crate::syntax::{derive, Trait, Type, Types};
 
 impl<'a> Types<'a> {
     pub(crate) fn is_guaranteed_pod(&self, ty: &Type) -> bool {
@@ -13,9 +13,11 @@ impl<'a> Types<'a> {
                         CxxString | RustString => false,
                     }
                 } else if let Some(strct) = self.structs.get(ident) {
-                    strct.fields.iter().all(|field| {
-                        primitive::kind(&field.ty).is_none() && self.is_guaranteed_pod(&field.ty)
-                    })
+                    derive::contains(&strct.derives, Trait::Copy)
+                        || strct
+                            .fields
+                            .iter()
+                            .all(|field| self.is_guaranteed_pod(&field.ty))
                 } else {
                     self.enums.contains_key(ident)
                 }

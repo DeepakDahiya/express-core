@@ -14,14 +14,12 @@ use encode_unicode::error::Utf16TupleError;
 use encode_unicode::CharExt;
 use windows_sys::Win32::Foundation::{HANDLE, INVALID_HANDLE_VALUE, MAX_PATH};
 use windows_sys::Win32::Storage::FileSystem::{FileNameInfo, GetFileInformationByHandleEx};
-use windows_sys::Win32::System::Console::CONSOLE_MODE;
 use windows_sys::Win32::System::Console::{
     FillConsoleOutputAttribute, FillConsoleOutputCharacterA, GetConsoleCursorInfo, GetConsoleMode,
     GetConsoleScreenBufferInfo, GetNumberOfConsoleInputEvents, GetStdHandle, ReadConsoleInputW,
     SetConsoleCursorInfo, SetConsoleCursorPosition, SetConsoleMode, SetConsoleTitleW,
-    CONSOLE_CURSOR_INFO, CONSOLE_SCREEN_BUFFER_INFO, COORD, ENABLE_PROCESSED_INPUT,
-    ENABLE_VIRTUAL_TERMINAL_PROCESSING, INPUT_RECORD, INPUT_RECORD_0, KEY_EVENT, KEY_EVENT_RECORD,
-    STD_ERROR_HANDLE, STD_HANDLE, STD_INPUT_HANDLE, STD_OUTPUT_HANDLE,
+    CONSOLE_CURSOR_INFO, CONSOLE_SCREEN_BUFFER_INFO, COORD, INPUT_RECORD, INPUT_RECORD_0,
+    KEY_EVENT, KEY_EVENT_RECORD, STD_ERROR_HANDLE, STD_HANDLE, STD_INPUT_HANDLE, STD_OUTPUT_HANDLE,
 };
 use windows_sys::Win32::UI::Input::KeyboardAndMouse::VIRTUAL_KEY;
 
@@ -33,16 +31,17 @@ use crate::term::{Term, TermTarget};
 mod colors;
 
 #[cfg(feature = "windows-console-colors")]
-pub(crate) use self::colors::*;
+pub use self::colors::*;
 
-pub(crate) const DEFAULT_WIDTH: u16 = 79;
+const ENABLE_VIRTUAL_TERMINAL_PROCESSING: u32 = 0x4;
+pub const DEFAULT_WIDTH: u16 = 79;
 
-pub(crate) fn as_handle(term: &Term) -> HANDLE {
+pub fn as_handle(term: &Term) -> HANDLE {
     // convert between windows_sys::Win32::Foundation::HANDLE and std::os::windows::raw::HANDLE
     term.as_raw_handle() as HANDLE
 }
 
-pub(crate) fn is_a_terminal(out: &Term) -> bool {
+pub fn is_a_terminal(out: &Term) -> bool {
     let (fd, others) = match out.target() {
         TermTarget::Stdout => (STD_OUTPUT_HANDLE, [STD_INPUT_HANDLE, STD_ERROR_HANDLE]),
         TermTarget::Stderr => (STD_ERROR_HANDLE, [STD_INPUT_HANDLE, STD_OUTPUT_HANDLE]),
@@ -65,7 +64,7 @@ pub(crate) fn is_a_terminal(out: &Term) -> bool {
     msys_tty_on(out)
 }
 
-pub(crate) fn is_a_color_terminal(out: &Term) -> bool {
+pub fn is_a_color_terminal(out: &Term) -> bool {
     if !is_a_terminal(out) {
         return false;
     }
@@ -78,56 +77,22 @@ pub(crate) fn is_a_color_terminal(out: &Term) -> bool {
     enable_ansi_on(out)
 }
 
-/// Enables or disables the `mode` flag on the given `HANDLE` and yields the previous mode.
-fn set_console_mode(handle: HANDLE, mode: CONSOLE_MODE, enable: bool) -> Option<CONSOLE_MODE> {
+fn enable_ansi_on(out: &Term) -> bool {
     unsafe {
+        let handle = as_handle(out);
+
         let mut dw_mode = 0;
         if GetConsoleMode(handle, &mut dw_mode) == 0 {
-            return None;
+            return false;
         }
 
-        let new_dw_mode = match enable {
-            true => dw_mode | mode,
-            false => dw_mode & !mode,
-        };
-
-        if SetConsoleMode(handle, new_dw_mode) == 0 {
-            return None;
+        dw_mode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+        if SetConsoleMode(handle, dw_mode) == 0 {
+            return false;
         }
 
-        Some(dw_mode)
+        true
     }
-}
-
-struct ConsoleModeGuard {
-    handle: HANDLE,
-    restore_mode: CONSOLE_MODE,
-}
-
-impl ConsoleModeGuard {
-    fn set(handle: HANDLE, mode: CONSOLE_MODE, enable: bool) -> Option<Self> {
-        Some(ConsoleModeGuard {
-            handle,
-            restore_mode: set_console_mode(handle, mode, enable)?,
-        })
-    }
-}
-
-impl Drop for ConsoleModeGuard {
-    fn drop(&mut self) {
-        unsafe {
-            SetConsoleMode(self.handle, self.restore_mode);
-        }
-    }
-}
-
-fn enable_ansi_on(out: &Term) -> bool {
-    set_console_mode(
-        out.as_raw_handle(),
-        ENABLE_VIRTUAL_TERMINAL_PROCESSING,
-        true,
-    )
-    .is_some()
 }
 
 unsafe fn console_on_any(fds: &[STD_HANDLE]) -> bool {
@@ -141,7 +106,7 @@ unsafe fn console_on_any(fds: &[STD_HANDLE]) -> bool {
     false
 }
 
-pub(crate) fn terminal_size(out: &Term) -> Option<(u16, u16)> {
+pub fn terminal_size(out: &Term) -> Option<(u16, u16)> {
     use windows_sys::Win32::System::Console::SMALL_RECT;
 
     // convert between windows_sys::Win32::Foundation::HANDLE and std::os::windows::raw::HANDLE
@@ -175,7 +140,7 @@ pub(crate) fn terminal_size(out: &Term) -> Option<(u16, u16)> {
     Some((rows, columns))
 }
 
-pub(crate) fn move_cursor_to(out: &Term, x: usize, y: usize) -> io::Result<()> {
+pub fn move_cursor_to(out: &Term, x: usize, y: usize) -> io::Result<()> {
     if out.is_msys_tty {
         return common_term::move_cursor_to(out, x, y);
     }
@@ -193,7 +158,7 @@ pub(crate) fn move_cursor_to(out: &Term, x: usize, y: usize) -> io::Result<()> {
     Ok(())
 }
 
-pub(crate) fn move_cursor_up(out: &Term, n: usize) -> io::Result<()> {
+pub fn move_cursor_up(out: &Term, n: usize) -> io::Result<()> {
     if out.is_msys_tty {
         return common_term::move_cursor_up(out, n);
     }
@@ -204,7 +169,7 @@ pub(crate) fn move_cursor_up(out: &Term, n: usize) -> io::Result<()> {
     Ok(())
 }
 
-pub(crate) fn move_cursor_down(out: &Term, n: usize) -> io::Result<()> {
+pub fn move_cursor_down(out: &Term, n: usize) -> io::Result<()> {
     if out.is_msys_tty {
         return common_term::move_cursor_down(out, n);
     }
@@ -215,7 +180,7 @@ pub(crate) fn move_cursor_down(out: &Term, n: usize) -> io::Result<()> {
     Ok(())
 }
 
-pub(crate) fn move_cursor_left(out: &Term, n: usize) -> io::Result<()> {
+pub fn move_cursor_left(out: &Term, n: usize) -> io::Result<()> {
     if out.is_msys_tty {
         return common_term::move_cursor_left(out, n);
     }
@@ -230,7 +195,7 @@ pub(crate) fn move_cursor_left(out: &Term, n: usize) -> io::Result<()> {
     Ok(())
 }
 
-pub(crate) fn move_cursor_right(out: &Term, n: usize) -> io::Result<()> {
+pub fn move_cursor_right(out: &Term, n: usize) -> io::Result<()> {
     if out.is_msys_tty {
         return common_term::move_cursor_right(out, n);
     }
@@ -245,7 +210,7 @@ pub(crate) fn move_cursor_right(out: &Term, n: usize) -> io::Result<()> {
     Ok(())
 }
 
-pub(crate) fn clear_line(out: &Term) -> io::Result<()> {
+pub fn clear_line(out: &Term) -> io::Result<()> {
     if out.is_msys_tty {
         return common_term::clear_line(out);
     }
@@ -265,7 +230,7 @@ pub(crate) fn clear_line(out: &Term) -> io::Result<()> {
     Ok(())
 }
 
-pub(crate) fn clear_chars(out: &Term, n: usize) -> io::Result<()> {
+pub fn clear_chars(out: &Term, n: usize) -> io::Result<()> {
     if out.is_msys_tty {
         return common_term::clear_chars(out, n);
     }
@@ -285,7 +250,7 @@ pub(crate) fn clear_chars(out: &Term, n: usize) -> io::Result<()> {
     Ok(())
 }
 
-pub(crate) fn clear_screen(out: &Term) -> io::Result<()> {
+pub fn clear_screen(out: &Term) -> io::Result<()> {
     if out.is_msys_tty {
         return common_term::clear_screen(out);
     }
@@ -302,7 +267,7 @@ pub(crate) fn clear_screen(out: &Term) -> io::Result<()> {
     Ok(())
 }
 
-pub(crate) fn clear_to_end_of_screen(out: &Term) -> io::Result<()> {
+pub fn clear_to_end_of_screen(out: &Term) -> io::Result<()> {
     if out.is_msys_tty {
         return common_term::clear_to_end_of_screen(out);
     }
@@ -323,7 +288,7 @@ pub(crate) fn clear_to_end_of_screen(out: &Term) -> io::Result<()> {
     Ok(())
 }
 
-pub(crate) fn show_cursor(out: &Term) -> io::Result<()> {
+pub fn show_cursor(out: &Term) -> io::Result<()> {
     if out.is_msys_tty {
         return common_term::show_cursor(out);
     }
@@ -336,7 +301,7 @@ pub(crate) fn show_cursor(out: &Term) -> io::Result<()> {
     Ok(())
 }
 
-pub(crate) fn hide_cursor(out: &Term) -> io::Result<()> {
+pub fn hide_cursor(out: &Term) -> io::Result<()> {
     if out.is_msys_tty {
         return common_term::hide_cursor(out);
     }
@@ -365,7 +330,7 @@ fn get_console_cursor_info(hand: HANDLE) -> Option<(HANDLE, CONSOLE_CURSOR_INFO)
     }
 }
 
-pub(crate) fn key_from_key_code(code: VIRTUAL_KEY) -> Key {
+pub fn key_from_key_code(code: VIRTUAL_KEY) -> Key {
     use windows_sys::Win32::UI::Input::KeyboardAndMouse;
 
     match code {
@@ -386,7 +351,7 @@ pub(crate) fn key_from_key_code(code: VIRTUAL_KEY) -> Key {
     }
 }
 
-pub(crate) fn read_secure() -> io::Result<String> {
+pub fn read_secure() -> io::Result<String> {
     let mut rv = String::new();
     loop {
         match read_single_key(false)? {
@@ -408,17 +373,8 @@ pub(crate) fn read_secure() -> io::Result<String> {
     Ok(rv)
 }
 
-pub(crate) fn read_single_key(ctrlc_key: bool) -> io::Result<Key> {
-    let key_event = {
-        let _guard = ctrlc_key.then(|| {
-            ConsoleModeGuard::set(
-                unsafe { GetStdHandle(STD_INPUT_HANDLE) },
-                ENABLE_PROCESSED_INPUT,
-                false,
-            )
-        });
-        read_key_event()?
-    };
+pub fn read_single_key(_ctrlc_key: bool) -> io::Result<Key> {
+    let key_event = read_key_event()?;
 
     let unicode_char = unsafe { key_event.uChar.UnicodeChar };
     if unicode_char == 0 {
@@ -437,8 +393,6 @@ pub(crate) fn read_single_key(ctrlc_key: bool) -> io::Result<Key> {
                     Ok(Key::Backspace)
                 } else if c == '\x1B' {
                     Ok(Key::Escape)
-                } else if c == '\x03' && ctrlc_key {
-                    Ok(Key::CtrlC)
                 } else {
                     Ok(Key::Char(c))
                 }
@@ -448,7 +402,7 @@ pub(crate) fn read_single_key(ctrlc_key: bool) -> io::Result<Key> {
                 // Confirm that there is a next character to read.
                 if get_key_event_count()? == 0 {
                     let message = format!(
-                        "Read invalid utf16 {}: {}",
+                        "Read invlid utf16 {}: {}",
                         unicode_char,
                         Utf16TupleError::MissingSecond
                     );
@@ -547,7 +501,7 @@ fn read_key_event() -> io::Result<KEY_EVENT_RECORD> {
     }
 }
 
-pub(crate) fn wants_emoji() -> bool {
+pub fn wants_emoji() -> bool {
     // If WT_SESSION is set, we can assume we're running in the nne
     // Windows Terminal.  The correct way to detect this is not available
     // yet.  See https://github.com/microsoft/terminal/issues/1040
@@ -555,7 +509,7 @@ pub(crate) fn wants_emoji() -> bool {
 }
 
 /// Returns true if there is an MSYS tty on the given handle.
-pub(crate) fn msys_tty_on(term: &Term) -> bool {
+pub fn msys_tty_on(term: &Term) -> bool {
     let handle = term.as_raw_handle();
     unsafe {
         // Check whether the Windows 10 native pty is enabled
@@ -612,7 +566,7 @@ pub(crate) fn msys_tty_on(term: &Term) -> bool {
     }
 }
 
-pub(crate) fn set_title<T: Display>(title: T) {
+pub fn set_title<T: Display>(title: T) {
     let buffer: Vec<u16> = OsStr::new(&format!("{}", title))
         .encode_wide()
         .chain(once(0))

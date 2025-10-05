@@ -2,7 +2,7 @@
 //! threat, but something users of a crate should be warned of/aware of
 
 use crate::{error::Error, warning};
-use serde::{Deserialize, Serialize, de, ser};
+use serde::{de, ser, Deserialize, Serialize};
 use std::{fmt, str::FromStr};
 
 /// Categories of informational vulnerabilities

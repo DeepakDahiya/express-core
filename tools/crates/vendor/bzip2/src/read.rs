@@ -3,8 +3,13 @@
 use std::io::prelude::*;
 use std::io::{self, BufReader};
 
-use crate::bufread;
-use crate::Compression;
+#[cfg(feature = "tokio")]
+use futures::Poll;
+#[cfg(feature = "tokio")]
+use tokio_io::{AsyncRead, AsyncWrite};
+
+use bufread;
+use Compression;
 
 /// A compression stream which wraps an uncompressed stream of data. Compressed
 /// data will be read from the stream.
@@ -71,6 +76,9 @@ impl<R: Read> Read for BzEncoder<R> {
     }
 }
 
+#[cfg(feature = "tokio")]
+impl<R: AsyncRead> AsyncRead for BzEncoder<R> {}
+
 impl<W: Write + Read> Write for BzEncoder<W> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         self.get_mut().write(buf)
@@ -78,6 +86,13 @@ impl<W: Write + Read> Write for BzEncoder<W> {
 
     fn flush(&mut self) -> io::Result<()> {
         self.get_mut().flush()
+    }
+}
+
+#[cfg(feature = "tokio")]
+impl<R: AsyncWrite + Read> AsyncWrite for BzEncoder<R> {
+    fn shutdown(&mut self) -> Poll<(), io::Error> {
+        self.get_mut().shutdown()
     }
 }
 
@@ -132,6 +147,9 @@ impl<R: Read> Read for BzDecoder<R> {
     }
 }
 
+#[cfg(feature = "tokio")]
+impl<R: AsyncRead + Read> AsyncRead for BzDecoder<R> {}
+
 impl<W: Write + Read> Write for BzDecoder<W> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         self.get_mut().write(buf)
@@ -139,6 +157,13 @@ impl<W: Write + Read> Write for BzDecoder<W> {
 
     fn flush(&mut self) -> io::Result<()> {
         self.get_mut().flush()
+    }
+}
+
+#[cfg(feature = "tokio")]
+impl<R: AsyncWrite + Read> AsyncWrite for BzDecoder<R> {
+    fn shutdown(&mut self) -> Poll<(), io::Error> {
+        self.get_mut().shutdown()
     }
 }
 
@@ -186,15 +211,34 @@ impl<R: Read> Read for MultiBzDecoder<R> {
     }
 }
 
+#[cfg(feature = "tokio")]
+impl<R: AsyncRead> AsyncRead for MultiBzDecoder<R> {}
+
+impl<R: Read + Write> Write for MultiBzDecoder<R> {
+    fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
+        self.get_mut().write(buf)
+    }
+
+    fn flush(&mut self) -> io::Result<()> {
+        self.get_mut().flush()
+    }
+}
+
+#[cfg(feature = "tokio")]
+impl<R: AsyncWrite + AsyncRead> AsyncWrite for MultiBzDecoder<R> {
+    fn shutdown(&mut self) -> Poll<(), io::Error> {
+        self.get_mut().shutdown()
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::read::{BzDecoder, BzEncoder, MultiBzDecoder};
-    use crate::Compression;
-    use partial_io::quickcheck_types::{GenInterrupted, PartialWithErrors};
-    use partial_io::PartialRead;
-    use rand::distr::StandardUniform;
-    use rand::{rng, Rng};
-    use std::io::Read;
+    use partial_io::{GenInterrupted, PartialRead, PartialWithErrors};
+    use rand::distributions::Standard;
+    use rand::{thread_rng, Rng};
+    use read::{BzDecoder, BzEncoder, MultiBzDecoder};
+    use std::io::prelude::*;
+    use Compression;
 
     #[test]
     fn smoke() {
@@ -225,7 +269,7 @@ mod tests {
         let mut d = BzDecoder::new(c);
         let mut data = vec![];
         d.read_to_end(&mut data).unwrap();
-        assert!(data == m[..]);
+        assert!(data == &m[..]);
     }
 
     #[test]
@@ -236,18 +280,21 @@ mod tests {
         let mut result = Vec::new();
         c.read_to_end(&mut result).unwrap();
 
-        let v = rng()
-            .sample_iter(&StandardUniform)
+        let v = thread_rng()
+            .sample_iter(&Standard)
             .take(1024)
-            .collect::<Vec<u8>>();
+            .collect::<Vec<_>>();
         for _ in 0..200 {
-            result.extend(v.iter().copied());
+            result.extend(v.iter().map(|x: &u8| *x));
         }
 
         let mut d = BzDecoder::new(&result[..]);
-        let mut data = vec![0; m.len()];
+        let mut data = Vec::with_capacity(m.len());
+        unsafe {
+            data.set_len(m.len());
+        }
         assert!(d.read(&mut data).unwrap() == m.len());
-        assert!(data == m[..]);
+        assert!(data == &m[..]);
     }
 
     #[test]
@@ -301,7 +348,7 @@ mod tests {
         let mut r = BzDecoder::new(r);
         let mut v2 = Vec::new();
         r.read_to_end(&mut v2).unwrap();
-        assert!(v2.is_empty());
+        assert!(v2.len() == 0);
     }
 
     #[test]
@@ -319,7 +366,7 @@ mod tests {
 
     #[test]
     fn qc_partial() {
-        ::quickcheck::quickcheck(test as fn(_, _, _) -> _);
+        quickcheck6::quickcheck(test as fn(_, _, _) -> _);
 
         fn test(
             v: Vec<u8>,

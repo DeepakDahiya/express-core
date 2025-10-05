@@ -117,7 +117,9 @@ mod remote {
 }
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod log;
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod peel;

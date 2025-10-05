@@ -13,9 +13,6 @@ fn tcp_doesnt_block() {
     let listener = {
         let _enter = rt.enter();
         let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
-
-        listener.set_nonblocking(true).unwrap();
-
         TcpListener::from_std(listener).unwrap()
     };
 
@@ -36,9 +33,6 @@ fn drop_wakes() {
     let listener = {
         let _enter = rt.enter();
         let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
-
-        listener.set_nonblocking(true).unwrap();
-
         TcpListener::from_std(listener).unwrap()
     };
 

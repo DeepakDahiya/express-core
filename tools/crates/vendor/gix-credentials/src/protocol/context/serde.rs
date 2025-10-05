@@ -49,6 +49,7 @@ mod write {
 }
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod decode {
     use bstr::{BString, ByteSlice};
 

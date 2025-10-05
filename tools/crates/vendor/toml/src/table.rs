@@ -1,3 +1,5 @@
+use std::fmt;
+
 use serde::de;
 use serde::ser;
 
@@ -40,8 +42,8 @@ impl Table {
 }
 
 #[cfg(feature = "display")]
-impl std::fmt::Display for Table {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+impl fmt::Display for Table {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         crate::ser::to_string(self)
             .expect("Unable to represent value as string")
             .fmt(f)

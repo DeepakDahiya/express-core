@@ -2,7 +2,7 @@ use std::iter::FromIterator;
 
 use crate::{Array, Item, Table};
 
-/// A top-level sequence of [`Table`]s, each under their own header
+/// Type representing a TOML array of tables
 #[derive(Clone, Debug, Default)]
 pub struct ArrayOfTables {
     // Always Vec<Item::Table>, just `Item` to make `Index` work
@@ -109,11 +109,11 @@ impl ArrayOfTables {
     }
 }
 
-/// An iterator type over [`ArrayOfTables`]'s [`Table`]s
+/// An iterator type over `ArrayOfTables`'s values.
 pub type ArrayOfTablesIter<'a> = Box<dyn Iterator<Item = &'a Table> + 'a>;
-/// An iterator type over [`ArrayOfTables`]'s [`Table`]s
+/// An iterator type over `ArrayOfTables`'s values.
 pub type ArrayOfTablesIterMut<'a> = Box<dyn Iterator<Item = &'a mut Table> + 'a>;
-/// An iterator type over [`ArrayOfTables`]'s [`Table`]s
+/// An iterator type over `ArrayOfTables`'s values.
 pub type ArrayOfTablesIntoIter = Box<dyn Iterator<Item = Table>>;
 
 impl Extend<Table> for ArrayOfTables {

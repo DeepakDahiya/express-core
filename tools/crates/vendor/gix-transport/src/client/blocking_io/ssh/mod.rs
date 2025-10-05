@@ -1,11 +1,8 @@
-use std::{
-    ffi::OsStr,
-    process::{Command, Stdio},
-};
+use std::process::Stdio;
 
-use gix_url::{ArgumentSafety::*, Url};
+use gix_url::ArgumentSafety::*;
 
-use crate::{client::blocking_io::file::SpawnProcessOnDemand, Protocol};
+use crate::{client::blocking_io, Protocol};
 
 /// The error used in [`connect()`].
 #[derive(Debug, thiserror::Error)]
@@ -39,6 +36,7 @@ pub enum ProgramKind {
 mod program_kind;
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod invocation {
     use std::ffi::OsString;
 
@@ -61,6 +59,7 @@ pub mod invocation {
 }
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod connect {
     use std::ffi::{OsStr, OsString};
 
@@ -103,18 +102,40 @@ pub mod connect {
 /// If `trace` is `true`, all packetlines received or sent will be passed to the facilities of the `gix-trace` crate.
 #[allow(clippy::result_large_err)]
 pub fn connect(
-    url: Url,
+    url: gix_url::Url,
     desired_version: Protocol,
     options: connect::Options,
     trace: bool,
-) -> Result<SpawnProcessOnDemand, Error> {
+) -> Result<blocking_io::file::SpawnProcessOnDemand, Error> {
     if url.scheme != gix_url::Scheme::Ssh || url.host().is_none() {
         return Err(Error::UnsupportedScheme(url));
     }
     let ssh_cmd = options.ssh_command();
-    let kind = determine_client_kind(options.kind, ssh_cmd, &url, options.disallow_shell)?;
+    let mut kind = options.kind.unwrap_or_else(|| ProgramKind::from(ssh_cmd));
+    if options.kind.is_none() && kind == ProgramKind::Simple {
+        let mut cmd = std::process::Command::from(
+            gix_command::prepare(ssh_cmd)
+                .stderr(Stdio::null())
+                .stdout(Stdio::null())
+                .stdin(Stdio::null())
+                .with_shell()
+                .arg("-G")
+                .arg(match url.host_as_argument() {
+                    Usable(host) => host,
+                    Dangerous(host) => Err(Error::AmbiguousHostName { host: host.into() })?,
+                    Absent => panic!("BUG: host should always be present in SSH URLs"),
+                }),
+        );
+        gix_features::trace::debug!(cmd = ?cmd, "invoking `ssh` for feature check");
+        kind = if cmd.status().ok().map_or(false, |status| status.success()) {
+            ProgramKind::Ssh
+        } else {
+            ProgramKind::Simple
+        };
+    }
+
     let path = gix_url::expand_path::for_shell(url.path.clone());
-    Ok(SpawnProcessOnDemand::new_ssh(
+    Ok(blocking_io::file::SpawnProcessOnDemand::new_ssh(
         url,
         ssh_cmd,
         path,
@@ -123,45 +144,6 @@ pub fn connect(
         desired_version,
         trace,
     ))
-}
-
-#[allow(clippy::result_large_err)]
-fn determine_client_kind(
-    known_kind: Option<ProgramKind>,
-    ssh_cmd: &OsStr,
-    url: &Url,
-    disallow_shell: bool,
-) -> Result<ProgramKind, Error> {
-    let mut kind = known_kind.unwrap_or_else(|| ProgramKind::from(ssh_cmd));
-    if known_kind.is_none() && kind == ProgramKind::Simple {
-        let mut cmd = build_client_feature_check_command(ssh_cmd, url, disallow_shell)?;
-        gix_features::trace::debug!(cmd = ?cmd, "invoking `ssh` for feature check");
-        kind = if cmd.status().ok().is_some_and(|status| status.success()) {
-            ProgramKind::Ssh
-        } else {
-            ProgramKind::Simple
-        };
-    }
-    Ok(kind)
-}
-
-#[allow(clippy::result_large_err)]
-fn build_client_feature_check_command(ssh_cmd: &OsStr, url: &Url, disallow_shell: bool) -> Result<Command, Error> {
-    let mut prepare = gix_command::prepare(ssh_cmd)
-        .stderr(Stdio::null())
-        .stdout(Stdio::null())
-        .stdin(Stdio::null())
-        .command_may_be_shell_script()
-        .arg("-G")
-        .arg(match url.host_as_argument() {
-            Usable(host) => host,
-            Dangerous(host) => Err(Error::AmbiguousHostName { host: host.into() })?,
-            Absent => panic!("BUG: host should always be present in SSH URLs"),
-        });
-    if disallow_shell {
-        prepare.use_shell = false;
-    }
-    Ok(prepare.into())
 }
 
 #[cfg(test)]

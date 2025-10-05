@@ -16,9 +16,7 @@ use crate::formatting::Formattable;
 use crate::internal_macros::{const_try, const_try_opt};
 #[cfg(feature = "parsing")]
 use crate::parsing::Parsable;
-use crate::{
-    error, util, Date, Duration, Month, OffsetDateTime, Time, UtcDateTime, UtcOffset, Weekday,
-};
+use crate::{error, util, Date, Duration, Month, OffsetDateTime, Time, UtcOffset, Weekday};
 
 /// Combined date and time.
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
@@ -106,6 +104,7 @@ impl PrimitiveDateTime {
         Self { date, time }
     }
 
+    // region: component getters
     /// Get the [`Date`] component of the `PrimitiveDateTime`.
     ///
     /// ```rust
@@ -125,7 +124,9 @@ impl PrimitiveDateTime {
     pub const fn time(self) -> Time {
         self.time
     }
+    // endregion component getters
 
+    // region: date getters
     /// Get the year of the date.
     ///
     /// ```rust
@@ -313,7 +314,9 @@ impl PrimitiveDateTime {
     pub const fn to_julian_day(self) -> i32 {
         self.date().to_julian_day()
     }
+    // endregion date getters
 
+    // region: time getters
     /// Get the clock hour, minute, and second.
     ///
     /// ```rust
@@ -450,7 +453,9 @@ impl PrimitiveDateTime {
     pub const fn nanosecond(self) -> u32 {
         self.time().nanosecond()
     }
+    // endregion time getters
 
+    // region: attach offset
     /// Assuming that the existing `PrimitiveDateTime` represents a moment in the provided
     /// [`UtcOffset`], return an [`OffsetDateTime`].
     ///
@@ -483,27 +488,12 @@ impl PrimitiveDateTime {
     ///     1_546_300_800,
     /// );
     /// ```
-    ///
-    /// **Note**: You may want a [`UtcDateTime`] instead, which can be obtained with the
-    /// [`PrimitiveDateTime::as_utc`] method.
     pub const fn assume_utc(self) -> OffsetDateTime {
         self.assume_offset(UtcOffset::UTC)
     }
+    // endregion attach offset
 
-    /// Assuming that the existing `PrimitiveDateTime` represents a moment in UTC, return a
-    /// [`UtcDateTime`].
-    ///
-    /// ```rust
-    /// # use time_macros::datetime;
-    /// assert_eq!(
-    ///     datetime!(2019-01-01 0:00).as_utc().unix_timestamp(),
-    ///     1_546_300_800,
-    /// );
-    /// ```
-    pub const fn as_utc(self) -> UtcDateTime {
-        UtcDateTime::from_primitive(self)
-    }
-
+    // region: checked arithmetic
     /// Computes `self + duration`, returning `None` if an overflow occurred.
     ///
     /// ```
@@ -563,7 +553,9 @@ impl PrimitiveDateTime {
             time,
         })
     }
+    // endregion: checked arithmetic
 
+    // region: saturating arithmetic
     /// Computes `self + duration`, saturating value on overflow.
     ///
     /// ```
@@ -623,8 +615,10 @@ impl PrimitiveDateTime {
             Self::MIN
         }
     }
+    // endregion: saturating arithmetic
 }
 
+// region: replacement
 /// Methods that replace part of the `PrimitiveDateTime`.
 impl PrimitiveDateTime {
     /// Replace the time, preserving the date.
@@ -848,14 +842,16 @@ impl PrimitiveDateTime {
         })
     }
 }
+// endregion replacement
 
+// region: formatting & parsing
 #[cfg(feature = "formatting")]
 impl PrimitiveDateTime {
     /// Format the `PrimitiveDateTime` using the provided [format
     /// description](crate::format_description).
     pub fn format_into(
         self,
-        output: &mut (impl io::Write + ?Sized),
+        output: &mut impl io::Write,
         format: &(impl Formattable + ?Sized),
     ) -> Result<usize, error::Format> {
         format.format_into(output, Some(self.date), Some(self.time), None)
@@ -933,7 +929,9 @@ impl fmt::Debug for PrimitiveDateTime {
         fmt::Display::fmt(self, f)
     }
 }
+// endregion formatting & parsing
 
+// region: trait impls
 impl Add<Duration> for PrimitiveDateTime {
     type Output = Self;
 
@@ -1048,3 +1046,4 @@ impl Sub for PrimitiveDateTime {
         (self.date - rhs.date) + (self.time - rhs.time)
     }
 }
+// endregion trait impls

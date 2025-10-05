@@ -13,10 +13,9 @@ use once_cell::sync::Lazy;
 use windows_sys::Win32::Networking::WinSock;
 
 use crate::{
-    EcnCodepoint, IO_ERROR_LOG_INTERVAL, RecvMeta, Transmit, UdpSockRef,
     cmsg::{self, CMsgHdr},
     log::debug,
-    log_sendmsg_error,
+    log_sendmsg_error, EcnCodepoint, RecvMeta, Transmit, UdpSockRef, IO_ERROR_LOG_INTERVAL,
 };
 
 /// QUIC-friendly UDP socket for Windows
@@ -82,12 +81,7 @@ impl UdpSocketState {
                 WinSock::IP_PKTINFO,
                 OPTION_ON,
             )?;
-            set_socket_option(
-                &*socket.0,
-                WinSock::IPPROTO_IP,
-                WinSock::IP_RECVECN,
-                OPTION_ON,
-            )?;
+            set_socket_option(&*socket.0, WinSock::IPPROTO_IP, WinSock::IP_ECN, OPTION_ON)?;
         }
 
         if is_ipv6 {
@@ -108,7 +102,7 @@ impl UdpSocketState {
             set_socket_option(
                 &*socket.0,
                 WinSock::IPPROTO_IPV6,
-                WinSock::IPV6_RECVECN,
+                WinSock::IPV6_ECN,
                 OPTION_ON,
             )?;
         }
@@ -290,30 +284,6 @@ impl UdpSocketState {
     pub fn gro_segments(&self) -> usize {
         // Arbitrary reasonable value inspired by Linux and msquic
         64
-    }
-
-    /// Resize the send buffer of `socket` to `bytes`
-    #[inline]
-    pub fn set_send_buffer_size(&self, socket: UdpSockRef<'_>, bytes: usize) -> io::Result<()> {
-        socket.0.set_send_buffer_size(bytes)
-    }
-
-    /// Resize the receive buffer of `socket` to `bytes`
-    #[inline]
-    pub fn set_recv_buffer_size(&self, socket: UdpSockRef<'_>, bytes: usize) -> io::Result<()> {
-        socket.0.set_recv_buffer_size(bytes)
-    }
-
-    /// Get the size of the `socket` send buffer
-    #[inline]
-    pub fn send_buffer_size(&self, socket: UdpSockRef<'_>) -> io::Result<usize> {
-        socket.0.send_buffer_size()
-    }
-
-    /// Get the size of the `socket` receive buffer
-    #[inline]
-    pub fn recv_buffer_size(&self, socket: UdpSockRef<'_>) -> io::Result<usize> {
-        socket.0.recv_buffer_size()
     }
 
     #[inline]

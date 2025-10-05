@@ -77,7 +77,7 @@ impl file::Store {
     }
 }
 
-impl<'p> Transaction<'_, 'p> {
+impl<'s, 'p> Transaction<'s, 'p> {
     /// Configure the way packed refs are handled during the transaction
     pub fn packed_refs(mut self, packed_refs: PackedRefs<'p>) -> Self {
         self.packed_refs = packed_refs;
@@ -95,7 +95,9 @@ impl std::fmt::Debug for Transaction<'_, '_> {
 }
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod prepare;
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod commit;

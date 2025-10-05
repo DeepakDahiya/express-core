@@ -14,7 +14,6 @@ fn main() {
         let loc = tame_index::IndexLocation {
             url: tame_index::IndexUrl::CratesIoSparse,
             root: tame_index::IndexPath::Exact(bdir.path().to_owned().try_into().unwrap()),
-            cargo_version: Some(semver::Version::new(1, 85, 0)),
         };
 
         tame_index::index::RemoteSparseIndex::new(
@@ -29,7 +28,6 @@ fn main() {
         let loc = tame_index::IndexLocation {
             url: tame_index::IndexUrl::CratesIoSparse,
             root: tame_index::IndexPath::Exact(adir.path().to_owned().try_into().unwrap()),
-            cargo_version: Some(semver::Version::new(1, 85, 0)),
         };
 
         tame_index::index::AsyncRemoteSparseIndex::new(

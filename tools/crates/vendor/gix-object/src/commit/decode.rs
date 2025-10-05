@@ -2,25 +2,28 @@ use std::borrow::Cow;
 
 use smallvec::SmallVec;
 use winnow::{
-    combinator::{alt, eof, opt, preceded, repeat, terminated},
+    combinator::{alt, eof, opt, preceded, repeat, rest, terminated},
     error::{AddContext, ParserError, StrContext},
     prelude::*,
-    token::{rest, take_till},
+    stream::Stream as _,
+    token::take_till,
 };
 
 use crate::{parse, parse::NL, BStr, ByteSlice, CommitRef};
 
 pub fn message<'a, E: ParserError<&'a [u8]> + AddContext<&'a [u8], StrContext>>(
     i: &mut &'a [u8],
-) -> ModalResult<&'a BStr, E> {
+) -> PResult<&'a BStr, E> {
     if i.is_empty() {
         // newline + [message]
         let start = i.checkpoint();
-        return Err(winnow::error::ErrMode::from_input(i).add_context(
-            i,
-            &start,
-            StrContext::Expected("newline + <message>".into()),
-        ));
+        return Err(
+            winnow::error::ErrMode::from_error_kind(i, winnow::error::ErrorKind::Eof).add_context(
+                i,
+                &start,
+                StrContext::Expected("newline + <message>".into()),
+            ),
+        );
     }
     preceded(NL, rest.map(ByteSlice::as_bstr))
         .context(StrContext::Expected(
@@ -31,7 +34,7 @@ pub fn message<'a, E: ParserError<&'a [u8]> + AddContext<&'a [u8], StrContext>>(
 
 pub fn commit<'a, E: ParserError<&'a [u8]> + AddContext<&'a [u8], StrContext>>(
     i: &mut &'a [u8],
-) -> ModalResult<CommitRef<'a>, E> {
+) -> PResult<CommitRef<'a>, E> {
     (
         (|i: &mut _| parse::header_field(i, b"tree", parse::hex_hash))
             .context(StrContext::Expected("tree <40 lowercase hex char>".into())),

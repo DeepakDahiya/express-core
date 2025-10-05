@@ -10,6 +10,10 @@ use crate::io;
 use crate::rand::GetRandomFlags;
 
 #[inline]
-pub(crate) unsafe fn getrandom(buf: (*mut u8, usize), flags: GetRandomFlags) -> io::Result<usize> {
-    ret_usize(syscall!(__NR_getrandom, buf.0, pass_usize(buf.1), flags))
+pub(crate) unsafe fn getrandom(
+    buf: *mut u8,
+    cap: usize,
+    flags: GetRandomFlags,
+) -> io::Result<usize> {
+    ret_usize(syscall!(__NR_getrandom, buf, pass_usize(cap), flags))
 }

@@ -32,8 +32,6 @@ pub(crate) struct Builtins<'a> {
     pub is_complete: bool,
     pub destroy: bool,
     pub deleter_if: bool,
-    pub shared_ptr: bool,
-    pub alignmax: bool,
     pub content: Content<'a>,
 }
 
@@ -62,7 +60,6 @@ pub(super) fn write(out: &mut OutFile) {
         include.array = true;
         include.cstdint = true;
         include.string = true;
-        include.string_view = true;
         builtin.friend_impl = true;
     }
 
@@ -89,7 +86,6 @@ pub(super) fn write(out: &mut OutFile) {
         include.cstddef = true;
         include.cstdint = true;
         include.iterator = true;
-        include.ranges = true;
         include.stdexcept = true;
         include.type_traits = true;
         builtin.friend_impl = true;
@@ -129,12 +125,6 @@ pub(super) fn write(out: &mut OutFile) {
     if builtin.layout {
         include.type_traits = true;
         include.cstddef = true;
-        builtin.is_complete = true;
-    }
-
-    if builtin.shared_ptr {
-        include.memory = true;
-        include.type_traits = true;
         builtin.is_complete = true;
     }
 
@@ -234,34 +224,6 @@ pub(super) fn write(out: &mut OutFile) {
         writeln!(out, "  void *ptr;");
         writeln!(out, "  ::std::size_t len;");
         writeln!(out, "}};");
-    }
-
-    if builtin.alignmax {
-        include.cstddef = true;
-        out.next_section();
-        writeln!(out, "#ifndef CXXBRIDGE_ALIGNMAX");
-        writeln!(out, "#define CXXBRIDGE_ALIGNMAX");
-        // This would be cleaner as the following, but GCC does not implement
-        // that correctly. <https://gcc.gnu.org/bugzilla/show_bug.cgi?id=64236>
-        //
-        //     template <::std::size_t... N>
-        //     class alignas(N...) alignmax {};
-        //
-        // Next, it could be this, but MSVC does not implement this correctly.
-        //
-        //     template <::std::size_t... N>
-        //     class alignmax { alignas(N...) union {} members; };
-        //
-        writeln!(out, "template <::std::size_t N>");
-        writeln!(out, "class alignas(N) aligned {{}};");
-        writeln!(out, "template <typename... T>");
-        writeln!(
-            out,
-            "class alignmax_t {{ alignas(T...) union {{}} members; }};",
-        );
-        writeln!(out, "template <::std::size_t... N>");
-        writeln!(out, "using alignmax = alignmax_t<aligned<N>...>;");
-        writeln!(out, "#endif // CXXBRIDGE_ALIGNMAX");
     }
 
     out.end_block(Block::Namespace("repr"));
@@ -416,39 +378,6 @@ pub(super) fn write(out: &mut OutFile) {
             out,
             "  template <typename T> void operator()(T *ptr) {{ ptr->~T(); }}",
         );
-        writeln!(out, "}};");
-    }
-
-    if builtin.shared_ptr {
-        out.next_section();
-        writeln!(
-            out,
-            "template <typename T, bool = ::rust::detail::is_complete<T>::value>",
-        );
-        writeln!(out, "struct is_destructible : ::std::false_type {{}};");
-        writeln!(out, "template <typename T>");
-        writeln!(
-            out,
-            "struct is_destructible<T, true> : ::std::is_destructible<T> {{}};",
-        );
-        writeln!(out, "template <typename T>");
-        writeln!(
-            out,
-            "struct is_destructible<T[], false> : is_destructible<T> {{}};",
-        );
-        writeln!(
-            out,
-            "template <typename T, bool = ::rust::is_destructible<T>::value>",
-        );
-        writeln!(out, "struct shared_ptr_if_destructible {{");
-        writeln!(out, "  explicit shared_ptr_if_destructible(typename ::std::shared_ptr<T>::element_type *) {{}}");
-        writeln!(out, "}};");
-        writeln!(out, "template <typename T>");
-        writeln!(
-            out,
-            "struct shared_ptr_if_destructible<T, true> : ::std::shared_ptr<T> {{",
-        );
-        writeln!(out, "  using ::std::shared_ptr<T>::shared_ptr;");
         writeln!(out, "}};");
     }
 

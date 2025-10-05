@@ -1096,19 +1096,17 @@ mod tests {
             {
                 let (year, month, day, hour, min, sec, nano) = datetime;
                 let timestamp = Timestamp::new(unix_sec, unix_nano).unwrap();
-                let info = tz.to_offset_info(timestamp);
+                let (got_offset, _, got_abbrev) = tz.to_offset(timestamp);
                 assert_eq!(
-                    info.offset(),
-                    offset,
+                    got_offset, offset,
                     "\nTZ={tzname}, timestamp({unix_sec}, {unix_nano})",
                 );
                 assert_eq!(
-                    info.abbreviation(),
-                    abbrev,
+                    got_abbrev, abbrev,
                     "\nTZ={tzname}, timestamp({unix_sec}, {unix_nano})",
                 );
                 assert_eq!(
-                    info.offset().to_datetime(timestamp),
+                    got_offset.to_datetime(timestamp),
                     date(year, month, day).at(hour, min, sec, nano),
                     "\nTZ={tzname}, timestamp({unix_sec}, {unix_nano})",
                 );
@@ -1117,7 +1115,6 @@ mod tests {
     }
 
     #[test]
-    #[cfg(not(miri))]
     fn read_all_time_zones() {
         let db = ConcatenatedTzif::open(ANDROID_CONCATENATED_TZIF).unwrap();
         let available = db.available(&mut alloc::vec![]).unwrap();

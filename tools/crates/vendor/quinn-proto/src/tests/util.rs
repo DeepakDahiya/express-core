@@ -1,6 +1,6 @@
 use std::{
     cmp,
-    collections::{HashMap, HashSet, VecDeque},
+    collections::{HashMap, VecDeque},
     env,
     io::{self, Write},
     mem,
@@ -14,13 +14,13 @@ use assert_matches::assert_matches;
 use bytes::BytesMut;
 use lazy_static::lazy_static;
 use rustls::{
-    KeyLogFile,
     client::WebPkiServerVerifier,
     pki_types::{CertificateDer, PrivateKeyDer},
+    KeyLogFile,
 };
 use tracing::{info_span, trace};
 
-use super::crypto::rustls::{QuicClientConfig, QuicServerConfig, configured_provider};
+use super::crypto::rustls::{configured_provider, QuicClientConfig, QuicServerConfig};
 use super::*;
 use crate::{Duration, Instant};
 
@@ -81,7 +81,7 @@ impl Pair {
             epoch: now,
             time: now,
             mtu: DEFAULT_MTU,
-            latency: Duration::ZERO,
+            latency: Duration::new(0, 0),
             spins: 0,
             last_spin: false,
             congestion_experienced: false,
@@ -225,7 +225,7 @@ impl Pair {
         );
         assert_matches!(
             self.client_conn_mut(client_ch).poll(),
-            Some(Event::Connected)
+            Some(Event::Connected { .. })
         );
         assert_matches!(
             self.server_conn_mut(server_ch).poll(),
@@ -233,7 +233,7 @@ impl Pair {
         );
         assert_matches!(
             self.server_conn_mut(server_ch).poll(),
-            Some(Event::Connected)
+            Some(Event::Connected { .. })
         );
     }
 
@@ -297,24 +297,17 @@ pub(super) struct TestEndpoint {
     conn_events: HashMap<ConnectionHandle, VecDeque<ConnectionEvent>>,
     pub(super) captured_packets: Vec<Vec<u8>>,
     pub(super) capture_inbound_packets: bool,
-    pub(super) handle_incoming: Box<dyn FnMut(&Incoming) -> IncomingConnectionBehavior>,
+    pub(super) incoming_connection_behavior: IncomingConnectionBehavior,
     pub(super) waiting_incoming: Vec<Incoming>,
 }
 
 #[derive(Debug, Copy, Clone)]
 pub(super) enum IncomingConnectionBehavior {
-    Accept,
-    Reject,
-    Retry,
+    AcceptAll,
+    RejectAll,
+    Validate,
+    ValidateThenReject,
     Wait,
-}
-
-pub(super) fn validate_incoming(incoming: &Incoming) -> IncomingConnectionBehavior {
-    if incoming.remote_address_validated() {
-        IncomingConnectionBehavior::Accept
-    } else {
-        IncomingConnectionBehavior::Retry
-    }
 }
 
 impl TestEndpoint {
@@ -322,7 +315,7 @@ impl TestEndpoint {
         let socket = if env::var_os("SSLKEYLOGFILE").is_some() {
             let socket = UdpSocket::bind(addr).expect("failed to bind UDP socket");
             socket
-                .set_read_timeout(Some(Duration::from_millis(10)))
+                .set_read_timeout(Some(Duration::new(0, 10_000_000)))
                 .unwrap();
             Some(socket)
         } else {
@@ -341,7 +334,7 @@ impl TestEndpoint {
             conn_events: HashMap::default(),
             captured_packets: Vec::new(),
             capture_inbound_packets: false,
-            handle_incoming: Box::new(|_| IncomingConnectionBehavior::Accept),
+            incoming_connection_behavior: IncomingConnectionBehavior::AcceptAll,
             waiting_incoming: Vec::new(),
         }
     }
@@ -363,7 +356,7 @@ impl TestEndpoint {
         let buffer_size = self.endpoint.config().get_max_udp_payload_size() as usize;
         let mut buf = Vec::with_capacity(buffer_size);
 
-        while self.inbound.front().is_some_and(|x| x.0 <= now) {
+        while self.inbound.front().map_or(false, |x| x.0 <= now) {
             let (recv_time, ecn, packet) = self.inbound.pop_front().unwrap();
             if let Some(event) = self
                 .endpoint
@@ -371,15 +364,26 @@ impl TestEndpoint {
             {
                 match event {
                     DatagramEvent::NewConnection(incoming) => {
-                        match (self.handle_incoming)(&incoming) {
-                            IncomingConnectionBehavior::Accept => {
+                        match self.incoming_connection_behavior {
+                            IncomingConnectionBehavior::AcceptAll => {
                                 let _ = self.try_accept(incoming, now);
                             }
-                            IncomingConnectionBehavior::Reject => {
+                            IncomingConnectionBehavior::RejectAll => {
                                 self.reject(incoming);
                             }
-                            IncomingConnectionBehavior::Retry => {
-                                self.retry(incoming);
+                            IncomingConnectionBehavior::Validate => {
+                                if incoming.remote_address_validated() {
+                                    let _ = self.try_accept(incoming, now);
+                                } else {
+                                    self.retry(incoming);
+                                }
+                            }
+                            IncomingConnectionBehavior::ValidateThenReject => {
+                                if incoming.remote_address_validated() {
+                                    self.reject(incoming);
+                                } else {
+                                    self.retry(incoming);
+                                }
                             }
                             IncomingConnectionBehavior::Wait => {
                                 self.waiting_incoming.push(incoming);
@@ -411,7 +415,7 @@ impl TestEndpoint {
         loop {
             let mut endpoint_events: Vec<(ConnectionHandle, EndpointEvent)> = vec![];
             for (ch, conn) in self.connections.iter_mut() {
-                if self.timeout.is_some_and(|x| x <= now) {
+                if self.timeout.map_or(false, |x| x <= now) {
                     self.timeout = None;
                     conn.handle_timeout(now);
                 }
@@ -560,26 +564,14 @@ impl Write for TestWriter {
 }
 
 pub(super) fn server_config() -> ServerConfig {
-    let mut config = ServerConfig::with_crypto(Arc::new(server_crypto()));
-    if !cfg!(feature = "bloom") {
-        config
-            .validation_token
-            .sent(2)
-            .log(Arc::new(SimpleTokenLog::default()));
-    }
-    config
+    ServerConfig::with_crypto(Arc::new(server_crypto()))
 }
 
 pub(super) fn server_config_with_cert(
     cert: CertificateDer<'static>,
     key: PrivateKeyDer<'static>,
 ) -> ServerConfig {
-    let mut config = ServerConfig::with_crypto(Arc::new(server_crypto_with_cert(cert, key)));
-    config
-        .validation_token
-        .sent(2)
-        .log(Arc::new(SimpleTokenLog::default()));
-    config
+    ServerConfig::with_crypto(Arc::new(server_crypto_with_cert(cert, key)))
 }
 
 pub(super) fn server_crypto() -> QuicServerConfig {
@@ -604,7 +596,7 @@ fn server_crypto_inner(
     let (cert, key) = identity.unwrap_or_else(|| {
         (
             CERTIFIED_KEY.cert.der().clone(),
-            PrivateKeyDer::Pkcs8(CERTIFIED_KEY.signing_key.serialize_der().into()),
+            PrivateKeyDer::Pkcs8(CERTIFIED_KEY.key_pair.serialize_der().into()),
         )
     });
 
@@ -722,24 +714,6 @@ fn set_congestion_experienced(
 lazy_static! {
     pub static ref SERVER_PORTS: Mutex<RangeFrom<u16>> = Mutex::new(4433..);
     pub static ref CLIENT_PORTS: Mutex<RangeFrom<u16>> = Mutex::new(44433..);
-    pub(crate) static ref CERTIFIED_KEY: rcgen::CertifiedKey<rcgen::KeyPair> =
+    pub(crate) static ref CERTIFIED_KEY: rcgen::CertifiedKey =
         rcgen::generate_simple_self_signed(vec!["localhost".into()]).unwrap();
-}
-
-#[derive(Default)]
-struct SimpleTokenLog(Mutex<HashSet<u128>>);
-
-impl TokenLog for SimpleTokenLog {
-    fn check_and_insert(
-        &self,
-        nonce: u128,
-        _issued: SystemTime,
-        _lifetime: Duration,
-    ) -> Result<(), TokenReuseError> {
-        if self.0.lock().unwrap().insert(nonce) {
-            Ok(())
-        } else {
-            Err(TokenReuseError)
-        }
-    }
 }

@@ -2,12 +2,10 @@ use super::DecodeEntry;
 
 #[cfg(feature = "pack-cache-lru-dynamic")]
 mod memory {
-    use std::num::NonZeroUsize;
-
-    use clru::WeightScale;
-
     use super::DecodeEntry;
     use crate::cache::set_vec_to_slice;
+    use clru::WeightScale;
+    use std::num::NonZeroUsize;
 
     struct Entry {
         data: Vec<u8>,
@@ -73,9 +71,9 @@ mod memory {
                 Some((e.kind, e.compressed_size))
             });
             if res.is_some() {
-                self.debug.hit();
+                self.debug.hit()
             } else {
-                self.debug.miss();
+                self.debug.miss()
             }
             res
         }
@@ -178,9 +176,9 @@ mod _static {
                 }
             });
             if res.is_some() {
-                self.debug.hit();
+                self.debug.hit()
             } else {
-                self.debug.miss();
+                self.debug.miss()
             }
             res
         }

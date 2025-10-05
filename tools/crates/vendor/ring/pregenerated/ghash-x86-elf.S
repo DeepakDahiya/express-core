@@ -75,6 +75,60 @@ gcm_init_clmul:
 	movdqu	%xmm4,32(%edx)
 	ret
 .size	gcm_init_clmul,.-.L_gcm_init_clmul_begin
+.globl	gcm_gmult_clmul
+.hidden	gcm_gmult_clmul
+.type	gcm_gmult_clmul,@function
+.align	16
+gcm_gmult_clmul:
+.L_gcm_gmult_clmul_begin:
+	movl	4(%esp),%eax
+	movl	8(%esp),%edx
+	call	.L001pic
+.L001pic:
+	popl	%ecx
+	leal	.Lbswap-.L001pic(%ecx),%ecx
+	movdqu	(%eax),%xmm0
+	movdqa	(%ecx),%xmm5
+	movups	(%edx),%xmm2
+.byte	102,15,56,0,197
+	movups	32(%edx),%xmm4
+	movdqa	%xmm0,%xmm1
+	pshufd	$78,%xmm0,%xmm3
+	pxor	%xmm0,%xmm3
+.byte	102,15,58,68,194,0
+.byte	102,15,58,68,202,17
+.byte	102,15,58,68,220,0
+	xorps	%xmm0,%xmm3
+	xorps	%xmm1,%xmm3
+	movdqa	%xmm3,%xmm4
+	psrldq	$8,%xmm3
+	pslldq	$8,%xmm4
+	pxor	%xmm3,%xmm1
+	pxor	%xmm4,%xmm0
+	movdqa	%xmm0,%xmm4
+	movdqa	%xmm0,%xmm3
+	psllq	$5,%xmm0
+	pxor	%xmm0,%xmm3
+	psllq	$1,%xmm0
+	pxor	%xmm3,%xmm0
+	psllq	$57,%xmm0
+	movdqa	%xmm0,%xmm3
+	pslldq	$8,%xmm0
+	psrldq	$8,%xmm3
+	pxor	%xmm4,%xmm0
+	pxor	%xmm3,%xmm1
+	movdqa	%xmm0,%xmm4
+	psrlq	$1,%xmm0
+	pxor	%xmm4,%xmm1
+	pxor	%xmm0,%xmm4
+	psrlq	$5,%xmm0
+	pxor	%xmm4,%xmm0
+	psrlq	$1,%xmm0
+	pxor	%xmm1,%xmm0
+.byte	102,15,56,0,197
+	movdqu	%xmm0,(%eax)
+	ret
+.size	gcm_gmult_clmul,.-.L_gcm_gmult_clmul_begin
 .globl	gcm_ghash_clmul
 .hidden	gcm_ghash_clmul
 .type	gcm_ghash_clmul,@function
@@ -89,16 +143,16 @@ gcm_ghash_clmul:
 	movl	24(%esp),%edx
 	movl	28(%esp),%esi
 	movl	32(%esp),%ebx
-	call	.L001pic
-.L001pic:
+	call	.L002pic
+.L002pic:
 	popl	%ecx
-	leal	.Lbswap-.L001pic(%ecx),%ecx
+	leal	.Lbswap-.L002pic(%ecx),%ecx
 	movdqu	(%eax),%xmm0
 	movdqa	(%ecx),%xmm5
 	movdqu	(%edx),%xmm2
 .byte	102,15,56,0,197
 	subl	$16,%ebx
-	jz	.L002odd_tail
+	jz	.L003odd_tail
 	movdqu	(%esi),%xmm3
 	movdqu	16(%esi),%xmm6
 .byte	102,15,56,0,221
@@ -115,10 +169,10 @@ gcm_ghash_clmul:
 	movups	16(%edx),%xmm2
 	nop
 	subl	$32,%ebx
-	jbe	.L003even_tail
-	jmp	.L004mod_loop
+	jbe	.L004even_tail
+	jmp	.L005mod_loop
 .align	32
-.L004mod_loop:
+.L005mod_loop:
 	pshufd	$78,%xmm0,%xmm4
 	movdqa	%xmm0,%xmm1
 	pxor	%xmm0,%xmm4
@@ -173,8 +227,8 @@ gcm_ghash_clmul:
 .byte	102,15,58,68,221,0
 	leal	32(%esi),%esi
 	subl	$32,%ebx
-	ja	.L004mod_loop
-.L003even_tail:
+	ja	.L005mod_loop
+.L004even_tail:
 	pshufd	$78,%xmm0,%xmm4
 	movdqa	%xmm0,%xmm1
 	pxor	%xmm0,%xmm4
@@ -213,9 +267,9 @@ gcm_ghash_clmul:
 	psrlq	$1,%xmm0
 	pxor	%xmm1,%xmm0
 	testl	%ebx,%ebx
-	jnz	.L005done
+	jnz	.L006done
 	movups	(%edx),%xmm2
-.L002odd_tail:
+.L003odd_tail:
 	movdqu	(%esi),%xmm3
 .byte	102,15,56,0,221
 	pxor	%xmm3,%xmm0
@@ -254,7 +308,7 @@ gcm_ghash_clmul:
 	pxor	%xmm4,%xmm0
 	psrlq	$1,%xmm0
 	pxor	%xmm1,%xmm0
-.L005done:
+.L006done:
 .byte	102,15,56,0,197
 	movdqu	%xmm0,(%eax)
 	popl	%edi

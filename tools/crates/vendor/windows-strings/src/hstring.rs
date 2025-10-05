@@ -1,5 +1,4 @@
 use super::*;
-use core::ops::Deref;
 
 /// An ([HSTRING](https://docs.microsoft.com/en-us/windows/win32/winrt/hstring))
 /// is a reference-counted and immutable UTF-16 string type.
@@ -14,66 +13,77 @@ impl HSTRING {
         Self(core::ptr::null_mut())
     }
 
+    /// Returns `true` if the string is empty.
+    pub fn is_empty(&self) -> bool {
+        // An empty HSTRING is represented by a null pointer.
+        self.0.is_null()
+    }
+
+    /// Returns the length of the string. The length is measured in `u16`s (UTF-16 code units), not including the terminating null character.
+    pub fn len(&self) -> usize {
+        if let Some(header) = self.as_header() {
+            header.len as usize
+        } else {
+            0
+        }
+    }
+
+    /// Get the string as 16-bit wide characters (wchars).
+    pub fn as_wide(&self) -> &[u16] {
+        unsafe { core::slice::from_raw_parts(self.as_ptr(), self.len()) }
+    }
+
+    /// Returns a raw pointer to the `HSTRING` buffer.
+    pub fn as_ptr(&self) -> *const u16 {
+        if let Some(header) = self.as_header() {
+            header.data
+        } else {
+            const EMPTY: [u16; 1] = [0];
+            EMPTY.as_ptr()
+        }
+    }
+
     /// Create a `HSTRING` from a slice of 16 bit characters (wchars).
-    pub fn from_wide(value: &[u16]) -> Self {
+    pub fn from_wide(value: &[u16]) -> Result<Self> {
         unsafe { Self::from_wide_iter(value.iter().copied(), value.len()) }
     }
 
     /// Get the contents of this `HSTRING` as a String lossily.
     pub fn to_string_lossy(&self) -> String {
-        String::from_utf16_lossy(self)
+        String::from_utf16_lossy(self.as_wide())
     }
 
     /// Get the contents of this `HSTRING` as a OsString.
     #[cfg(feature = "std")]
     pub fn to_os_string(&self) -> std::ffi::OsString {
-        std::os::windows::ffi::OsStringExt::from_wide(self)
+        std::os::windows::ffi::OsStringExt::from_wide(self.as_wide())
     }
 
     /// # Safety
     /// len must not be less than the number of items in the iterator.
-    unsafe fn from_wide_iter<I: Iterator<Item = u16>>(iter: I, len: usize) -> Self {
+    unsafe fn from_wide_iter<I: Iterator<Item = u16>>(iter: I, len: usize) -> Result<Self> {
         if len == 0 {
-            return Self::new();
+            return Ok(Self::new());
         }
 
-        let ptr = HStringHeader::alloc(len.try_into().unwrap());
+        let ptr = HStringHeader::alloc(len.try_into()?)?;
 
         // Place each utf-16 character into the buffer and
         // increase len as we go along.
         for (index, wide) in iter.enumerate() {
             debug_assert!(index < len);
 
-            unsafe {
-                (*ptr).data.add(index).write(wide);
-                (*ptr).len = index as u32 + 1;
-            }
+            (*ptr).data.add(index).write(wide);
+            (*ptr).len = index as u32 + 1;
         }
 
-        unsafe {
-            // Write a 0 byte to the end of the buffer.
-            (*ptr).data.offset((*ptr).len as isize).write(0);
-        }
-        Self(ptr)
+        // Write a 0 byte to the end of the buffer.
+        (*ptr).data.offset((*ptr).len as isize).write(0);
+        Ok(Self(ptr))
     }
 
     fn as_header(&self) -> Option<&HStringHeader> {
         unsafe { self.0.as_ref() }
-    }
-}
-
-impl Deref for HSTRING {
-    type Target = [u16];
-
-    fn deref(&self) -> &[u16] {
-        if let Some(header) = self.as_header() {
-            unsafe { core::slice::from_raw_parts(header.data, header.len as usize) }
-        } else {
-            // This ensures that if `as_ptr` is called on the slice that the resulting pointer
-            // will still refer to a null-terminated string.
-            const EMPTY: [u16; 1] = [0];
-            &EMPTY[..0]
-        }
     }
 }
 
@@ -86,7 +96,7 @@ impl Default for HSTRING {
 impl Clone for HSTRING {
     fn clone(&self) -> Self {
         if let Some(header) = self.as_header() {
-            Self(header.duplicate())
+            Self(header.duplicate().unwrap())
         } else {
             Self::new()
         }
@@ -115,20 +125,20 @@ impl core::fmt::Display for HSTRING {
         write!(
             f,
             "{}",
-            Decode(|| core::char::decode_utf16(self.iter().cloned()))
+            Decode(|| core::char::decode_utf16(self.as_wide().iter().cloned()))
         )
     }
 }
 
 impl core::fmt::Debug for HSTRING {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        write!(f, "\"{self}\"")
+        write!(f, "\"{}\"", self)
     }
 }
 
 impl From<&str> for HSTRING {
     fn from(value: &str) -> Self {
-        unsafe { Self::from_wide_iter(value.encode_utf16(), value.len()) }
+        unsafe { Self::from_wide_iter(value.encode_utf16(), value.len()).unwrap() }
     }
 }
 
@@ -159,6 +169,7 @@ impl From<&std::ffi::OsStr> for HSTRING {
                 std::os::windows::ffi::OsStrExt::encode_wide(value),
                 value.len(),
             )
+            .unwrap()
         }
     }
 }
@@ -181,13 +192,13 @@ impl Eq for HSTRING {}
 
 impl Ord for HSTRING {
     fn cmp(&self, other: &Self) -> core::cmp::Ordering {
-        self.deref().cmp(other)
+        self.as_wide().cmp(other.as_wide())
     }
 }
 
 impl core::hash::Hash for HSTRING {
     fn hash<H: core::hash::Hasher>(&self, hasher: &mut H) {
-        self.deref().hash(hasher)
+        self.as_wide().hash(hasher)
     }
 }
 
@@ -199,7 +210,7 @@ impl PartialOrd for HSTRING {
 
 impl PartialEq for HSTRING {
     fn eq(&self, other: &Self) -> bool {
-        self.deref() == other.deref()
+        *self.as_wide() == *other.as_wide()
     }
 }
 
@@ -223,7 +234,7 @@ impl PartialEq<&String> for HSTRING {
 
 impl PartialEq<str> for HSTRING {
     fn eq(&self, other: &str) -> bool {
-        self.iter().copied().eq(other.encode_utf16())
+        self.as_wide().iter().copied().eq(other.encode_utf16())
     }
 }
 
@@ -299,7 +310,8 @@ impl PartialEq<&std::ffi::OsString> for HSTRING {
 #[cfg(feature = "std")]
 impl PartialEq<std::ffi::OsStr> for HSTRING {
     fn eq(&self, other: &std::ffi::OsStr) -> bool {
-        self.iter()
+        self.as_wide()
+            .iter()
             .copied()
             .eq(std::os::windows::ffi::OsStrExt::encode_wide(other))
     }
@@ -361,11 +373,11 @@ impl PartialEq<&HSTRING> for std::ffi::OsString {
     }
 }
 
-impl TryFrom<&HSTRING> for String {
+impl<'a> TryFrom<&'a HSTRING> for String {
     type Error = alloc::string::FromUtf16Error;
 
     fn try_from(hstring: &HSTRING) -> core::result::Result<Self, Self::Error> {
-        String::from_utf16(hstring)
+        String::from_utf16(hstring.as_wide())
     }
 }
 
@@ -378,7 +390,7 @@ impl TryFrom<HSTRING> for String {
 }
 
 #[cfg(feature = "std")]
-impl From<&HSTRING> for std::ffi::OsString {
+impl<'a> From<&'a HSTRING> for std::ffi::OsString {
     fn from(hstring: &HSTRING) -> Self {
         hstring.to_os_string()
     }

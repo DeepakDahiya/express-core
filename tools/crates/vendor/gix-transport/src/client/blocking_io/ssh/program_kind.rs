@@ -1,6 +1,7 @@
 use std::{ffi::OsStr, io::ErrorKind};
 
 use bstr::{BString, ByteSlice, ByteVec};
+
 use gix_url::ArgumentSafety::*;
 
 use crate::{
@@ -28,7 +29,7 @@ impl ProgramKind {
         desired_version: Protocol,
         disallow_shell: bool,
     ) -> Result<gix_command::Prepare, ssh::invocation::Error> {
-        let mut prepare = gix_command::prepare(ssh_cmd).command_may_be_shell_script();
+        let mut prepare = gix_command::prepare(ssh_cmd).with_shell();
         if disallow_shell {
             prepare.use_shell = false;
         }
@@ -37,7 +38,7 @@ impl ProgramKind {
                 if desired_version != Protocol::V1 {
                     prepare = prepare
                         .args(["-o", "SendEnv=GIT_PROTOCOL"])
-                        .env("GIT_PROTOCOL", format!("version={}", desired_version as usize));
+                        .env("GIT_PROTOCOL", format!("version={}", desired_version as usize))
                 }
                 if let Some(port) = url.port {
                     prepare = prepare.arg(format!("-p{port}"));
@@ -60,7 +61,7 @@ impl ProgramKind {
                     });
                 }
             }
-        }
+        };
 
         let host_maybe_with_user_as_ssh_arg = match (url.user_as_argument(), url.host_as_argument()) {
             (Usable(user), Usable(host)) => format!("{user}@{host}"),

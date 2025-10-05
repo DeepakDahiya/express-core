@@ -1,4 +1,5 @@
 ///
+#[allow(clippy::empty_docs)]
 pub mod set_target_id {
     use gix_ref::{transaction::PreviousValue, Target};
 
@@ -19,7 +20,7 @@ pub mod set_target_id {
     }
     pub use error::Error;
 
-    impl Reference<'_> {
+    impl<'repo> Reference<'repo> {
         /// Set the id of this direct reference to `id` and use `reflog_message` for the reflog (if enabled in the repository).
         ///
         /// Note that the operation will fail on symbolic references, to change their type use the lower level reference database,
@@ -51,12 +52,13 @@ pub mod set_target_id {
 }
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod delete {
     use gix_ref::transaction::{Change, PreviousValue, RefEdit, RefLog};
 
     use crate::Reference;
 
-    impl Reference<'_> {
+    impl<'repo> Reference<'repo> {
         /// Delete this reference or fail if it was changed since last observed.
         /// Note that this instance remains available in memory but probably shouldn't be used anymore.
         pub fn delete(&self) -> Result<(), crate::reference::edit::Error> {

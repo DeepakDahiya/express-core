@@ -1,6 +1,7 @@
 use crate::off_t;
 use crate::prelude::*;
 
+pub type c_char = u8;
 pub type __u64 = c_ulonglong;
 pub type __s64 = c_longlong;
 pub type wchar_t = u32;
@@ -60,32 +61,15 @@ s! {
     }
 
     pub struct ipc_perm {
-        #[cfg(musl_v1_2_3)]
-        pub __key: crate::key_t,
-        #[cfg(not(musl_v1_2_3))]
-        #[deprecated(
-            since = "0.2.173",
-            note = "This field is incorrectly named and will be changed
-                to __key in a future release."
-        )]
         pub __ipc_perm_key: crate::key_t,
         pub uid: crate::uid_t,
         pub gid: crate::gid_t,
         pub cuid: crate::uid_t,
         pub cgid: crate::gid_t,
         pub mode: crate::mode_t,
-
-        #[cfg(musl_v1_2_3)]
-        pub __seq: c_int,
-        #[cfg(not(musl_v1_2_3))]
-        #[deprecated(
-            since = "0.2.173",
-            note = "The type of this field has changed from c_ushort to c_int,
-                we'll follow that change in the future release."
-        )]
         pub __seq: c_ushort,
-        __unused1: c_long,
-        __unused2: c_long,
+        __unused1: c_ulong,
+        __unused2: c_ulong,
     }
 
     pub struct ucontext_t {
@@ -129,6 +113,7 @@ s! {
 }
 
 s_no_extra_traits! {
+    #[allow(missing_debug_implementations)]
     #[repr(align(16))]
     pub struct max_align_t {
         priv_: [f32; 8],

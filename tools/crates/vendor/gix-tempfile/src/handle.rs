@@ -250,6 +250,7 @@ mod io_impls {
 }
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod persist {
     use std::path::Path;
 

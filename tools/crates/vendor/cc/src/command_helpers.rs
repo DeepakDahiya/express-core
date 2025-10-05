@@ -46,7 +46,7 @@ impl CargoOutput {
             warnings: true,
             output: OutputKind::Forward,
             debug: match std::env::var_os("CC_ENABLE_DEBUG_OUTPUT") {
-                Some(v) => v != "0" && v != "false" && !v.is_empty(),
+                Some(v) => v != "0" && v != "false" && v != "",
                 None => false,
             },
             checked_dbg_var: Arc::new(AtomicBool::new(false)),
@@ -55,13 +55,13 @@ impl CargoOutput {
 
     pub(crate) fn print_metadata(&self, s: &dyn Display) {
         if self.metadata {
-            println!("{s}");
+            println!("{}", s);
         }
     }
 
     pub(crate) fn print_warning(&self, arg: &dyn Display) {
         if self.warnings {
-            println!("cargo:warning={arg}");
+            println!("cargo:warning={}", arg);
         }
     }
 
@@ -71,7 +71,7 @@ impl CargoOutput {
             println!("cargo:rerun-if-env-changed=CC_ENABLE_DEBUG_OUTPUT");
         }
         if self.debug {
-            println!("{arg}");
+            println!("{}", arg);
         }
     }
 
@@ -247,6 +247,7 @@ fn write_warning(line: &[u8]) {
 
 fn wait_on_child(
     cmd: &Command,
+    program: &Path,
     child: &mut Child,
     cargo_output: &CargoOutput,
 ) -> Result<(), Error> {
@@ -257,7 +258,12 @@ fn wait_on_child(
         Err(e) => {
             return Err(Error::new(
                 ErrorKind::ToolExecError,
-                format!("failed to wait on spawned child process `{cmd:?}`: {e}"),
+                format!(
+                    "Failed to wait on spawned child process, command {:?} with args {}: {}.",
+                    cmd,
+                    program.display(),
+                    e
+                ),
             ));
         }
     };
@@ -269,7 +275,12 @@ fn wait_on_child(
     } else {
         Err(Error::new(
             ErrorKind::ToolExecError,
-            format!("command did not execute successfully (status code {status}): {cmd:?}"),
+            format!(
+                "Command {:?} with args {} did not execute successfully (status code {}).",
+                cmd,
+                program.display(),
+                status
+            ),
         ))
     }
 }
@@ -339,16 +350,28 @@ pub(crate) fn objects_from_files(files: &[Arc<Path>], dst: &Path) -> Result<Vec<
     Ok(objects)
 }
 
-pub(crate) fn run(cmd: &mut Command, cargo_output: &CargoOutput) -> Result<(), Error> {
-    let mut child = spawn(cmd, cargo_output)?;
-    wait_on_child(cmd, &mut child, cargo_output)
+pub(crate) fn run(
+    cmd: &mut Command,
+    program: impl AsRef<Path>,
+    cargo_output: &CargoOutput,
+) -> Result<(), Error> {
+    let program = program.as_ref();
+
+    let mut child = spawn(cmd, program, cargo_output)?;
+    wait_on_child(cmd, program, &mut child, cargo_output)
 }
 
-pub(crate) fn run_output(cmd: &mut Command, cargo_output: &CargoOutput) -> Result<Vec<u8>, Error> {
+pub(crate) fn run_output(
+    cmd: &mut Command,
+    program: impl AsRef<Path>,
+    cargo_output: &CargoOutput,
+) -> Result<Vec<u8>, Error> {
+    let program = program.as_ref();
+
     // We specifically need the output to be captured, so override default
     let mut captured_cargo_output = cargo_output.clone();
     captured_cargo_output.output = OutputKind::Capture;
-    let mut child = spawn(cmd, &captured_cargo_output)?;
+    let mut child = spawn(cmd, program, &captured_cargo_output)?;
 
     let mut stdout = vec![];
     child
@@ -359,12 +382,16 @@ pub(crate) fn run_output(cmd: &mut Command, cargo_output: &CargoOutput) -> Resul
         .unwrap();
 
     // Don't care about this output, use the normal settings
-    wait_on_child(cmd, &mut child, cargo_output)?;
+    wait_on_child(cmd, program, &mut child, cargo_output)?;
 
     Ok(stdout)
 }
 
-pub(crate) fn spawn(cmd: &mut Command, cargo_output: &CargoOutput) -> Result<Child, Error> {
+pub(crate) fn spawn(
+    cmd: &mut Command,
+    program: &Path,
+    cargo_output: &CargoOutput,
+) -> Result<Child, Error> {
     struct ResetStderr<'cmd>(&'cmd mut Command);
 
     impl Drop for ResetStderr<'_> {
@@ -375,7 +402,7 @@ pub(crate) fn spawn(cmd: &mut Command, cargo_output: &CargoOutput) -> Result<Chi
         }
     }
 
-    cargo_output.print_debug(&format_args!("running: {cmd:?}"));
+    cargo_output.print_debug(&format_args!("running: {:?}", cmd));
 
     let cmd = ResetStderr(cmd);
     let child = cmd
@@ -387,18 +414,28 @@ pub(crate) fn spawn(cmd: &mut Command, cargo_output: &CargoOutput) -> Result<Chi
         Ok(child) => Ok(child),
         Err(ref e) if e.kind() == io::ErrorKind::NotFound => {
             let extra = if cfg!(windows) {
-                " (see https://docs.rs/cc/latest/cc/#compile-time-requirements for help)"
+                " (see https://docs.rs/cc/latest/cc/#compile-time-requirements \
+for help)"
             } else {
                 ""
             };
             Err(Error::new(
                 ErrorKind::ToolNotFound,
-                format!("failed to find tool {:?}: {e}{extra}", cmd.0.get_program()),
+                format!(
+                    "Failed to find tool. Is `{}` installed?{}",
+                    program.display(),
+                    extra
+                ),
             ))
         }
         Err(e) => Err(Error::new(
             ErrorKind::ToolExecError,
-            format!("command `{:?}` failed to start: {e}", cmd.0),
+            format!(
+                "Command {:?} with args {} failed to start: {:?}",
+                cmd.0,
+                program.display(),
+                e
+            ),
         )),
     }
 }
@@ -428,6 +465,7 @@ pub(crate) fn command_add_output_file(cmd: &mut Command, dst: &Path, args: CmdAd
 #[cfg(feature = "parallel")]
 pub(crate) fn try_wait_on_child(
     cmd: &Command,
+    program: &Path,
     child: &mut Child,
     stdout: &mut dyn io::Write,
     stderr_forwarder: &mut StderrForwarder,
@@ -445,7 +483,12 @@ pub(crate) fn try_wait_on_child(
             } else {
                 Err(Error::new(
                     ErrorKind::ToolExecError,
-                    format!("command did not execute successfully (status code {status}): {cmd:?}"),
+                    format!(
+                        "Command {:?} with args {} did not execute successfully (status code {}).",
+                        cmd,
+                        program.display(),
+                        status
+                    ),
                 ))
             }
         }
@@ -454,7 +497,12 @@ pub(crate) fn try_wait_on_child(
             stderr_forwarder.forward_all();
             Err(Error::new(
                 ErrorKind::ToolExecError,
-                format!("failed to wait on spawned child process `{cmd:?}`: {e}"),
+                format!(
+                    "Failed to wait on spawned child process, command {:?} with args {}: {}.",
+                    cmd,
+                    program.display(),
+                    e
+                ),
             ))
         }
     }

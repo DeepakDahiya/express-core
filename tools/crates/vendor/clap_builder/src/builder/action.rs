@@ -1,8 +1,6 @@
 #[cfg(debug_assertions)]
 use crate::util::AnyValueId;
 
-use crate::builder::ValueRange;
-
 /// Behavior of arguments when they are encountered while parsing
 ///
 /// # Examples
@@ -341,11 +339,11 @@ pub enum ArgAction {
     ///             .action(clap::ArgAction::Version)
     ///     );
     ///
-    /// // Existing version still exists
+    /// // Existing help still exists
     /// let err = cmd.clone().try_get_matches_from(["mycmd", "--version"]).unwrap_err();
     /// assert_eq!(err.kind(), clap::error::ErrorKind::DisplayVersion);
     ///
-    /// // New version available
+    /// // New help available
     /// let err = cmd.try_get_matches_from(["mycmd", "--special-version"]).unwrap_err();
     /// assert_eq!(err.kind(), clap::error::ErrorKind::DisplayVersion);
     /// ```
@@ -368,35 +366,6 @@ impl ArgAction {
             Self::HelpShort => false,
             Self::HelpLong => false,
             Self::Version => false,
-        }
-    }
-
-    #[cfg(debug_assertions)]
-    pub(crate) fn max_num_args(&self) -> ValueRange {
-        match self {
-            Self::Set => ValueRange::FULL,
-            Self::Append => ValueRange::FULL,
-            Self::SetTrue => ValueRange::OPTIONAL,
-            Self::SetFalse => ValueRange::OPTIONAL,
-            Self::Count => ValueRange::EMPTY,
-            Self::Help => ValueRange::EMPTY,
-            Self::HelpShort => ValueRange::EMPTY,
-            Self::HelpLong => ValueRange::EMPTY,
-            Self::Version => ValueRange::EMPTY,
-        }
-    }
-
-    pub(crate) fn default_num_args(&self) -> ValueRange {
-        match self {
-            Self::Set => ValueRange::SINGLE,
-            Self::Append => ValueRange::SINGLE,
-            Self::SetTrue => ValueRange::EMPTY,
-            Self::SetFalse => ValueRange::EMPTY,
-            Self::Count => ValueRange::EMPTY,
-            Self::Help => ValueRange::EMPTY,
-            Self::HelpShort => ValueRange::EMPTY,
-            Self::HelpLong => ValueRange::EMPTY,
-            Self::Version => ValueRange::EMPTY,
         }
     }
 

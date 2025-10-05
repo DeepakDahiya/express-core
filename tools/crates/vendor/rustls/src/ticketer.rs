@@ -10,7 +10,7 @@ use crate::lock::{Mutex, MutexGuard};
 use crate::server::ProducesTickets;
 #[cfg(not(feature = "std"))]
 use crate::time_provider::TimeProvider;
-use crate::{Error, rand};
+use crate::{rand, Error};
 
 #[derive(Debug)]
 pub(crate) struct TicketSwitcherState {
@@ -140,12 +140,11 @@ impl TicketSwitcher {
             }
 
             // Make the switch, or mark for recovery if not possible
-            match state.next.take() {
-                Some(next) => {
-                    state.previous = Some(mem::replace(&mut state.current, next));
-                    state.next_switch_time = now.saturating_add(u64::from(self.lifetime));
-                }
-                _ => are_recovering = true,
+            if let Some(next) = state.next.take() {
+                state.previous = Some(mem::replace(&mut state.current, next));
+                state.next_switch_time = now.saturating_add(u64::from(self.lifetime));
+            } else {
+                are_recovering = true;
             }
         }
 

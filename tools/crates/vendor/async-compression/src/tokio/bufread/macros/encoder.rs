@@ -8,25 +8,17 @@ macro_rules! encoder {
             #[derive(Debug)]
             pub struct $name<$inner> {
                 #[pin]
-                inner: crate::tokio::bufread::Encoder<$inner, crate::codecs::$name>,
+                inner: crate::tokio::bufread::Encoder<$inner, crate::codec::$name>,
             }
         }
 
         impl<$inner: tokio::io::AsyncBufRead> $name<$inner> {
             $(
                 /// Creates a new encoder which will read uncompressed data from the given stream
-                /// and emit an compressed stream.
+                /// and emit a compressed stream.
                 ///
                 $($inherent_methods)*
             )*
-
-            /// Creates a new encoder with the given codec, which will read uncompressed data from the given stream
-            /// and emit an compressed stream.
-            pub fn with_codec(read: $inner, codec: crate::codecs::$name) -> $name<$inner> {
-                $name {
-                   inner: crate::tokio::bufread::Encoder::new(read, codec)
-                }
-            }
         }
 
         impl<$inner> $name<$inner> {
@@ -109,12 +101,14 @@ macro_rules! encoder {
         }
 
         const _: () = {
-            use crate::core::util::{_assert_send, _assert_sync};
-            use core::pin::Pin;
-            use tokio::io::AsyncBufRead;
+            fn _assert() {
+                use crate::util::{_assert_send, _assert_sync};
+                use core::pin::Pin;
+                use tokio::io::AsyncBufRead;
 
-            _assert_send::<$name<Pin<Box<dyn AsyncBufRead + Send>>>>();
-            _assert_sync::<$name<Pin<Box<dyn AsyncBufRead + Sync>>>>();
+                _assert_send::<$name<Pin<Box<dyn AsyncBufRead + Send>>>>();
+                _assert_sync::<$name<Pin<Box<dyn AsyncBufRead + Sync>>>>();
+            }
         };
     }
 }

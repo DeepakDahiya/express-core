@@ -1,13 +1,12 @@
 use std::collections::BTreeSet;
 
-use gix_hash::ObjectId;
-
 use crate::{
     packed, peel,
     raw::Reference,
     store_impl::{file, file::log},
     Target,
 };
+use gix_hash::ObjectId;
 
 pub trait Sealed {}
 impl Sealed for crate::Reference {}
@@ -125,7 +124,7 @@ impl ReferenceExt for Reference {
                             })?;
                         }
                         _ => break oid,
-                    }
+                    };
                 };
                 self.peeled = Some(peeled_id);
                 self.target = Target::Object(peeled_id);

@@ -91,7 +91,6 @@ fn read_link_to_zoneinfo(
     Some(tz)
 }
 
-#[cfg(not(miri))]
 #[cfg(test)]
 mod tests {
     use super::*;

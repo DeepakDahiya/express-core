@@ -28,7 +28,7 @@ pub mod changes {
         }
     }
 
-    impl<H> Visit for AllNew<'_, H>
+    impl<'a, H> Visit for AllNew<'a, H>
     where
         H: InsertImmutable,
     {
@@ -42,12 +42,7 @@ pub mod changes {
 
         fn visit(&mut self, change: Change) -> Action {
             match change {
-                Change::Addition {
-                    oid,
-                    entry_mode,
-                    relation: _,
-                }
-                | Change::Modification { oid, entry_mode, .. } => {
+                Change::Addition { oid, entry_mode } | Change::Modification { oid, entry_mode, .. } => {
                     if entry_mode.is_commit() {
                         return Action::Continue;
                     }
@@ -57,7 +52,7 @@ pub mod changes {
                     }
                 }
                 Change::Deletion { .. } => {}
-            }
+            };
             Action::Continue
         }
     }
@@ -90,12 +85,10 @@ pub mod traverse {
         }
     }
 
-    impl<H> Visit for AllUnseen<'_, H>
+    impl<'a, H> Visit for AllUnseen<'a, H>
     where
         H: InsertImmutable,
     {
-        fn pop_back_tracked_path_and_set_current(&mut self) {}
-
         fn pop_front_tracked_path_and_set_current(&mut self) {}
 
         fn push_back_tracked_path_component(&mut self, _component: &BStr) {}

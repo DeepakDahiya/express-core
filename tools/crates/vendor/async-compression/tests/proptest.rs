@@ -1,4 +1,4 @@
-use compression_core::Level;
+use async_compression::Level;
 
 use ::proptest::{
     arbitrary::any,
@@ -127,9 +127,6 @@ mod proptest {
 
     #[cfg(feature = "gzip")]
     tests!(gzip);
-
-    #[cfg(feature = "lz4")]
-    tests!(lz4);
 
     #[cfg(feature = "lzma")]
     tests!(lzma);

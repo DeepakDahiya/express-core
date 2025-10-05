@@ -30,7 +30,6 @@ mod tests {
             | Type::Alpaquita
             | Type::Alpine
             | Type::Amazon
-            | Type::AOSC
             | Type::Arch
             | Type::Artix
             | Type::Bluefin

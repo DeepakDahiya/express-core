@@ -8,10 +8,7 @@ use crate::{
     },
     span::Span,
     tz::{Offset, TimeZone},
-    util::{
-        rangeint::RFrom,
-        t::{self, C},
-    },
+    util::{rangeint::RFrom, t},
     SignedDuration, Timestamp, Zoned,
 };
 
@@ -56,15 +53,11 @@ impl DateTimePrinter {
     ) -> Result<(), Error> {
         let timestamp = zdt.timestamp();
         let tz = zdt.time_zone();
-        let offset = tz.to_offset(timestamp);
+        let (offset, _, _) = tz.to_offset(timestamp);
         let dt = offset.to_datetime(timestamp);
         self.print_datetime(&dt, &mut wtr)?;
-        if tz.is_unknown() {
-            wtr.write_str("Z[Etc/Unknown]")?;
-        } else {
-            self.print_offset_rounded(&offset, &mut wtr)?;
-            self.print_time_zone_annotation(&tz, &offset, &mut wtr)?;
-        }
+        self.print_offset_rounded(&offset, &mut wtr)?;
+        self.print_time_zone_annotation(&tz, &offset, &mut wtr)?;
         Ok(())
     }
 
@@ -160,26 +153,20 @@ impl DateTimePrinter {
         if let Some(iana_name) = tz.iana_name() {
             return wtr.write_str(iana_name);
         }
-        if tz.is_unknown() {
-            return wtr.write_str("Etc/Unknown");
-        }
         if let Ok(offset) = tz.to_fixed_offset() {
             return self.print_offset_full_precision(&offset, wtr);
         }
-        // We get this on `alloc` because we format the POSIX time zone into a
-        // `String` first. See the note below.
-        //
-        // This is generally okay because there is no current (2025-02-28) way
-        // to create a `TimeZone` that is *only* a POSIX time zone in core-only
-        // environments. (All you can do is create a TZif time zone, which may
-        // contain a POSIX time zone, but `tz.posix_tz()` would still return
-        // `None` in that case.)
+        // `ReasonablePosixTimeZone` is currently only available when the
+        // `alloc` feature is enabled. (The type itself is compatible with
+        // core-only environments, but is effectively disabled because it
+        // greatly bloats the size of `TimeZone` and thus `Zoned` since there's
+        // no way to easily introduce indirection in core-only environments.)
         #[cfg(feature = "alloc")]
         {
             if let Some(posix_tz) = tz.posix_tz() {
                 // This is pretty unfortunate, but at time of writing, I
                 // didn't see an easy way to make the `Display` impl for
-                // `PosixTimeZone` automatically work with
+                // `ReasonablePosixTimeZone` automatically work with
                 // `jiff::fmt::Write` without allocating a new string. As
                 // far as I can see, I either have to duplicate the code or
                 // make it generic in some way. I judged neither to be worth
@@ -293,7 +280,7 @@ impl DateTimePrinter {
         // to suggest that the number of minutes should be "as close as
         // possible" to the actual offset. So we just do basic rounding
         // here.
-        if offset.part_seconds_ranged().abs() >= C(30) {
+        if offset.part_seconds_ranged().abs() >= 30 {
             if minutes == 59 {
                 hours = hours.saturating_add(1);
                 minutes = 0;
@@ -414,29 +401,29 @@ impl SpanPrinter {
         wtr.write_str("P")?;
 
         let mut non_zero_greater_than_second = false;
-        if span.get_years_ranged() != C(0) {
+        if span.get_years_ranged() != 0 {
             wtr.write_int(&FMT_INT, span.get_years_ranged().get().abs())?;
             wtr.write_char(self.label('Y'))?;
             non_zero_greater_than_second = true;
         }
-        if span.get_months_ranged() != C(0) {
+        if span.get_months_ranged() != 0 {
             wtr.write_int(&FMT_INT, span.get_months_ranged().get().abs())?;
             wtr.write_char(self.label('M'))?;
             non_zero_greater_than_second = true;
         }
-        if span.get_weeks_ranged() != C(0) {
+        if span.get_weeks_ranged() != 0 {
             wtr.write_int(&FMT_INT, span.get_weeks_ranged().get().abs())?;
             wtr.write_char(self.label('W'))?;
             non_zero_greater_than_second = true;
         }
-        if span.get_days_ranged() != C(0) {
+        if span.get_days_ranged() != 0 {
             wtr.write_int(&FMT_INT, span.get_days_ranged().get().abs())?;
             wtr.write_char(self.label('D'))?;
             non_zero_greater_than_second = true;
         }
 
         let mut printed_time_prefix = false;
-        if span.get_hours_ranged() != C(0) {
+        if span.get_hours_ranged() != 0 {
             if !printed_time_prefix {
                 wtr.write_str("T")?;
                 printed_time_prefix = true;
@@ -445,7 +432,7 @@ impl SpanPrinter {
             wtr.write_char(self.label('H'))?;
             non_zero_greater_than_second = true;
         }
-        if span.get_minutes_ranged() != C(0) {
+        if span.get_minutes_ranged() != 0 {
             if !printed_time_prefix {
                 wtr.write_str("T")?;
                 printed_time_prefix = true;
@@ -465,17 +452,17 @@ impl SpanPrinter {
             span.get_microseconds_ranged().abs(),
             span.get_nanoseconds_ranged().abs(),
         );
-        if (seconds != C(0) || !non_zero_greater_than_second)
-            && millis == C(0)
-            && micros == C(0)
-            && nanos == C(0)
+        if (seconds != 0 || !non_zero_greater_than_second)
+            && millis == 0
+            && micros == 0
+            && nanos == 0
         {
             if !printed_time_prefix {
                 wtr.write_str("T")?;
             }
             wtr.write_int(&FMT_INT, seconds.get())?;
             wtr.write_char(self.label('S'))?;
-        } else if millis != C(0) || micros != C(0) || nanos != C(0) {
+        } else if millis != 0 || micros != 0 || nanos != 0 {
             if !printed_time_prefix {
                 wtr.write_str("T")?;
             }
@@ -499,7 +486,7 @@ impl SpanPrinter {
                 combined_as_nanos % t::NANOS_PER_SECOND,
             );
             wtr.write_int(&FMT_INT, fraction_second.get())?;
-            if fraction_nano != C(0) {
+            if fraction_nano != 0 {
                 wtr.write_str(".")?;
                 wtr.write_fraction(&FMT_FRACTION, fraction_nano.get())?;
             }
@@ -570,7 +557,6 @@ impl SpanPrinter {
     }
 }
 
-#[cfg(feature = "alloc")]
 #[cfg(test)]
 mod tests {
     use alloc::string::String;

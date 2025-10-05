@@ -1,4 +1,4 @@
-use crate::{shared::util::error::Error as SharedError, util::sync::Arc};
+use crate::util::sync::Arc;
 
 /// Creates a new ad hoc error with no causal chain.
 ///
@@ -54,7 +54,7 @@ pub struct Error {
     /// This also makes clones cheap. And it also make the size of error equal
     /// to one word (although a `Box` would achieve that last goal). This is
     /// why we put the `Arc` here instead of on `std::io::Error` directly.
-    inner: Option<Arc<ErrorInner>>,
+    inner: Arc<ErrorInner>,
 }
 
 #[derive(Debug)]
@@ -83,11 +83,6 @@ enum ErrorKind {
     /// of a public API, or as a result of an operation on a number that
     /// results in it being out of range.
     Range(RangeError),
-    /// An error that occurs within `jiff::shared`.
-    ///
-    /// It has its own error type to avoid bringing in this much bigger error
-    /// type.
-    Shared(SharedError),
     /// An error associated with a file path.
     ///
     /// This is generally expected to always have a cause attached to it
@@ -110,62 +105,14 @@ enum ErrorKind {
 }
 
 impl Error {
-    /// Creates a new error value from `core::fmt::Arguments`.
-    ///
-    /// It is expected to use [`format_args!`](format_args) from
-    /// Rust's standard library (available in `core`) to create a
-    /// `core::fmt::Arguments`.
-    ///
-    /// Callers should generally use their own error types. But in some
-    /// circumstances, it can be convenient to manufacture a Jiff error value
-    /// specifically.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use jiff::Error;
-    ///
-    /// let err = Error::from_args(format_args!("something failed"));
-    /// assert_eq!(err.to_string(), "something failed");
-    /// ```
-    pub fn from_args<'a>(message: core::fmt::Arguments<'a>) -> Error {
-        Error::from(ErrorKind::Adhoc(AdhocError::from_args(message)))
-    }
-
-    #[inline(never)]
-    #[cold]
-    fn context_impl(self, consequent: Error) -> Error {
-        #[cfg(feature = "alloc")]
-        {
-            let mut err = consequent;
-            if err.inner.is_none() {
-                err = err!("unknown jiff error");
-            }
-            let inner = err.inner.as_mut().unwrap();
-            assert!(
-                inner.cause.is_none(),
-                "cause of consequence must be `None`"
-            );
-            // OK because we just created this error so the Arc
-            // has one reference.
-            Arc::get_mut(inner).unwrap().cause = Some(self);
-            err
-        }
-        #[cfg(not(feature = "alloc"))]
-        {
-            // We just completely drop `self`. :-(
-            consequent
-        }
-    }
-}
-
-impl Error {
     /// Creates a new "ad hoc" error value.
     ///
-    /// An ad hoc error value is just an opaque string.
+    /// An ad hoc error value is just an opaque string. In theory we should
+    /// avoid creating such error values, but in practice, they are extremely
+    /// convenient. And the alternative is quite brutal given the varied ways
+    /// in which things in a datetime library can fail. (Especially parsing
+    /// errors.)
     #[cfg(feature = "alloc")]
-    #[inline(never)]
-    #[cold]
     pub(crate) fn adhoc<'a>(message: impl core::fmt::Display + 'a) -> Error {
         Error::from(ErrorKind::Adhoc(AdhocError::from_display(message)))
     }
@@ -176,22 +123,10 @@ impl Error {
     /// `core::fmt::Arguments` down. This lets us extract a `&'static str`
     /// from some messages in core-only mode and provide somewhat decent error
     /// messages in some cases.
-    #[inline(never)]
-    #[cold]
     pub(crate) fn adhoc_from_args<'a>(
         message: core::fmt::Arguments<'a>,
     ) -> Error {
         Error::from(ErrorKind::Adhoc(AdhocError::from_args(message)))
-    }
-
-    /// Like `Error::adhoc`, but creates an error from a `String` directly.
-    ///
-    /// This exists to explicitly monomorphize a very common case.
-    #[cfg(feature = "alloc")]
-    #[inline(never)]
-    #[cold]
-    fn adhoc_from_string(message: alloc::string::String) -> Error {
-        Error::adhoc(message)
     }
 
     /// Like `Error::adhoc`, but creates an error from a `&'static str`
@@ -199,8 +134,6 @@ impl Error {
     ///
     /// This is useful in contexts where you know you have a `&'static str`,
     /// and avoids relying on `alloc`-only routines like `Error::adhoc`.
-    #[inline(never)]
-    #[cold]
     pub(crate) fn adhoc_from_static_str(message: &'static str) -> Error {
         Error::from(ErrorKind::Adhoc(AdhocError::from_static_str(message)))
     }
@@ -209,8 +142,6 @@ impl Error {
     /// specified `min..=max` range. The given `what` label is used in the
     /// error message as a human readable description of what exactly is out
     /// of range. (e.g., "seconds")
-    #[inline(never)]
-    #[cold]
     pub(crate) fn range(
         what: &'static str,
         given: impl Into<i128>,
@@ -218,11 +149,6 @@ impl Error {
         max: impl Into<i128>,
     ) -> Error {
         Error::from(ErrorKind::Range(RangeError::new(what, given, min, max)))
-    }
-
-    /// Creates a new error from the special "shared" error type.
-    pub(crate) fn shared(err: SharedError) -> Error {
-        Error::from(ErrorKind::Shared(err))
     }
 
     /// A convenience constructor for building an I/O error.
@@ -233,8 +159,6 @@ impl Error {
     ///
     /// This is only available when the `std` feature is enabled.
     #[cfg(feature = "std")]
-    #[inline(never)]
-    #[cold]
     pub(crate) fn io(err: std::io::Error) -> Error {
         Error::from(ErrorKind::IO(IOError { err }))
     }
@@ -243,31 +167,15 @@ impl Error {
     ///
     /// This is a convenience routine for calling `Error::context` with a
     /// `FilePathError`.
-    #[cfg(any(feature = "tzdb-zoneinfo", feature = "tzdb-concatenated"))]
-    #[inline(never)]
-    #[cold]
+    ///
+    /// This is only available when the `std` feature is enabled.
+    #[cfg(feature = "tzdb-zoneinfo")]
     pub(crate) fn path(self, path: impl Into<std::path::PathBuf>) -> Error {
         let err = Error::from(ErrorKind::FilePath(FilePathError {
             path: path.into(),
         }));
         self.context(err)
     }
-
-    /*
-    /// Creates a new "unknown" Jiff error.
-    ///
-    /// The benefit of this API is that it permits creating an `Error` in a
-    /// `const` context. But the error message quality is currently pretty
-    /// bad: it's just a generic "unknown jiff error" message.
-    ///
-    /// This could be improved to take a `&'static str`, but I believe this
-    /// will require pointer tagging in order to avoid increasing the size of
-    /// `Error`. (Which is important, because of how many perf sensitive
-    /// APIs return a `Result<T, Error>` in Jiff.
-    pub(crate) const fn unknown() -> Error {
-        Error { inner: None }
-    }
-    */
 }
 
 #[cfg(feature = "std")]
@@ -279,12 +187,8 @@ impl core::fmt::Display for Error {
         {
             let mut err = self;
             loop {
-                let Some(ref inner) = err.inner else {
-                    write!(f, "unknown jiff error")?;
-                    break;
-                };
-                write!(f, "{}", inner.kind)?;
-                err = match inner.cause.as_ref() {
+                write!(f, "{}", err.inner.kind)?;
+                err = match err.inner.cause.as_ref() {
                     None => break,
                     Some(err) => err,
                 };
@@ -294,10 +198,7 @@ impl core::fmt::Display for Error {
         }
         #[cfg(not(feature = "alloc"))]
         {
-            match self.inner {
-                None => write!(f, "unknown jiff error"),
-                Some(ref inner) => write!(f, "{}", inner.kind),
-            }
+            write!(f, "{}", self.inner.kind)
         }
     }
 }
@@ -307,22 +208,18 @@ impl core::fmt::Debug for Error {
         if !f.alternate() {
             core::fmt::Display::fmt(self, f)
         } else {
-            let Some(ref inner) = self.inner else {
-                return f
-                    .debug_struct("Error")
-                    .field("kind", &"None")
-                    .finish();
-            };
             #[cfg(feature = "alloc")]
             {
                 f.debug_struct("Error")
-                    .field("kind", &inner.kind)
-                    .field("cause", &inner.cause)
+                    .field("kind", &self.inner.kind)
+                    .field("cause", &self.inner.cause)
                     .finish()
             }
             #[cfg(not(feature = "alloc"))]
             {
-                f.debug_struct("Error").field("kind", &inner.kind).finish()
+                f.debug_struct("Error")
+                    .field("kind", &self.inner.kind)
+                    .finish()
             }
         }
     }
@@ -333,7 +230,6 @@ impl core::fmt::Display for ErrorKind {
         match *self {
             ErrorKind::Adhoc(ref msg) => msg.fmt(f),
             ErrorKind::Range(ref err) => err.fmt(f),
-            ErrorKind::Shared(ref err) => err.fmt(f),
             ErrorKind::FilePath(ref err) => err.fmt(f),
             ErrorKind::IO(ref err) => err.fmt(f),
         }
@@ -344,11 +240,11 @@ impl From<ErrorKind> for Error {
     fn from(kind: ErrorKind) -> Error {
         #[cfg(feature = "alloc")]
         {
-            Error { inner: Some(Arc::new(ErrorInner { kind, cause: None })) }
+            Error { inner: Arc::new(ErrorInner { kind, cause: None }) }
         }
         #[cfg(not(feature = "alloc"))]
         {
-            Error { inner: Some(Arc::new(ErrorInner { kind })) }
+            Error { inner: Arc::new(ErrorInner { kind }) }
         }
     }
 }
@@ -575,14 +471,12 @@ pub(crate) trait IntoError {
 }
 
 impl IntoError for Error {
-    #[inline(always)]
     fn into_error(self) -> Error {
         self
     }
 }
 
 impl IntoError for &'static str {
-    #[inline(always)]
     fn into_error(self) -> Error {
         Error::adhoc_from_static_str(self)
     }
@@ -590,9 +484,8 @@ impl IntoError for &'static str {
 
 #[cfg(feature = "alloc")]
 impl IntoError for alloc::string::String {
-    #[inline(always)]
     fn into_error(self) -> Error {
-        Error::adhoc_from_string(self)
+        Error::adhoc(self)
     }
 }
 
@@ -630,32 +523,60 @@ pub(crate) trait ErrorContext {
 }
 
 impl ErrorContext for Error {
-    #[cfg_attr(feature = "perf-inline", inline(always))]
     fn context(self, consequent: impl IntoError) -> Error {
-        self.context_impl(consequent.into_error())
+        #[cfg(feature = "alloc")]
+        {
+            let mut err = consequent.into_error();
+            assert!(
+                err.inner.cause.is_none(),
+                "cause of consequence must be `None`"
+            );
+            // OK because we just created this error so the Arc
+            // has one reference.
+            Arc::get_mut(&mut err.inner).unwrap().cause = Some(self);
+            err
+        }
+        #[cfg(not(feature = "alloc"))]
+        {
+            // We just completely drop `self`. :-(
+            consequent.into_error()
+        }
     }
 
-    #[cfg_attr(feature = "perf-inline", inline(always))]
     fn with_context<E: IntoError>(
         self,
         consequent: impl FnOnce() -> E,
     ) -> Error {
-        self.context_impl(consequent().into_error())
+        #[cfg(feature = "alloc")]
+        {
+            let mut err = consequent().into_error();
+            assert!(
+                err.inner.cause.is_none(),
+                "cause of consequence must be `None`"
+            );
+            // OK because we just created this error so the Arc
+            // has one reference.
+            Arc::get_mut(&mut err.inner).unwrap().cause = Some(self);
+            err
+        }
+        #[cfg(not(feature = "alloc"))]
+        {
+            // We just completely drop `self`. :-(
+            consequent().into_error()
+        }
     }
 }
 
 impl<T> ErrorContext for Result<T, Error> {
-    #[cfg_attr(feature = "perf-inline", inline(always))]
     fn context(self, consequent: impl IntoError) -> Result<T, Error> {
-        self.map_err(|err| err.context_impl(consequent.into_error()))
+        self.map_err(|err| err.context(consequent))
     }
 
-    #[cfg_attr(feature = "perf-inline", inline(always))]
     fn with_context<E: IntoError>(
         self,
         consequent: impl FnOnce() -> E,
     ) -> Result<T, Error> {
-        self.map_err(|err| err.context_impl(consequent().into_error()))
+        self.map_err(|err| err.with_context(consequent))
     }
 }
 

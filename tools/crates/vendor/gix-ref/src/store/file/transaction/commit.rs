@@ -4,7 +4,7 @@ use crate::{
     Target,
 };
 
-impl Transaction<'_, '_> {
+impl<'s, 'p> Transaction<'s, 'p> {
     /// Make all [prepared][Transaction::prepare()] permanent and return the performed edits which represent the current
     /// state of the affected refs in the ref store in that instant. Please note that the obtained edits may have been
     /// adjusted to contain more dependent edits or additional information.
@@ -72,7 +72,7 @@ impl Transaction<'_, '_> {
                             }
                         };
                         if let Some((previous, new_oid)) = log_update {
-                            let do_update = previous.as_ref() != Some(new_oid);
+                            let do_update = previous.as_ref().map_or(true, |previous| previous != new_oid);
                             if do_update {
                                 self.store.reflog_create_or_append(
                                     change.update.name.as_ref(),
@@ -110,7 +110,7 @@ impl Transaction<'_, '_> {
                                     full_name: change.name(),
                                 });
                             }
-                        }
+                        };
                     }
                 }
                 Change::Delete { .. } => {}
@@ -170,7 +170,7 @@ impl Transaction<'_, '_> {
                         });
                     }
                 }
-                drop(lock);
+                drop(lock)
             }
         }
         Ok(updates.into_iter().map(|edit| edit.update).collect())

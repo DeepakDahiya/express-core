@@ -13,7 +13,7 @@
 edition = "2018"
 rust-version = "1.63"
 name = "url"
-version = "2.5.7"
+version = "2.5.4"
 authors = ["The rust-url developers"]
 build = false
 include = [
@@ -22,7 +22,6 @@ include = [
     "README.md",
     "tests/**",
 ]
-autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -50,17 +49,6 @@ rustdoc-args = ["--generate-link-to-definition"]
 [package.metadata.playground]
 features = ["serde"]
 
-[features]
-debugger_visualizer = []
-default = ["std"]
-expose_internals = []
-std = [
-    "idna/std",
-    "percent-encoding/std",
-    "form_urlencoded/std",
-    "serde/std",
-]
-
 [lib]
 name = "url"
 path = "src/lib.rs"
@@ -75,12 +63,12 @@ path = "tests/wpt.rs"
 harness = false
 
 [dependencies.form_urlencoded]
-version = "1.2.2"
+version = "1.2.1"
 features = ["alloc"]
 default-features = false
 
 [dependencies.idna]
-version = "1.1.0"
+version = "1.0.3"
 features = [
     "alloc",
     "compiled_data",
@@ -88,7 +76,7 @@ features = [
 default-features = false
 
 [dependencies.percent-encoding]
-version = "2.3.2"
+version = "2.3.1"
 features = ["alloc"]
 default-features = false
 
@@ -96,7 +84,6 @@ default-features = false
 version = "1.0"
 features = ["derive"]
 optional = true
-default-features = false
 
 [dev-dependencies.bencher]
 version = "0.1"
@@ -107,6 +94,16 @@ features = ["derive"]
 
 [dev-dependencies.serde_json]
 version = "1.0"
+
+[features]
+debugger_visualizer = []
+default = ["std"]
+expose_internals = []
+std = [
+    "idna/std",
+    "percent-encoding/std",
+    "form_urlencoded/std",
+]
 
 [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dev-dependencies.wasm-bindgen-test]
 version = "0.3"

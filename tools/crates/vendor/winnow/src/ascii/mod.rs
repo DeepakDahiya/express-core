@@ -103,7 +103,7 @@ where
     trace("crlf", "\r\n").parse_next(input)
 }
 
-/// Recognizes a string of 0+ characters until `"\r\n"`, `"\n"`, or eof.
+/// Recognizes a string of any char except `"\r\n"` or `"\n"`.
 ///
 /// *Complete version*: Will return an error if there's not enough input data.
 ///
@@ -1859,6 +1859,5 @@ where
 }
 
 mod sealed {
-    #[allow(unnameable_types)]
     pub struct SealedMarker;
 }

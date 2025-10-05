@@ -121,10 +121,10 @@ impl File {
                 let from = offsets_64 + (ofs32 ^ HIGH_BIT) as usize * 8;
                 crate::read_u64(&self.data[from..][..8])
             } else {
-                u64::from(ofs32)
+                ofs32 as u64
             }
         } else {
-            u64::from(ofs32)
+            ofs32 as u64
         };
         (pack_index, pack_offset)
     }

@@ -156,7 +156,5 @@ mod tests {
 
         let mut buf = [0; 5];
         stream.read_exact(&mut buf).await.expect("read1");
-
-        assert_eq!(&buf, &underlying);
     }
 }

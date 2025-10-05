@@ -7,7 +7,7 @@ use crate::syntax::set::{OrderedSet, UnorderedSet};
 use crate::syntax::trivial::{self, TrivialReason};
 use crate::syntax::visit::{self, Visit};
 use crate::syntax::{
-    toposort, Api, Atom, Enum, ExternType, Impl, Lifetimes, Pair, Struct, Type, TypeAlias,
+    toposort, Api, Atom, Enum, EnumRepr, ExternType, Impl, Lifetimes, Pair, Struct, Type, TypeAlias,
 };
 use proc_macro2::Ident;
 use quote::ToTokens;
@@ -79,7 +79,7 @@ impl<'a> Types<'a> {
                         // If already declared as a struct or enum, or if
                         // colliding with something other than an extern C++
                         // type, then error.
-                        duplicate_name(cx, strct, ItemName::Type(ident));
+                        duplicate_name(cx, strct, ident);
                     }
                     structs.insert(&strct.name.rust, strct);
                     for field in &strct.fields {
@@ -88,7 +88,13 @@ impl<'a> Types<'a> {
                     add_resolution(&strct.name, &strct.generics);
                 }
                 Api::Enum(enm) => {
-                    all.insert(&enm.repr.repr_type);
+                    match &enm.repr {
+                        EnumRepr::Native { atom: _, repr_type } => {
+                            all.insert(repr_type);
+                        }
+                        #[cfg(feature = "experimental-enum-variants-from-header")]
+                        EnumRepr::Foreign { rust_type: _ } => {}
+                    }
                     let ident = &enm.name.rust;
                     if !type_names.insert(ident)
                         && (!cxx.contains(ident)
@@ -98,9 +104,14 @@ impl<'a> Types<'a> {
                         // If already declared as a struct or enum, or if
                         // colliding with something other than an extern C++
                         // type, then error.
-                        duplicate_name(cx, enm, ItemName::Type(ident));
+                        duplicate_name(cx, enm, ident);
                     }
                     enums.insert(ident, enm);
+                    if enm.variants_from_header {
+                        // #![variants_from_header] enums are implicitly extern
+                        // C++ type.
+                        cxx.insert(&enm.name.rust);
+                    }
                     add_resolution(&enm.name, &enm.generics);
                 }
                 Api::CxxType(ety) => {
@@ -112,7 +123,7 @@ impl<'a> Types<'a> {
                         // If already declared as an extern C++ type, or if
                         // colliding with something which is neither struct nor
                         // enum, then error.
-                        duplicate_name(cx, ety, ItemName::Type(ident));
+                        duplicate_name(cx, ety, ident);
                     }
                     cxx.insert(ident);
                     if !ety.trusted {
@@ -123,7 +134,7 @@ impl<'a> Types<'a> {
                 Api::RustType(ety) => {
                     let ident = &ety.name.rust;
                     if !type_names.insert(ident) {
-                        duplicate_name(cx, ety, ItemName::Type(ident));
+                        duplicate_name(cx, ety, ident);
                     }
                     rust.insert(ident);
                     add_resolution(&ety.name, &ety.generics);
@@ -131,11 +142,8 @@ impl<'a> Types<'a> {
                 Api::CxxFunction(efn) | Api::RustFunction(efn) => {
                     // Note: duplication of the C++ name is fine because C++ has
                     // function overloading.
-                    let self_type = efn.self_type();
-                    if !self_type.is_some_and(|self_type| self_type == "Self")
-                        && !function_names.insert((self_type, &efn.name.rust))
-                    {
-                        duplicate_name(cx, efn, ItemName::Function(self_type, &efn.name.rust));
+                    if !function_names.insert((&efn.receiver, &efn.name.rust)) {
+                        duplicate_name(cx, efn, &efn.name.rust);
                     }
                     for arg in &efn.args {
                         visit(&mut all, &arg.ty);
@@ -147,7 +155,7 @@ impl<'a> Types<'a> {
                 Api::TypeAlias(alias) => {
                     let ident = &alias.name.rust;
                     if !type_names.insert(ident) {
-                        duplicate_name(cx, alias, ItemName::Type(ident));
+                        duplicate_name(cx, alias, ident);
                     }
                     cxx.insert(ident);
                     aliases.insert(ident, alias);
@@ -166,7 +174,7 @@ impl<'a> Types<'a> {
             let Some(impl_key) = ty.impl_key() else {
                 continue;
             };
-            let implicit_impl = match &impl_key {
+            let implicit_impl = match impl_key {
                 ImplKey::RustBox(ident)
                 | ImplKey::RustVec(ident)
                 | ImplKey::UniquePtr(ident)
@@ -234,15 +242,9 @@ impl<'a> Types<'a> {
 
     pub(crate) fn needs_indirect_abi(&self, ty: &Type) -> bool {
         match ty {
-            Type::RustBox(_)
-            | Type::UniquePtr(_)
-            | Type::Ref(_)
-            | Type::Ptr(_)
-            | Type::Str(_)
-            | Type::Fn(_)
-            | Type::SliceRef(_) => false,
+            Type::RustBox(_) | Type::UniquePtr(_) => false,
             Type::Array(_) => true,
-            _ => !self.is_guaranteed_pod(ty) || self.is_considered_improper_ctype(ty),
+            _ => !self.is_guaranteed_pod(ty),
         }
     }
 
@@ -277,19 +279,7 @@ impl<'t, 'a> IntoIterator for &'t Types<'a> {
     }
 }
 
-enum ItemName<'a> {
-    Type(&'a Ident),
-    Function(Option<&'a Ident>, &'a Ident),
-}
-
-fn duplicate_name(cx: &mut Errors, sp: impl ToTokens, name: ItemName) {
-    let description = match name {
-        ItemName::Type(name) => format!("type `{}`", name),
-        ItemName::Function(Some(self_type), name) => {
-            format!("associated function `{}::{}`", self_type, name)
-        }
-        ItemName::Function(None, name) => format!("function `{}`", name),
-    };
-    let msg = format!("the {} is defined multiple times", description);
+fn duplicate_name(cx: &mut Errors, sp: impl ToTokens, ident: &Ident) {
+    let msg = format!("the name `{}` is defined multiple times", ident);
     cx.error(sp, msg);
 }

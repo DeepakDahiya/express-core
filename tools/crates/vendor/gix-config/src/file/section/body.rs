@@ -120,7 +120,7 @@ impl<'event> Body<'event> {
     }
 }
 
-impl Body<'_> {
+impl<'event> Body<'event> {
     pub(crate) fn as_ref(&self) -> &[Event<'_>] {
         &self.0
     }
@@ -148,10 +148,10 @@ impl Body<'_> {
                 }
                 Event::ValueNotDone(_) | Event::ValueDone(_) => {
                     if value_range.end == 0 {
-                        value_range.end = i;
+                        value_range.end = i
                     } else {
-                        value_range.start = i;
-                    }
+                        value_range.start = i
+                    };
                 }
                 _ => (),
             }

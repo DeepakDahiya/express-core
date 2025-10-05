@@ -13,6 +13,7 @@ use crate::{
 };
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod integrity {
     use std::{marker::PhantomData, path::PathBuf};
 
@@ -127,7 +128,7 @@ impl super::Store {
             assert!(
                 index.is_initialized(),
                 "BUG: after consolidating successfully, we have an initialized index"
-            );
+            )
         }
 
         progress.init(

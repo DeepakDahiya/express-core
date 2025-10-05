@@ -1,5 +1,4 @@
 #![allow(
-    clippy::elidable_lifetime_names,
     clippy::float_cmp,
     clippy::needless_lifetimes,
     clippy::needless_raw_string_hashes,
@@ -9,9 +8,7 @@
 )]
 
 #[macro_use]
-mod snapshot;
-
-mod debug;
+mod macros;
 
 use proc_macro2::{Delimiter, Group, Literal, Span, TokenStream, TokenTree};
 use quote::ToTokens;

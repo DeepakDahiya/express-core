@@ -1,15 +1,12 @@
 #![allow(
     clippy::assertions_on_result_states,
-    clippy::elidable_lifetime_names,
     clippy::needless_lifetimes,
     clippy::non_ascii_literal,
     clippy::uninlined_format_args
 )]
 
 #[macro_use]
-mod snapshot;
-
-mod debug;
+mod macros;
 
 use proc_macro2::{Delimiter, Group, Ident, Span, TokenStream, TokenTree};
 use quote::{quote, ToTokens as _};

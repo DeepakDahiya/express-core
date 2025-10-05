@@ -11,13 +11,13 @@ pub(crate) struct ImplGenerics<'a> {
 }
 
 pub(crate) struct TyGenerics<'a> {
-    key: &'a NamedImplKey<'a>,
+    key: NamedImplKey<'a>,
     explicit_impl: Option<&'a Impl>,
     resolve: Resolution<'a>,
 }
 
 pub(crate) fn split_for_impl<'a>(
-    key: &'a NamedImplKey<'a>,
+    key: NamedImplKey<'a>,
     explicit_impl: Option<&'a Impl>,
     resolve: Resolution<'a>,
 ) -> (ImplGenerics<'a>, TyGenerics<'a>) {

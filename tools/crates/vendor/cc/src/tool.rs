@@ -1,10 +1,3 @@
-use crate::{
-    command_helpers::{run_output, spawn, CargoOutput},
-    run,
-    tempfile::NamedTempfile,
-    Error, ErrorKind, OutputKind,
-};
-use std::io::Read;
 use std::{
     borrow::Cow,
     collections::HashMap,
@@ -14,6 +7,13 @@ use std::{
     path::{Path, PathBuf},
     process::{Command, Stdio},
     sync::RwLock,
+};
+
+use crate::{
+    command_helpers::{run_output, CargoOutput},
+    run,
+    tempfile::NamedTempfile,
+    Error, ErrorKind, OutputKind,
 };
 
 pub(crate) type CompilerFamilyLookupCache = HashMap<Box<[Box<OsStr>]>, ToolFamily>;
@@ -99,6 +99,7 @@ impl Tool {
         fn is_zig_cc(path: &Path, cargo_output: &CargoOutput) -> bool {
             run_output(
                 Command::new(path).arg("--version"),
+                path,
                 // tool detection issues should always be shown as warnings
                 cargo_output,
             )
@@ -124,6 +125,7 @@ impl Tool {
             // stdin is set to null to ensure that the help output is never paginated.
             let accepts_cl_style_flags = run(
                 Command::new(path).args(args).arg("-?").stdin(Stdio::null()),
+                path,
                 &{
                     // the errors are not errors!
                     let mut cargo_output = cargo_output.clone();
@@ -198,47 +200,24 @@ impl Tool {
             let mut compiler_detect_output = cargo_output.clone();
             compiler_detect_output.warnings = compiler_detect_output.debug;
 
-            let mut cmd = Command::new(path);
-            cmd.arg("-E").arg(tmp.path());
-
-            // The -Wslash-u-filename warning is normally part of stdout.
-            // But with clang-cl it can be part of stderr instead and exit with a
-            // non-zero exit code.
-            let mut captured_cargo_output = compiler_detect_output.clone();
-            captured_cargo_output.output = OutputKind::Capture;
-            captured_cargo_output.warnings = true;
-            let mut child = spawn(&mut cmd, &captured_cargo_output)?;
-
-            let mut out = vec![];
-            let mut err = vec![];
-            child.stdout.take().unwrap().read_to_end(&mut out)?;
-            child.stderr.take().unwrap().read_to_end(&mut err)?;
-
-            let status = child.wait()?;
-
-            let stdout = if [&out, &err]
-                .iter()
-                .any(|o| String::from_utf8_lossy(o).contains("-Wslash-u-filename"))
-            {
-                run_output(
-                    Command::new(path).arg("-E").arg("--").arg(tmp.path()),
-                    &compiler_detect_output,
-                )?
-            } else {
-                if !status.success() {
-                    return Err(Error::new(
-                        ErrorKind::ToolExecError,
-                        format!(
-                            "command did not execute successfully (status code {status}): {cmd:?}"
-                        ),
-                    ));
-                }
-
-                out
-            };
-
+            let stdout = run_output(
+                Command::new(path).arg("-E").arg(tmp.path()),
+                path,
+                &compiler_detect_output,
+            )?;
             let stdout = String::from_utf8_lossy(&stdout);
-            guess_family_from_stdout(&stdout, path, args, cargo_output)
+
+            if stdout.contains("-Wslash-u-filename") {
+                let stdout = run_output(
+                    Command::new(path).arg("-E").arg("--").arg(tmp.path()),
+                    path,
+                    &compiler_detect_output,
+                )?;
+                let stdout = String::from_utf8_lossy(&stdout);
+                guess_family_from_stdout(&stdout, path, args, cargo_output)
+            } else {
+                guess_family_from_stdout(&stdout, path, args, cargo_output)
+            }
         }
         let detect_family = |path: &Path, args: &[String]| -> Result<ToolFamily, Error> {
             let cache_key = [path.as_os_str()]
@@ -261,7 +240,8 @@ impl Tool {
 
         let family = detect_family(&path, &args).unwrap_or_else(|e| {
             cargo_output.print_warning(&format_args!(
-                "Compiler family detection failed due to error: {e}"
+                "Compiler family detection failed due to error: {}",
+                e
             ));
             match path.file_name().map(OsStr::to_string_lossy) {
                 Some(fname) if fname.contains("clang-cl") => ToolFamily::Msvc { clang_cl: true },
@@ -504,7 +484,7 @@ impl ToolFamily {
             ToolFamily::Gnu | ToolFamily::Clang { .. } => {
                 cmd.push_cc_arg(
                     dwarf_version
-                        .map_or_else(|| "-g".into(), |v| format!("-gdwarf-{v}"))
+                        .map_or_else(|| "-g".into(), |v| format!("-gdwarf-{}", v))
                         .into(),
                 );
             }

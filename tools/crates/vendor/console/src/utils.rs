@@ -166,15 +166,15 @@ pub struct Style {
 }
 
 impl Default for Style {
-    fn default() -> Self {
-        Self::new()
+    fn default() -> Style {
+        Style::new()
     }
 }
 
 impl Style {
     /// Returns an empty default style.
-    pub const fn new() -> Self {
-        Self {
+    pub fn new() -> Style {
+        Style {
             fg: None,
             bg: None,
             fg_bright: false,
@@ -192,8 +192,8 @@ impl Style {
     /// create a string that is red on blue background. `9.on_12` is
     /// the same, but using 256 color numbers. Unknown terms are
     /// ignored.
-    pub fn from_dotted_str(s: &str) -> Self {
-        let mut rv = Self::new();
+    pub fn from_dotted_str(s: &str) -> Style {
+        let mut rv = Style::new();
         for part in s.split('.') {
             rv = match part {
                 "black" => rv.black(),
@@ -253,14 +253,14 @@ impl Style {
     ///
     /// This overrides the automatic detection.
     #[inline]
-    pub const fn force_styling(mut self, value: bool) -> Self {
+    pub fn force_styling(mut self, value: bool) -> Style {
         self.force = Some(value);
         self
     }
 
     /// Specifies that style is applying to something being written on stderr.
     #[inline]
-    pub const fn for_stderr(mut self) -> Self {
+    pub fn for_stderr(mut self) -> Style {
         self.for_stderr = true;
         self
     }
@@ -269,152 +269,152 @@ impl Style {
     ///
     /// This is the default behaviour.
     #[inline]
-    pub const fn for_stdout(mut self) -> Self {
+    pub fn for_stdout(mut self) -> Style {
         self.for_stderr = false;
         self
     }
 
     /// Sets a foreground color.
     #[inline]
-    pub const fn fg(mut self, color: Color) -> Self {
+    pub fn fg(mut self, color: Color) -> Style {
         self.fg = Some(color);
         self
     }
 
     /// Sets a background color.
     #[inline]
-    pub const fn bg(mut self, color: Color) -> Self {
+    pub fn bg(mut self, color: Color) -> Style {
         self.bg = Some(color);
         self
     }
 
     /// Adds a attr.
     #[inline]
-    pub fn attr(mut self, attr: Attribute) -> Self {
+    pub fn attr(mut self, attr: Attribute) -> Style {
         self.attrs.insert(attr);
         self
     }
 
     #[inline]
-    pub const fn black(self) -> Self {
+    pub fn black(self) -> Style {
         self.fg(Color::Black)
     }
     #[inline]
-    pub const fn red(self) -> Self {
+    pub fn red(self) -> Style {
         self.fg(Color::Red)
     }
     #[inline]
-    pub const fn green(self) -> Self {
+    pub fn green(self) -> Style {
         self.fg(Color::Green)
     }
     #[inline]
-    pub const fn yellow(self) -> Self {
+    pub fn yellow(self) -> Style {
         self.fg(Color::Yellow)
     }
     #[inline]
-    pub const fn blue(self) -> Self {
+    pub fn blue(self) -> Style {
         self.fg(Color::Blue)
     }
     #[inline]
-    pub const fn magenta(self) -> Self {
+    pub fn magenta(self) -> Style {
         self.fg(Color::Magenta)
     }
     #[inline]
-    pub const fn cyan(self) -> Self {
+    pub fn cyan(self) -> Style {
         self.fg(Color::Cyan)
     }
     #[inline]
-    pub const fn white(self) -> Self {
+    pub fn white(self) -> Style {
         self.fg(Color::White)
     }
     #[inline]
-    pub const fn color256(self, color: u8) -> Self {
+    pub fn color256(self, color: u8) -> Style {
         self.fg(Color::Color256(color))
     }
 
     #[inline]
-    pub const fn bright(mut self) -> Self {
+    pub fn bright(mut self) -> Style {
         self.fg_bright = true;
         self
     }
 
     #[inline]
-    pub const fn on_black(self) -> Self {
+    pub fn on_black(self) -> Style {
         self.bg(Color::Black)
     }
     #[inline]
-    pub const fn on_red(self) -> Self {
+    pub fn on_red(self) -> Style {
         self.bg(Color::Red)
     }
     #[inline]
-    pub const fn on_green(self) -> Self {
+    pub fn on_green(self) -> Style {
         self.bg(Color::Green)
     }
     #[inline]
-    pub const fn on_yellow(self) -> Self {
+    pub fn on_yellow(self) -> Style {
         self.bg(Color::Yellow)
     }
     #[inline]
-    pub const fn on_blue(self) -> Self {
+    pub fn on_blue(self) -> Style {
         self.bg(Color::Blue)
     }
     #[inline]
-    pub const fn on_magenta(self) -> Self {
+    pub fn on_magenta(self) -> Style {
         self.bg(Color::Magenta)
     }
     #[inline]
-    pub const fn on_cyan(self) -> Self {
+    pub fn on_cyan(self) -> Style {
         self.bg(Color::Cyan)
     }
     #[inline]
-    pub const fn on_white(self) -> Self {
+    pub fn on_white(self) -> Style {
         self.bg(Color::White)
     }
     #[inline]
-    pub const fn on_color256(self, color: u8) -> Self {
+    pub fn on_color256(self, color: u8) -> Style {
         self.bg(Color::Color256(color))
     }
 
     #[inline]
-    pub const fn on_bright(mut self) -> Self {
+    pub fn on_bright(mut self) -> Style {
         self.bg_bright = true;
         self
     }
 
     #[inline]
-    pub fn bold(self) -> Self {
+    pub fn bold(self) -> Style {
         self.attr(Attribute::Bold)
     }
     #[inline]
-    pub fn dim(self) -> Self {
+    pub fn dim(self) -> Style {
         self.attr(Attribute::Dim)
     }
     #[inline]
-    pub fn italic(self) -> Self {
+    pub fn italic(self) -> Style {
         self.attr(Attribute::Italic)
     }
     #[inline]
-    pub fn underlined(self) -> Self {
+    pub fn underlined(self) -> Style {
         self.attr(Attribute::Underlined)
     }
     #[inline]
-    pub fn blink(self) -> Self {
+    pub fn blink(self) -> Style {
         self.attr(Attribute::Blink)
     }
     #[inline]
-    pub fn blink_fast(self) -> Self {
+    pub fn blink_fast(self) -> Style {
         self.attr(Attribute::BlinkFast)
     }
     #[inline]
-    pub fn reverse(self) -> Self {
+    pub fn reverse(self) -> Style {
         self.attr(Attribute::Reverse)
     }
     #[inline]
-    pub fn hidden(self) -> Self {
+    pub fn hidden(self) -> Style {
         self.attr(Attribute::Hidden)
     }
     #[inline]
-    pub fn strikethrough(self) -> Self {
+    pub fn strikethrough(self) -> Style {
         self.attr(Attribute::StrikeThrough)
     }
 }
@@ -719,7 +719,7 @@ fn str_width(s: &str) -> usize {
 }
 
 #[cfg(feature = "ansi-parsing")]
-pub(crate) fn char_width(c: char) -> usize {
+fn char_width(c: char) -> usize {
     #[cfg(feature = "unicode-width")]
     {
         use unicode_width::UnicodeWidthChar;
@@ -730,11 +730,6 @@ pub(crate) fn char_width(c: char) -> usize {
         let _c = c;
         1
     }
-}
-
-#[cfg(not(feature = "ansi-parsing"))]
-pub(crate) fn char_width(_c: char) -> usize {
-    1
 }
 
 /// Truncates a string to a certain number of characters.

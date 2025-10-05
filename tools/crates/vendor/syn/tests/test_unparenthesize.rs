@@ -2,7 +2,6 @@
 #![recursion_limit = "1024"]
 #![feature(rustc_private)]
 #![allow(
-    clippy::elidable_lifetime_names,
     clippy::manual_assert,
     clippy::match_like_matches_macro,
     clippy::needless_lifetimes,
@@ -43,10 +42,10 @@ fn test(path: &Path, failed: &AtomicUsize) {
 
     match panic::catch_unwind(|| -> syn::Result<()> {
         let mut before = syn::parse_file(&content)?;
-        FlattenParens::discard_attrs().visit_file_mut(&mut before);
+        FlattenParens.visit_file_mut(&mut before);
         let printed = before.to_token_stream();
         let mut after = syn::parse2::<syn::File>(printed.clone())?;
-        FlattenParens::discard_attrs().visit_file_mut(&mut after);
+        FlattenParens.visit_file_mut(&mut after);
         // Normalize features that we expect Syn not to print.
         AsIfPrinted.visit_file_mut(&mut before);
         if before != after {

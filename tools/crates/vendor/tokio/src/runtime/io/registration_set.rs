@@ -7,9 +7,6 @@ use std::ptr::NonNull;
 use std::sync::atomic::Ordering::{Acquire, Release};
 use std::sync::Arc;
 
-// Kind of arbitrary, but buffering 16 `ScheduledIo`s doesn't seem like much
-const NOTIFY_AFTER: usize = 16;
-
 pub(super) struct RegistrationSet {
     num_pending_release: AtomicUsize,
 }
@@ -38,7 +35,7 @@ impl RegistrationSet {
         let synced = Synced {
             is_shutdown: false,
             registrations: LinkedList::new(),
-            pending_release: Vec::with_capacity(NOTIFY_AFTER),
+            pending_release: Vec::with_capacity(16),
         };
 
         (set, synced)
@@ -72,6 +69,9 @@ impl RegistrationSet {
     // Returns `true` if the caller should unblock the I/O driver to purge
     // registrations pending release.
     pub(super) fn deregister(&self, synced: &mut Synced, registration: &Arc<ScheduledIo>) -> bool {
+        // Kind of arbitrary, but buffering 16 `ScheduledIo`s doesn't seem like much
+        const NOTIFY_AFTER: usize = 16;
+
         synced.pending_release.push(registration.clone());
 
         let len = synced.pending_release.len();

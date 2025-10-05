@@ -1,9 +1,8 @@
 use alloc::string::String;
 use core::char;
 
-use crate::endian::{LittleEndian as LE, U16Bytes};
-use crate::pe;
 use crate::read::{ReadError, ReadRef, Result};
+use crate::{pe, LittleEndian as LE, U16Bytes};
 
 /// The `.rsrc` section of a PE file.
 ///

@@ -102,18 +102,19 @@ where
     where
         K: Borrow<Q>,
     {
-        let value = self.map.remove(k)?;
-
-        // O(N) search, followed by O(N) removal
-        if let Some(index) = self
-            .oldest
-            .iter()
-            .position(|item| item.borrow() == k)
-        {
-            self.oldest.remove(index);
+        if let Some(value) = self.map.remove(k) {
+            // O(N) search, followed by O(N) removal
+            if let Some(index) = self
+                .oldest
+                .iter()
+                .position(|item| item.borrow() == k)
+            {
+                self.oldest.remove(index);
+            }
+            Some(value)
+        } else {
+            None
         }
-
-        Some(value)
     }
 }
 

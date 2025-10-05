@@ -1,11 +1,11 @@
+use std::cmp::Ordering;
+
 use super::parser::Cursor;
 use super::timezone::{LocalTimeType, SECONDS_PER_WEEK};
 use super::{
-    CUMUL_DAY_IN_MONTHS_NORMAL_YEAR, DAY_IN_MONTHS_NORMAL_YEAR, DAYS_PER_WEEK, Error,
+    Error, CUMUL_DAY_IN_MONTHS_NORMAL_YEAR, DAYS_PER_WEEK, DAY_IN_MONTHS_NORMAL_YEAR,
     SECONDS_PER_DAY,
 };
-use crate::{Datelike, NaiveDateTime};
-use std::cmp::Ordering;
 
 /// Transition rule
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
@@ -39,7 +39,7 @@ impl TransitionRule {
             Some(&b',') => std_offset - 3600,
             Some(_) => parse_offset(&mut cursor)?,
             None => {
-                return Err(Error::UnsupportedTzString("DST start and end rules must be provided"));
+                return Err(Error::UnsupportedTzString("DST start and end rules must be provided"))
             }
         };
 
@@ -81,14 +81,15 @@ impl TransitionRule {
     /// Find the local time type associated to the transition rule at the specified Unix time in seconds
     pub(super) fn find_local_time_type_from_local(
         &self,
-        local_time: NaiveDateTime,
+        local_time: i64,
+        year: i32,
     ) -> Result<crate::MappedLocalTime<LocalTimeType>, Error> {
         match self {
             TransitionRule::Fixed(local_time_type) => {
                 Ok(crate::MappedLocalTime::Single(*local_time_type))
             }
             TransitionRule::Alternate(alternate_time) => {
-                alternate_time.find_local_time_type_from_local(local_time)
+                alternate_time.find_local_time_type_from_local(local_time, year)
             }
         }
     }
@@ -219,16 +220,22 @@ impl AlternateTime {
                 }
             };
 
-        if is_dst { Ok(&self.dst) } else { Ok(&self.std) }
+        if is_dst {
+            Ok(&self.dst)
+        } else {
+            Ok(&self.std)
+        }
     }
 
     fn find_local_time_type_from_local(
         &self,
-        local_time: NaiveDateTime,
+        local_time: i64,
+        current_year: i32,
     ) -> Result<crate::MappedLocalTime<LocalTimeType>, Error> {
-        // Year must be between i32::MIN + 2 and i32::MAX - 2, year in NaiveDate is always smaller.
-        let current_year = local_time.year();
-        let local_time = local_time.and_utc().timestamp();
+        // Check if the current year is valid for the following computations
+        if !(i32::MIN + 2..=i32::MAX - 2).contains(&current_year) {
+            return Err(Error::OutOfRange("out of range date time"));
+        }
 
         let dst_start_transition_start =
             self.dst_start.unix_time(current_year, 0) + i64::from(self.dst_start_time);

@@ -1,16 +1,15 @@
 #![warn(missing_docs)]
 
-use core::iter::FromIterator;
+use std::iter::FromIterator;
 
 mod internal {
     use crate::{
         decode::{hex_decode_with_case, CheckCase},
         encode::hex_encode_custom,
     };
-    #[cfg(feature = "alloc")]
-    use alloc::{borrow::Cow, format, string::ToString, vec};
-    use core::iter::FromIterator;
+    use alloc::borrow::Cow;
     use serde::{de::Error, Deserializer, Serializer};
+    use std::iter::FromIterator;
 
     pub(crate) fn serialize<S, T>(
         data: T,
@@ -40,7 +39,7 @@ mod internal {
 
         hex_encode_custom(src, &mut dst[dst_start..], matches!(case, CheckCase::Upper))
             .map_err(serde::ser::Error::custom)?;
-        serializer.serialize_str(unsafe { ::core::str::from_utf8_unchecked(&dst) })
+        serializer.serialize_str(unsafe { ::std::str::from_utf8_unchecked(&dst) })
     }
 
     pub(crate) fn deserialize<'de, D, T>(
@@ -103,7 +102,7 @@ macro_rules! faster_hex_serde_macros {
         pub mod $mod_name {
             use crate::decode::CheckCase;
             use crate::serde::internal;
-            use core::iter::FromIterator;
+            use std::iter::FromIterator;
 
             /// Serializes `data` as hex string
             pub fn serialize<S, T>(data: T, serializer: S) -> Result<S::Ok, S::Error>

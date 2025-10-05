@@ -7,10 +7,11 @@ use crate::{Blob, Commit, Id, Object, Reference, Tag, Tree};
 
 pub mod iter;
 ///
+#[allow(clippy::empty_docs)]
 pub mod remote;
 
 mod errors;
-pub use errors::{edit, find, follow, head_commit, head_id, head_tree, head_tree_id, peel};
+pub use errors::{edit, find, follow, head_commit, head_id, head_tree_id, peel};
 
 use crate::ext::ObjectIdExt;
 
@@ -50,7 +51,7 @@ impl<'repo> Reference<'repo> {
     }
 }
 
-impl std::fmt::Debug for Reference<'_> {
+impl<'repo> std::fmt::Debug for Reference<'repo> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         std::fmt::Debug::fmt(&self.inner, f)
     }

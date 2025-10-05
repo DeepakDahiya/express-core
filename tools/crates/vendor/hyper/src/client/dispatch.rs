@@ -199,7 +199,8 @@ impl<T, U> Receiver<T, U> {
 
     #[cfg(feature = "http1")]
     pub(crate) fn try_recv(&mut self) -> Option<(T, Callback<T, U>)> {
-        match crate::common::task::now_or_never(self.inner.recv()) {
+        use futures_util::FutureExt;
+        match self.inner.recv().now_or_never() {
             Some(Some(mut env)) => env.0.take(),
             _ => None,
         }
@@ -303,23 +304,9 @@ impl<T> TrySendError<T> {
         self.message.take()
     }
 
-    /// Returns a reference to the recovered message.
-    ///
-    /// The message will not always have been recovered. If an error occurs
-    /// after the message has been serialized onto the connection, it will not
-    /// be available here.
-    pub fn message(&self) -> Option<&T> {
-        self.message.as_ref()
-    }
-
     /// Consumes this to return the inner error.
     pub fn into_error(self) -> crate::Error {
         self.error
-    }
-
-    /// Returns a reference to the inner error.
-    pub fn error(&self) -> &crate::Error {
-        &self.error
     }
 }
 

@@ -7,25 +7,29 @@
     doc = ::document_features::document_features!()
 )]
 #![cfg_attr(all(doc, feature = "document-features"), feature(doc_cfg, doc_auto_cfg))]
-#![deny(missing_docs, rust_2018_idioms, unsafe_code)]
+#![deny(missing_docs, rust_2018_idioms)]
+#![forbid(unsafe_code)]
+
 ///
 pub mod time;
 
 ///
 pub mod parse;
-pub use parse::function::{parse, parse_header};
+pub use parse::function::parse;
 
 /// A timestamp with timezone.
-#[derive(Default, PartialEq, Eq, Debug, Hash, Ord, PartialOrd, Clone, Copy)]
+#[derive(PartialEq, Eq, Debug, Hash, Ord, PartialOrd, Clone, Copy)]
 #[cfg_attr(feature = "serde", derive(serde::Serialize, serde::Deserialize))]
 pub struct Time {
-    /// The seconds that have passed since UNIX epoch. This makes it UTC, or `<seconds>+0000`.
+    /// The seconds that passed since UNIX epoch. This makes it UTC, or `<seconds>+0000`.
     pub seconds: SecondsSinceUnixEpoch,
     /// The time's offset in seconds, which may be negative to match the `sign` field.
     pub offset: OffsetInSeconds,
+    /// the sign of `offset`, used to encode `-0000` which would otherwise lose sign information.
+    pub sign: time::Sign,
 }
 
-/// The number of seconds since unix epoch.
+/// The amount of seconds since unix epoch.
 ///
 /// Note that negative dates represent times before the unix epoch.
 ///

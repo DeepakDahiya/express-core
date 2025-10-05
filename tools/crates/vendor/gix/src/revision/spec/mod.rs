@@ -1,6 +1,8 @@
-use crate::{bstr::BStr, ext::ReferenceExt, revision::Spec, Id, Reference};
+use crate::bstr::BStr;
+use crate::{ext::ReferenceExt, revision::Spec, Id, Reference};
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod parse;
 
 mod impls {
@@ -8,7 +10,7 @@ mod impls {
 
     use crate::revision::Spec;
 
-    impl Deref for Spec<'_> {
+    impl<'repo> Deref for Spec<'repo> {
         type Target = gix_revision::Spec;
 
         fn deref(&self) -> &Self::Target {
@@ -16,19 +18,19 @@ mod impls {
         }
     }
 
-    impl DerefMut for Spec<'_> {
+    impl<'repo> DerefMut for Spec<'repo> {
         fn deref_mut(&mut self) -> &mut Self::Target {
             &mut self.inner
         }
     }
 
-    impl PartialEq for Spec<'_> {
+    impl<'repo> PartialEq for Spec<'repo> {
         fn eq(&self, other: &Self) -> bool {
             self.inner == other.inner
         }
     }
 
-    impl Eq for Spec<'_> {}
+    impl<'repo> Eq for Spec<'repo> {}
 }
 
 /// Initialization

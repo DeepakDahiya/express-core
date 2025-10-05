@@ -213,7 +213,7 @@ impl ToTokens for ExternFn {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         // Notional token range for error reporting purposes.
         self.unsafety.to_tokens(tokens);
-        self.fn_token.to_tokens(tokens);
+        self.sig.fn_token.to_tokens(tokens);
         self.semi_token.to_tokens(tokens);
     }
 }
@@ -258,7 +258,7 @@ impl ToTokens for Signature {
             unsafety: _,
             fn_token,
             generics: _,
-            kind: _,
+            receiver: _,
             args,
             ret,
             throws: _,
@@ -291,8 +291,11 @@ impl ToTokens for Signature {
 
 impl ToTokens for EnumRepr {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        let EnumRepr { atom, repr_type: _ } = self;
-        atom.to_tokens(tokens);
+        match self {
+            EnumRepr::Native { atom, repr_type: _ } => atom.to_tokens(tokens),
+            #[cfg(feature = "experimental-enum-variants-from-header")]
+            EnumRepr::Foreign { rust_type } => rust_type.to_tokens(tokens),
+        }
     }
 }
 

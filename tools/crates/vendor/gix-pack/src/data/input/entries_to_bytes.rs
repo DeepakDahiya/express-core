@@ -1,5 +1,7 @@
 use std::iter::Peekable;
 
+use gix_features::hash;
+
 use crate::data::input;
 
 /// An implementation of [`Iterator`] to write [encoded entries][input::Entry] to an inner implementation each time
@@ -64,7 +66,7 @@ where
         self.trailer
     }
 
-    fn next_inner(&mut self, entry: input::Entry) -> Result<input::Entry, gix_hash::io::Error> {
+    fn next_inner(&mut self, entry: input::Entry) -> Result<input::Entry, input::Error> {
         if self.num_entries == 0 {
             let header_bytes = crate::data::header::encode(self.data_version, 0);
             self.output.write_all(&header_bytes[..])?;
@@ -80,7 +82,7 @@ where
         Ok(entry)
     }
 
-    fn write_header_and_digest(&mut self, last_entry: Option<&mut input::Entry>) -> Result<(), gix_hash::io::Error> {
+    fn write_header_and_digest(&mut self, last_entry: Option<&mut input::Entry>) -> Result<(), input::Error> {
         let header_bytes = crate::data::header::encode(self.data_version, self.num_entries);
         let num_bytes_written = if last_entry.is_some() {
             self.output.stream_position()?
@@ -93,7 +95,7 @@ where
 
         self.output.rewind()?;
         let interrupt_never = std::sync::atomic::AtomicBool::new(false);
-        let digest = gix_hash::bytes(
+        let digest = hash::bytes(
             &mut self.output,
             num_bytes_written,
             self.object_hash,
@@ -127,16 +129,13 @@ where
 
         match self.input.next() {
             Some(res) => Some(match res {
-                Ok(entry) => self
-                    .next_inner(entry)
-                    .and_then(|mut entry| {
-                        if self.input.peek().is_none() {
-                            self.write_header_and_digest(Some(&mut entry)).map(|_| entry)
-                        } else {
-                            Ok(entry)
-                        }
-                    })
-                    .map_err(input::Error::from),
+                Ok(entry) => self.next_inner(entry).and_then(|mut entry| {
+                    if self.input.peek().is_none() {
+                        self.write_header_and_digest(Some(&mut entry)).map(|_| entry)
+                    } else {
+                        Ok(entry)
+                    }
+                }),
                 Err(err) => {
                     self.is_done = true;
                     Err(err)
@@ -144,7 +143,7 @@ where
             }),
             None => match self.write_header_and_digest(None) {
                 Ok(_) => None,
-                Err(err) => Some(Err(err.into())),
+                Err(err) => Some(Err(err)),
             },
         }
     }

@@ -162,7 +162,6 @@ strings, the strings are matched without regard to ASCII case.
 | `%A`, `%a` | `Sunday`, `Sun` | The full and abbreviated weekday, respectively. |
 | `%B`, `%b`, `%h` | `June`, `Jun`, `Jun` | The full and abbreviated month name, respectively. |
 | `%C` | `20` | The century of the year. No padding. |
-| `%c` | `2024 M07 14, Sun 17:31:59` | The date and clock time via [`Custom`]. Supported when formatting only. |
 | `%D` | `7/14/24` | Equivalent to `%m/%d/%y`. |
 | `%d`, `%e` | `25`, ` 5` | The day of the month. `%d` is zero-padded, `%e` is space padded. |
 | `%F` | `2024-07-14` | Equivalent to `%Y-%m-%d`. |
@@ -177,33 +176,36 @@ strings, the strings are matched without regard to ASCII case.
 | `%l` | ` 3` | The hour in a 12 hour clock. Space padded. |
 | `%M` | `04` | The minute. Zero padded. |
 | `%m` | `01` | The month. Zero padded. |
-| `%N` | `123456000` | Fractional seconds, up to nanosecond precision. Alias for `%9f`. |
 | `%n` | `\n` | Formats as a newline character. Parses arbitrary whitespace. |
 | `%P` | `am` | Whether the time is in the AM or PM, lowercase. |
 | `%p` | `PM` | Whether the time is in the AM or PM, uppercase. |
 | `%Q` | `America/New_York`, `+0530` | An IANA time zone identifier, or `%z` if one doesn't exist. |
 | `%:Q` | `America/New_York`, `+05:30` | An IANA time zone identifier, or `%:z` if one doesn't exist. |
-| `%q` | `4` | The quarter of the year. Supported when formatting only. |
 | `%R` | `23:30` | Equivalent to `%H:%M`. |
-| `%r` | `8:30:00 AM` | The 12-hour clock time via [`Custom`]. Supported when formatting only. |
 | `%S` | `59` | The second. Zero padded. |
 | `%s` | `1737396540` | A Unix timestamp, in seconds. |
 | `%T` | `23:30:59` | Equivalent to `%H:%M:%S`. |
 | `%t` | `\t` | Formats as a tab character. Parses arbitrary whitespace. |
 | `%U` | `03` | Week number. Week 1 is the first week starting with a Sunday. Zero padded. |
 | `%u` | `7` | The day of the week beginning with Monday at `1`. |
-| `%V` | `05` | Week number in the [ISO 8601 week-based] calendar. Zero padded. |
 | `%W` | `03` | Week number. Week 1 is the first week starting with a Monday. Zero padded. |
 | `%w` | `0` | The day of the week beginning with Sunday at `0`. |
-| `%X` | `17:31:59` | The clock time via [`Custom`]. Supported when formatting only. |
-| `%x` | `2024 M07 14` | The date via [`Custom`]. Supported when formatting only. |
 | `%Y` | `2024` | A full year, including century. Zero padded to 4 digits. |
 | `%y` | `24` | A two-digit year. Represents only 1969-2068. Zero padded. |
 | `%Z` | `EDT` | A time zone abbreviation. Supported when formatting only. |
 | `%z` | `+0530` | A time zone offset in the format `[+-]HHMM[SS]`. |
 | `%:z` | `+05:30` | A time zone offset in the format `[+-]HH:MM[:SS]`. |
-| `%::z` | `+05:30:00` | A time zone offset in the format `[+-]HH:MM:SS`. |
-| `%:::z` | `-04`, `+05:30` | A time zone offset in the format `[+-]HH:[MM[:SS]]`. |
+
+The following specifiers are deprecated. Specifically, in `jiff 0.2`, `%V` will
+parse or print the ISO 8601 week number and `%:V` will no longer be recognized.
+To emit an IANA time zone identifier (which is what `%V` does in `jiff 0.1`)
+in a forward compatible way, please use the `%Q` or `%:Q` specifier (as listed
+above).
+
+| Specifier | Example | Description |
+| --------- | ------- | ----------- |
+| `%V` | `America/New_York`, `+0530` | An IANA time zone identifier, or `%z` if one doesn't exist. |
+| `%:V` | `America/New_York`, `+05:30` | An IANA time zone identifier, or `%:z` if one doesn't exist. |
 
 When formatting, the following flags can be inserted immediately after the `%`
 and before the directive:
@@ -218,8 +220,8 @@ entirely in uppercase by default.
 
 The above flags override the "default" settings of a specifier. For example,
 `%_d` pads with spaces instead of zeros, and `%0e` pads with zeros instead of
-spaces. The exceptions are the locale (`%c`, `%r`, `%X`, `%x`), and time zone
-(`%z`, `%:z`) specifiers. They are unaffected by any flags.
+spaces. The exceptions are the `%z` and `%:z` specifiers. They are unaffected
+by any flags.
 
 Moreover, any number of decimal digits can be inserted after the (possibly
 absent) flag and before the directive, so long as the parsed number is less
@@ -255,26 +257,20 @@ is variable width data. If you have a use case for this, please
 The following things are currently unsupported:
 
 * Parsing or formatting fractional seconds in the time time zone offset.
-* The `%+` conversion specifier is not supported since there doesn't seem to
-  be any consistent definition for it.
-* With only Jiff, the `%c`, `%r`, `%X` and `%x` locale oriented specifiers
-  use a default "unknown" locale via the [`DefaultCustom`] implementation
-  of the [`Custom`] trait. An example of the default locale format for `%c`
-  is `2024 M07 14, Sun 17:31:59`. One can either switch the POSIX locale
-  via [`PosixCustom`] (e.g., `Sun Jul 14 17:31:59 2024`), or write your own
-  implementation of [`Custom`] powered by [`icu`] and glued together with Jiff
-  via [`jiff-icu`].
-* The `E` and `O` locale modifiers are not supported.
+* A conversion specifier for an ISO 8601 week number. It is planned to support
+  this, via `%V`, in `jiff 0.2`.
+* Locale oriented conversion specifiers, such as `%c`, `%r` and `%+`, are not
+  supported by Jiff. For locale oriented datetime formatting, please use the
+  [`icu`] crate.
 
 [`strftime`]: https://pubs.opengroup.org/onlinepubs/009695399/functions/strftime.html
 [`strptime`]: https://pubs.opengroup.org/onlinepubs/009695399/functions/strptime.html
 [ISO 8601 week-based]: https://en.wikipedia.org/wiki/ISO_week_date
 [`icu`]: https://docs.rs/icu
-[`jiff-icu`]: https://docs.rs/jiff-icu
 */
 
 use crate::{
-    civil::{Date, DateTime, ISOWeekDate, Time, Weekday},
+    civil::{Date, DateTime, Time, Weekday},
     error::{err, ErrorContext},
     fmt::{
         strtime::{format::Formatter, parse::Parser},
@@ -282,8 +278,9 @@ use crate::{
     },
     tz::{Offset, OffsetConflict, TimeZone, TimeZoneDatabase},
     util::{
-        self, escape,
-        rangeint::RInto,
+        self,
+        array_str::Abbreviation,
+        escape,
         t::{self, C},
     },
     Error, Timestamp, Zoned,
@@ -431,395 +428,9 @@ pub fn format(
 ) -> Result<alloc::string::String, Error> {
     let broken_down_time: BrokenDownTime = broken_down_time.into();
 
-    let format = format.as_ref();
-    let mut buf = alloc::string::String::with_capacity(format.len());
+    let mut buf = alloc::string::String::new();
     broken_down_time.format(format, &mut buf)?;
     Ok(buf)
-}
-
-/// Configuration for customizing the behavior of formatting or parsing.
-///
-/// One important use case enabled by this type is the ability to set a
-/// [`Custom`] trait implementation to use when calling
-/// [`BrokenDownTime::format_with_config`]
-/// or [`BrokenDownTime::to_string_with_config`].
-///
-/// It is generally expected that most callers should not need to use this.
-/// At present, the only reasons to use this are:
-///
-/// * If you specifically need to provide locale aware formatting within
-/// the context of `strtime`-style APIs. Unless you specifically need this,
-/// you should prefer using the [`icu`] crate via [`jiff-icu`] to do type
-/// conversions. More specifically, follow the examples in the `icu::datetime`
-/// module for a modern approach to datetime localization that leverages
-/// Unicode.
-/// * If you specifically need to opt into "lenient" parsing such that most
-/// errors when formatting are silently ignored.
-///
-/// # Example
-///
-/// This example shows how to use [`PosixCustom`] via `strtime` formatting:
-///
-/// ```
-/// use jiff::{civil, fmt::strtime::{BrokenDownTime, PosixCustom, Config}};
-///
-/// let config = Config::new().custom(PosixCustom::new());
-/// let dt = civil::date(2025, 7, 1).at(17, 30, 0, 0);
-/// let tm = BrokenDownTime::from(dt);
-/// assert_eq!(
-///     tm.to_string_with_config(&config, "%c")?,
-///     "Tue Jul  1 17:30:00 2025",
-/// );
-///
-/// # Ok::<(), Box<dyn std::error::Error>>(())
-/// ```
-///
-/// [`icu`]: https://docs.rs/icu
-/// [`jiff-icu`]: https://docs.rs/jiff-icu
-#[derive(Clone, Debug)]
-pub struct Config<C> {
-    custom: C,
-    lenient: bool,
-}
-
-impl Config<DefaultCustom> {
-    /// Create a new default `Config` that uses [`DefaultCustom`].
-    #[inline]
-    pub const fn new() -> Config<DefaultCustom> {
-        Config { custom: DefaultCustom::new(), lenient: false }
-    }
-}
-
-impl<C> Config<C> {
-    /// Set the implementation of [`Custom`] to use in `strtime`-style APIs
-    /// that use this configuration.
-    #[inline]
-    pub fn custom<U: Custom>(self, custom: U) -> Config<U> {
-        Config { custom, lenient: self.lenient }
-    }
-
-    /// Enable lenient formatting.
-    ///
-    /// When this is enabled, most errors that occur during formatting are
-    /// silently ignored. For example, if you try to format `%z` with a
-    /// [`BrokenDownTime`] that lacks a time zone offset, this would normally
-    /// result in an error. In contrast, when lenient mode is enabled, this
-    /// would just result in `%z` being written literally.
-    ///
-    /// This currently has no effect on parsing, although this may change in
-    /// the future.
-    ///
-    /// Lenient formatting is disabled by default. It is strongly recommended
-    /// to keep it disabled in order to avoid mysterious failure modes for end
-    /// users. You should only enable this if you have strict requirements to
-    /// conform to legacy software behavior.
-    ///
-    /// # API stability
-    ///
-    /// An artifact of lenient parsing is that most error behaviors are
-    /// squashed in favor of writing the errant conversion specifier literally.
-    /// This means that if you use something like `%+`, which is currently
-    /// unrecognized, then that will result in a literal `%+` in the string
-    /// returned. But Jiff may one day add support for `%+` in a semver
-    /// compatible release.
-    ///
-    /// Stated differently, the set of unknown or error conditions is not
-    /// fixed and may decrease with time. This in turn means that the precise
-    /// conditions under which a conversion specifier gets written literally
-    /// to the resulting string may change over time in semver compatible
-    /// releases of Jiff.
-    ///
-    /// The alternative would be that Jiff could never add any new conversion
-    /// specifiers without making a semver incompatible release. The intent
-    /// of this policy is to avoid that scenario and permit reasonable
-    /// evolution of Jiff's `strtime` support.
-    ///
-    /// # Example
-    ///
-    /// This example shows how `%z` will be written literally if it would
-    /// otherwise fail:
-    ///
-    /// ```
-    /// use jiff::{civil, fmt::strtime::{BrokenDownTime, Config}};
-    ///
-    /// let tm = BrokenDownTime::from(civil::date(2025, 4, 30));
-    /// assert_eq!(
-    ///     tm.to_string("%F %z").unwrap_err().to_string(),
-    ///     "strftime formatting failed: %z failed: \
-    ///      requires offset to format time zone offset",
-    /// );
-    ///
-    /// // Now enable lenient mode:
-    /// let config = Config::new().lenient(true);
-    /// assert_eq!(
-    ///     tm.to_string_with_config(&config, "%F %z").unwrap(),
-    ///     "2025-04-30 %z",
-    /// );
-    ///
-    /// // Lenient mode also applies when using an unsupported
-    /// // or unrecognized conversion specifier. This would
-    /// // normally return an error for example:
-    /// assert_eq!(
-    ///     tm.to_string_with_config(&config, "%+ %0").unwrap(),
-    ///     "%+ %0",
-    /// );
-    /// ```
-    #[inline]
-    pub fn lenient(self, yes: bool) -> Config<C> {
-        Config { lenient: yes, ..self }
-    }
-}
-
-/// An interface for customizing `strtime`-style parsing and formatting.
-///
-/// Each method on this trait comes with a default implementation corresponding
-/// to the behavior of [`DefaultCustom`]. More methods on this trait may be
-/// added in the future.
-///
-/// Implementors of this trait can be attached to a [`Config`] which can then
-/// be passed to [`BrokenDownTime::format_with_config`] or
-/// [`BrokenDownTime::to_string_with_config`].
-///
-/// New methods with default implementations may be added to this trait in
-/// semver compatible releases of Jiff.
-///
-/// # Motivation
-///
-/// While Jiff's API is generally locale-agnostic, this trait is meant to
-/// provide a best effort "hook" for tailoring the behavior of `strtime`
-/// routines. More specifically, for conversion specifiers in `strtime`-style
-/// APIs that are influenced by locale settings.
-///
-/// In general, a `strtime`-style API is not optimal for localization.
-/// It's both too flexible and not expressive enough. As a result, mixing
-/// localization with `strtime`-style APIs is likely not a good idea. However,
-/// this is sometimes required for legacy or convenience reasons, and that's
-/// why Jiff provides this hook.
-///
-/// If you do need to localize datetimes but don't have a requirement to
-/// have it integrate with `strtime`-style APIs, then you should use the
-/// [`icu`] crate via [`jiff-icu`] for type conversions. And then follow the
-/// examples in the `icu::datetime` API for formatting datetimes.
-///
-/// # Supported conversion specifiers
-///
-/// Currently, only formatting for the following specifiers is supported:
-///
-/// * `%c` - Formatting the date and time.
-/// * `%r` - Formatting the 12-hour clock time.
-/// * `%X` - Formatting the clock time.
-/// * `%x` - Formatting the date.
-///
-/// # Unsupported behavior
-///
-/// This trait currently does not support parsing based on locale in any way.
-///
-/// This trait also does not support locale specific behavior for `%a`/`%A`
-/// (day of the week), `%b/`%B` (name of the month) or `%p`/`%P` (AM or PM).
-/// Supporting these is problematic with modern localization APIs, since
-/// modern APIs do not expose options to localize these things independent of
-/// anything else. Instead, they are subsumed most holistically into, e.g.,
-/// "print the long form of a date in the current locale."
-///
-/// Since the motivation for this trait is not really to provide the best way
-/// to localize datetimes, but rather, to facilitate convenience and
-/// inter-operation with legacy systems, it is plausible that the behaviors
-/// listed above could be supported by Jiff. If you need the above behaviors,
-/// please [open a new issue](https://github.com/BurntSushi/jiff/issues/new)
-/// with a proposal.
-///
-/// # Example
-///
-/// This example shows the difference between the default locale and the
-/// POSIX locale:
-///
-/// ```
-/// use jiff::{civil, fmt::strtime::{BrokenDownTime, PosixCustom, Config}};
-///
-/// let dt = civil::date(2025, 7, 1).at(17, 30, 0, 0);
-/// let tm = BrokenDownTime::from(dt);
-/// assert_eq!(
-///     tm.to_string("%c")?,
-///     "2025 M07 1, Tue 17:30:00",
-/// );
-///
-/// let config = Config::new().custom(PosixCustom::new());
-/// assert_eq!(
-///     tm.to_string_with_config(&config, "%c")?,
-///     "Tue Jul  1 17:30:00 2025",
-/// );
-///
-/// # Ok::<(), Box<dyn std::error::Error>>(())
-/// ```
-///
-/// [`icu`]: https://docs.rs/icu
-/// [`jiff-icu`]: https://docs.rs/jiff-icu
-pub trait Custom: Sized {
-    /// Called when formatting a datetime with the `%c` flag.
-    ///
-    /// This defaults to the implementation for [`DefaultCustom`].
-    fn format_datetime<W: Write>(
-        &self,
-        config: &Config<Self>,
-        _ext: &Extension,
-        tm: &BrokenDownTime,
-        wtr: &mut W,
-    ) -> Result<(), Error> {
-        tm.format_with_config(config, "%Y M%m %-d, %a %H:%M:%S", wtr)
-    }
-
-    /// Called when formatting a datetime with the `%x` flag.
-    ///
-    /// This defaults to the implementation for [`DefaultCustom`].
-    fn format_date<W: Write>(
-        &self,
-        config: &Config<Self>,
-        _ext: &Extension,
-        tm: &BrokenDownTime,
-        wtr: &mut W,
-    ) -> Result<(), Error> {
-        // 2025 M04 27
-        tm.format_with_config(config, "%Y M%m %-d", wtr)
-    }
-
-    /// Called when formatting a datetime with the `%X` flag.
-    ///
-    /// This defaults to the implementation for [`DefaultCustom`].
-    fn format_time<W: Write>(
-        &self,
-        config: &Config<Self>,
-        _ext: &Extension,
-        tm: &BrokenDownTime,
-        wtr: &mut W,
-    ) -> Result<(), Error> {
-        tm.format_with_config(config, "%H:%M:%S", wtr)
-    }
-
-    /// Called when formatting a datetime with the `%r` flag.
-    ///
-    /// This defaults to the implementation for [`DefaultCustom`].
-    fn format_12hour_time<W: Write>(
-        &self,
-        config: &Config<Self>,
-        _ext: &Extension,
-        tm: &BrokenDownTime,
-        wtr: &mut W,
-    ) -> Result<(), Error> {
-        tm.format_with_config(config, "%-I:%M:%S %p", wtr)
-    }
-}
-
-/// The default trait implementation of [`Custom`].
-///
-/// Whenever one uses the formatting or parsing routines in this module
-/// without providing a configuration, then this customization is the one
-/// that gets used.
-///
-/// The behavior of the locale formatting of this type is meant to match that
-/// of Unicode's `und` locale.
-///
-/// # Example
-///
-/// This example shows how to explicitly use [`DefaultCustom`] via `strtime`
-/// formatting:
-///
-/// ```
-/// use jiff::{civil, fmt::strtime::{BrokenDownTime, DefaultCustom, Config}};
-///
-/// let config = Config::new().custom(DefaultCustom::new());
-/// let dt = civil::date(2025, 7, 1).at(17, 30, 0, 0);
-/// let tm = BrokenDownTime::from(dt);
-/// assert_eq!(
-///     tm.to_string_with_config(&config, "%c")?,
-///     "2025 M07 1, Tue 17:30:00",
-/// );
-///
-/// # Ok::<(), Box<dyn std::error::Error>>(())
-/// ```
-#[derive(Clone, Debug, Default)]
-pub struct DefaultCustom(());
-
-impl DefaultCustom {
-    /// Create a new instance of this default customization.
-    pub const fn new() -> DefaultCustom {
-        DefaultCustom(())
-    }
-}
-
-impl Custom for DefaultCustom {}
-
-/// A POSIX locale implementation of [`Custom`].
-///
-/// The behavior of the locale formatting of this type is meant to match that
-/// of POSIX's `C` locale.
-///
-/// # Example
-///
-/// This example shows how to use [`PosixCustom`] via `strtime` formatting:
-///
-/// ```
-/// use jiff::{civil, fmt::strtime::{BrokenDownTime, PosixCustom, Config}};
-///
-/// let config = Config::new().custom(PosixCustom::new());
-/// let dt = civil::date(2025, 7, 1).at(17, 30, 0, 0);
-/// let tm = BrokenDownTime::from(dt);
-/// assert_eq!(
-///     tm.to_string_with_config(&config, "%c")?,
-///     "Tue Jul  1 17:30:00 2025",
-/// );
-///
-/// # Ok::<(), Box<dyn std::error::Error>>(())
-/// ```
-#[derive(Clone, Debug, Default)]
-pub struct PosixCustom(());
-
-impl PosixCustom {
-    /// Create a new instance of this POSIX customization.
-    pub const fn new() -> PosixCustom {
-        PosixCustom(())
-    }
-}
-
-impl Custom for PosixCustom {
-    fn format_datetime<W: Write>(
-        &self,
-        config: &Config<Self>,
-        _ext: &Extension,
-        tm: &BrokenDownTime,
-        wtr: &mut W,
-    ) -> Result<(), Error> {
-        tm.format_with_config(config, "%a %b %e %H:%M:%S %Y", wtr)
-    }
-
-    fn format_date<W: Write>(
-        &self,
-        config: &Config<Self>,
-        _ext: &Extension,
-        tm: &BrokenDownTime,
-        wtr: &mut W,
-    ) -> Result<(), Error> {
-        tm.format_with_config(config, "%m/%d/%y", wtr)
-    }
-
-    fn format_time<W: Write>(
-        &self,
-        config: &Config<Self>,
-        _ext: &Extension,
-        tm: &BrokenDownTime,
-        wtr: &mut W,
-    ) -> Result<(), Error> {
-        tm.format_with_config(config, "%H:%M:%S", wtr)
-    }
-
-    fn format_12hour_time<W: Write>(
-        &self,
-        config: &Config<Self>,
-        _ext: &Extension,
-        tm: &BrokenDownTime,
-        wtr: &mut W,
-    ) -> Result<(), Error> {
-        tm.format_with_config(config, "%I:%M:%S %p", wtr)
-    }
 }
 
 /// The "broken down time" used by parsing and formatting.
@@ -864,6 +475,12 @@ impl Custom for PosixCustom {
 // only catch is that you can't omit time units bigger than any present time
 // unit. For example, only `%M` doesn't fly. If you want to parse minutes, you
 // also have to parse hours.
+//
+// This design does also let us possibly do "incomplete" parsing by asking
+// the caller for a datetime to "seed" a `Fields` struct, and then execute
+// parsing. But Jiff doesn't currently expose an API to do that. But this
+// implementation was intentionally designed to support that use case, C
+// style, if it comes up.
 #[derive(Debug, Default)]
 pub struct BrokenDownTime {
     year: Option<t::Year>,
@@ -871,7 +488,6 @@ pub struct BrokenDownTime {
     day: Option<t::Day>,
     day_of_year: Option<t::DayOfYear>,
     iso_week_year: Option<t::ISOYear>,
-    iso_week: Option<t::ISOWeek>,
     week_sun: Option<t::WeekNum>,
     week_mon: Option<t::WeekNum>,
     hour: Option<t::Hour>,
@@ -888,13 +504,9 @@ pub struct BrokenDownTime {
     // be used with, say, %H. In that case, AM will
     // turn 13 o'clock to 1 o'clock.
     meridiem: Option<Meridiem>,
-    // A timestamp. Set only when converting from
-    // a `Zoned` or `Timestamp`. Currently used only
-    // to get time zone offset info.
-    timestamp: Option<Timestamp>,
-    // The time zone. Currently used only when
+    // The time zone abbreviation. Used only when
     // formatting a `Zoned`.
-    tz: Option<TimeZone>,
+    tzabbrev: Option<Abbreviation>,
     // The IANA time zone identifier. Used only when
     // formatting a `Zoned`.
     #[cfg(feature = "alloc")]
@@ -998,7 +610,7 @@ impl BrokenDownTime {
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     ///
-    /// # Example: how to parse only a part of a timestamp
+    /// # Example: how to parse a only parse of a timestamp
     ///
     /// If you only need, for example, the date from a timestamp, then you
     /// can parse it as a prefix:
@@ -1097,59 +709,8 @@ impl BrokenDownTime {
         format: impl AsRef<[u8]>,
         mut wtr: W,
     ) -> Result<(), Error> {
-        self.format_with_config(&Config::new(), format, &mut wtr)
-    }
-
-    /// Format this broken down time with a specific configuration using the
-    /// format string given.
-    ///
-    /// See the [module documentation](self) for details on what's supported.
-    ///
-    /// This routine is like [`BrokenDownTime::format`], except that it
-    /// permits callers to provide their own configuration instead of using
-    /// the default. This routine also accepts a `&mut W` instead of a `W`,
-    /// which may be more flexible in some situations.
-    ///
-    /// # Errors
-    ///
-    /// This returns an error when formatting failed. Formatting can fail
-    /// either because of an invalid format string, or if formatting requires
-    /// a field in `BrokenDownTime` to be set that isn't. For example, trying
-    /// to format a [`DateTime`] with the `%z` specifier will fail because a
-    /// `DateTime` has no time zone or offset information associated with it.
-    ///
-    /// Formatting also fails if writing to the given writer fails.
-    ///
-    /// # Example
-    ///
-    /// This example shows how to use [`PosixCustom`] to get formatting
-    /// for conversion specifiers like `%c` in the POSIX locale:
-    ///
-    /// ```
-    /// use jiff::{civil, fmt::strtime::{BrokenDownTime, PosixCustom, Config}};
-    ///
-    /// let mut buf = String::new();
-    /// let dt = civil::date(2025, 7, 1).at(17, 30, 0, 0);
-    /// let tm = BrokenDownTime::from(dt);
-    /// tm.format("%c", &mut buf)?;
-    /// assert_eq!(buf, "2025 M07 1, Tue 17:30:00");
-    ///
-    /// let config = Config::new().custom(PosixCustom::new());
-    /// buf.clear();
-    /// tm.format_with_config(&config, "%c", &mut buf)?;
-    /// assert_eq!(buf, "Tue Jul  1 17:30:00 2025");
-    ///
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
-    /// ```
-    #[inline]
-    pub fn format_with_config<W: Write, L: Custom>(
-        &self,
-        config: &Config<L>,
-        format: impl AsRef<[u8]>,
-        wtr: &mut W,
-    ) -> Result<(), Error> {
         let fmt = format.as_ref();
-        let mut formatter = Formatter { config, fmt, tm: self, wtr };
+        let mut formatter = Formatter { fmt, tm: self, wtr: &mut wtr };
         formatter.format().context("strftime formatting failed")?;
         Ok(())
     }
@@ -1195,62 +756,8 @@ impl BrokenDownTime {
         &self,
         format: impl AsRef<[u8]>,
     ) -> Result<alloc::string::String, Error> {
-        let format = format.as_ref();
-        let mut buf = alloc::string::String::with_capacity(format.len());
+        let mut buf = alloc::string::String::new();
         self.format(format, &mut buf)?;
-        Ok(buf)
-    }
-
-    /// Format this broken down time with a specific configuration using the
-    /// format string given into a new `String`.
-    ///
-    /// See the [module documentation](self) for details on what's supported.
-    ///
-    /// This routine is like [`BrokenDownTime::to_string`], except that it
-    /// permits callers to provide their own configuration instead of using
-    /// the default.
-    ///
-    /// # Errors
-    ///
-    /// This returns an error when formatting failed. Formatting can fail
-    /// either because of an invalid format string, or if formatting requires
-    /// a field in `BrokenDownTime` to be set that isn't. For example, trying
-    /// to format a [`DateTime`] with the `%z` specifier will fail because a
-    /// `DateTime` has no time zone or offset information associated with it.
-    ///
-    /// # Example
-    ///
-    /// This example shows how to use [`PosixCustom`] to get formatting
-    /// for conversion specifiers like `%c` in the POSIX locale:
-    ///
-    /// ```
-    /// use jiff::{civil, fmt::strtime::{BrokenDownTime, PosixCustom, Config}};
-    ///
-    /// let dt = civil::date(2025, 7, 1).at(17, 30, 0, 0);
-    /// let tm = BrokenDownTime::from(dt);
-    /// assert_eq!(
-    ///     tm.to_string("%c")?,
-    ///     "2025 M07 1, Tue 17:30:00",
-    /// );
-    ///
-    /// let config = Config::new().custom(PosixCustom::new());
-    /// assert_eq!(
-    ///     tm.to_string_with_config(&config, "%c")?,
-    ///     "Tue Jul  1 17:30:00 2025",
-    /// );
-    ///
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
-    /// ```
-    #[cfg(feature = "alloc")]
-    #[inline]
-    pub fn to_string_with_config<L: Custom>(
-        &self,
-        config: &Config<L>,
-        format: impl AsRef<[u8]>,
-    ) -> Result<alloc::string::String, Error> {
-        let format = format.as_ref();
-        let mut buf = alloc::string::String::with_capacity(format.len());
-        self.format_with_config(config, format, &mut buf)?;
         Ok(buf)
     }
 
@@ -1528,18 +1035,9 @@ impl BrokenDownTime {
     #[inline]
     pub fn to_date(&self) -> Result<Date, Error> {
         let Some(year) = self.year else {
-            // The Gregorian year and ISO week year may be parsed separately.
-            // That is, they are two different fields. So if the Gregorian year
-            // is absent, we might still have an ISO 8601 week date.
-            if let Some(date) = self.to_date_from_iso()? {
-                return Ok(date);
-            }
             return Err(err!("missing year, date cannot be created"));
         };
         let mut date = self.to_date_from_gregorian(year)?;
-        if date.is_none() {
-            date = self.to_date_from_iso()?;
-        }
         if date.is_none() {
             date = self.to_date_from_day_of_year(year)?;
         }
@@ -1586,26 +1084,13 @@ impl BrokenDownTime {
     ) -> Result<Option<Date>, Error> {
         let Some(doy) = self.day_of_year else { return Ok(None) };
         Ok(Some({
-            let first =
-                Date::new_ranged(year, C(1).rinto(), C(1).rinto()).unwrap();
+            let first = Date::new_ranged(year, C(1), C(1)).unwrap();
             first
                 .with()
                 .day_of_year(doy.get())
                 .build()
                 .context("invalid date")?
         }))
-    }
-
-    #[inline]
-    fn to_date_from_iso(&self) -> Result<Option<Date>, Error> {
-        let (Some(y), Some(w), Some(d)) =
-            (self.iso_week_year, self.iso_week, self.weekday)
-        else {
-            return Ok(None);
-        };
-        let wd = ISOWeekDate::new_ranged(y, w, d)
-            .context("invalid ISO 8601 week date")?;
-        Ok(Some(wd.date()))
     }
 
     #[inline]
@@ -1618,8 +1103,8 @@ impl BrokenDownTime {
         };
         let week = i16::from(week);
         let wday = i16::from(weekday.to_sunday_zero_offset());
-        let first_of_year = Date::new_ranged(year, C(1).rinto(), C(1).rinto())
-            .context("invalid date")?;
+        let first_of_year =
+            Date::new_ranged(year, C(1), C(1)).context("invalid date")?;
         let first_sunday = first_of_year
             .nth_weekday_of_month(1, Weekday::Sunday)
             .map(|d| d.day_of_year())
@@ -1666,8 +1151,8 @@ impl BrokenDownTime {
         };
         let week = i16::from(week);
         let wday = i16::from(weekday.to_monday_zero_offset());
-        let first_of_year = Date::new_ranged(year, C(1).rinto(), C(1).rinto())
-            .context("invalid date")?;
+        let first_of_year =
+            Date::new_ranged(year, C(1), C(1)).context("invalid date")?;
         let first_monday = first_of_year
             .nth_weekday_of_month(1, Weekday::Monday)
             .map(|d| d.day_of_year())
@@ -1968,8 +1453,8 @@ impl BrokenDownTime {
     /// // An error only occurs when you try to extract a date:
     /// assert_eq!(
     ///     tm.to_date().unwrap_err().to_string(),
-    ///     "invalid date: day-of-year=366 is out of range \
-    ///      for year=2023, must be in range 1..=365",
+    ///     "invalid date: parameter 'day-of-year' with value 366 \
+    ///      is not in the required range of 1..=365",
     /// );
     /// // But parsing a value that is always illegal will
     /// // result in an error:
@@ -2053,32 +1538,6 @@ impl BrokenDownTime {
     #[inline]
     pub fn iso_week_year(&self) -> Option<i16> {
         self.iso_week_year.map(|x| x.get())
-    }
-
-    /// Returns the parsed ISO 8601 week-based number, if available.
-    ///
-    /// The week number is guaranteed to be in the range `1..53`. Week `1` is
-    /// the first week of the year to contain 4 days.
-    ///
-    ///
-    /// # Example
-    ///
-    /// This shows how to parse just an ISO 8601 week-based dates:
-    ///
-    /// ```
-    /// use jiff::{civil::{Weekday, date}, fmt::strtime::BrokenDownTime};
-    ///
-    /// let tm = BrokenDownTime::parse("%G-W%V-%u", "2020-W01-1")?;
-    /// assert_eq!(tm.iso_week_year(), Some(2020));
-    /// assert_eq!(tm.iso_week(), Some(1));
-    /// assert_eq!(tm.weekday(), Some(Weekday::Monday));
-    /// assert_eq!(tm.to_date()?, date(2019, 12, 30));
-    ///
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
-    /// ```
-    #[inline]
-    pub fn iso_week(&self) -> Option<i8> {
-        self.iso_week.map(|x| x.get())
     }
 
     /// Returns the Sunday based week number.
@@ -2557,46 +2016,6 @@ impl BrokenDownTime {
         Ok(())
     }
 
-    /// Set the ISO 8601 week-based number on this broken down time.
-    ///
-    /// The week number must be in the range `1..53`. Week `1` is
-    /// the first week of the year to contain 4 days.
-    ///
-    /// # Errors
-    ///
-    /// This returns an error if the given week number is out of range.
-    ///
-    /// # Example
-    ///
-    /// ```
-    /// use jiff::{civil::Weekday, fmt::strtime::BrokenDownTime};
-    ///
-    /// let mut tm = BrokenDownTime::default();
-    /// // out of range
-    /// assert!(tm.set_iso_week(Some(0)).is_err());
-    /// // out of range
-    /// assert!(tm.set_iso_week(Some(54)).is_err());
-    ///
-    /// tm.set_iso_week_year(Some(2020))?;
-    /// tm.set_iso_week(Some(1))?;
-    /// tm.set_weekday(Some(Weekday::Monday));
-    /// assert_eq!(tm.to_string("%G-W%V-%u")?, "2020-W01-1");
-    /// assert_eq!(tm.to_string("%F")?, "2019-12-30");
-    ///
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
-    /// ```
-    #[inline]
-    pub fn set_iso_week(
-        &mut self,
-        week_number: Option<i8>,
-    ) -> Result<(), Error> {
-        self.iso_week = match week_number {
-            None => None,
-            Some(wk) => Some(t::ISOWeek::try_new("week-number", wk)?),
-        };
-        Ok(())
-    }
-
     /// Set the Sunday based week number.
     ///
     /// The week number returned is always in the range `0..=53`. Week `1`
@@ -2960,7 +2379,7 @@ impl BrokenDownTime {
 
 impl<'a> From<&'a Zoned> for BrokenDownTime {
     fn from(zdt: &'a Zoned) -> BrokenDownTime {
-        // let offset_info = zdt.time_zone().to_offset_info(zdt.timestamp());
+        let (_, _, tzabbrev) = zdt.time_zone().to_offset(zdt.timestamp());
         #[cfg(feature = "alloc")]
         let iana = {
             use alloc::string::ToString;
@@ -2968,8 +2387,10 @@ impl<'a> From<&'a Zoned> for BrokenDownTime {
         };
         BrokenDownTime {
             offset: Some(zdt.offset()),
-            timestamp: Some(zdt.timestamp()),
-            tz: Some(zdt.time_zone().clone()),
+            // In theory, this could fail, but I've never seen a time zone
+            // abbreviation longer than a few bytes. Please file an issue if
+            // this is a problem for you.
+            tzabbrev: Abbreviation::new(tzabbrev),
             #[cfg(feature = "alloc")]
             iana,
             ..BrokenDownTime::from(zdt.datetime())
@@ -2982,7 +2403,6 @@ impl From<Timestamp> for BrokenDownTime {
         let dt = Offset::UTC.to_datetime(ts);
         BrokenDownTime {
             offset: Some(Offset::UTC),
-            timestamp: Some(ts),
             ..BrokenDownTime::from(dt)
         }
     }
@@ -3011,17 +2431,6 @@ impl From<Date> for BrokenDownTime {
             year: Some(d.year_ranged()),
             month: Some(d.month_ranged()),
             day: Some(d.day_ranged()),
-            ..BrokenDownTime::default()
-        }
-    }
-}
-
-impl From<ISOWeekDate> for BrokenDownTime {
-    fn from(wd: ISOWeekDate) -> BrokenDownTime {
-        BrokenDownTime {
-            iso_week_year: Some(wd.year_ranged()),
-            iso_week: Some(wd.week_ranged()),
-            weekday: Some(wd.weekday()),
             ..BrokenDownTime::default()
         }
     }
@@ -3150,25 +2559,19 @@ impl From<Time> for Meridiem {
 
 /// These are "extensions" to the standard `strftime` conversion specifiers.
 ///
-/// This type represents which flags and/or padding were provided with a
-/// specifier. For example, `%_3d` uses 3 spaces of padding.
-///
-/// Currently, this type provides no structured introspection facilities. It
-/// is exported and available only via implementations of the [`Custom`] trait
-/// for reasons of semver compatible API evolution. If you have use cases for
-/// introspecting this type, please open an issue.
-#[derive(Clone, Debug)]
-pub struct Extension {
+/// Basically, these provide control over padding (zeros, spaces or none),
+/// how much to pad and the case of string enumerations.
+#[derive(Clone, Copy, Debug)]
+struct Extension {
     flag: Option<Flag>,
     width: Option<u8>,
-    colons: u8,
 }
 
 impl Extension {
     /// Parses an optional directive flag from the beginning of `fmt`. This
     /// assumes `fmt` is not empty and guarantees that the return unconsumed
     /// slice is also non-empty.
-    #[cfg_attr(feature = "perf-inline", inline(always))]
+    #[inline(always)]
     fn parse_flag<'i>(
         fmt: &'i [u8],
     ) -> Result<(Option<Flag>, &'i [u8]), Error> {
@@ -3201,7 +2604,7 @@ impl Extension {
     /// and `%.f`. In the former case, the width is just re-interpreted as
     /// a precision setting. In the latter case, something like `%5.9f` is
     /// technically valid, but the `5` is ignored.
-    #[cfg_attr(feature = "perf-inline", inline(always))]
+    #[inline(always)]
     fn parse_width<'i>(
         fmt: &'i [u8],
     ) -> Result<(Option<u8>, &'i [u8]), Error> {
@@ -3225,22 +2628,6 @@ impl Extension {
             ));
         }
         Ok((Some(width), fmt))
-    }
-
-    /// Parses an optional number of colons.
-    ///
-    /// This is meant to be used immediately before the conversion specifier
-    /// (after the flag and width has been parsed).
-    ///
-    /// This supports parsing up to 3 colons. The colons are used in some cases
-    /// for alternate specifiers. e.g., `%:Q` or `%:::z`.
-    #[cfg_attr(feature = "perf-inline", inline(always))]
-    fn parse_colons<'i>(fmt: &'i [u8]) -> (u8, &'i [u8]) {
-        let mut colons = 0;
-        while colons < 3 && colons < fmt.len() && fmt[colons] == b':' {
-            colons += 1;
-        }
-        (u8::try_from(colons).unwrap(), &fmt[usize::from(colons)..])
     }
 }
 

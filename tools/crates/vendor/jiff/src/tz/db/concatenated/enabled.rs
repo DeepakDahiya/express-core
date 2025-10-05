@@ -15,10 +15,7 @@ use std::{
 use crate::{
     error::{err, Error},
     timestamp::Timestamp,
-    tz::{
-        concatenated::ConcatenatedTzif, db::special_time_zone, TimeZone,
-        TimeZoneNameIter,
-    },
+    tz::{concatenated::ConcatenatedTzif, TimeZone},
     util::{self, array_str::ArrayStr, cache::Expiration, utf8},
 };
 
@@ -38,14 +35,14 @@ static TZDATA_LOCATIONS: &[TzdataLocation] = &[
     },
 ];
 
-pub(crate) struct Database {
+pub(crate) struct Concatenated {
     path: Option<PathBuf>,
     names: Option<Names>,
     zones: RwLock<CachedZones>,
 }
 
-impl Database {
-    pub(crate) fn from_env() -> Database {
+impl Concatenated {
+    pub(crate) fn from_env() -> Concatenated {
         let mut attempted = vec![];
         for loc in TZDATA_LOCATIONS {
             let path = loc.to_path_buf();
@@ -53,7 +50,7 @@ impl Database {
                 "opening concatenated tzdata database at {}",
                 path.display()
             );
-            match Database::from_path(&path) {
+            match Concatenated::from_path(&path) {
                 Ok(db) => return db,
                 Err(_err) => {
                     trace!("failed opening {}: {_err}", path.display());
@@ -66,21 +63,21 @@ impl Database {
              following paths: {}",
             attempted.join(", "),
         );
-        Database::none()
+        Concatenated::none()
     }
 
-    pub(crate) fn from_path(path: &Path) -> Result<Database, Error> {
+    pub(crate) fn from_path(path: &Path) -> Result<Concatenated, Error> {
         let names = Some(Names::new(path)?);
         let zones = RwLock::new(CachedZones::new());
-        Ok(Database { path: Some(path.to_path_buf()), names, zones })
+        Ok(Concatenated { path: Some(path.to_path_buf()), names, zones })
     }
 
     /// Creates a "dummy" zoneinfo database in which all lookups fail.
-    pub(crate) fn none() -> Database {
+    pub(crate) fn none() -> Concatenated {
         let path = None;
         let names = None;
         let zones = RwLock::new(CachedZones::new());
-        Database { path, names, zones }
+        Concatenated { path, names, zones }
     }
 
     pub(crate) fn reset(&self) {
@@ -92,8 +89,10 @@ impl Database {
     }
 
     pub(crate) fn get(&self, query: &str) -> Option<TimeZone> {
-        if let Some(tz) = special_time_zone(query) {
-            return Some(tz);
+        // We just always assume UTC exists and map it to our special const
+        // TimeZone::UTC value.
+        if query == "UTC" {
+            return Some(TimeZone::UTC);
         }
         let path = self.path.as_ref()?;
         // The fast path is when the query matches a pre-existing unexpired
@@ -186,14 +185,10 @@ impl Database {
         }
     }
 
-    pub(crate) fn available<'d>(&'d self) -> TimeZoneNameIter<'d> {
-        let Some(path) = self.path.as_ref() else {
-            return TimeZoneNameIter::empty();
-        };
-        let Some(names) = self.names.as_ref() else {
-            return TimeZoneNameIter::empty();
-        };
-        TimeZoneNameIter::from_iter(names.available(path).into_iter())
+    pub(crate) fn available(&self) -> Vec<String> {
+        let Some(path) = self.path.as_ref() else { return vec![] };
+        let Some(names) = self.names.as_ref() else { return vec![] };
+        names.available(path)
     }
 
     pub(crate) fn is_definitively_empty(&self) -> bool {
@@ -201,7 +196,7 @@ impl Database {
     }
 }
 
-impl core::fmt::Debug for Database {
+impl core::fmt::Debug for Concatenated {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(f, "Concatenated(")?;
         if let Some(ref path) = self.path {
@@ -566,7 +561,7 @@ mod tests {
         const ENV: &str = "JIFF_DEBUG_CONCATENATED_TZDATA";
         let Some(val) = std::env::var_os(ENV) else { return Ok(()) };
         let path = PathBuf::from(val);
-        let db = Database::from_path(&path)?;
+        let db = Concatenated::from_path(&path)?;
         for name in db.available() {
             std::eprintln!("{name}");
         }

@@ -4,16 +4,23 @@
 #include <ring-core/asm_base.h>
 
 #if !defined(OPENSSL_NO_ASM) && defined(OPENSSL_AARCH64) && defined(_WIN32)
+#include <ring-core/arm_arch.h>
+
 .text
 
-.globl	bn_mul_mont_nohw
+.globl	bn_mul_mont
 
-.def bn_mul_mont_nohw
+.def bn_mul_mont
    .type 32
 .endef
 .align	5
-bn_mul_mont_nohw:
+bn_mul_mont:
 	AARCH64_SIGN_LINK_REGISTER
+	tst	x5,#7
+	b.eq	__bn_sqr8x_mont
+	tst	x5,#3
+	b.eq	__bn_mul4x_mont
+Lmul_mont:
 	stp	x29,x30,[sp,#-64]!
 	add	x29,sp,#0
 	stp	x19,x20,[sp,#16]
@@ -209,14 +216,16 @@ Lcond_copy:
 	AARCH64_VALIDATE_LINK_REGISTER
 	ret
 
-.globl	bn_sqr8x_mont
-
-.def bn_sqr8x_mont
+.def __bn_sqr8x_mont
    .type 32
 .endef
 .align	5
-bn_sqr8x_mont:
-	AARCH64_SIGN_LINK_REGISTER
+__bn_sqr8x_mont:
+	// Not adding AARCH64_SIGN_LINK_REGISTER here because __bn_sqr8x_mont is jumped to
+	// only from bn_mul_mont which has already signed the return address.
+	cmp	x1,x2
+	b.ne	__bn_mul4x_mont
+Lsqr8x_mont:
 	stp	x29,x30,[sp,#-128]!
 	add	x29,sp,#0
 	stp	x19,x20,[sp,#16]
@@ -971,14 +980,14 @@ Lsqr8x_done:
 	AARCH64_VALIDATE_LINK_REGISTER
 	ret
 
-.globl	bn_mul4x_mont
-
-.def bn_mul4x_mont
+.def __bn_mul4x_mont
    .type 32
 .endef
 .align	5
-bn_mul4x_mont:
-	AARCH64_SIGN_LINK_REGISTER
+__bn_mul4x_mont:
+	// Not adding AARCH64_SIGN_LINK_REGISTER here because __bn_mul4x_mont is jumped to
+	// only from bn_mul_mont or __bn_mul8x_mont which have already signed the
+	// return address.
 	stp	x29,x30,[sp,#-128]!
 	add	x29,sp,#0
 	stp	x19,x20,[sp,#16]

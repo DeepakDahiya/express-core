@@ -23,11 +23,7 @@ impl<R: Unpin> TrackEof<R> {
 
 #[cfg(feature = "futures-io")]
 impl<R: futures::io::AsyncRead + Unpin> futures::io::AsyncRead for TrackEof<R> {
-    fn poll_read(
-        self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        buf: &mut [u8],
-    ) -> Poll<Result<usize>> {
+    fn poll_read(self: Pin<&mut Self>, cx: &mut Context, buf: &mut [u8]) -> Poll<Result<usize>> {
         let (inner, eof) = self.project();
         assert!(!*eof);
         match inner.poll_read(cx, buf) {
@@ -44,7 +40,7 @@ impl<R: futures::io::AsyncRead + Unpin> futures::io::AsyncRead for TrackEof<R> {
 
 #[cfg(feature = "futures-io")]
 impl<R: futures::io::AsyncBufRead + Unpin> futures::io::AsyncBufRead for TrackEof<R> {
-    fn poll_fill_buf(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<&[u8]>> {
+    fn poll_fill_buf(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Result<&[u8]>> {
         let (inner, eof) = self.project();
         assert!(!*eof);
         match inner.poll_fill_buf(cx) {
@@ -67,8 +63,8 @@ impl<R: futures::io::AsyncBufRead + Unpin> futures::io::AsyncBufRead for TrackEo
 impl<R: tokio::io::AsyncRead + Unpin> tokio::io::AsyncRead for TrackEof<R> {
     fn poll_read(
         self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        buf: &mut tokio::io::ReadBuf<'_>,
+        cx: &mut Context,
+        buf: &mut tokio::io::ReadBuf,
     ) -> Poll<Result<()>> {
         let (inner, eof) = self.project();
         assert!(!*eof);
@@ -87,7 +83,7 @@ impl<R: tokio::io::AsyncRead + Unpin> tokio::io::AsyncRead for TrackEof<R> {
 
 #[cfg(feature = "tokio")]
 impl<R: tokio::io::AsyncBufRead + Unpin> tokio::io::AsyncBufRead for TrackEof<R> {
-    fn poll_fill_buf(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<&[u8]>> {
+    fn poll_fill_buf(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Result<&[u8]>> {
         let (inner, eof) = self.project();
         assert!(!*eof);
         match inner.poll_fill_buf(cx) {

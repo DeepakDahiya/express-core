@@ -1,4 +1,3 @@
-#![cfg(all(feature = "v3", feature = "std"))]
 /// Base Metrics tests
 ///
 /// NOTE: These CVEs are actually `CVSS:3.0` and have been modified for the

@@ -32,7 +32,7 @@ impl PWSTR {
     ///
     /// The `PWSTR`'s pointer needs to be valid for reads up until and including the next `\0`.
     pub unsafe fn len(&self) -> usize {
-        unsafe { PCWSTR(self.0).len() }
+        PCWSTR(self.0).len()
     }
 
     /// Returns `true` if the string length is zero, and `false` otherwise.
@@ -41,7 +41,7 @@ impl PWSTR {
     ///
     /// The `PWSTR`'s pointer needs to be valid for reads up until and including the next `\0`.
     pub unsafe fn is_empty(&self) -> bool {
-        unsafe { self.len() == 0 }
+        self.len() == 0
     }
 
     /// String data without the trailing 0.
@@ -50,7 +50,7 @@ impl PWSTR {
     ///
     /// The `PWSTR`'s pointer needs to be valid for reads up until and including the next `\0`.
     pub unsafe fn as_wide(&self) -> &[u16] {
-        unsafe { core::slice::from_raw_parts(self.0, self.len()) }
+        core::slice::from_raw_parts(self.0, self.len())
     }
 
     /// Copy the `PWSTR` into a Rust `String`.
@@ -59,7 +59,7 @@ impl PWSTR {
     ///
     /// See the safety information for `PWSTR::as_wide`.
     pub unsafe fn to_string(&self) -> core::result::Result<String, alloc::string::FromUtf16Error> {
-        unsafe { String::from_utf16(self.as_wide()) }
+        String::from_utf16(self.as_wide())
     }
 
     /// Copy the `PWSTR` into an `HSTRING`.
@@ -67,8 +67,8 @@ impl PWSTR {
     /// # Safety
     ///
     /// See the safety information for `PWSTR::as_wide`.
-    pub unsafe fn to_hstring(&self) -> HSTRING {
-        unsafe { HSTRING::from_wide(self.as_wide()) }
+    pub unsafe fn to_hstring(&self) -> Result<HSTRING> {
+        HSTRING::from_wide(self.as_wide())
     }
 
     /// Allow this string to be displayed.
@@ -77,12 +77,6 @@ impl PWSTR {
     ///
     /// See the safety information for `PWSTR::as_wide`.
     pub unsafe fn display(&self) -> impl core::fmt::Display + '_ {
-        unsafe { Decode(move || core::char::decode_utf16(self.as_wide().iter().cloned())) }
-    }
-}
-
-impl Default for PWSTR {
-    fn default() -> Self {
-        Self::null()
+        Decode(move || core::char::decode_utf16(self.as_wide().iter().cloned()))
     }
 }

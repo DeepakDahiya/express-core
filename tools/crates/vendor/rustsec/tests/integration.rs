@@ -5,7 +5,7 @@
 use std::time::Duration;
 
 use rustsec::{
-    Collection, Database, Lockfile, VersionReq, advisory, database::Query, repository::git,
+    advisory, database::Query, repository::git, Collection, Database, Lockfile, VersionReq,
 };
 use tempfile::tempdir;
 

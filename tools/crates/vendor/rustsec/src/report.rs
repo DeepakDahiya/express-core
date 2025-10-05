@@ -4,12 +4,13 @@
 //! but also provide the core reporting functionality used in general.
 
 use crate::{
-    Lockfile, Map, advisory,
+    advisory,
     database::{Database, Query},
     map,
     platforms::target::{Arch, OS},
     vulnerability::Vulnerability,
     warning::{self, Warning},
+    Lockfile, Map,
 };
 use serde::{Deserialize, Serialize};
 

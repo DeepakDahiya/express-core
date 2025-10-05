@@ -25,21 +25,17 @@ impl<W> TrackClosed<W> {
 
 #[cfg(feature = "futures-io")]
 impl<W: futures::io::AsyncWrite + Unpin> futures::io::AsyncWrite for TrackClosed<W> {
-    fn poll_write(
-        mut self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        buf: &[u8],
-    ) -> Poll<Result<usize>> {
+    fn poll_write(mut self: Pin<&mut Self>, cx: &mut Context, buf: &[u8]) -> Poll<Result<usize>> {
         assert!(!self.closed);
         Pin::new(&mut self.inner).poll_write(cx, buf)
     }
 
-    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<()>> {
+    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Result<()>> {
         assert!(!self.closed);
         Pin::new(&mut self.inner).poll_flush(cx)
     }
 
-    fn poll_close(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<()>> {
+    fn poll_close(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Result<()>> {
         assert!(!self.closed);
         match Pin::new(&mut self.inner).poll_close(cx) {
             Poll::Ready(Ok(())) => {
@@ -52,8 +48,8 @@ impl<W: futures::io::AsyncWrite + Unpin> futures::io::AsyncWrite for TrackClosed
 
     fn poll_write_vectored(
         mut self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        bufs: &[std::io::IoSlice<'_>],
+        cx: &mut Context,
+        bufs: &[std::io::IoSlice],
     ) -> Poll<Result<usize>> {
         assert!(!self.closed);
         Pin::new(&mut self.inner).poll_write_vectored(cx, bufs)
@@ -62,21 +58,17 @@ impl<W: futures::io::AsyncWrite + Unpin> futures::io::AsyncWrite for TrackClosed
 
 #[cfg(feature = "tokio")]
 impl<W: tokio::io::AsyncWrite + Unpin> tokio::io::AsyncWrite for TrackClosed<W> {
-    fn poll_write(
-        mut self: Pin<&mut Self>,
-        cx: &mut Context<'_>,
-        buf: &[u8],
-    ) -> Poll<Result<usize>> {
+    fn poll_write(mut self: Pin<&mut Self>, cx: &mut Context, buf: &[u8]) -> Poll<Result<usize>> {
         assert!(!self.closed);
         Pin::new(&mut self.inner).poll_write(cx, buf)
     }
 
-    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<()>> {
+    fn poll_flush(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Result<()>> {
         assert!(!self.closed);
         Pin::new(&mut self.inner).poll_flush(cx)
     }
 
-    fn poll_shutdown(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Result<()>> {
+    fn poll_shutdown(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Result<()>> {
         assert!(!self.closed);
         match Pin::new(&mut self.inner).poll_shutdown(cx) {
             Poll::Ready(Ok(())) => {

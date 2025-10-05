@@ -1,11 +1,11 @@
 use std::collections::BTreeSet;
 use std::str::FromStr;
 
-use crate::platforms::{OS, platform::PlatformReq};
+use crate::platforms::{platform::PlatformReq, OS};
 use once_cell::sync::OnceCell;
 
-use crate::Report;
 use crate::binary_scanning::BinaryFormat;
+use crate::Report;
 
 /// Filters a [Report] to remove advisories not applicable to the given binary type.
 ///

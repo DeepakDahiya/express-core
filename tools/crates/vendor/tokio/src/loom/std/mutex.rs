@@ -1,7 +1,7 @@
 use std::sync::{self, MutexGuard, TryLockError};
 
 /// Adapter for `std::Mutex` that removes the poisoning aspects
-/// from its API.
+/// from its api.
 #[derive(Debug)]
 pub(crate) struct Mutex<T: ?Sized>(sync::Mutex<T>);
 
@@ -31,6 +31,14 @@ impl<T> Mutex<T> {
             Ok(guard) => Some(guard),
             Err(TryLockError::Poisoned(p_err)) => Some(p_err.into_inner()),
             Err(TryLockError::WouldBlock) => None,
+        }
+    }
+
+    #[inline]
+    pub(crate) fn get_mut(&mut self) -> &mut T {
+        match self.0.get_mut() {
+            Ok(val) => val,
+            Err(p_err) => p_err.into_inner(),
         }
     }
 }

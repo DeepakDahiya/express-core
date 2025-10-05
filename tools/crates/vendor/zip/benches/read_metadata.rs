@@ -4,6 +4,7 @@ use std::fs;
 use std::io::{self, prelude::*, Cursor};
 
 use bencher::Bencher;
+use getrandom::getrandom;
 use tempfile::TempDir;
 use zip::write::SimpleFileOptions;
 use zip::{result::ZipResult, CompressionMethod, ZipArchive, ZipWriter};
@@ -21,7 +22,7 @@ fn generate_random_archive(count_files: usize, file_size: usize) -> ZipResult<Ve
     for i in 0..count_files {
         let name = format!("file_deadbeefdeadbeefdeadbeefdeadbeefdeadbeefdeadbeef_{i}.dat");
         writer.start_file(name, options)?;
-        getrandom::fill(&mut bytes).map_err(io::Error::from)?;
+        getrandom(&mut bytes).map_err(io::Error::from)?;
         writer.write_all(&bytes)?;
     }
 
@@ -46,7 +47,7 @@ fn generate_zip32_archive_with_random_comment(comment_length: usize) -> ZipResul
     let options = SimpleFileOptions::default().compression_method(CompressionMethod::Stored);
 
     let mut bytes = vec![0u8; comment_length];
-    getrandom::fill(&mut bytes).unwrap();
+    getrandom(&mut bytes).unwrap();
     writer.set_raw_comment(bytes.into_boxed_slice());
 
     writer.start_file("asdf.txt", options)?;
@@ -75,7 +76,7 @@ fn generate_zip64_archive_with_random_comment(comment_length: usize) -> ZipResul
         .large_file(true);
 
     let mut bytes = vec![0u8; comment_length];
-    getrandom::fill(&mut bytes).unwrap();
+    getrandom(&mut bytes).unwrap();
     writer.set_raw_comment(bytes.into_boxed_slice());
 
     writer.start_file("asdf.txt", options)?;

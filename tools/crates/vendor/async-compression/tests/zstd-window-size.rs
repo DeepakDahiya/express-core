@@ -1,6 +1,6 @@
 #![cfg(not(windows))]
 
-use compression_codecs::zstd::params::DParameter;
+use async_compression::zstd::DParameter;
 use tokio::io::AsyncWriteExt as _;
 
 #[tokio::test]

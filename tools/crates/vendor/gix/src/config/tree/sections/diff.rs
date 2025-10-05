@@ -165,7 +165,7 @@ mod renames {
     }
 }
 
-pub(super) mod validate {
+mod validate {
     use crate::{
         bstr::BStr,
         config::tree::{keys, Diff},

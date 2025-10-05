@@ -16,6 +16,7 @@ macro_rules! version {
 /// A helper macro to statically validate the version (when used as a const parameter).
 macro_rules! validate_version {
     ($version:ident) => {
+        #[allow(clippy::let_unit_value)]
         let _ = $crate::format_description::parse::Version::<$version>::IS_VALID;
     };
 }
@@ -144,7 +145,9 @@ impl Location {
 /// A start and end point within a string.
 #[derive(Clone, Copy)]
 struct Span {
+    #[allow(clippy::missing_docs_in_private_items)]
     start: Location,
+    #[allow(clippy::missing_docs_in_private_items)]
     end: Location,
 }
 

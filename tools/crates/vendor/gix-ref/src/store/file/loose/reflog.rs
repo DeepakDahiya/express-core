@@ -84,6 +84,7 @@ impl file::Store {
 }
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod create_or_update {
     use std::{
         borrow::Cow,
@@ -126,7 +127,7 @@ pub mod create_or_update {
                             }
                         })?;
                         options.create(true);
-                    }
+                    };
 
                     let file_for_appending = match options.open(&log_path) {
                         Ok(f) => Some(f),

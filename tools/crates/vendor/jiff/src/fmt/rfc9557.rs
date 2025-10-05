@@ -643,7 +643,9 @@ mod tests {
         Some(
             (
                 TimeZone(
-                    25:59:00,
+                    Fixed(
+                        25:59:00,
+                    ),
                 ),
                 false,
             ),
@@ -653,7 +655,9 @@ mod tests {
         Some(
             (
                 TimeZone(
-                    -25:59:00,
+                    Fixed(
+                        -25:59:00,
+                    ),
                 ),
                 false,
             ),
@@ -1017,12 +1021,6 @@ mod tests {
     #[cfg(feature = "std")]
     #[test]
     fn err_time_zone_db_lookup() {
-        // The error message snapshotted below can vary based on tzdb
-        // config, so only run this when we know we've got a real tzdb.
-        if crate::tz::db().is_definitively_empty() {
-            return;
-        }
-
         let p = |input| {
             Parser::new()
                 .parse(input)

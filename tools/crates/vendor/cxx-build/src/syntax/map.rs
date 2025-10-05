@@ -1,48 +1,73 @@
 use std::borrow::Borrow;
 use std::hash::Hash;
 use std::ops::Index;
+use std::slice;
 
 pub(crate) use self::ordered::OrderedMap;
 pub(crate) use self::unordered::UnorderedMap;
 pub(crate) use std::collections::hash_map::Entry;
 
 mod ordered {
+    use super::{Entry, Iter, UnorderedMap};
+    use std::borrow::Borrow;
     use std::hash::Hash;
+    use std::mem;
 
-    pub(crate) struct OrderedMap<K, V>(indexmap::IndexMap<K, V>);
+    pub(crate) struct OrderedMap<K, V> {
+        map: UnorderedMap<K, usize>,
+        vec: Vec<(K, V)>,
+    }
 
     impl<K, V> OrderedMap<K, V> {
         pub(crate) fn new() -> Self {
-            OrderedMap(indexmap::IndexMap::new())
+            OrderedMap {
+                map: UnorderedMap::new(),
+                vec: Vec::new(),
+            }
+        }
+
+        pub(crate) fn iter(&self) -> Iter<K, V> {
+            Iter(self.vec.iter())
         }
 
         #[allow(dead_code)] // only used by cxx-build, not cxxbridge-macro
         pub(crate) fn keys(&self) -> impl Iterator<Item = &K> {
-            self.0.keys()
+            self.vec.iter().map(|(k, _v)| k)
         }
     }
 
     impl<K, V> OrderedMap<K, V>
     where
-        K: Hash + Eq,
+        K: Copy + Hash + Eq,
     {
         pub(crate) fn insert(&mut self, key: K, value: V) -> Option<V> {
-            self.0.insert(key, value)
+            match self.map.entry(key) {
+                Entry::Occupied(entry) => {
+                    let i = &mut self.vec[*entry.get()];
+                    Some(mem::replace(&mut i.1, value))
+                }
+                Entry::Vacant(entry) => {
+                    entry.insert(self.vec.len());
+                    self.vec.push((key, value));
+                    None
+                }
+            }
         }
 
         pub(crate) fn contains_key<Q>(&self, key: &Q) -> bool
         where
-            Q: ?Sized + Hash + indexmap::Equivalent<K>,
+            K: Borrow<Q>,
+            Q: ?Sized + Hash + Eq,
         {
-            self.0.contains_key(key)
+            self.map.contains_key(key)
         }
     }
 
     impl<'a, K, V> IntoIterator for &'a OrderedMap<K, V> {
         type Item = (&'a K, &'a V);
-        type IntoIter = indexmap::map::Iter<'a, K, V>;
+        type IntoIter = Iter<'a, K, V>;
         fn into_iter(self) -> Self::IntoIter {
-            self.0.iter()
+            self.iter()
         }
     }
 }
@@ -110,6 +135,21 @@ mod unordered {
             }
             set
         }
+    }
+}
+
+pub(crate) struct Iter<'a, K, V>(slice::Iter<'a, (K, V)>);
+
+impl<'a, K, V> Iterator for Iter<'a, K, V> {
+    type Item = (&'a K, &'a V);
+
+    fn next(&mut self) -> Option<Self::Item> {
+        let (k, v) = self.0.next()?;
+        Some((k, v))
+    }
+
+    fn size_hint(&self) -> (usize, Option<usize>) {
+        self.0.size_hint()
     }
 }
 

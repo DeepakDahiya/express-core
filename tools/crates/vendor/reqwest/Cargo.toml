@@ -13,16 +13,9 @@
 edition = "2021"
 rust-version = "1.64.0"
 name = "reqwest"
-version = "0.12.23"
+version = "0.12.12"
 authors = ["Sean McArthur <sean@seanmonstar.com>"]
 build = false
-include = [
-    "README.md",
-    "Cargo.toml",
-    "LICENSE-APACHE",
-    "LICENSE-MIT",
-    "src/**/*.rs",
-]
 autolib = false
 autobins = false
 autoexamples = false
@@ -65,11 +58,14 @@ features = [
 ]
 
 [features]
+__internal_proxy_sys_no_cache = []
 __rustls = [
     "dep:hyper-rustls",
     "dep:tokio-rustls",
     "dep:rustls",
     "__tls",
+    "dep:rustls-pemfile",
+    "dep:rustls-pki-types",
 ]
 __rustls-ring = [
     "hyper-rustls?/ring",
@@ -78,27 +74,22 @@ __rustls-ring = [
     "quinn?/ring",
 ]
 __tls = [
-    "dep:rustls-pki-types",
+    "dep:rustls-pemfile",
     "tokio/io-util",
 ]
 blocking = [
     "dep:futures-channel",
     "futures-channel?/sink",
-    "dep:futures-util",
-    "futures-util?/io",
-    "futures-util?/sink",
+    "futures-util/io",
+    "futures-util/sink",
     "tokio/sync",
 ]
 brotli = [
     "dep:async-compression",
     "async-compression?/brotli",
-    "dep:futures-util",
     "dep:tokio-util",
 ]
-charset = [
-    "dep:encoding_rs",
-    "dep:mime",
-]
+charset = ["dep:encoding_rs"]
 cookies = [
     "dep:cookie_crate",
     "dep:cookie_store",
@@ -107,7 +98,7 @@ default = [
     "default-tls",
     "charset",
     "http2",
-    "system-proxy",
+    "macos-system-configuration",
 ]
 default-tls = [
     "dep:hyper-tls",
@@ -118,19 +109,14 @@ default-tls = [
 deflate = [
     "dep:async-compression",
     "async-compression?/zlib",
-    "dep:futures-util",
     "dep:tokio-util",
 ]
 gzip = [
     "dep:async-compression",
     "async-compression?/gzip",
-    "dep:futures-util",
     "dep:tokio-util",
 ]
-hickory-dns = [
-    "dep:hickory-resolver",
-    "dep:once_cell",
-]
+hickory-dns = ["dep:hickory-resolver"]
 http2 = [
     "h2",
     "hyper/http2",
@@ -142,14 +128,12 @@ http3 = [
     "dep:h3",
     "dep:h3-quinn",
     "dep:quinn",
-    "tokio/macros",
+    "dep:slab",
+    "dep:futures-channel",
 ]
 json = ["dep:serde_json"]
-macos-system-configuration = ["system-proxy"]
-multipart = [
-    "dep:mime_guess",
-    "dep:futures-util",
-]
+macos-system-configuration = ["dep:system-configuration"]
+multipart = ["dep:mime_guess"]
 native-tls = ["default-tls"]
 native-tls-alpn = [
     "native-tls",
@@ -185,19 +169,16 @@ rustls-tls-webpki-roots-no-provider = [
     "hyper-rustls?/webpki-tokio",
     "__rustls",
 ]
-socks = []
+socks = ["dep:tokio-socks"]
 stream = [
     "tokio/fs",
-    "dep:futures-util",
     "dep:tokio-util",
     "dep:wasm-streams",
 ]
-system-proxy = ["hyper-util/client-proxy-system"]
 trust-dns = []
 zstd = [
     "dep:async-compression",
     "async-compression?/zstd",
-    "dep:futures-util",
     "dep:tokio-util",
 ]
 
@@ -205,11 +186,126 @@ zstd = [
 name = "reqwest"
 path = "src/lib.rs"
 
+[[example]]
+name = "blocking"
+path = "examples/blocking.rs"
+required-features = ["blocking"]
+
+[[example]]
+name = "connect_via_lower_priority_tokio_runtime"
+path = "examples/connect_via_lower_priority_tokio_runtime.rs"
+
+[[example]]
+name = "form"
+path = "examples/form.rs"
+
+[[example]]
+name = "h3_simple"
+path = "examples/h3_simple.rs"
+
+[[example]]
+name = "json_dynamic"
+path = "examples/json_dynamic.rs"
+required-features = ["json"]
+
+[[example]]
+name = "json_typed"
+path = "examples/json_typed.rs"
+required-features = ["json"]
+
+[[example]]
+name = "simple"
+path = "examples/simple.rs"
+
+[[example]]
+name = "tor_socks"
+path = "examples/tor_socks.rs"
+required-features = ["socks"]
+
+[[test]]
+name = "badssl"
+path = "tests/badssl.rs"
+
+[[test]]
+name = "blocking"
+path = "tests/blocking.rs"
+required-features = ["blocking"]
+
+[[test]]
+name = "brotli"
+path = "tests/brotli.rs"
+required-features = [
+    "brotli",
+    "stream",
+]
+
+[[test]]
+name = "client"
+path = "tests/client.rs"
+
+[[test]]
+name = "connector_layers"
+path = "tests/connector_layers.rs"
+
+[[test]]
+name = "cookie"
+path = "tests/cookie.rs"
+required-features = ["cookies"]
+
+[[test]]
+name = "deflate"
+path = "tests/deflate.rs"
+required-features = [
+    "deflate",
+    "stream",
+]
+
+[[test]]
+name = "gzip"
+path = "tests/gzip.rs"
+required-features = [
+    "gzip",
+    "stream",
+]
+
+[[test]]
+name = "multipart"
+path = "tests/multipart.rs"
+required-features = ["multipart"]
+
+[[test]]
+name = "proxy"
+path = "tests/proxy.rs"
+
+[[test]]
+name = "redirect"
+path = "tests/redirect.rs"
+
+[[test]]
+name = "timeouts"
+path = "tests/timeouts.rs"
+
+[[test]]
+name = "upgrade"
+path = "tests/upgrade.rs"
+
+[[test]]
+name = "wasm_simple"
+path = "tests/wasm_simple.rs"
+
+[[test]]
+name = "zstd"
+path = "tests/zstd.rs"
+required-features = [
+    "zstd",
+    "stream",
+]
+
 [dependencies.base64]
 version = "0.22"
 
 [dependencies.bytes]
-version = "1.2"
+version = "1.0"
 
 [dependencies.futures-core]
 version = "0.3.28"
@@ -217,11 +313,10 @@ default-features = false
 
 [dependencies.futures-util]
 version = "0.3.28"
-optional = true
 default-features = false
 
 [dependencies.http]
-version = "1.1"
+version = "1"
 
 [dependencies.mime_guess]
 version = "2.0"
@@ -287,16 +382,16 @@ version = "0.4"
 optional = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.h3]
-version = "0.0.8"
+version = "0.0.6"
 optional = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.h3-quinn]
-version = "0.0.10"
+version = "0.0.7"
 optional = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.hickory-resolver]
-version = "0.25"
-features = ["tokio"]
+version = "0.24"
+features = ["tokio-runtime"]
 optional = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.http-body]
@@ -326,21 +421,22 @@ version = "0.6"
 optional = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.hyper-util]
-version = "0.1.12"
+version = "0.1.10"
 features = [
     "http1",
     "client",
     "client-legacy",
-    "client-proxy",
     "tokio",
 ]
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies.ipnet]
+version = "2.3"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.log]
 version = "0.4.17"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.mime]
 version = "0.3.16"
-optional = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.native-tls-crate]
 version = "0.2.10"
@@ -349,7 +445,6 @@ package = "native-tls"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.once_cell]
 version = "1.18"
-optional = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.percent-encoding]
 version = "2.3"
@@ -379,9 +474,17 @@ default-features = false
 version = "0.8.0"
 optional = true
 
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies.rustls-pemfile]
+version = "2"
+optional = true
+
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.rustls-pki-types]
-version = "1.9.0"
-features = ["std"]
+version = "1.1.0"
+features = ["alloc"]
+optional = true
+
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies.slab]
+version = "0.4.9"
 optional = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.tokio]
@@ -402,6 +505,10 @@ features = ["tls12"]
 optional = true
 default-features = false
 
+[target.'cfg(not(target_arch = "wasm32"))'.dependencies.tokio-socks]
+version = "0.5.2"
+optional = true
+
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.tokio-util]
 version = "0.7.9"
 features = [
@@ -414,23 +521,17 @@ default-features = false
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.tower]
 version = "0.5.2"
 features = [
-    "retry",
     "timeout",
     "util",
 ]
 default-features = false
 
-[target.'cfg(not(target_arch = "wasm32"))'.dependencies.tower-http]
-version = "0.6.5"
-features = ["follow-redirect"]
-default-features = false
-
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies.webpki-roots]
-version = "1"
+version = "0.26.0"
 optional = true
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies.brotli_crate]
-version = "8"
+version = "6.0.0"
 package = "brotli"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies.doc-comment]
@@ -438,9 +539,6 @@ version = "0.3"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies.env_logger]
 version = "0.10"
-
-[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies.flate2]
-version = "1.0.13"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies.futures-util]
 version = "0.3.28"
@@ -461,16 +559,23 @@ features = [
 default-features = false
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies.hyper-util]
-version = "0.1.12"
+version = "0.1.10"
 features = [
     "http1",
     "http2",
     "client",
     "client-legacy",
     "server-auto",
-    "server-graceful",
     "tokio",
 ]
+
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies.libflate]
+version = "2.1"
+
+[target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies.rustls]
+version = "0.23"
+features = ["ring"]
+default-features = false
 
 [target.'cfg(not(target_arch = "wasm32"))'.dev-dependencies.serde]
 version = "1.0"
@@ -489,7 +594,7 @@ version = "0.13"
 package = "zstd"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies.js-sys]
-version = "0.3.77"
+version = "0.3.45"
 
 [target.'cfg(target_arch = "wasm32")'.dependencies.serde_json]
 version = "1.0"
@@ -522,7 +627,6 @@ features = [
     "RequestCredentials",
     "File",
     "ReadableStream",
-    "RequestCache",
 ]
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies.wasm-bindgen]
@@ -531,6 +635,13 @@ features = ["serde-serialize"]
 
 [target.'cfg(target_arch = "wasm32")'.dev-dependencies.wasm-bindgen-test]
 version = "0.3"
+
+[target.'cfg(target_os = "macos")'.dependencies.system-configuration]
+version = "0.6.0"
+optional = true
+
+[target."cfg(windows)".dependencies.windows-registry]
+version = "0.2"
 
 [lints.rust.unexpected_cfgs]
 level = "warn"

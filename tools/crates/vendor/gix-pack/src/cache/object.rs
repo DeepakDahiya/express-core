@@ -4,11 +4,9 @@ use crate::cache;
 
 #[cfg(feature = "object-cache-dynamic")]
 mod memory {
-    use std::num::NonZeroUsize;
-
-    use clru::WeightScale;
-
     use crate::{cache, cache::set_vec_to_slice};
+    use clru::WeightScale;
+    use std::num::NonZeroUsize;
 
     struct Entry {
         data: Vec<u8>,
@@ -74,9 +72,9 @@ mod memory {
                 Some(e.kind)
             });
             if res.is_some() {
-                self.debug.hit();
+                self.debug.hit()
             } else {
-                self.debug.miss();
+                self.debug.miss()
             }
             res
         }
@@ -101,7 +99,7 @@ impl cache::Object for Never {
 impl<T: cache::Object + ?Sized> cache::Object for Box<T> {
     fn put(&mut self, id: gix_hash::ObjectId, kind: gix_object::Kind, data: &[u8]) {
         use std::ops::DerefMut;
-        self.deref_mut().put(id, kind, data);
+        self.deref_mut().put(id, kind, data)
     }
 
     fn get(&mut self, id: &gix_hash::ObjectId, out: &mut Vec<u8>) -> Option<gix_object::Kind> {

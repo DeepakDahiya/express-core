@@ -273,11 +273,6 @@ impl<'a> Unstructured<'a> {
     /// Do not use this to generate the size of a collection. Use
     /// `arbitrary_len` instead.
     ///
-    /// The probability distribution of the return value is not necessarily uniform.
-    ///
-    /// Returns `range.start()`, not an error,
-    /// if this `Unstructured` [is empty][Unstructured::is_empty].
-    ///
     /// # Panics
     ///
     /// Panics if `range.start > range.end`. That is, the given range must be
@@ -382,12 +377,8 @@ impl<'a> Unstructured<'a> {
     ///
     /// This should only be used inside of `Arbitrary` implementations.
     ///
-    /// The probability distribution of choices is not necessarily uniform.
-    ///
-    /// Returns the first choice, not an error,
-    /// if this `Unstructured` [is empty][Unstructured::is_empty].
-    ///
-    /// Returns an error if no choices are provided.
+    /// Returns an error if there is not enough underlying data to make a
+    /// choice or if no choices are provided.
     ///
     /// # Examples
     ///
@@ -425,12 +416,8 @@ impl<'a> Unstructured<'a> {
     ///
     /// This should only be used inside of `Arbitrary` implementations.
     ///
-    /// The probability distribution of choices is not necessarily uniform.
-    ///
-    /// Returns the first choice, not an error,
-    /// if this `Unstructured` [is empty][Unstructured::is_empty].
-    ///
-    /// Returns an error if no choices are provided.
+    /// Returns an error if there is not enough underlying data to make a
+    /// choice or if no choices are provided.
     ///
     /// # Examples
     ///
@@ -462,15 +449,11 @@ impl<'a> Unstructured<'a> {
 
     /// Choose a value in `0..len`.
     ///
-    /// The probability distribution of return values is not necessarily uniform.
-    ///
-    /// Returns zero, not an error, if this `Unstructured` [is empty][Unstructured::is_empty].
-    ///
     /// Returns an error if the `len` is zero.
     ///
     /// # Examples
     ///
-    /// Using Fisher–Yates shuffle shuffle to generate an arbitrary permutation.
+    /// Using Fisher–Yates shuffle shuffle to gerate an arbitrary permutation.
     ///
     /// [Fisher–Yates shuffle]: https://en.wikipedia.org/wiki/Fisher–Yates_shuffle
     ///
@@ -509,9 +492,7 @@ impl<'a> Unstructured<'a> {
         Ok(idx)
     }
 
-    /// Generate a boolean which is true with probability approximately the given ratio.
-    ///
-    /// Returns true, not an error, if this `Unstructured` [is empty][Unstructured::is_empty].
+    /// Generate a boolean according to the given ratio.
     ///
     /// # Panics
     ///
@@ -531,7 +512,7 @@ impl<'a> Unstructured<'a> {
     /// let mut u = Unstructured::new(&my_data);
     ///
     /// if u.ratio(5, 7)? {
-    ///     // Take this branch approximately 5/7 of the time.
+    ///     // Take this branch 5/7 of the time.
     /// }
     /// # Ok(())
     /// # }
@@ -771,7 +752,7 @@ pub struct ArbitraryIter<'a, 'b, ElementType> {
     _marker: PhantomData<ElementType>,
 }
 
-impl<'a, ElementType: Arbitrary<'a>> Iterator for ArbitraryIter<'a, '_, ElementType> {
+impl<'a, 'b, ElementType: Arbitrary<'a>> Iterator for ArbitraryIter<'a, 'b, ElementType> {
     type Item = Result<ElementType>;
     fn next(&mut self) -> Option<Result<ElementType>> {
         let keep_going = self.u.arbitrary().unwrap_or(false);

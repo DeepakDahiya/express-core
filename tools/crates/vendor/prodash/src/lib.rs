@@ -1,5 +1,4 @@
 #![deny(unsafe_code, missing_docs)]
-#![allow(clippy::empty_docs)]
 
 /*!
 Prodash is a dashboard for displaying the progress of concurrent application.
@@ -34,7 +33,10 @@ Please have a look at the [dashboard demo](https://github.com/Byron/crates-io-cl
 [![asciicast](https://asciinema.org/a/301838.svg)](https://asciinema.org/a/301838)
 
 Run it with `cargo run --example dashboard` and see what else it can do by checking out `cargo run --example dashboard -- --help`.
- */
+*/
+#[cfg(feature = "atty")]
+pub use atty;
+
 #[cfg(feature = "progress-tree")]
 ///
 pub mod tree;
@@ -47,7 +49,7 @@ pub use log::info;
 #[cfg(feature = "progress-tree-log")]
 pub use log::warn;
 
-#[cfg(any(feature = "jiff", feature = "local-time"))]
+#[cfg(any(feature = "humantime", feature = "time"))]
 ///
 pub mod time;
 

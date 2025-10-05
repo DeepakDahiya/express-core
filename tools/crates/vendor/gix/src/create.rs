@@ -53,14 +53,14 @@ struct PathCursor<'a>(&'a mut PathBuf);
 
 struct NewDir<'a>(&'a mut PathBuf);
 
-impl PathCursor<'_> {
+impl<'a> PathCursor<'a> {
     fn at(&mut self, component: &str) -> &Path {
         self.0.push(component);
         self.0.as_path()
     }
 }
 
-impl NewDir<'_> {
+impl<'a> NewDir<'a> {
     fn at(self, component: &str) -> Result<Self, Error> {
         self.0.push(component);
         create_dir(self.0)?;
@@ -71,13 +71,13 @@ impl NewDir<'_> {
     }
 }
 
-impl Drop for NewDir<'_> {
+impl<'a> Drop for NewDir<'a> {
     fn drop(&mut self) {
         self.0.pop();
     }
 }
 
-impl Drop for PathCursor<'_> {
+impl<'a> Drop for PathCursor<'a> {
     fn drop(&mut self) {
         self.0.pop();
     }
@@ -160,7 +160,7 @@ pub fn into(
         if dot_git.is_dir() {
             return Err(Error::DirectoryExists { path: dot_git });
         }
-    }
+    };
     create_dir(&dot_git)?;
 
     {

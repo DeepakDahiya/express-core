@@ -1,6 +1,6 @@
 //! The `[versions]` subsection of an advisory.
 
-use crate::{Error, osv};
+use crate::{osv, Error};
 use semver::{Version, VersionReq};
 use serde::{Deserialize, Serialize};
 

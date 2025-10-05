@@ -59,8 +59,10 @@ impl Metadata {
             #[cfg(any(target_os = "aix", target_os = "hurd"))]
             let seconds = self.0.st_mtim.tv_sec;
 
-            #[cfg(not(any(target_os = "aix", target_os = "hurd")))]
+            #[cfg(not(any(target_os = "netbsd", target_os = "aix", target_os = "hurd")))]
             let nanoseconds = self.0.st_mtime_nsec;
+            #[cfg(target_os = "netbsd")]
+            let nanoseconds = self.0.st_mtimensec;
             #[cfg(any(target_os = "aix", target_os = "hurd"))]
             let nanoseconds = self.0.st_mtim.tv_nsec;
 
@@ -86,8 +88,10 @@ impl Metadata {
             #[cfg(any(target_os = "aix", target_os = "hurd"))]
             let seconds = self.0.st_ctim.tv_sec;
 
-            #[cfg(not(any(target_os = "aix", target_os = "hurd")))]
+            #[cfg(not(any(target_os = "netbsd", target_os = "aix", target_os = "hurd")))]
             let nanoseconds = self.0.st_ctime_nsec;
+            #[cfg(target_os = "netbsd")]
+            let nanoseconds = self.0.st_ctimensec;
             #[cfg(any(target_os = "aix", target_os = "hurd"))]
             let nanoseconds = self.0.st_ctim.tv_nsec;
 

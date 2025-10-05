@@ -2,7 +2,7 @@
 
 #[cfg(feature = "formatting")]
 use alloc::string::String;
-use core::num::{NonZeroI32, NonZeroU8};
+use core::num::NonZeroI32;
 use core::ops::{Add, Sub};
 use core::time::Duration as StdDuration;
 use core::{cmp, fmt};
@@ -19,7 +19,7 @@ use crate::ext::DigitCount;
 #[cfg(feature = "formatting")]
 use crate::formatting::Formattable;
 use crate::internal_macros::{
-    const_try, const_try_opt, div_floor, ensure_ranged, expect_opt, impl_add_assign,
+    cascade, const_try, const_try_opt, div_floor, ensure_ranged, expect_opt, impl_add_assign,
     impl_sub_assign,
 };
 #[cfg(feature = "parsing")]
@@ -49,10 +49,10 @@ pub(crate) const MAX_YEAR: i32 = if cfg!(feature = "large-dates") {
 /// and introduces some ambiguities when parsing.
 #[derive(Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord)]
 pub struct Date {
-    /// Bitpacked field containing the year, ordinal, and whether the year is a leap year.
-    // |     x      | xxxxxxxxxxxxxxxxxxxxx |       x       | xxxxxxxxx |
-    // |   1 bit    |        21 bits        |     1 bit     |  9 bits   |
-    // | unassigned |         year          | is leap year? |  ordinal  |
+    /// Bitpacked field containing both the year and ordinal.
+    // |     xx     | xxxxxxxxxxxxxxxxxxxxx | xxxxxxxxx |
+    // |   2 bits   |        21 bits        |  9 bits   |
+    // | unassigned |         year          |  ordinal  |
     // The year is 15 bits when `large-dates` is not enabled.
     value: NonZeroI32,
 }
@@ -73,41 +73,25 @@ impl Date {
     pub const MAX: Self =
         unsafe { Self::__from_ordinal_date_unchecked(MAX_YEAR, days_in_year(MAX_YEAR)) };
 
-    /// Construct a `Date` from its internal representation, the validity of which must be
-    /// guaranteed by the caller.
-    ///
-    /// # Safety
-    ///
-    /// - `ordinal` must be non-zero and at most the number of days in `year`
-    /// - `is_leap_year` must be `true` if and only if `year` is a leap year
-    const unsafe fn from_parts(year: i32, is_leap_year: bool, ordinal: u16) -> Self {
-        debug_assert!(year >= MIN_YEAR);
-        debug_assert!(year <= MAX_YEAR);
-        debug_assert!(ordinal != 0);
-        debug_assert!(ordinal <= days_in_year(year));
-        debug_assert!(crate::util::is_leap_year(year) == is_leap_year);
-
-        Self {
-            // Safety: `ordinal` is not zero.
-            value: unsafe {
-                NonZeroI32::new_unchecked(
-                    (year << 10) | ((is_leap_year as i32) << 9) | ordinal as i32,
-                )
-            },
-        }
-    }
-
+    // region: constructors
     /// Construct a `Date` from the year and ordinal values, the validity of which must be
     /// guaranteed by the caller.
     ///
     /// # Safety
     ///
-    /// `ordinal` must be non-zero and at most the number of days in `year`. `year` should be in the
-    /// range `MIN_YEAR..=MAX_YEAR`, but this is not a safety invariant.
+    /// `ordinal` must not be zero. `year` should be in the range `MIN_YEAR..=MAX_YEAR`, but this
+    /// is not a safety invariant.
     #[doc(hidden)]
     pub const unsafe fn __from_ordinal_date_unchecked(year: i32, ordinal: u16) -> Self {
-        // Safety: The caller must guarantee that `ordinal` is not zero.
-        unsafe { Self::from_parts(year, is_leap_year(year), ordinal) }
+        debug_assert!(year >= MIN_YEAR);
+        debug_assert!(year <= MAX_YEAR);
+        debug_assert!(ordinal != 0);
+        debug_assert!(ordinal <= days_in_year(year));
+
+        Self {
+            // Safety: The caller must guarantee that `ordinal` is not zero.
+            value: unsafe { NonZeroI32::new_unchecked((year << 9) | ordinal as i32) },
+        }
     }
 
     /// Attempt to create a `Date` from the year, month, and day.
@@ -141,9 +125,9 @@ impl Date {
                 return Err(error::ComponentRange {
                     name: "day",
                     minimum: 1,
-                    maximum: month.length(year) as i64,
-                    value: day as i64,
-                    conditional_message: Some("for the given month and year"),
+                    maximum: month.length(year) as _,
+                    value: day as _,
+                    conditional_range: true,
                 });
             }
         }
@@ -179,9 +163,9 @@ impl Date {
                 return Err(error::ComponentRange {
                     name: "ordinal",
                     minimum: 1,
-                    maximum: days_in_year(year) as i64,
-                    value: ordinal as i64,
-                    conditional_message: Some("for the given year"),
+                    maximum: days_in_year(year) as _,
+                    value: ordinal as _,
+                    conditional_range: true,
                 });
             }
         }
@@ -216,9 +200,9 @@ impl Date {
                 return Err(error::ComponentRange {
                     name: "week",
                     minimum: 1,
-                    maximum: weeks_in_year(year) as i64,
-                    value: week as i64,
-                    conditional_message: Some("for the given year"),
+                    maximum: weeks_in_year(year) as _,
+                    value: week as _,
+                    conditional_range: true,
                 });
             }
         }
@@ -252,7 +236,7 @@ impl Date {
             }
         } else {
             // Safety: `ordinal` is not zero.
-            unsafe { Self::__from_ordinal_date_unchecked(year, ordinal as u16) }
+            unsafe { Self::__from_ordinal_date_unchecked(year, ordinal as _) }
         })
     }
 
@@ -273,60 +257,51 @@ impl Date {
     pub const fn from_julian_day(julian_day: i32) -> Result<Self, error::ComponentRange> {
         type JulianDay = RangedI32<{ Date::MIN.to_julian_day() }, { Date::MAX.to_julian_day() }>;
         ensure_ranged!(JulianDay: julian_day);
-        // Safety: The Julian day number is in range.
-        Ok(unsafe { Self::from_julian_day_unchecked(julian_day) })
+        Ok(Self::from_julian_day_unchecked(julian_day))
     }
 
     /// Create a `Date` from the Julian day.
     ///
-    /// # Safety
-    ///
-    /// The provided Julian day number must be between `Date::MIN.to_julian_day()` and
-    /// `Date::MAX.to_julian_day()` inclusive.
-    pub(crate) const unsafe fn from_julian_day_unchecked(julian_day: i32) -> Self {
+    /// This does not check the validity of the provided Julian day, and as such may result in an
+    /// internally invalid value.
+    #[doc(alias = "from_julian_date_unchecked")]
+    pub(crate) const fn from_julian_day_unchecked(julian_day: i32) -> Self {
         debug_assert!(julian_day >= Self::MIN.to_julian_day());
         debug_assert!(julian_day <= Self::MAX.to_julian_day());
 
-        const S: i32 = 2_500;
-        const K: i32 = 719_468 + 146_097 * S;
-        const L: i32 = 400 * S;
+        // To avoid a potential overflow, the value may need to be widened for some arithmetic.
 
-        let julian_day = julian_day - 2_440_588;
-        let n = (julian_day + K) as u32;
-
-        let n_1 = 4 * n + 3;
-        let c = n_1 / 146_097;
-        let n_c = n_1 % 146_097 / 4;
-
-        let n_2 = 4 * n_c + 3;
-        let p_2 = 2_939_745 * n_2 as u64;
-        let z = (p_2 >> 32) as u32;
-        let n_y = p_2 as u32 / 2_939_745 / 4;
-        let y = 100 * c + z;
-
-        let j = n_y >= 306;
-        let y_g = y as i32 - L + j as i32;
-
-        let is_leap_year = is_leap_year(y_g);
-        let ordinal = if j {
-            n_y - 305
+        let z = julian_day - 1_721_119;
+        let (mut year, mut ordinal) = if julian_day < -19_752_948 || julian_day > 23_195_514 {
+            let g = 100 * z as i64 - 25;
+            let a = (g / 3_652_425) as i32;
+            let b = a - a / 4;
+            let year = div_floor!(100 * b as i64 + g, 36525) as i32;
+            let ordinal = (b + z - div_floor!(36525 * year as i64, 100) as i32) as _;
+            (year, ordinal)
         } else {
-            n_y + 60 + is_leap_year as u32
+            let g = 100 * z - 25;
+            let a = g / 3_652_425;
+            let b = a - a / 4;
+            let year = div_floor!(100 * b + g, 36525);
+            let ordinal = (b + z - div_floor!(36525 * year, 100)) as _;
+            (year, ordinal)
         };
 
-        // Safety: `ordinal` is not zero and `is_leap_year` is correct, so long as the Julian day
-        // number is in range.
-        unsafe { Self::from_parts(y_g, is_leap_year, ordinal as u16) }
-    }
+        if is_leap_year(year) {
+            ordinal += 60;
+            cascade!(ordinal in 1..367 => year);
+        } else {
+            ordinal += 59;
+            cascade!(ordinal in 1..366 => year);
+        }
 
-    /// Whether `is_leap_year(self.year())` is `true`.
-    ///
-    /// This method is optimized to take advantage of the fact that the value is pre-computed upon
-    /// construction and stored in the bitpacked struct.
-    const fn is_in_leap_year(self) -> bool {
-        (self.value.get() >> 9) & 1 == 1
+        // Safety: `ordinal` is not zero.
+        unsafe { Self::__from_ordinal_date_unchecked(year, ordinal) }
     }
+    // endregion constructors
 
+    // region: getters
     /// Get the year of the date.
     ///
     /// ```rust
@@ -336,7 +311,7 @@ impl Date {
     /// assert_eq!(date!(2020-01-01).year(), 2020);
     /// ```
     pub const fn year(self) -> i32 {
-        self.value.get() >> 10
+        self.value.get() >> 9
     }
 
     /// Get the month.
@@ -348,25 +323,7 @@ impl Date {
     /// assert_eq!(date!(2019-12-31).month(), Month::December);
     /// ```
     pub const fn month(self) -> Month {
-        let ordinal = self.ordinal() as u32;
-        let jan_feb_len = 59 + self.is_in_leap_year() as u32;
-
-        let (month_adj, ordinal_adj) = if ordinal <= jan_feb_len {
-            (0, 0)
-        } else {
-            (2, jan_feb_len)
-        };
-
-        let ordinal = ordinal - ordinal_adj;
-        let month = ((ordinal * 268 + 8031) >> 13) + month_adj;
-
-        // Safety: `month` is guaranteed to be between 1 and 12 inclusive.
-        unsafe {
-            match Month::from_number(NonZeroU8::new_unchecked(month as u8)) {
-                Ok(month) => month,
-                Err(_) => core::hint::unreachable_unchecked(),
-            }
-        }
+        self.month_day().0
     }
 
     /// Get the day of the month.
@@ -379,19 +336,48 @@ impl Date {
     /// assert_eq!(date!(2019-12-31).day(), 31);
     /// ```
     pub const fn day(self) -> u8 {
-        let ordinal = self.ordinal() as u32;
-        let jan_feb_len = 59 + self.is_in_leap_year() as u32;
+        self.month_day().1
+    }
 
-        let ordinal_adj = if ordinal <= jan_feb_len {
-            0
+    /// Get the month and day. This is more efficient than fetching the components individually.
+    // For whatever reason, rustc has difficulty optimizing this function. It's significantly faster
+    // to write the statements out by hand.
+    pub(crate) const fn month_day(self) -> (Month, u8) {
+        /// The number of days up to and including the given month. Common years
+        /// are first, followed by leap years.
+        const CUMULATIVE_DAYS_IN_MONTH_COMMON_LEAP: [[u16; 11]; 2] = [
+            [31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334],
+            [31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335],
+        ];
+
+        let days = CUMULATIVE_DAYS_IN_MONTH_COMMON_LEAP[is_leap_year(self.year()) as usize];
+        let ordinal = self.ordinal();
+
+        if ordinal > days[10] {
+            (Month::December, (ordinal - days[10]) as _)
+        } else if ordinal > days[9] {
+            (Month::November, (ordinal - days[9]) as _)
+        } else if ordinal > days[8] {
+            (Month::October, (ordinal - days[8]) as _)
+        } else if ordinal > days[7] {
+            (Month::September, (ordinal - days[7]) as _)
+        } else if ordinal > days[6] {
+            (Month::August, (ordinal - days[6]) as _)
+        } else if ordinal > days[5] {
+            (Month::July, (ordinal - days[5]) as _)
+        } else if ordinal > days[4] {
+            (Month::June, (ordinal - days[4]) as _)
+        } else if ordinal > days[3] {
+            (Month::May, (ordinal - days[3]) as _)
+        } else if ordinal > days[2] {
+            (Month::April, (ordinal - days[2]) as _)
+        } else if ordinal > days[1] {
+            (Month::March, (ordinal - days[1]) as _)
+        } else if ordinal > days[0] {
+            (Month::February, (ordinal - days[0]) as _)
         } else {
-            jan_feb_len
-        };
-
-        let ordinal = ordinal - ordinal_adj;
-        let month = (ordinal * 268 + 8031) >> 13;
-        let days_in_preceding_months = (month * 3917 - 3866) >> 7;
-        (ordinal - days_in_preceding_months) as u8
+            (Month::January, ordinal as _)
+        }
     }
 
     /// Get the day of the year.
@@ -404,14 +390,14 @@ impl Date {
     /// assert_eq!(date!(2019-12-31).ordinal(), 365);
     /// ```
     pub const fn ordinal(self) -> u16 {
-        (self.value.get() & 0x1FF) as u16
+        (self.value.get() & 0x1FF) as _
     }
 
     /// Get the ISO 8601 year and week number.
     pub(crate) const fn iso_year_week(self) -> (i32, u8) {
         let (year, ordinal) = self.to_ordinal_date();
 
-        match ((ordinal + 10 - self.weekday().number_from_monday() as u16) / 7) as u8 {
+        match ((ordinal + 10 - self.weekday().number_from_monday() as u16) / 7) as _ {
             0 => (year - 1, weeks_in_year(year - 1)),
             53 if weeks_in_year(year) == 52 => (year + 1, 1),
             week => (year, week),
@@ -446,7 +432,7 @@ impl Date {
     /// assert_eq!(date!(2021-01-01).sunday_based_week(), 0);
     /// ```
     pub const fn sunday_based_week(self) -> u8 {
-        ((self.ordinal() as i16 - self.weekday().number_days_from_sunday() as i16 + 6) / 7) as u8
+        ((self.ordinal() as i16 - self.weekday().number_days_from_sunday() as i16 + 6) / 7) as _
     }
 
     /// Get the week number where week 1 begins on the first Monday.
@@ -461,7 +447,7 @@ impl Date {
     /// assert_eq!(date!(2021-01-01).monday_based_week(), 0);
     /// ```
     pub const fn monday_based_week(self) -> u8 {
-        ((self.ordinal() as i16 - self.weekday().number_days_from_monday() as i16 + 6) / 7) as u8
+        ((self.ordinal() as i16 - self.weekday().number_days_from_monday() as i16 + 6) / 7) as _
     }
 
     /// Get the year, month, and day.
@@ -475,33 +461,8 @@ impl Date {
     /// );
     /// ```
     pub const fn to_calendar_date(self) -> (i32, Month, u8) {
-        let (year, ordinal) = self.to_ordinal_date();
-        let ordinal = ordinal as u32;
-        let jan_feb_len = 59 + self.is_in_leap_year() as u32;
-
-        let (month_adj, ordinal_adj) = if ordinal <= jan_feb_len {
-            (0, 0)
-        } else {
-            (2, jan_feb_len)
-        };
-
-        let ordinal = ordinal - ordinal_adj;
-        let month = (ordinal * 268 + 8031) >> 13;
-        let days_in_preceding_months = (month * 3917 - 3866) >> 7;
-        let day = ordinal - days_in_preceding_months;
-        let month = month + month_adj;
-
-        (
-            year,
-            // Safety: `month` is guaranteed to be between 1 and 12 inclusive.
-            unsafe {
-                match Month::from_number(NonZeroU8::new_unchecked(month as u8)) {
-                    Ok(month) => month,
-                    Err(_) => core::hint::unreachable_unchecked(),
-                }
-            },
-            day as u8,
-        )
+        let (month, day) = self.month_day();
+        (self.year(), month, day)
     }
 
     /// Get the year and ordinal day number.
@@ -529,7 +490,7 @@ impl Date {
         let (year, ordinal) = self.to_ordinal_date();
         let weekday = self.weekday();
 
-        match ((ordinal + 10 - weekday.number_from_monday() as u16) / 7) as u8 {
+        match ((ordinal + 10 - self.weekday().number_from_monday() as u16) / 7) as _ {
             0 => (year - 1, weeks_in_year(year - 1), weekday),
             53 if weeks_in_year(year) == 52 => (year + 1, 1, weekday),
             week => (year, week, weekday),
@@ -580,7 +541,7 @@ impl Date {
     /// assert_eq!(Date::MAX.next_day(), None);
     /// ```
     pub const fn next_day(self) -> Option<Self> {
-        if self.ordinal() == 366 || (self.ordinal() == 365 && !self.is_in_leap_year()) {
+        if self.ordinal() == 366 || (self.ordinal() == 365 && !is_leap_year(self.year())) {
             if self.value.get() == Self::MAX.value.get() {
                 None
             } else {
@@ -723,6 +684,9 @@ impl Date {
 
     /// Get the Julian day for the date.
     ///
+    /// The algorithm to perform this conversion is derived from one provided by Peter Baum; it is
+    /// freely available [here](https://www.researchgate.net/publication/316558298_Date_Algorithms).
+    ///
     /// ```rust
     /// # use time_macros::date;
     /// assert_eq!(date!(-4713 - 11 - 24).to_julian_day(), 0);
@@ -731,17 +695,16 @@ impl Date {
     /// assert_eq!(date!(2019-12-31).to_julian_day(), 2_458_849);
     /// ```
     pub const fn to_julian_day(self) -> i32 {
-        let (year, ordinal) = self.to_ordinal_date();
+        let year = self.year() - 1;
+        let ordinal = self.ordinal() as i32;
 
-        // The algorithm requires a non-negative year. Add the lowest value to make it so. This is
-        // adjusted for at the end with the final subtraction.
-        let adj_year = year + 999_999;
-        let century = adj_year / 100;
-
-        let days_before_year = (1461 * adj_year as i64 / 4) as i32 - century + century / 4;
-        days_before_year + ordinal as i32 - 363_521_075
+        ordinal + 365 * year + div_floor!(year, 4) - div_floor!(year, 100)
+            + div_floor!(year, 400)
+            + 1_721_425
     }
+    // endregion getters
 
+    // region: checked arithmetic
     /// Computes `self + duration`, returning `None` if an overflow occurred.
     ///
     /// ```rust
@@ -779,7 +742,7 @@ impl Date {
             return None;
         }
 
-        let julian_day = const_try_opt!(self.to_julian_day().checked_add(whole_days as i32));
+        let julian_day = const_try_opt!(self.to_julian_day().checked_add(whole_days as _));
         if let Ok(date) = Self::from_julian_day(julian_day) {
             Some(date)
         } else {
@@ -822,7 +785,7 @@ impl Date {
             return None;
         }
 
-        let julian_day = const_try_opt!(self.to_julian_day().checked_add(whole_days as i32));
+        let julian_day = const_try_opt!(self.to_julian_day().checked_add(whole_days as _));
         if let Ok(date) = Self::from_julian_day(julian_day) {
             Some(date)
         } else {
@@ -867,7 +830,7 @@ impl Date {
             return None;
         }
 
-        let julian_day = const_try_opt!(self.to_julian_day().checked_sub(whole_days as i32));
+        let julian_day = const_try_opt!(self.to_julian_day().checked_sub(whole_days as _));
         if let Ok(date) = Self::from_julian_day(julian_day) {
             Some(date)
         } else {
@@ -910,7 +873,7 @@ impl Date {
             return None;
         }
 
-        let julian_day = const_try_opt!(self.to_julian_day().checked_sub(whole_days as i32));
+        let julian_day = const_try_opt!(self.to_julian_day().checked_sub(whole_days as _));
         if let Ok(date) = Self::from_julian_day(julian_day) {
             Some(date)
         } else {
@@ -977,7 +940,9 @@ impl Date {
         const_try_opt!(self.checked_prev_occurrence(weekday))
             .checked_sub(Duration::weeks(n as i64 - 1))
     }
+    // endregion: checked arithmetic
 
+    // region: saturating arithmetic
     /// Computes `self + duration`, saturating value on overflow.
     ///
     /// ```rust
@@ -1057,7 +1022,9 @@ impl Date {
             Self::MIN
         }
     }
+    // region: saturating arithmetic
 
+    // region: replacement
     /// Replace the year. The month and day will be unchanged.
     ///
     /// ```rust
@@ -1081,7 +1048,7 @@ impl Date {
             return Ok(unsafe { Self::__from_ordinal_date_unchecked(year, ordinal) });
         }
 
-        match (self.is_in_leap_year(), is_leap_year(year)) {
+        match (is_leap_year(self.year()), is_leap_year(year)) {
             (false, false) | (true, true) => {
                 // Safety: `ordinal` is not zero.
                 Ok(unsafe { Self::__from_ordinal_date_unchecked(year, ordinal) })
@@ -1092,7 +1059,7 @@ impl Date {
                 value: 29,
                 minimum: 1,
                 maximum: 28,
-                conditional_message: Some("for the given month and year"),
+                conditional_range: true,
             }),
             // We're going from a common year to a leap year. Shift dates in March and later by
             // one day.
@@ -1141,9 +1108,9 @@ impl Date {
                 return Err(error::ComponentRange {
                     name: "day",
                     minimum: 1,
-                    maximum: self.month().length(self.year()) as i64,
-                    value: day as i64,
-                    conditional_message: Some("for the given month and year"),
+                    maximum: self.month().length(self.year()) as _,
+                    value: day as _,
+                    conditional_range: true,
                 });
             }
         }
@@ -1152,7 +1119,7 @@ impl Date {
         Ok(unsafe {
             Self::__from_ordinal_date_unchecked(
                 self.year(),
-                (self.ordinal() as i16 - self.day() as i16 + day as i16) as u16,
+                (self.ordinal() as i16 - self.day() as i16 + day as i16) as _,
             )
         })
     }
@@ -1169,14 +1136,14 @@ impl Date {
     pub const fn replace_ordinal(self, ordinal: u16) -> Result<Self, error::ComponentRange> {
         match ordinal {
             1..=365 => {}
-            366 if self.is_in_leap_year() => {}
+            366 if is_leap_year(self.year()) => {}
             _ => {
                 return Err(error::ComponentRange {
                     name: "ordinal",
                     minimum: 1,
-                    maximum: days_in_year(self.year()) as i64,
-                    value: ordinal as i64,
-                    conditional_message: Some("for the given year"),
+                    maximum: days_in_year(self.year()) as _,
+                    value: ordinal as _,
+                    conditional_range: true,
                 });
             }
         }
@@ -1184,8 +1151,10 @@ impl Date {
         // Safety: `ordinal` is in range.
         Ok(unsafe { Self::__from_ordinal_date_unchecked(self.year(), ordinal) })
     }
+    // endregion replacement
 }
 
+// region: attach time
 /// Methods to add a [`Time`] component, resulting in a [`PrimitiveDateTime`].
 impl Date {
     /// Create a [`PrimitiveDateTime`] using the existing date. The [`Time`] component will be set
@@ -1291,13 +1260,15 @@ impl Date {
         ))
     }
 }
+// endregion attach time
 
+// region: formatting & parsing
 #[cfg(feature = "formatting")]
 impl Date {
     /// Format the `Date` using the provided [format description](crate::format_description).
     pub fn format_into(
         self,
-        output: &mut (impl io::Write + ?Sized),
+        output: &mut impl io::Write,
         format: &(impl Formattable + ?Sized),
     ) -> Result<usize, error::Format> {
         format.format_into(output, Some(self), None, None)
@@ -1428,7 +1399,9 @@ impl fmt::Debug for Date {
         fmt::Display::fmt(self, f)
     }
 }
+// endregion formatting & parsing
 
+// region: trait impls
 impl Add<Duration> for Date {
     type Output = Self;
 
@@ -1488,3 +1461,4 @@ impl Sub for Date {
         Duration::days((self.to_julian_day() - other.to_julian_day()).extend())
     }
 }
+// endregion trait impls

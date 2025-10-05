@@ -106,7 +106,7 @@ impl<'a> Commit<'a> {
     }
 }
 
-impl Debug for Commit<'_> {
+impl<'a> Debug for Commit<'a> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
@@ -121,9 +121,9 @@ impl Debug for Commit<'_> {
     }
 }
 
-impl Eq for Commit<'_> {}
+impl<'a> Eq for Commit<'a> {}
 
-impl PartialEq for Commit<'_> {
+impl<'a> PartialEq for Commit<'a> {
     fn eq(&self, other: &Self) -> bool {
         std::ptr::eq(self.file, other.file) && self.pos == other.pos
     }
@@ -135,7 +135,7 @@ pub struct Parents<'a> {
     state: ParentIteratorState<'a>,
 }
 
-impl Iterator for Parents<'_> {
+impl<'a> Iterator for Parents<'a> {
     type Item = Result<Position, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {

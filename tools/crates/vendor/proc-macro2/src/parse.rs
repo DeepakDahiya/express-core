@@ -857,7 +857,7 @@ fn digits(mut input: Cursor) -> Result<Cursor, Reject> {
                 continue;
             }
             _ => break,
-        }
+        };
         len += 1;
         empty = false;
     }
@@ -871,10 +871,7 @@ fn digits(mut input: Cursor) -> Result<Cursor, Reject> {
 fn punct(input: Cursor) -> PResult<Punct> {
     let (rest, ch) = punct_char(input)?;
     if ch == '\'' {
-        let (after_lifetime, _ident) = ident_any(rest)?;
-        if after_lifetime.starts_with_char('\'')
-            || (after_lifetime.starts_with_char('#') && !rest.starts_with("r#"))
-        {
+        if ident_any(rest)?.0.starts_with_char('\'') {
             Err(Reject)
         } else {
             Ok((rest, Punct::new('\'', Spacing::Joint)))

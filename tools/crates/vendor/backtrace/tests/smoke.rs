@@ -1,9 +1,8 @@
 use backtrace::Frame;
-use core::ffi::c_void;
 use std::ptr;
 use std::thread;
 
-fn get_actual_fn_pointer(fp: *mut c_void) -> *mut c_void {
+fn get_actual_fn_pointer(fp: usize) -> usize {
     // On AIX, the function name references a function descriptor.
     // A function descriptor consists of (See https://reviews.llvm.org/D62532)
     // * The address of the entry point of the function.
@@ -16,18 +15,17 @@ fn get_actual_fn_pointer(fp: *mut c_void) -> *mut c_void {
     // https://www.ibm.com/docs/en/aix/7.2?topic=program-understanding-programming-toc
     if cfg!(target_os = "aix") {
         unsafe {
-            let actual_fn_entry = *(fp as *const *mut c_void);
+            let actual_fn_entry = *(fp as *const usize);
             actual_fn_entry
         }
     } else {
-        fp as *mut c_void
+        fp
     }
 }
 
 #[test]
 // FIXME: shouldn't ignore this test on i686-msvc, unsure why it's failing
 #[cfg_attr(all(target_arch = "x86", target_env = "msvc"), ignore)]
-#[inline(never)]
 #[rustfmt::skip] // we care about line numbers here
 fn smoke_test_frames() {
     frame_1(line!());
@@ -44,10 +42,10 @@ fn smoke_test_frames() {
         // Various platforms have various bits of weirdness about their
         // backtraces. To find a good starting spot let's search through the
         // frames
-        let target = get_actual_fn_pointer(frame_4 as *mut c_void);
+        let target = get_actual_fn_pointer(frame_4 as usize);
         let offset = v
             .iter()
-            .map(|frame| frame.symbol_address())
+            .map(|frame| frame.symbol_address() as usize)
             .enumerate()
             .filter_map(|(i, sym)| {
                 if sym >= target {
@@ -63,7 +61,7 @@ fn smoke_test_frames() {
 
         assert_frame(
             frames.next().unwrap(),
-            get_actual_fn_pointer(frame_4 as *mut c_void) as usize,
+            get_actual_fn_pointer(frame_4 as usize),
             "frame_4",
             "tests/smoke.rs",
             start_line + 6,
@@ -71,7 +69,7 @@ fn smoke_test_frames() {
         );
         assert_frame(
             frames.next().unwrap(),
-            get_actual_fn_pointer(frame_3 as *mut c_void) as usize,
+            get_actual_fn_pointer(frame_3 as usize),
             "frame_3",
             "tests/smoke.rs",
             start_line + 3,
@@ -79,7 +77,7 @@ fn smoke_test_frames() {
         );
         assert_frame(
             frames.next().unwrap(),
-            get_actual_fn_pointer(frame_2 as *mut c_void) as usize,
+            get_actual_fn_pointer(frame_2 as usize),
             "frame_2",
             "tests/smoke.rs",
             start_line + 2,
@@ -87,7 +85,7 @@ fn smoke_test_frames() {
         );
         assert_frame(
             frames.next().unwrap(),
-            get_actual_fn_pointer(frame_1 as *mut c_void) as usize,
+            get_actual_fn_pointer(frame_1 as usize),
             "frame_1",
             "tests/smoke.rs",
             start_line + 1,
@@ -95,7 +93,7 @@ fn smoke_test_frames() {
         );
         assert_frame(
             frames.next().unwrap(),
-            get_actual_fn_pointer(smoke_test_frames as *mut c_void) as usize,
+            get_actual_fn_pointer(smoke_test_frames as usize),
             "smoke_test_frames",
             "",
             0,
@@ -190,20 +188,20 @@ fn smoke_test_frames() {
                 );
             }
             if expected_line != 0 {
-                assert_eq!(
-                    line,
-                    expected_line,
-                    "bad line number on frame for `{expected_name}`: {line} != {expected_line}");
+                assert!(
+                    line == expected_line,
+                    "bad line number on frame for `{expected_name}`: {line} != {expected_line}"
+                );
             }
 
             // dbghelp on MSVC doesn't support column numbers
             if !cfg!(target_env = "msvc") {
                 let col = col.expect("didn't find a column number");
                 if expected_col != 0 {
-                    assert_eq!(
-                        col,
-                        expected_col,
-                        "bad column number on frame for `{expected_name}`: {col} != {expected_col}");
+                    assert!(
+                        col == expected_col,
+                        "bad column number on frame for `{expected_name}`: {col} != {expected_col}",
+                    );
                 }
             }
         }
@@ -233,6 +231,18 @@ fn many_threads() {
 }
 
 #[test]
+#[cfg(feature = "rustc-serialize")]
+fn is_rustc_serialize() {
+    extern crate rustc_serialize;
+
+    fn is_encode<T: rustc_serialize::Encodable>() {}
+    fn is_decode<T: rustc_serialize::Decodable>() {}
+
+    is_encode::<backtrace::Backtrace>();
+    is_decode::<backtrace::Backtrace>();
+}
+
+#[test]
 #[cfg(feature = "serde")]
 fn is_serde() {
     extern crate serde;
@@ -251,11 +261,11 @@ fn sp_smoke_test() {
     return;
 
     #[inline(never)]
-    fn recursive_stack_references(refs: &mut Vec<*mut c_void>) {
+    fn recursive_stack_references(refs: &mut Vec<usize>) {
         assert!(refs.len() < 5);
 
-        let mut x = refs.len();
-        refs.push(ptr::addr_of_mut!(x).cast());
+        let x = refs.len();
+        refs.push(ptr::addr_of!(x) as usize);
 
         if refs.len() < 5 {
             recursive_stack_references(refs);
@@ -273,7 +283,7 @@ fn sp_smoke_test() {
     // mangled names.
 
     fn make_trace_closure<'a>(
-        refs: &'a mut Vec<*mut c_void>,
+        refs: &'a mut Vec<usize>,
     ) -> impl FnMut(&backtrace::Frame) -> bool + 'a {
         let mut child_sp = None;
         let mut child_ref = None;
@@ -291,9 +301,9 @@ fn sp_smoke_test() {
                         })
             });
 
-            let sp = frame.sp();
-            eprintln!("sp  = {sp:p}");
-            if sp as usize == 0 {
+            let sp = frame.sp() as usize;
+            eprintln!("sp  = {:p}", sp as *const u8);
+            if sp == 0 {
                 // If the SP is null, then we don't have an implementation for
                 // getting the SP on this target. Just keep walking the stack,
                 // but don't make our assertions about the on-stack pointers and
@@ -308,8 +318,8 @@ fn sp_smoke_test() {
 
             if is_recursive_stack_references {
                 let r = refs.pop().unwrap();
-                eprintln!("ref = {:p}", r);
-                if sp as usize != 0 {
+                eprintln!("ref = {:p}", r as *const u8);
+                if sp != 0 {
                     assert!(r > sp);
                     if let Some(child_ref) = child_ref {
                         assert!(sp >= child_ref);

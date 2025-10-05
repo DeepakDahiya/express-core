@@ -11,9 +11,9 @@ use wasmparser as wp;
 use crate::read::{
     self, Architecture, ComdatKind, CompressedData, CompressedFileRange, Error, Export, FileFlags,
     Import, NoDynamicRelocationIterator, Object, ObjectComdat, ObjectKind, ObjectSection,
-    ObjectSegment, ObjectSymbol, ObjectSymbolTable, ReadError, ReadRef, Relocation, RelocationMap,
-    Result, SectionFlags, SectionIndex, SectionKind, SegmentFlags, SymbolFlags, SymbolIndex,
-    SymbolKind, SymbolScope, SymbolSection,
+    ObjectSegment, ObjectSymbol, ObjectSymbolTable, ReadError, ReadRef, Relocation, Result,
+    SectionFlags, SectionIndex, SectionKind, SegmentFlags, SymbolFlags, SymbolIndex, SymbolKind,
+    SymbolScope, SymbolSection,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -32,10 +32,9 @@ enum SectionId {
     Code = 10,
     Data = 11,
     DataCount = 12,
-    Tag = 13,
 }
 // Update this constant when adding new section id:
-const MAX_SECTION_ID: usize = SectionId::Tag as usize;
+const MAX_SECTION_ID: usize = SectionId::DataCount as usize;
 
 /// A WebAssembly object file.
 #[derive(Debug)]
@@ -114,11 +113,6 @@ impl<'data, R: ReadRef<'data>> WasmFile<'data, R> {
             let payload = payload.read_error("Invalid Wasm section header")?;
 
             match payload {
-                wp::Payload::Version { encoding, .. } => {
-                    if encoding != wp::Encoding::Module {
-                        return Err(Error("Unsupported Wasm encoding"));
-                    }
-                }
                 wp::Payload::TypeSection(section) => {
                     file.add_section(SectionId::Type, section.range(), "");
                 }
@@ -211,9 +205,8 @@ impl<'data, R: ReadRef<'data>> WasmFile<'data, R> {
                                 if let Some(local_func_id) =
                                     export.index.checked_sub(imported_funcs_count)
                                 {
-                                    let local_func_kind = local_func_kinds
-                                        .get_mut(local_func_id as usize)
-                                        .read_error("Invalid Wasm export index")?;
+                                    let local_func_kind =
+                                        &mut local_func_kinds[local_func_id as usize];
                                     if let LocalFunctionKind::Unknown = local_func_kind {
                                         *local_func_kind = LocalFunctionKind::Exported {
                                             symbol_ids: Vec::new(),
@@ -280,9 +273,7 @@ impl<'data, R: ReadRef<'data>> WasmFile<'data, R> {
                         file.entry = address;
                     }
 
-                    let local_func_kind = local_func_kinds
-                        .get_mut(i)
-                        .read_error("Invalid Wasm code section index")?;
+                    let local_func_kind = &mut local_func_kinds[i];
                     match local_func_kind {
                         LocalFunctionKind::Unknown => {
                             *local_func_kind = LocalFunctionKind::Local {
@@ -315,9 +306,6 @@ impl<'data, R: ReadRef<'data>> WasmFile<'data, R> {
                 wp::Payload::DataCountSection { range, .. } => {
                     file.add_section(SectionId::DataCount, range, "");
                 }
-                wp::Payload::TagSection(section) => {
-                    file.add_section(SectionId::Tag, section.range(), "");
-                }
                 wp::Payload::CustomSection(section) => {
                     let name = section.name();
                     let size = section.data().len();
@@ -325,8 +313,9 @@ impl<'data, R: ReadRef<'data>> WasmFile<'data, R> {
                     range.start = range.end - size;
                     file.add_section(SectionId::Custom, range, name);
                     if name == "name" {
-                        let reader = wp::BinaryReader::new(section.data(), section.data_offset());
-                        for name in wp::NameSectionReader::new(reader) {
+                        for name in
+                            wp::NameSectionReader::new(section.data(), section.data_offset())
+                        {
                             // TODO: Right now, ill-formed name subsections
                             // are silently ignored in order to maintain
                             // compatibility with extended name sections, which
@@ -371,57 +360,21 @@ impl<'data, R: ReadRef<'data>> WasmFile<'data, R> {
 
 impl<'data, R> read::private::Sealed for WasmFile<'data, R> {}
 
-impl<'data, R: ReadRef<'data>> Object<'data> for WasmFile<'data, R> {
-    type Segment<'file>
-        = WasmSegment<'data, 'file, R>
-    where
-        Self: 'file,
-        'data: 'file;
-    type SegmentIterator<'file>
-        = WasmSegmentIterator<'data, 'file, R>
-    where
-        Self: 'file,
-        'data: 'file;
-    type Section<'file>
-        = WasmSection<'data, 'file, R>
-    where
-        Self: 'file,
-        'data: 'file;
-    type SectionIterator<'file>
-        = WasmSectionIterator<'data, 'file, R>
-    where
-        Self: 'file,
-        'data: 'file;
-    type Comdat<'file>
-        = WasmComdat<'data, 'file, R>
-    where
-        Self: 'file,
-        'data: 'file;
-    type ComdatIterator<'file>
-        = WasmComdatIterator<'data, 'file, R>
-    where
-        Self: 'file,
-        'data: 'file;
-    type Symbol<'file>
-        = WasmSymbol<'data, 'file>
-    where
-        Self: 'file,
-        'data: 'file;
-    type SymbolIterator<'file>
-        = WasmSymbolIterator<'data, 'file>
-    where
-        Self: 'file,
-        'data: 'file;
-    type SymbolTable<'file>
-        = WasmSymbolTable<'data, 'file>
-    where
-        Self: 'file,
-        'data: 'file;
-    type DynamicRelocationIterator<'file>
-        = NoDynamicRelocationIterator
-    where
-        Self: 'file,
-        'data: 'file;
+impl<'data, 'file, R: ReadRef<'data>> Object<'data, 'file> for WasmFile<'data, R>
+where
+    'data: 'file,
+    R: 'file,
+{
+    type Segment = WasmSegment<'data, 'file, R>;
+    type SegmentIterator = WasmSegmentIterator<'data, 'file, R>;
+    type Section = WasmSection<'data, 'file, R>;
+    type SectionIterator = WasmSectionIterator<'data, 'file, R>;
+    type Comdat = WasmComdat<'data, 'file, R>;
+    type ComdatIterator = WasmComdatIterator<'data, 'file, R>;
+    type Symbol = WasmSymbol<'data, 'file>;
+    type SymbolIterator = WasmSymbolIterator<'data, 'file>;
+    type SymbolTable = WasmSymbolTable<'data, 'file>;
+    type DynamicRelocationIterator = NoDynamicRelocationIterator;
 
     #[inline]
     fn architecture(&self) -> Architecture {
@@ -447,11 +400,11 @@ impl<'data, R: ReadRef<'data>> Object<'data> for WasmFile<'data, R> {
         ObjectKind::Unknown
     }
 
-    fn segments(&self) -> Self::SegmentIterator<'_> {
+    fn segments(&'file self) -> Self::SegmentIterator {
         WasmSegmentIterator { file: self }
     }
 
-    fn section_by_name_bytes<'file>(
+    fn section_by_name_bytes(
         &'file self,
         section_name: &[u8],
     ) -> Option<WasmSection<'data, 'file, R>> {
@@ -459,7 +412,7 @@ impl<'data, R: ReadRef<'data>> Object<'data> for WasmFile<'data, R> {
             .find(|section| section.name_bytes() == Ok(section_name))
     }
 
-    fn section_by_index(&self, index: SectionIndex) -> Result<WasmSection<'data, '_, R>> {
+    fn section_by_index(&'file self, index: SectionIndex) -> Result<WasmSection<'data, 'file, R>> {
         // TODO: Missing sections should return an empty section.
         let id_section = self
             .id_sections
@@ -473,19 +426,19 @@ impl<'data, R: ReadRef<'data>> Object<'data> for WasmFile<'data, R> {
         })
     }
 
-    fn sections(&self) -> Self::SectionIterator<'_> {
+    fn sections(&'file self) -> Self::SectionIterator {
         WasmSectionIterator {
             file: self,
             sections: self.sections.iter(),
         }
     }
 
-    fn comdats(&self) -> Self::ComdatIterator<'_> {
+    fn comdats(&'file self) -> Self::ComdatIterator {
         WasmComdatIterator { file: self }
     }
 
     #[inline]
-    fn symbol_by_index(&self, index: SymbolIndex) -> Result<WasmSymbol<'data, '_>> {
+    fn symbol_by_index(&'file self, index: SymbolIndex) -> Result<WasmSymbol<'data, 'file>> {
         let symbol = self
             .symbols
             .get(index.0)
@@ -493,26 +446,26 @@ impl<'data, R: ReadRef<'data>> Object<'data> for WasmFile<'data, R> {
         Ok(WasmSymbol { index, symbol })
     }
 
-    fn symbols(&self) -> Self::SymbolIterator<'_> {
+    fn symbols(&'file self) -> Self::SymbolIterator {
         WasmSymbolIterator {
             symbols: self.symbols.iter().enumerate(),
         }
     }
 
-    fn symbol_table(&self) -> Option<WasmSymbolTable<'data, '_>> {
+    fn symbol_table(&'file self) -> Option<WasmSymbolTable<'data, 'file>> {
         Some(WasmSymbolTable {
             symbols: &self.symbols,
         })
     }
 
-    fn dynamic_symbols(&self) -> Self::SymbolIterator<'_> {
+    fn dynamic_symbols(&'file self) -> Self::SymbolIterator {
         WasmSymbolIterator {
             symbols: [].iter().enumerate(),
         }
     }
 
     #[inline]
-    fn dynamic_symbol_table(&self) -> Option<WasmSymbolTable<'data, '_>> {
+    fn dynamic_symbol_table(&'file self) -> Option<WasmSymbolTable<'data, 'file>> {
         None
     }
 
@@ -540,7 +493,7 @@ impl<'data, R: ReadRef<'data>> Object<'data> for WasmFile<'data, R> {
     }
 
     #[inline]
-    fn entry(&self) -> u64 {
+    fn entry(&'file self) -> u64 {
         self.entry
     }
 
@@ -710,12 +663,12 @@ impl<'data, 'file, R: ReadRef<'data>> ObjectSection<'data> for WasmSection<'data
     }
 
     #[inline]
-    fn name_bytes(&self) -> Result<&'data [u8]> {
+    fn name_bytes(&self) -> Result<&[u8]> {
         self.name().map(str::as_bytes)
     }
 
     #[inline]
-    fn name(&self) -> Result<&'data str> {
+    fn name(&self) -> Result<&str> {
         Ok(match self.section.id {
             SectionId::Custom => self.section.name,
             SectionId::Type => "<type>",
@@ -730,7 +683,6 @@ impl<'data, 'file, R: ReadRef<'data>> ObjectSection<'data> for WasmSection<'data
             SectionId::Code => "<code>",
             SectionId::Data => "<data>",
             SectionId::DataCount => "<data_count>",
-            SectionId::Tag => "<tag>",
         })
     }
 
@@ -763,17 +715,12 @@ impl<'data, 'file, R: ReadRef<'data>> ObjectSection<'data> for WasmSection<'data
             SectionId::Code => SectionKind::Text,
             SectionId::Data => SectionKind::Data,
             SectionId::DataCount => SectionKind::UninitializedData,
-            SectionId::Tag => SectionKind::Data,
         }
     }
 
     #[inline]
     fn relocations(&self) -> WasmRelocationIterator<'data, 'file, R> {
         WasmRelocationIterator(PhantomData)
-    }
-
-    fn relocation_map(&self) -> read::Result<RelocationMap> {
-        RelocationMap::new(self.file, self)
     }
 
     #[inline]
@@ -825,12 +772,12 @@ impl<'data, 'file, R> ObjectComdat<'data> for WasmComdat<'data, 'file, R> {
     }
 
     #[inline]
-    fn name_bytes(&self) -> Result<&'data [u8]> {
+    fn name_bytes(&self) -> Result<&[u8]> {
         unreachable!();
     }
 
     #[inline]
-    fn name(&self) -> Result<&'data str> {
+    fn name(&self) -> Result<&str> {
         unreachable!();
     }
 

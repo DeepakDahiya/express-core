@@ -13,7 +13,7 @@
 edition = "2018"
 rust-version = "1.60"
 name = "os_info"
-version = "3.12.0"
+version = "3.10.0"
 authors = [
     "Jan Schulte <hello@unexpected-co.de>",
     "Stanislav Tkach <stanislav.tkach@gmail.com>",
@@ -44,9 +44,6 @@ categories = ["os"]
 license = "MIT"
 repository = "https://github.com/stanislav-tkach/os_info"
 
-[features]
-default = ["serde"]
-
 [lib]
 name = "os_info"
 path = "src/lib.rs"
@@ -65,8 +62,8 @@ version = "0.3"
 [dev-dependencies.pretty_assertions]
 version = "1"
 
-[target.'cfg(target_os = "macos")'.dependencies.plist]
-version = "1.5.1"
+[features]
+default = ["serde"]
 
 [target."cfg(windows)".dependencies.windows-sys]
 version = "0.52"

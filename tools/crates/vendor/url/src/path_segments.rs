@@ -67,14 +67,14 @@ pub fn new(url: &mut Url) -> PathSegmentsMut<'_> {
     }
 }
 
-impl Drop for PathSegmentsMut<'_> {
+impl<'a> Drop for PathSegmentsMut<'a> {
     fn drop(&mut self) {
         self.url
             .restore_after_path(self.old_after_path_position, &self.after_path)
     }
 }
 
-impl PathSegmentsMut<'_> {
+impl<'a> PathSegmentsMut<'a> {
     /// Remove all segments in the path, leaving the minimal `url.path() == "/"`.
     ///
     /// Returns `&mut Self` so that method calls can be chained.

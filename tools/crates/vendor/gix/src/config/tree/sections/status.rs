@@ -1,7 +1,6 @@
-use crate::{
-    config,
-    config::tree::{keys, sections::Status, Key, Section},
-};
+use crate::config;
+use crate::config::tree::sections::Status;
+use crate::config::tree::{keys, Key, Section};
 
 impl Status {
     /// The `status.showUntrackedFiles` key
@@ -10,16 +9,6 @@ impl Status {
         &config::Tree::STATUS,
         validate::ShowUntrackedFiles,
     );
-    /// The `status.renameLimit` key.
-    pub const RENAME_LIMIT: keys::UnsignedInteger = keys::UnsignedInteger::new_unsigned_integer(
-        "renameLimit",
-        &config::Tree::MERGE,
-    )
-    .with_note(
-        "The limit is actually squared, so 1000 stands for up to 1 million diffs if fuzzy rename tracking is enabled",
-    );
-    /// The `status.renames` key.
-    pub const RENAMES: super::diff::Renames = super::diff::Renames::new_renames("renames", &config::Tree::MERGE);
 }
 
 /// The `status.showUntrackedFiles` key.
@@ -52,7 +41,7 @@ impl Section for Status {
     }
 
     fn keys(&self) -> &[&dyn Key] {
-        &[&Self::SHOW_UNTRACKED_FILES, &Self::RENAMES, &Self::RENAME_LIMIT]
+        &[&Self::SHOW_UNTRACKED_FILES]
     }
 }
 

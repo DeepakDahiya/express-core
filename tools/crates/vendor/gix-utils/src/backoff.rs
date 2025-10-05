@@ -9,17 +9,17 @@ fn randomize(backoff_ms: usize) -> usize {
     }
 }
 
-/// A utility to calculate steps for quadratic backoff similar to how it's done in `git`.
-pub struct Quadratic<Fn> {
+/// A utility to calculate steps for exponential backoff similar to how it's done in `git`.
+pub struct Exponential<Fn> {
     multiplier: usize,
     max_multiplier: usize,
     exponent: usize,
     transform: Fn,
 }
 
-impl Default for Quadratic<fn(usize) -> usize> {
+impl Default for Exponential<fn(usize) -> usize> {
     fn default() -> Self {
-        Quadratic {
+        Exponential {
             multiplier: 1,
             max_multiplier: 1000,
             exponent: 1,
@@ -28,10 +28,10 @@ impl Default for Quadratic<fn(usize) -> usize> {
     }
 }
 
-impl Quadratic<fn(usize) -> usize> {
-    /// Create a new quadratic backoff iterator that backs off in randomized, ever increasing steps.
+impl Exponential<fn(usize) -> usize> {
+    /// Create a new exponential backoff iterator that backs off in randomized, ever increasing steps.
     pub fn default_with_random() -> Self {
-        Quadratic {
+        Exponential {
             multiplier: 1,
             max_multiplier: 1000,
             exponent: 1,
@@ -40,7 +40,7 @@ impl Quadratic<fn(usize) -> usize> {
     }
 }
 
-impl<Transform> Quadratic<Transform>
+impl<Transform> Exponential<Transform>
 where
     Transform: Fn(usize) -> usize,
 {
@@ -62,7 +62,7 @@ where
     }
 }
 
-impl<Transform> Iterator for Quadratic<Transform>
+impl<Transform> Iterator for Exponential<Transform>
 where
     Transform: Fn(usize) -> usize,
 {

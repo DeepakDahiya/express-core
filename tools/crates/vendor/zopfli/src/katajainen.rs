@@ -131,7 +131,7 @@ pub fn length_limited_code_lengths(frequencies: &[usize], max_bits: usize) -> Ve
     thing.extract_bit_lengths(max_bits, num_freqs)
 }
 
-impl Thing<'_> {
+impl<'a> Thing<'a> {
     fn boundary_pm(&mut self, index: usize) {
         let num_symbols = self.leaves.len();
 

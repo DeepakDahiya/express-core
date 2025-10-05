@@ -6,31 +6,32 @@ use std::{
     net::{IpAddr, SocketAddr},
     pin::Pin,
     sync::Arc,
-    task::{Context, Poll, Waker, ready},
+    task::{Context, Poll, Waker},
+    time::{Duration, Instant},
 };
 
 use bytes::Bytes;
 use pin_project_lite::pin_project;
 use rustc_hash::FxHashMap;
 use thiserror::Error;
-use tokio::sync::{Notify, futures::Notified, mpsc, oneshot};
-use tracing::{Instrument, Span, debug_span};
+use tokio::sync::{futures::Notified, mpsc, oneshot, Notify};
+use tracing::{debug_span, Instrument, Span};
 
 use crate::{
-    ConnectionEvent, Duration, Instant, VarInt,
     mutex::Mutex,
     recv_stream::RecvStream,
     runtime::{AsyncTimer, AsyncUdpSocket, Runtime, UdpPoller},
     send_stream::SendStream,
-    udp_transmit,
+    udp_transmit, ConnectionEvent, VarInt,
 };
 use proto::{
-    ConnectionError, ConnectionHandle, ConnectionStats, Dir, EndpointEvent, Side, StreamEvent,
-    StreamId, congestion::Controller,
+    congestion::Controller, ConnectionError, ConnectionHandle, ConnectionStats, Dir, EndpointEvent,
+    StreamEvent, StreamId,
 };
 
 /// In-progress connection attempt future
 #[derive(Debug)]
+#[must_use = "futures/streams/sinks do nothing unless you `.await` or poll them"]
 pub struct Connecting {
     conn: Option<ConnectionRef>,
     connected: oneshot::Receiver<bool>,
@@ -172,8 +173,6 @@ impl Connecting {
     /// This will return `None` for clients, or when the platform does not expose this
     /// information. See [`quinn_udp::RecvMeta::dst_ip`](udp::RecvMeta::dst_ip) for a list of
     /// supported platforms when using [`quinn_udp`](udp) for I/O, which is the default.
-    ///
-    /// Will panic if called after `poll` has returned `Ready`.
     pub fn local_ip(&self) -> Option<IpAddr> {
         let conn = self.conn.as_ref().unwrap();
         let inner = conn.state.lock("local_ip");
@@ -181,7 +180,7 @@ impl Connecting {
         inner.inner.local_ip()
     }
 
-    /// The peer's UDP address
+    /// The peer's UDP address.
     ///
     /// Will panic if called after `poll` has returned `Ready`.
     pub fn remote_address(&self) -> SocketAddr {
@@ -213,6 +212,7 @@ impl Future for Connecting {
 ///
 /// For clients, the resulting value indicates if 0-RTT was accepted. For servers, the resulting
 /// value is meaningless.
+#[must_use = "futures/streams/sinks do nothing unless you `.await` or poll them"]
 pub struct ZeroRttAccepted(oneshot::Receiver<bool>);
 
 impl Future for ZeroRttAccepted {
@@ -239,7 +239,8 @@ struct ConnectionDriver(ConnectionRef);
 impl Future for ConnectionDriver {
     type Output = Result<(), io::Error>;
 
-    fn poll(self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
+    #[allow(unused_mut)] // MSRV
+    fn poll(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Self::Output> {
         let conn = &mut *self.0.state.lock("poll");
 
         let span = debug_span!("drive", id = conn.handle.0);
@@ -427,9 +428,6 @@ impl Connection {
     /// Application datagrams are a low-level primitive. They may be lost or delivered out of order,
     /// and `data` must both fit inside a single QUIC packet and be smaller than the maximum
     /// dictated by the peer.
-    ///
-    /// Previously queued datagrams which are still unsent may be discarded to make space for this
-    /// datagram, in order of oldest to newest.
     pub fn send_datagram(&self, data: Bytes) -> Result<(), SendDatagramError> {
         let conn = &mut *self.0.state.lock("send_datagram");
         if let Some(ref x) = conn.error {
@@ -497,11 +495,6 @@ impl Connection {
             .inner
             .datagrams()
             .send_buffer_space()
-    }
-
-    /// The side of the connection (client or server)
-    pub fn side(&self) -> Side {
-        self.0.state.lock("side").inner.side()
     }
 
     /// The peer's UDP address
@@ -583,15 +576,14 @@ impl Connection {
         self.0.stable_id()
     }
 
-    /// Update traffic keys spontaneously
-    ///
-    /// This primarily exists for testing purposes.
+    // Update traffic keys spontaneously for testing purposes.
+    #[doc(hidden)]
     pub fn force_key_update(&self) {
         self.0
             .state
             .lock("force_key_update")
             .inner
-            .force_key_update()
+            .initiate_key_update()
     }
 
     /// Derive keying material from this connection's TLS session secrets.
@@ -624,13 +616,6 @@ impl Connection {
         let mut conn = self.0.state.lock("set_max_concurrent_uni_streams");
         conn.inner.set_max_concurrent_streams(Dir::Uni, count);
         // May need to send MAX_STREAMS to make progress
-        conn.wake();
-    }
-
-    /// See [`proto::TransportConfig::send_window()`]
-    pub fn set_send_window(&self, send_window: u64) {
-        let mut conn = self.0.state.lock("set_send_window");
-        conn.inner.set_send_window(send_window);
         conn.wake();
     }
 
@@ -978,7 +963,7 @@ pub(crate) struct State {
     endpoint_events: mpsc::UnboundedSender<(ConnectionHandle, EndpointEvent)>,
     pub(crate) blocked_writers: FxHashMap<StreamId, Waker>,
     pub(crate) blocked_readers: FxHashMap<StreamId, Waker>,
-    pub(crate) stopped: FxHashMap<StreamId, Arc<Notify>>,
+    pub(crate) stopped: FxHashMap<StreamId, Waker>,
     /// Always set to Some before the connection becomes drained
     pub(crate) error: Option<ConnectionError>,
     /// Number of live handles that can be used to initiate or handle I/O; excludes the driver
@@ -996,10 +981,7 @@ impl State {
         let now = self.runtime.now();
         let mut transmits = 0;
 
-        let max_datagrams = self
-            .socket
-            .max_transmit_segments()
-            .min(MAX_TRANSMIT_SEGMENTS);
+        let max_datagrams = self.socket.max_transmit_segments();
 
         loop {
             // Retry the last transmit, or get a new one.
@@ -1015,7 +997,7 @@ impl State {
                         Some(t) => {
                             transmits += match t.segment_size {
                                 None => 1,
-                                Some(s) => t.size.div_ceil(s), // round up
+                                Some(s) => (t.size + s - 1) / s, // round up
                             };
                             t
                         }
@@ -1120,7 +1102,7 @@ impl State {
                         // `ZeroRttRejected` errors.
                         wake_all(&mut self.blocked_writers);
                         wake_all(&mut self.blocked_readers);
-                        wake_all_notify(&mut self.stopped);
+                        wake_all(&mut self.stopped);
                     }
                 }
                 ConnectionLost { reason } => {
@@ -1144,9 +1126,9 @@ impl State {
                     // Might mean any number of streams are ready, so we wake up everyone
                     shared.stream_budget_available[dir as usize].notify_waiters();
                 }
-                Stream(StreamEvent::Finished { id }) => wake_stream_notify(id, &mut self.stopped),
+                Stream(StreamEvent::Finished { id }) => wake_stream(id, &mut self.stopped),
                 Stream(StreamEvent::Stopped { id, .. }) => {
-                    wake_stream_notify(id, &mut self.stopped);
+                    wake_stream(id, &mut self.stopped);
                     wake_stream(id, &mut self.blocked_writers);
                 }
             }
@@ -1227,7 +1209,7 @@ impl State {
         if let Some(x) = self.on_connected.take() {
             let _ = x.send(false);
         }
-        wake_all_notify(&mut self.stopped);
+        wake_all(&mut self.stopped);
         shared.closed.notify_waiters();
     }
 
@@ -1281,18 +1263,6 @@ fn wake_all(wakers: &mut FxHashMap<StreamId, Waker>) {
     wakers.drain().for_each(|(_, waker)| waker.wake())
 }
 
-fn wake_stream_notify(stream_id: StreamId, wakers: &mut FxHashMap<StreamId, Arc<Notify>>) {
-    if let Some(notify) = wakers.remove(&stream_id) {
-        notify.notify_waiters()
-    }
-}
-
-fn wake_all_notify(wakers: &mut FxHashMap<StreamId, Arc<Notify>>) {
-    wakers
-        .drain()
-        .for_each(|(_, notify)| notify.notify_waiters())
-}
-
 /// Errors that can arise when sending a datagram
 #[derive(Debug, Error, Clone, Eq, PartialEq)]
 pub enum SendDatagramError {
@@ -1318,10 +1288,3 @@ pub enum SendDatagramError {
 /// This limits the amount of CPU resources consumed by datagram generation,
 /// and allows other tasks (like receiving ACKs) to run in between.
 const MAX_TRANSMIT_DATAGRAMS: usize = 20;
-
-/// The maximum amount of datagrams that are sent in a single transmit
-///
-/// This can be lower than the maximum platform capabilities, to avoid excessive
-/// memory allocations when calling `poll_transmit()`. Benchmarks have shown
-/// that numbers around 10 are a good compromise.
-const MAX_TRANSMIT_SEGMENTS: usize = 10;

@@ -1,4 +1,4 @@
-#![deny(elided_lifetimes_in_paths, mismatched_lifetime_syntaxes)]
+#![deny(elided_lifetimes_in_paths)]
 
 #[cxx::bridge]
 mod ffi {

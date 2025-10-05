@@ -10,7 +10,9 @@ use crate::Compression;
 
 fn copy(into: &mut [u8], from: &[u8], pos: &mut usize) -> usize {
     let min = cmp::min(into.len(), from.len() - *pos);
-    into[..min].copy_from_slice(&from[*pos..*pos + min]);
+    for (slot, val) in into.iter_mut().zip(from[*pos..*pos + min].iter()) {
+        *slot = *val;
+    }
     *pos += min;
     min
 }
@@ -80,18 +82,17 @@ impl<R: BufRead> GzEncoder<R> {
             return Ok(0);
         }
         let crc = self.inner.get_ref().crc();
-        let calced_crc_bytes = crc.sum().to_le_bytes();
-        let arr = [
-            calced_crc_bytes[0],
-            calced_crc_bytes[1],
-            calced_crc_bytes[2],
-            calced_crc_bytes[3],
-            crc.amount() as u8,
+        let ref arr = [
+            (crc.sum() >> 0) as u8,
+            (crc.sum() >> 8) as u8,
+            (crc.sum() >> 16) as u8,
+            (crc.sum() >> 24) as u8,
+            (crc.amount() >> 0) as u8,
             (crc.amount() >> 8) as u8,
             (crc.amount() >> 16) as u8,
             (crc.amount() >> 24) as u8,
         ];
-        Ok(copy(into, &arr, &mut self.pos))
+        Ok(copy(into, arr, &mut self.pos))
     }
 }
 
@@ -117,11 +118,11 @@ impl<R> GzEncoder<R> {
 
 #[inline]
 fn finish(buf: &[u8; 8]) -> (u32, u32) {
-    let crc = (buf[0] as u32)
+    let crc = ((buf[0] as u32) << 0)
         | ((buf[1] as u32) << 8)
         | ((buf[2] as u32) << 16)
         | ((buf[3] as u32) << 24);
-    let amt = (buf[4] as u32)
+    let amt = ((buf[4] as u32) << 0)
         | ((buf[5] as u32) << 8)
         | ((buf[6] as u32) << 16)
         | ((buf[7] as u32) << 24);
@@ -303,7 +304,7 @@ impl<R: BufRead> Read for GzDecoder<R> {
                     if *pos < buf.len() {
                         *pos += read_into(self.reader.get_mut().get_mut(), &mut buf[*pos..])?;
                     } else {
-                        let (crc, amt) = finish(buf);
+                        let (crc, amt) = finish(&buf);
 
                         if crc != self.reader.crc().sum() || amt != self.reader.crc().amount() {
                             self.state = GzState::End(Some(mem::take(header)));

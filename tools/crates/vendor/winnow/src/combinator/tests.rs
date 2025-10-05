@@ -2006,26 +2006,7 @@ fn separated0_empty_sep_test() {
 
     let i = &b"abcabc"[..];
 
-    assert_parse!(
-        empty_sep.parse_peek(Partial::new(i)),
-        str![[r#"
-Err(
-    Cut(
-        InputError {
-            input: Partial {
-                input: [
-                    97,
-                    98,
-                    99,
-                ],
-                partial: true,
-            },
-        },
-    ),
-)
-
-"#]]
-    );
+    assert_parse!(empty_sep.parse_peek(Partial::new(i)), str![]);
 }
 
 #[test]
@@ -2520,29 +2501,7 @@ fn repeat0_empty_test() {
         repeat(0.., "").parse_next(i)
     }
 
-    assert_parse!(
-        multi_empty.parse_peek(Partial::new(&b"abcdef"[..])),
-        str![[r#"
-Err(
-    Cut(
-        InputError {
-            input: Partial {
-                input: [
-                    97,
-                    98,
-                    99,
-                    100,
-                    101,
-                    102,
-                ],
-                partial: true,
-            },
-        },
-    ),
-)
-
-"#]]
-    );
+    assert_parse!(multi_empty.parse_peek(Partial::new(&b"abcdef"[..])), str![]);
 }
 
 #[test]
@@ -3559,29 +3518,7 @@ fn fold_repeat0_empty_test() {
         repeat(0.., "").fold(Vec::new, fold_into_vec).parse_next(i)
     }
 
-    assert_parse!(
-        multi_empty.parse_peek(Partial::new(&b"abcdef"[..])),
-        str![[r#"
-Err(
-    Cut(
-        InputError {
-            input: Partial {
-                input: [
-                    97,
-                    98,
-                    99,
-                    100,
-                    101,
-                    102,
-                ],
-                partial: true,
-            },
-        },
-    ),
-)
-
-"#]]
-    );
+    assert_parse!(multi_empty.parse_peek(Partial::new(&b"abcdef"[..])), str![]);
 }
 
 #[test]

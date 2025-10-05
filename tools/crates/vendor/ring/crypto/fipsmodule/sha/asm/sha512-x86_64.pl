@@ -1,23 +1,16 @@
 #! /usr/bin/env perl
 # Copyright 2005-2016 The OpenSSL Project Authors. All Rights Reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Licensed under the OpenSSL license (the "License").  You may not use
+# this file except in compliance with the License.  You can obtain a copy
+# in the file LICENSE in the source distribution or at
+# https://www.openssl.org/source/license.html
 
 #
 # ====================================================================
 # Written by Andy Polyakov <appro@openssl.org> for the OpenSSL
 # project. Rights for redistribution and usage in source and binary
-# forms are granted according to the License.
+# forms are granted according to the OpenSSL license.
 # ====================================================================
 #
 # sha256/512_block procedure for x86_64.
@@ -262,12 +255,42 @@ ___
 $code=<<___;
 .text
 
-.globl	${func}_nohw
-.type	${func}_nohw,\@function,3
+.extern	OPENSSL_ia32cap_P
+.globl	$func
+.type	$func,\@function,3
 .align	16
-${func}_nohw:
+$func:
 .cfi_startproc
 	_CET_ENDBR
+___
+$code.=<<___ if ($SZ==4 || $avx);
+	leaq	OPENSSL_ia32cap_P(%rip),%r11
+	mov	0(%r11),%r9d
+	mov	4(%r11),%r10d
+	mov	8(%r11),%r11d
+___
+$code.=<<___ if ($SZ==4 && $shaext);
+	test	\$`1<<29`,%r11d		# check for SHA
+	jnz	.Lshaext_shortcut
+___
+    # XOP codepath removed.
+$code.=<<___ if ($avx>1);
+	and	\$`1<<8|1<<5|1<<3`,%r11d	# check for BMI2+AVX2+BMI1
+	cmp	\$`1<<8|1<<5|1<<3`,%r11d
+	je	.Lavx2_shortcut
+___
+$code.=<<___ if ($avx);
+	and	\$`1<<30`,%r9d		# mask "Intel CPU" bit
+	and	\$`1<<28|1<<9`,%r10d	# mask AVX and SSSE3 bits
+	or	%r9d,%r10d
+	cmp	\$`1<<28|1<<9|1<<30`,%r10d
+	je	.Lavx_shortcut
+___
+$code.=<<___ if ($SZ==4);
+	test	\$`1<<9`,%r10d
+	jnz	.Lssse3_shortcut
+___
+$code.=<<___;
 	mov	%rsp,%rax		# copy %rsp
 .cfi_def_cfa_register	%rax
 	push	%rbx
@@ -375,7 +398,7 @@ $code.=<<___;
 .Lepilogue:
 	ret
 .cfi_endproc
-.size	${func}_nohw,.-${func}_nohw
+.size	$func,.-$func
 ___
 
 if ($SZ==4) {
@@ -533,12 +556,11 @@ my ($Wi,$ABEF,$CDGH,$TMP,$BSWAP,$ABEF_SAVE,$CDGH_SAVE)=map("%xmm$_",(0..2,7..10)
 my @MSG=map("%xmm$_",(3..6));
 
 $code.=<<___;
-.globl	sha256_block_data_order_hw
-.type	sha256_block_data_order_hw,\@function,3
+.type	sha256_block_data_order_shaext,\@function,3
 .align	64
-sha256_block_data_order_hw:
+sha256_block_data_order_shaext:
 .cfi_startproc
-	_CET_ENDBR
+.Lshaext_shortcut:
 ___
 $code.=<<___ if ($win64);
 	lea	`-8-5*16`(%rsp),%rsp
@@ -683,7 +705,7 @@ ___
 $code.=<<___;
 	ret
 .cfi_endproc
-.size	sha256_block_data_order_hw,.-sha256_block_data_order_hw
+.size	sha256_block_data_order_shaext,.-sha256_block_data_order_shaext
 ___
 }}}
 {{{
@@ -748,12 +770,11 @@ my @X = map("%xmm$_",(0..3));
 my ($t0,$t1,$t2,$t3, $t4,$t5) = map("%xmm$_",(4..9));
 
 $code.=<<___;
-.globl	${func}_ssse3
 .type	${func}_ssse3,\@function,3
 .align	64
 ${func}_ssse3:
 .cfi_startproc
-	_CET_ENDBR
+.Lssse3_shortcut:
 	mov	%rsp,%rax		# copy %rsp
 .cfi_def_cfa_register	%rax
 	push	%rbx
@@ -1112,12 +1133,11 @@ if ($avx) {{
 local *ror = sub { &shrd(@_[0],@_) };
 
 $code.=<<___;
-.globl	${func}_avx
 .type	${func}_avx,\@function,3
 .align	64
 ${func}_avx:
 .cfi_startproc
-	_CET_ENDBR
+.Lavx_shortcut:
 	mov	%rsp,%rax		# copy %rsp
 .cfi_def_cfa_register	%rax
 	push	%rbx
@@ -1582,14 +1602,14 @@ ___
 $code.=<<___;
 .section	.pdata
 .align	4
-	.rva	.LSEH_begin_${func}_nohw
-	.rva	.LSEH_end_${func}_nohw
-	.rva	.LSEH_info_${func}_nohw
+	.rva	.LSEH_begin_$func
+	.rva	.LSEH_end_$func
+	.rva	.LSEH_info_$func
 ___
 $code.=<<___ if ($SZ==4 && $shaext);
-	.rva	.LSEH_begin_${func}_hw
-	.rva	.LSEH_end_${func}_hw
-	.rva	.LSEH_info_${func}_hw
+	.rva	.LSEH_begin_${func}_shaext
+	.rva	.LSEH_end_${func}_shaext
+	.rva	.LSEH_info_${func}_shaext
 ___
 $code.=<<___ if ($SZ==4);
 	.rva	.LSEH_begin_${func}_ssse3
@@ -1604,13 +1624,13 @@ ___
 $code.=<<___;
 .section	.xdata
 .align	8
-.LSEH_info_${func}_nohw:
+.LSEH_info_$func:
 	.byte	9,0,0,0
 	.rva	se_handler
 	.rva	.Lprologue,.Lepilogue			# HandlerData[]
 ___
 $code.=<<___ if ($SZ==4 && $shaext);
-.LSEH_info_${func}_hw:
+.LSEH_info_${func}_shaext:
 	.byte	9,0,0,0
 	.rva	shaext_handler
 ___

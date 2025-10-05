@@ -1,10 +1,8 @@
 //! Connection statistics
 
-use crate::{Dir, Duration, frame::Frame};
+use crate::{frame::Frame, Dir, Duration};
 
 /// Statistics about UDP datagrams transmitted or received on a connection
-///
-/// All QUIC packets are carried by UDP datagrams. Hence, these statistics cover all traffic on a connection.
 #[derive(Default, Debug, Copy, Clone)]
 #[non_exhaustive]
 pub struct UdpStats {
@@ -26,7 +24,7 @@ impl UdpStats {
     }
 }
 
-/// Number of frames transmitted or received of each frame type
+/// Number of frames transmitted of each frame type
 #[derive(Default, Copy, Clone)]
 #[non_exhaustive]
 #[allow(missing_docs)]
@@ -67,7 +65,7 @@ impl FrameStats {
             Frame::StopSending(_) => self.stop_sending += 1,
             Frame::Crypto(_) => self.crypto += 1,
             Frame::Datagram(_) => self.datagram += 1,
-            Frame::NewToken(_) => self.new_token += 1,
+            Frame::NewToken { .. } => self.new_token += 1,
             Frame::MaxData(_) => self.max_data += 1,
             Frame::MaxStreamData { .. } => self.max_stream_data += 1,
             Frame::MaxStreams { dir, .. } => {

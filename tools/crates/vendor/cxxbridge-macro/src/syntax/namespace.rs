@@ -9,7 +9,7 @@ mod kw {
     syn::custom_keyword!(namespace);
 }
 
-#[derive(Clone, Default, PartialEq)]
+#[derive(Clone, Default)]
 pub(crate) struct Namespace {
     segments: Vec<Ident>,
 }

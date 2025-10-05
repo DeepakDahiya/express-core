@@ -1,7 +1,7 @@
 #![allow(missing_docs)]
 //! The tokenizer is publicly exposed if you wish to use it instead
 
-use crate::{Span, value::Key};
+use crate::{value::Key, Span};
 use std::{borrow::Cow, char, str};
 
 #[derive(Eq, PartialEq, Debug)]
@@ -398,6 +398,7 @@ impl<'a> Tokenizer<'a> {
                                 match ch {
                                     ' ' | '\t' => {
                                         me.chars.next();
+                                        continue;
                                     }
                                     '\n' => {
                                         me.chars.next();
@@ -483,7 +484,7 @@ impl<'a> Tokenizer<'a> {
     }
 }
 
-impl Iterator for CrlfFold<'_> {
+impl<'a> Iterator for CrlfFold<'a> {
     type Item = (usize, char);
 
     fn next(&mut self) -> Option<(usize, char)> {
@@ -530,7 +531,7 @@ fn is_keylike(ch: char) -> bool {
     ch.is_ascii_alphanumeric() || ch == '-' || ch == '_'
 }
 
-impl Token<'_> {
+impl<'a> Token<'a> {
     pub fn describe(&self) -> &'static str {
         match *self {
             Token::Keylike(_) => "an identifier",

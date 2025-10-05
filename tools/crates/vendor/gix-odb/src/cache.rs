@@ -141,16 +141,11 @@ mod impls {
 
     use crate::{find::Header, pack::data::entry::Location, Cache};
 
-    impl<S> gix_object::Write for Cache<S>
+    impl<S> crate::Write for Cache<S>
     where
-        S: gix_object::Write,
+        S: crate::Write,
     {
-        fn write_stream(
-            &self,
-            kind: Kind,
-            size: u64,
-            from: &mut dyn Read,
-        ) -> Result<ObjectId, gix_object::write::Error> {
+        fn write_stream(&self, kind: Kind, size: u64, from: &mut dyn Read) -> Result<ObjectId, crate::write::Error> {
             self.inner.write_stream(kind, size, from)
         }
     }

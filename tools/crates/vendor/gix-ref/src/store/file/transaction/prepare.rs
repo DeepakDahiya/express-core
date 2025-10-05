@@ -13,7 +13,7 @@ use crate::{
     FullName, FullNameRef, Reference, Target,
 };
 
-impl Transaction<'_, '_> {
+impl<'s, 'p> Transaction<'s, 'p> {
     fn lock_ref_and_apply_change(
         store: &file::Store,
         lock_fail_mode: gix_lock::acquire::Fail,
@@ -159,7 +159,7 @@ impl Transaction<'_, '_> {
                         let full_name = change.name();
                         return Err(Error::MustExist { full_name, expected });
                     }
-                }
+                };
 
                 fn new_would_change_existing(new: &Target, existing: &Target) -> (bool, bool) {
                     match (new, existing) {
@@ -196,7 +196,7 @@ impl Transaction<'_, '_> {
     }
 }
 
-impl Transaction<'_, '_> {
+impl<'s, 'p> Transaction<'s, 'p> {
     /// Prepare for calling [`commit(…)`][Transaction::commit()] in a way that can be rolled back perfectly.
     ///
     /// If the operation succeeds, the transaction can be committed or dropped to cause a rollback automatically.
@@ -386,7 +386,7 @@ impl Transaction<'_, '_> {
                     other => other,
                 };
                 return Err(err);
-            }
+            };
 
             // traverse parent chain from leaf/peeled ref and set the leaf previous oid accordingly
             // to help with their reflog entries
@@ -430,7 +430,7 @@ fn possibly_adjust_name_for_prefixes(name: &FullNameRef) -> Option<FullName> {
                 Tag | LocalBranch | RemoteBranch | Note => name.into(),
                 MainRef | LinkedRef { .. } => sn
                     .category()
-                    .is_some_and(|cat| !cat.is_worktree_private())
+                    .map_or(false, |cat| !cat.is_worktree_private())
                     .then_some(sn),
             }
             .map(ToOwned::to_owned)

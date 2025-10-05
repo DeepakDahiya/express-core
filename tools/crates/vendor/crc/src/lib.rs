@@ -40,7 +40,7 @@ mod table;
 mod util;
 
 /// A trait for CRC implementations.
-pub trait Implementation {
+pub trait Implementation: private::Sealed {
     /// Associated data necessary for the implementation (e.g. lookup tables).
     type Data<W>;
 }
@@ -61,9 +61,7 @@ impl<const L: usize> Implementation for Table<L> {
 
 mod private {
     pub trait Sealed {}
-    impl Sealed for super::Table<0> {}
-    impl Sealed for super::Table<1> {}
-    impl Sealed for super::Table<16> {}
+    impl<const L: usize> Sealed for super::Table<L> {}
 }
 
 /// Crc instance with a specific width, algorithm, and implementation.
@@ -86,8 +84,6 @@ mod test {
     #[test]
     fn test_clone() {
         const CRC: Crc<u32> = Crc::<u32>::new(&CRC_32_ISCSI);
-        let crc = CRC.clone();
-        let digest = crc.digest();
-        let _digest = digest.clone();
+        let _crc = CRC.clone();
     }
 }

@@ -50,6 +50,7 @@ pub fn os_str_to_bstring(input: &OsStr) -> Option<BString> {
 pub mod collate {
 
     ///
+    #[allow(clippy::empty_docs)]
     pub mod fetch {
         /// An error which combines all possible errors when opening a repository, finding remotes and using them to fetch.
         ///
@@ -123,7 +124,7 @@ pub mod collate {
                         crate::remote::fetch::Error::PackThreads(_)
                         | crate::remote::fetch::Error::PackIndexVersion(_)
                         | crate::remote::fetch::Error::RemovePackKeepFile { .. }
-                        | crate::remote::fetch::Error::Fetch(gix_protocol::fetch::Error::Negotiate(_)),
+                        | crate::remote::fetch::Error::Negotiate(_),
                     ) => true,
                     _ => false,
                 }

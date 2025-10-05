@@ -140,21 +140,9 @@ impl Form {
     }
 
     /// Consume this instance and transform into an instance of Body for use in a request.
-    pub(crate) fn stream(self) -> Body {
+    pub(crate) fn stream(mut self) -> Body {
         if self.inner.fields.is_empty() {
             return Body::empty();
-        }
-
-        Body::stream(self.into_stream())
-    }
-
-    /// Produce a stream of the bytes in this `Form`, consuming it.
-    pub fn into_stream(mut self) -> impl Stream<Item = Result<Bytes, crate::Error>> + Send + Sync {
-        if self.inner.fields.is_empty() {
-            let empty_stream: Pin<
-                Box<dyn Stream<Item = Result<Bytes, crate::Error>> + Send + Sync>,
-            > = Box::pin(futures_util::stream::empty());
-            return empty_stream;
         }
 
         // create initial part to init reduce chain
@@ -173,7 +161,7 @@ impl Form {
         let last = stream::once(future::ready(Ok(
             format!("--{}--\r\n", self.boundary()).into()
         )));
-        Box::pin(stream.chain(last))
+        Body::stream(stream.chain(last))
     }
 
     /// Generate a hyper::Body stream for a single Part instance of a Form request.
@@ -402,7 +390,7 @@ impl<P: PartProps> FormParts<P> {
     }
 
     // If predictable, computes the length the request will have
-    // The length should be predictable if only String and file fields have been added,
+    // The length should be preditable if only String and file fields have been added,
     // but not if a generic reader has been added;
     pub(crate) fn compute_length(&mut self) -> Option<u64> {
         let mut length = 0u64;
@@ -601,9 +589,8 @@ fn gen_boundary() -> String {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use futures_util::stream;
     use futures_util::TryStreamExt;
-    use std::future;
+    use futures_util::{future, stream};
     use tokio::{self, runtime};
 
     #[test]

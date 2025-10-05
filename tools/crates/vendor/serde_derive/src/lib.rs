@@ -13,7 +13,7 @@
 //!
 //! [https://serde.rs/derive.html]: https://serde.rs/derive.html
 
-#![doc(html_root_url = "https://docs.rs/serde_derive/1.0.219")]
+#![doc(html_root_url = "https://docs.rs/serde_derive/1.0.217")]
 #![cfg_attr(not(check_cfg), allow(unexpected_cfgs))]
 // Ignored clippy lints
 #![allow(
@@ -41,7 +41,6 @@
     clippy::cast_possible_truncation,
     clippy::checked_conversions,
     clippy::doc_markdown,
-    clippy::elidable_lifetime_names,
     clippy::enum_glob_use,
     clippy::indexing_slicing,
     clippy::items_after_statements,

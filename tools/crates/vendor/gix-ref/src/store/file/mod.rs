@@ -1,6 +1,9 @@
-use std::path::PathBuf;
+use std::{
+    borrow::Cow,
+    path::{Path, PathBuf},
+};
 
-use crate::{store::WriteReflog, Namespace};
+use crate::{bstr::BStr, store::WriteReflog, Namespace};
 
 /// A store for reference which uses plain files.
 ///
@@ -89,30 +92,42 @@ pub struct Transaction<'s, 'p> {
     packed_refs: transaction::PackedRefs<'p>,
 }
 
+pub(in crate::store_impl::file) fn path_to_name<'a>(path: impl Into<Cow<'a, Path>>) -> Cow<'a, BStr> {
+    let path = gix_path::into_bstr(path.into());
+    gix_path::to_unix_separators_on_windows(path)
+}
+
 ///
+#[allow(clippy::empty_docs)]
 pub mod loose;
 mod overlay_iter;
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod iter {
     pub use super::overlay_iter::{LooseThenPacked, Platform};
 
     ///
+    #[allow(clippy::empty_docs)]
     pub mod loose_then_packed {
         pub use super::super::overlay_iter::Error;
     }
 }
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod log;
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod find;
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod transaction;
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod packed;
 
 mod raw_ext;

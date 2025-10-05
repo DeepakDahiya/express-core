@@ -1,9 +1,8 @@
-#![allow(missing_docs)]
 #![cfg(feature = "__git")]
 
 mod utils;
 use tame_index::{
-    GitIndex, IndexKrate, IndexLocation, IndexPath, IndexUrl, Path, index::RemoteGitIndex,
+    index::RemoteGitIndex, GitIndex, IndexKrate, IndexLocation, IndexPath, IndexUrl, Path,
 };
 
 fn remote_index(
@@ -14,7 +13,6 @@ fn remote_index(
         GitIndex::new(IndexLocation {
             url: IndexUrl::NonCratesIo(url.as_ref().as_str().into()),
             root: IndexPath::Exact(path.as_ref().join("sub/dir")),
-            cargo_version: None,
         })
         .unwrap(),
         &utils::unlocked(),
@@ -82,8 +80,8 @@ impl TreeUpdateBuilder {
         repo: &gix::Repository,
     ) -> gix::ObjectId {
         use gix::objs::{
-            Tree,
             tree::{Entry, EntryKind},
+            Tree,
         };
 
         let mut nt = Tree::empty();
@@ -149,7 +147,7 @@ impl TreeUpdateBuilder {
 ///
 /// 1. Using the crates.io git registry. It's massive and slow.
 /// 2. Using some other external git registry, could fail for any number of
-///    network etc related issues
+///     network etc related issues
 /// 3. Needing to maintain a blessed remote of any kind
 struct FakeRemote {
     repo: gix::Repository,
@@ -261,11 +259,10 @@ fn clones_new() {
 
     let (rgi, _td) = remote.local();
 
-    assert!(
-        rgi.cached_krate("clones_new".try_into().unwrap(), lock)
-            .unwrap()
-            .is_none()
-    );
+    assert!(rgi
+        .cached_krate("clones_new".try_into().unwrap(), lock)
+        .unwrap()
+        .is_none());
 }
 
 /// Validates we can open an existing index repo
@@ -400,11 +397,10 @@ fn fetch_invalidates_cache() {
         new_head.to_hex().to_string()
     );
 
-    assert!(
-        rgi.cached_krate("invalidates-cache".try_into().unwrap(), lock)
-            .unwrap()
-            .is_none()
-    );
+    assert!(rgi
+        .cached_krate("invalidates-cache".try_into().unwrap(), lock)
+        .unwrap()
+        .is_none());
 
     assert_eq!(
         rgi.krate("invalidates-cache".try_into().unwrap(), true, lock)

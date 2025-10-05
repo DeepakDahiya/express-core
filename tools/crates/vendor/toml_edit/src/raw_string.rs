@@ -13,7 +13,11 @@ enum RawStringInner {
 
 impl RawString {
     pub(crate) fn with_span(span: std::ops::Range<usize>) -> Self {
-        RawString(RawStringInner::Spanned(span))
+        if span.start == span.end {
+            RawString(RawStringInner::Empty)
+        } else {
+            RawString(RawStringInner::Spanned(span))
+        }
     }
 
     /// Access the underlying string
@@ -73,13 +77,9 @@ impl RawString {
             RawStringInner::Empty => {}
             RawStringInner::Explicit(_) => {}
             RawStringInner::Spanned(span) => {
-                if span.start == span.end {
-                    *self = RawString(RawStringInner::Empty);
-                } else {
-                    *self = Self::from(input.get(span.clone()).unwrap_or_else(|| {
-                        panic!("span {span:?} should be in input:\n```\n{input}\n```")
-                    }));
-                }
+                *self = Self::from(input.get(span.clone()).unwrap_or_else(|| {
+                    panic!("span {span:?} should be in input:\n```\n{input}\n```")
+                }));
             }
         }
     }

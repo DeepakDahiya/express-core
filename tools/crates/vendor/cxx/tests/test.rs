@@ -14,7 +14,6 @@ use cxx_test_suite::{cast, ffi, R};
 use std::cell::Cell;
 use std::ffi::CStr;
 use std::panic::{self, RefUnwindSafe, UnwindSafe};
-use std::ptr;
 
 thread_local! {
     static CORRECT: Cell<bool> = const { Cell::new(false) };
@@ -57,7 +56,6 @@ fn test_c_return() {
     assert_eq!("2020", ffi::c_return_unique_ptr_string().to_str().unwrap());
     assert_eq!(c"2020", ffi::c_return_unique_ptr_string().as_c_str());
     assert_eq!(4, ffi::c_return_unique_ptr_vector_u8().len());
-    assert!(4 <= ffi::c_return_unique_ptr_vector_u8().capacity());
     assert_eq!(
         200_u8,
         ffi::c_return_unique_ptr_vector_u8().into_iter().sum(),
@@ -67,7 +65,6 @@ fn test_c_return() {
         ffi::c_return_unique_ptr_vector_f64().into_iter().sum(),
     );
     assert_eq!(2, ffi::c_return_unique_ptr_vector_shared().len());
-    assert!(2 <= ffi::c_return_unique_ptr_vector_shared().capacity());
     assert_eq!(
         2021_usize,
         ffi::c_return_unique_ptr_vector_shared()
@@ -162,10 +159,7 @@ fn test_c_take() {
     assert_eq!(vector.pin_mut().pop(), Some(9));
     check!(ffi::c_take_unique_ptr_vector_u8(vector));
     let mut vector = ffi::c_return_unique_ptr_vector_f64();
-    vector.pin_mut().extend(Some(9.0));
-    assert!(vector.pin_mut().capacity() >= 1);
-    vector.pin_mut().reserve(100);
-    assert!(vector.pin_mut().capacity() >= 101);
+    vector.pin_mut().push(9.0);
     check!(ffi::c_take_unique_ptr_vector_f64(vector));
     let mut vector = ffi::c_return_unique_ptr_vector_shared();
     vector.pin_mut().push(ffi::Shared { z: 9 });
@@ -271,11 +265,9 @@ fn test_c_method_calls() {
     assert_eq!(2021, ffi::Shared { z: 0 }.c_method_on_shared());
     assert_eq!(2022, *ffi::Shared { z: 2022 }.c_method_ref_on_shared());
     assert_eq!(2023, *ffi::Shared { z: 2023 }.c_method_mut_on_shared());
-    assert_eq!(2025, ffi::Shared::c_static_method_on_shared());
-    assert_eq!(2026, ffi::C::c_static_method());
 
     let val = 42;
-    let mut array = ffi::WithArray {
+    let mut array = ffi::Array {
         a: [0, 0, 0, 0],
         b: ffi::Buffer::default(),
     };
@@ -298,49 +290,6 @@ fn test_shared_ptr_weak_ptr() {
 }
 
 #[test]
-fn test_unique_to_shared_ptr_string() {
-    let unique = ffi::c_return_unique_ptr_string();
-    let ptr = ptr::addr_of!(*unique);
-    let shared = SharedPtr::from(unique);
-    assert_eq!(ptr::addr_of!(*shared), ptr);
-    assert_eq!(*shared, *"2020");
-}
-
-#[test]
-fn test_unique_to_shared_ptr_cpp_type() {
-    let unique = ffi::c_return_unique_ptr();
-    let ptr = ptr::addr_of!(*unique);
-    let shared = SharedPtr::from(unique);
-    assert_eq!(ptr::addr_of!(*shared), ptr);
-}
-
-#[test]
-fn test_unique_to_shared_ptr_null() {
-    let unique = UniquePtr::<ffi::C>::null();
-    assert!(unique.is_null());
-    let shared = SharedPtr::from(unique);
-    assert!(shared.is_null());
-}
-
-#[test]
-fn test_shared_ptr_from_raw() {
-    let shared = unsafe { SharedPtr::<ffi::C>::from_raw(ptr::null_mut()) };
-    assert!(shared.is_null());
-}
-
-#[test]
-#[should_panic = "tests::Undefined is not destructible"]
-fn test_shared_ptr_from_raw_undefined() {
-    unsafe { SharedPtr::<ffi::Undefined>::from_raw(ptr::null_mut()) };
-}
-
-#[test]
-#[should_panic = "tests::Private is not destructible"]
-fn test_shared_ptr_from_raw_private() {
-    unsafe { SharedPtr::<ffi::Private>::from_raw(ptr::null_mut()) };
-}
-
-#[test]
 fn test_c_ns_method_calls() {
     let unique_ptr = ffi2::ns_c_return_unique_ptr_ns();
 
@@ -353,11 +302,6 @@ fn test_enum_representations() {
     assert_eq!(0, ffi::Enum::AVal.repr);
     assert_eq!(2020, ffi::Enum::BVal.repr);
     assert_eq!(2021, ffi::Enum::LastVal.repr);
-}
-
-#[test]
-fn test_struct_repr_align() {
-    assert_eq!(4, std::mem::align_of::<ffi::OveralignedStruct>());
 }
 
 #[test]

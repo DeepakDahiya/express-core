@@ -1762,10 +1762,11 @@ impl Arg {
     ///
     /// <div class="warning">
     ///
-    /// **NOTE:** Implicitly sets [`Arg::action(ArgAction::Set)`], [`Arg::num_args(1..)`],
-    /// [`Arg::allow_hyphen_values(true)`], and [`Arg::last(true)`] when set to `true`.
+    /// **NOTE:** Implicitly sets [`Arg::action(ArgAction::Set)`] [`Arg::num_args(1..)`],
     ///
     /// </div>
+    ///
+    /// [`Arg::allow_hyphen_values(true)`], and [`Arg::last(true)`] when set to `true`.
     ///
     /// [`Arg::action(ArgAction::Set)`]: Arg::action()
     /// [`Arg::num_args(1..)`]: Arg::num_args()
@@ -4545,7 +4546,11 @@ impl Arg {
         if val_names_len > 1 {
             self.num_vals.get_or_insert(val_names_len.into());
         } else {
-            let nargs = self.get_action().default_num_args();
+            let nargs = if self.get_action().takes_values() {
+                ValueRange::SINGLE
+            } else {
+                ValueRange::EMPTY
+            };
             self.num_vals.get_or_insert(nargs);
         }
     }

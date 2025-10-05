@@ -263,7 +263,6 @@ component_definition! {
         Year = "year" {
             padding = "padding": Option<Padding> => padding,
             repr = "repr": Option<YearRepr> => repr,
-            range = "range": Option<YearRange> => range,
             base = "base": Option<YearBase> => iso_week_based,
             sign_behavior = "sign": Option<SignBehavior> => sign_is_mandatory,
         },
@@ -428,12 +427,6 @@ modifier! {
         Full = b"full",
         Century = b"century",
         LastTwo = b"last_two",
-    }
-
-    enum YearRange {
-        Standard = b"standard",
-        #[default]
-        Extended = b"extended",
     }
 }
 

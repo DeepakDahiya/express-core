@@ -1,4 +1,5 @@
 ///
+#[allow(clippy::empty_docs)]
 pub mod to_id {
     use gix_object::bstr::BString;
 
@@ -16,6 +17,7 @@ pub mod to_id {
 }
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod to_object {
     use std::path::PathBuf;
 

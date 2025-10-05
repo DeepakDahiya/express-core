@@ -4,8 +4,7 @@ use core::{
 };
 use std::io::Result;
 
-use crate::codecs::Encode;
-use crate::core::util::PartialBuffer;
+use crate::{codec::Encode, util::PartialBuffer};
 use futures_core::ready;
 use futures_io::{AsyncBufRead, AsyncRead, AsyncWrite, IoSlice};
 use pin_project_lite::pin_project;
@@ -34,10 +33,6 @@ impl<R: AsyncBufRead, E: Encode> Encoder<R, E> {
             encoder,
             state: State::Encoding,
         }
-    }
-
-    pub fn with_capacity(reader: R, encoder: E, _cap: usize) -> Self {
-        Self::new(reader, encoder)
     }
 }
 

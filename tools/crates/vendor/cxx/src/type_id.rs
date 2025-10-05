@@ -1,6 +1,6 @@
 /// For use in impls of the `ExternType` trait. See [`ExternType`].
 ///
-/// [`ExternType`]: crate::ExternType
+/// [`ExternType`]: trait.ExternType.html
 #[macro_export]
 macro_rules! type_id {
     ($($path:tt)*) => {

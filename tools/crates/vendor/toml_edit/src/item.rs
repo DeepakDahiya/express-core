@@ -72,61 +72,49 @@ impl Item {
         index.index_mut(self)
     }
 
-    /// Casts `self` to [`Value`]
+    /// Casts `self` to value.
     pub fn as_value(&self) -> Option<&Value> {
         match *self {
             Item::Value(ref v) => Some(v),
             _ => None,
         }
     }
-    /// Casts `self` to [`Table`]
-    ///
-    /// <div class="warning">
-    ///
-    /// To operate on both [`Table`]s and [`InlineTable`]s, see [`Item::as_table_like`]
-    ///
-    /// </div>
+    /// Casts `self` to table.
     pub fn as_table(&self) -> Option<&Table> {
         match *self {
             Item::Table(ref t) => Some(t),
             _ => None,
         }
     }
-    /// Casts `self` to [`ArrayOfTables`]
+    /// Casts `self` to array of tables.
     pub fn as_array_of_tables(&self) -> Option<&ArrayOfTables> {
         match *self {
             Item::ArrayOfTables(ref a) => Some(a),
             _ => None,
         }
     }
-    /// Casts `self` to mutable [`Value`].
+    /// Casts `self` to mutable value.
     pub fn as_value_mut(&mut self) -> Option<&mut Value> {
         match *self {
             Item::Value(ref mut v) => Some(v),
             _ => None,
         }
     }
-    /// Casts `self` to mutable [`Table`]
-    ///
-    /// <div class="warning">
-    ///
-    /// To operate on both [`Table`]s and [`InlineTable`]s, see [`Item::as_table_like_mut`]
-    ///
-    /// </div>
+    /// Casts `self` to mutable table.
     pub fn as_table_mut(&mut self) -> Option<&mut Table> {
         match *self {
             Item::Table(ref mut t) => Some(t),
             _ => None,
         }
     }
-    /// Casts `self` to mutable [`ArrayOfTables`]
+    /// Casts `self` to mutable array of tables.
     pub fn as_array_of_tables_mut(&mut self) -> Option<&mut ArrayOfTables> {
         match *self {
             Item::ArrayOfTables(ref mut a) => Some(a),
             _ => None,
         }
     }
-    /// Casts `self` to [`Value`]
+    /// Casts `self` to value.
     pub fn into_value(self) -> Result<Value, Self> {
         match self {
             Item::None => Err(self),
@@ -147,13 +135,7 @@ impl Item {
         let other = other.into_value().map(Item::Value).unwrap_or(Item::None);
         *self = other;
     }
-    /// Casts `self` to [`Table`]
-    ///
-    /// <div class="warning">
-    ///
-    /// This does not include [`InlineTable`]s
-    ///
-    /// </div>
+    /// Casts `self` to table.
     pub fn into_table(self) -> Result<Table, Self> {
         match self {
             Item::Table(t) => Ok(t),
@@ -161,7 +143,7 @@ impl Item {
             _ => Err(self),
         }
     }
-    /// Casts `self` to [`ArrayOfTables`]
+    /// Casts `self` to array of tables.
     pub fn into_array_of_tables(self) -> Result<ArrayOfTables, Self> {
         match self {
             Item::ArrayOfTables(a) => Ok(a),
@@ -195,21 +177,15 @@ impl Item {
         };
         *self = other;
     }
-    /// Returns true if `self` is a [`Value`]
+    /// Returns true if `self` is a value.
     pub fn is_value(&self) -> bool {
         self.as_value().is_some()
     }
-    /// Returns true if `self` is a [`Table`]
-    ///
-    /// <div class="warning">
-    ///
-    /// To operate on both [`Table`]s and [`InlineTable`]s, see [`Item::is_table_like`]
-    ///
-    /// </div>
+    /// Returns true if `self` is a table.
     pub fn is_table(&self) -> bool {
         self.as_table().is_some()
     }
-    /// Returns true if `self` is an [`ArrayOfTables`]
+    /// Returns true if `self` is an array of tables.
     pub fn is_array_of_tables(&self) -> bool {
         self.as_array_of_tables().is_some()
     }

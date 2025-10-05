@@ -3,10 +3,11 @@
 use std::{
     future::Future,
     pin::Pin,
-    task::{ready, Context, Poll},
+    task::{Context, Poll},
 };
 
 use futures_io::{AsyncBufRead, AsyncRead};
+use futures_lite::ready;
 
 use crate::{decode, read::ProgressAction, BandRef, PacketLineRef, StreamingPeekableIter, TextRef, U16_HEX_BYTES};
 
@@ -24,7 +25,7 @@ where
     cap: usize,
 }
 
-impl<T, F> Drop for WithSidebands<'_, T, F>
+impl<'a, T, F> Drop for WithSidebands<'a, T, F>
 where
     T: AsyncRead,
 {
@@ -71,7 +72,7 @@ enum State<'a, T> {
 /// to a thread possibly.
 // TODO: Is it possible to declare it as it should be?
 #[allow(unsafe_code, clippy::non_send_fields_in_send_ty)]
-unsafe impl<T> Send for State<'_, T> where T: Send {}
+unsafe impl<'a, T> Send for State<'a, T> where T: Send {}
 
 impl<'a, T, F> WithSidebands<'a, T, F>
 where
@@ -107,7 +108,7 @@ where
             parent
                 .as_mut()
                 .expect("parent is always available if we are idle")
-                .reset_with(delimiters);
+                .reset_with(delimiters)
         }
     }
 
@@ -181,7 +182,7 @@ pub struct ReadDataLineFuture<'a, 'b, T: AsyncRead, F> {
     buf: &'b mut Vec<u8>,
 }
 
-impl<T, F> Future for ReadDataLineFuture<'_, '_, T, F>
+impl<'a, 'b, T, F> Future for ReadDataLineFuture<'a, 'b, T, F>
 where
     T: AsyncRead + Unpin,
     F: FnMut(bool, &[u8]) -> ProgressAction + Unpin,
@@ -208,7 +209,7 @@ pub struct ReadLineFuture<'a, 'b, T: AsyncRead, F> {
     buf: &'b mut String,
 }
 
-impl<T, F> Future for ReadLineFuture<'_, '_, T, F>
+impl<'a, 'b, T, F> Future for ReadLineFuture<'a, 'b, T, F>
 where
     T: AsyncRead + Unpin,
     F: FnMut(bool, &[u8]) -> ProgressAction + Unpin,
@@ -231,7 +232,7 @@ where
     }
 }
 
-impl<T, F> AsyncBufRead for WithSidebands<'_, T, F>
+impl<'a, T, F> AsyncBufRead for WithSidebands<'a, T, F>
 where
     T: AsyncRead + Unpin,
     F: FnMut(bool, &[u8]) -> ProgressAction + Unpin,
@@ -301,7 +302,7 @@ where
                                                         "interrupted by user",
                                                     )))
                                                 }
-                                            }
+                                            };
                                         }
                                         BandRef::Error(d) => {
                                             let text = TextRef::from(d).0;
@@ -313,9 +314,9 @@ where
                                                         "interrupted by user",
                                                     )))
                                                 }
-                                            }
+                                            };
                                         }
-                                    }
+                                    };
                                 }
                                 None => {
                                     break match line.as_slice() {
@@ -349,7 +350,7 @@ where
     }
 }
 
-impl<T, F> AsyncRead for WithSidebands<'_, T, F>
+impl<'a, T, F> AsyncRead for WithSidebands<'a, T, F>
 where
     T: AsyncRead + Unpin,
     F: FnMut(bool, &[u8]) -> ProgressAction + Unpin,

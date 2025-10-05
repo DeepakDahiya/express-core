@@ -12,7 +12,7 @@ pub struct RequestWriter<'a> {
     trace: bool,
 }
 
-impl io::Write for RequestWriter<'_> {
+impl<'a> io::Write for RequestWriter<'a> {
     fn write(&mut self, buf: &[u8]) -> io::Result<usize> {
         #[allow(unused_imports)]
         if self.trace {

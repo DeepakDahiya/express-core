@@ -14,7 +14,6 @@ use crate::{
     tz::{AmbiguousOffset, Disambiguation, Offset, OffsetConflict, TimeZone},
     util::{
         rangeint::{RInto, TryRFrom},
-        round::increment,
         t::{self, ZonedDayNanoseconds, C},
     },
     RoundMode, SignedDuration, Span, SpanRound, Timestamp, Unit,
@@ -491,27 +490,8 @@ impl Zoned {
     /// ```
     #[inline]
     pub fn new(timestamp: Timestamp, time_zone: TimeZone) -> Zoned {
-        let offset = time_zone.to_offset(timestamp);
+        let (offset, _, _) = time_zone.to_offset(timestamp);
         let datetime = offset.to_datetime(timestamp);
-        let inner = ZonedInner { timestamp, datetime, offset, time_zone };
-        Zoned { inner }
-    }
-
-    /// A crate internal constructor for building a `Zoned` from its
-    /// constituent parts.
-    ///
-    /// This should basically never be exposed, because it can be quite tricky
-    /// to get the parts correct.
-    ///
-    /// See `civil::DateTime::to_zoned` for a use case for this routine. (Why
-    /// do you think? Perf!)
-    #[inline]
-    pub(crate) fn from_parts(
-        timestamp: Timestamp,
-        time_zone: TimeZone,
-        offset: Offset,
-        datetime: DateTime,
-    ) -> Zoned {
         let inner = ZonedInner { timestamp, datetime, offset, time_zone };
         Zoned { inner }
     }
@@ -894,14 +874,6 @@ impl Zoned {
     ///
     /// The value returned is guaranteed to be in the range `0..=999_999_999`.
     ///
-    /// Note that this returns the fractional second associated with the civil
-    /// time on this `Zoned` value. This is distinct from the fractional
-    /// second on the underlying timestamp. A timestamp, for example, may be
-    /// negative to indicate time before the Unix epoch. But a civil datetime
-    /// can only have a negative year, while the remaining values are all
-    /// semantically positive. See the examples below for how this can manifest
-    /// in practice.
-    ///
     /// # Example
     ///
     /// This shows the relationship between constructing a `Zoned` value
@@ -928,35 +900,15 @@ impl Zoned {
     /// manifests from a specific timestamp.
     ///
     /// ```
-    /// use jiff::Timestamp;
+    /// use jiff::{civil, Timestamp};
     ///
     /// // 1,234 nanoseconds after the Unix epoch.
     /// let zdt = Timestamp::new(0, 1_234)?.in_tz("UTC")?;
     /// assert_eq!(zdt.subsec_nanosecond(), 1_234);
-    /// // N.B. The timestamp's fractional second and the civil datetime's
-    /// // fractional second happen to be equal here:
-    /// assert_eq!(zdt.timestamp().subsec_nanosecond(), 1_234);
-    ///
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
-    /// ```
-    ///
-    /// # Example: fractional seconds can differ between timestamps and civil time
-    ///
-    /// This shows how a timestamp can have a different fractional second
-    /// value than its corresponding `Zoned` value because of how the sign
-    /// is handled:
-    ///
-    /// ```
-    /// use jiff::{civil, Timestamp};
     ///
     /// // 1,234 nanoseconds before the Unix epoch.
     /// let zdt = Timestamp::new(0, -1_234)?.in_tz("UTC")?;
-    /// // The timestamp's fractional second is what was given:
-    /// assert_eq!(zdt.timestamp().subsec_nanosecond(), -1_234);
-    /// // But the civil datetime's fractional second is equal to
-    /// // `1_000_000_000 - 1_234`. This is because civil datetimes
-    /// // represent times in strictly positive values, like it
-    /// // would read on a clock.
+    /// // The nanosecond is equal to `1_000_000_000 - 1_234`.
     /// assert_eq!(zdt.subsec_nanosecond(), 999998766);
     /// // Looking at the other components of the time value might help.
     /// assert_eq!(zdt.hour(), 23);
@@ -2392,8 +2344,6 @@ impl Zoned {
     /// Depending on the input provided, the span returned is rounded. It may
     /// also be balanced up to bigger units than the default. By default, the
     /// span returned is balanced such that the biggest possible unit is hours.
-    /// This default is an API guarantee. Users can rely on the default not
-    /// returning any calendar units in the default configuration.
     ///
     /// This operation is configured by providing a [`ZonedDifference`]
     /// value. Since this routine accepts anything that implements
@@ -2906,58 +2856,6 @@ impl Zoned {
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     ///
-    /// # Example: rounding to nearest day takes length of day into account
-    ///
-    /// Some days are shorter than 24 hours, and so rounding down will occur
-    /// even when the time is past noon:
-    ///
-    /// ```
-    /// use jiff::{Unit, Zoned};
-    ///
-    /// let zdt1: Zoned = "2025-03-09T12:15-04[America/New_York]".parse()?;
-    /// let zdt2 = zdt1.round(Unit::Day)?;
-    /// assert_eq!(
-    ///     zdt2.to_string(),
-    ///     "2025-03-09T00:00:00-05:00[America/New_York]",
-    /// );
-    ///
-    /// // For 23 hour days, 12:30 is the tipping point to round up in the
-    /// // default rounding configuration:
-    /// let zdt1: Zoned = "2025-03-09T12:30-04[America/New_York]".parse()?;
-    /// let zdt2 = zdt1.round(Unit::Day)?;
-    /// assert_eq!(
-    ///     zdt2.to_string(),
-    ///     "2025-03-10T00:00:00-04:00[America/New_York]",
-    /// );
-    ///
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
-    /// ```
-    ///
-    /// And some days are longer than 24 hours, and so rounding _up_ will occur
-    /// even when the time is before noon:
-    ///
-    /// ```
-    /// use jiff::{Unit, Zoned};
-    ///
-    /// let zdt1: Zoned = "2025-11-02T11:45-05[America/New_York]".parse()?;
-    /// let zdt2 = zdt1.round(Unit::Day)?;
-    /// assert_eq!(
-    ///     zdt2.to_string(),
-    ///     "2025-11-03T00:00:00-05:00[America/New_York]",
-    /// );
-    ///
-    /// // For 25 hour days, 11:30 is the tipping point to round up in the
-    /// // default rounding configuration. So 11:29 will round down:
-    /// let zdt1: Zoned = "2025-11-02T11:29-05[America/New_York]".parse()?;
-    /// let zdt2 = zdt1.round(Unit::Day)?;
-    /// assert_eq!(
-    ///     zdt2.to_string(),
-    ///     "2025-11-02T00:00:00-04:00[America/New_York]",
-    /// );
-    ///
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
-    /// ```
-    ///
     /// # Example: overflow error
     ///
     /// This example demonstrates that it's possible for this operation to
@@ -3160,6 +3058,20 @@ impl Zoned {
     }
 }
 
+/// Deprecated APIs.
+impl Zoned {
+    /// A deprecated equivalent to [`Zoned::in_tz`].
+    ///
+    /// This will be removed in `jiff 0.2`. The method was renamed to make
+    /// it clearer that the name stood for "in time zone."
+    #[deprecated(since = "0.1.25", note = "use Zoned::in_tz instead")]
+    #[inline]
+    pub fn intz(&self, name: &str) -> Result<Zoned, Error> {
+        let tz = crate::tz::db().get(name)?;
+        Ok(self.with_time_zone(tz))
+    }
+}
+
 impl Default for Zoned {
     #[inline]
     fn default() -> Zoned {
@@ -3209,31 +3121,12 @@ impl core::fmt::Debug for Zoned {
 
 /// Converts a `Zoned` datetime into a RFC 9557 compliant string.
 ///
-/// # Formatting options supported
+/// Options currently supported:
 ///
 /// * [`std::fmt::Formatter::precision`] can be set to control the precision
-/// of the fractional second component. When not set, the minimum precision
-/// required to losslessly render the value is used.
+/// of the fractional second component.
 ///
 /// # Example
-///
-/// This shows the default rendering:
-///
-/// ```
-/// use jiff::civil::date;
-///
-/// // No fractional seconds:
-/// let zdt = date(2024, 6, 15).at(7, 0, 0, 0).in_tz("US/Eastern")?;
-/// assert_eq!(format!("{zdt}"), "2024-06-15T07:00:00-04:00[US/Eastern]");
-///
-/// // With fractional seconds:
-/// let zdt = date(2024, 6, 15).at(7, 0, 0, 123_000_000).in_tz("US/Eastern")?;
-/// assert_eq!(format!("{zdt}"), "2024-06-15T07:00:00.123-04:00[US/Eastern]");
-///
-/// # Ok::<(), Box<dyn std::error::Error>>(())
-/// ```
-///
-/// # Example: setting the precision
 ///
 /// ```
 /// use jiff::civil::date;
@@ -3405,9 +3298,8 @@ impl core::ops::SubAssign<Span> for Zoned {
 /// is greater.
 ///
 /// Since this uses the default configuration for calculating a span between
-/// two zoned datetimes (no rounding and largest units is hours), this will
-/// never panic or fail in any way. It is guaranteed that the largest non-zero
-/// unit in the `Span` returned will be hours.
+/// two zoned datetimes (no rounding and largest units is days), this will
+/// never panic or fail in any way.
 ///
 /// To configure the largest unit or enable rounding, use [`Zoned::since`].
 impl<'a> core::ops::Sub for &'a Zoned {
@@ -3980,7 +3872,7 @@ impl<'a> ZonedDifference<'a> {
         let zdt2 = self.zoned;
 
         let sign = t::sign(zdt2, zdt1);
-        if sign == C(0) {
+        if sign == 0 {
             return Ok(Span::new());
         }
 
@@ -4027,7 +3919,7 @@ impl<'a> ZonedDifference<'a> {
             )
         })?;
         if t::sign(zdt2, &zmid) == -sign {
-            if sign == C(-1) {
+            if sign == -1 {
                 panic!("this should be an error");
             }
             day_correct += C(1);
@@ -4057,15 +3949,12 @@ impl<'a> ZonedDifference<'a> {
         dt2 = mid;
 
         let date_span = dt1.date().until((largest, dt2.date()))?;
-        Ok(Span::from_invariant_nanoseconds(
-            Unit::Hour,
-            remainder_nano.rinto(),
-        )
-        .expect("difference between time always fits in span")
-        .years_ranged(date_span.get_years_ranged())
-        .months_ranged(date_span.get_months_ranged())
-        .weeks_ranged(date_span.get_weeks_ranged())
-        .days_ranged(date_span.get_days_ranged()))
+        Ok(Span::from_invariant_nanoseconds(Unit::Hour, remainder_nano)
+            .expect("difference between time always fits in span")
+            .years_ranged(date_span.get_years_ranged())
+            .months_ranged(date_span.get_months_ranged())
+            .weeks_ranged(date_span.get_weeks_ranged())
+            .days_ranged(date_span.get_days_ranged()))
     }
 }
 
@@ -4267,10 +4156,9 @@ impl ZonedRound {
     /// Most of the work is farmed out to civil datetime rounding.
     pub(crate) fn round(&self, zdt: &Zoned) -> Result<Zoned, Error> {
         let start = zdt.datetime();
-        if self.round.get_smallest() == Unit::Day {
-            return self.round_days(zdt);
-        }
-        let end = self.round.round(start)?;
+        let day_length = day_length(start, zdt.time_zone().clone())
+            .with_context(|| err!("failed to find length of day for {zdt}"))?;
+        let end = self.round.round(day_length, start)?;
         // Like in the ZonedWith API, in order to avoid small changes to clock
         // time hitting a 1 hour disambiguation shift, we use offset conflict
         // resolution to do our best to "prefer" the offset we already have.
@@ -4280,61 +4168,6 @@ impl ZonedRound {
             zdt.time_zone().clone(),
         )?;
         amb.compatible()
-    }
-
-    /// Does rounding when the smallest unit is equal to days. We don't reuse
-    /// civil datetime rounding for this since the length of a day for a zoned
-    /// datetime might not be 24 hours.
-    ///
-    /// Ref: https://tc39.es/proposal-temporal/#sec-temporal.zoneddatetime.prototype.round
-    fn round_days(&self, zdt: &Zoned) -> Result<Zoned, Error> {
-        debug_assert_eq!(self.round.get_smallest(), Unit::Day);
-
-        // Rounding by days requires an increment of 1. We just re-use the
-        // civil datetime rounding checks, which has the same constraint
-        // although it does check for other things that aren't relevant here.
-        increment::for_datetime(Unit::Day, self.round.get_increment())?;
-
-        // FIXME: We should be doing this with a &TimeZone, but will need a
-        // refactor so that we do zone-aware arithmetic using just a Timestamp
-        // and a &TimeZone. Fixing just this should just be some minor annoying
-        // work. The grander refactor is something like an `Unzoned` type, but
-        // I'm not sure that's really worth it. ---AG
-        let start = zdt.start_of_day().with_context(move || {
-            err!("failed to find start of day for {zdt}")
-        })?;
-        let end = start
-            .checked_add(Span::new().days_ranged(C(1).rinto()))
-            .with_context(|| {
-                err!("failed to add 1 day to {start} to find length of day")
-            })?;
-        let span = start
-            .timestamp()
-            .until((Unit::Nanosecond, end.timestamp()))
-            .with_context(|| {
-                err!(
-                    "failed to compute span in nanoseconds \
-                     from {start} until {end}"
-                )
-            })?;
-        let nanos = span.get_nanoseconds_ranged();
-        let day_length =
-            ZonedDayNanoseconds::try_rfrom("nanoseconds-per-zoned-day", nanos)
-                .with_context(|| {
-                    err!(
-                        "failed to convert span between {start} until {end} \
-                         to nanoseconds",
-                    )
-                })?;
-        let progress = zdt.timestamp().as_nanosecond_ranged()
-            - start.timestamp().as_nanosecond_ranged();
-        let rounded = self.round.get_mode().round(progress, day_length);
-        let nanos = start
-            .timestamp()
-            .as_nanosecond_ranged()
-            .try_checked_add("timestamp-nanos", rounded)?;
-        Ok(Timestamp::from_nanosecond_ranged(nanos)
-            .to_zoned(zdt.time_zone().clone()))
     }
 }
 
@@ -5049,11 +4882,6 @@ impl ZonedWith {
     ///
     /// This overrides any previous millisecond settings.
     ///
-    /// Note that this only sets the millisecond component. It does
-    /// not change the microsecond or nanosecond components. To set
-    /// the fractional second component to nanosecond precision, use
-    /// [`ZonedWith::subsec_nanosecond`].
-    ///
     /// # Errors
     ///
     /// This returns an error when [`ZonedWith::build`] is called if the
@@ -5087,11 +4915,6 @@ impl ZonedWith {
     /// One can access this value via [`Zoned::microsecond`].
     ///
     /// This overrides any previous microsecond settings.
-    ///
-    /// Note that this only sets the microsecond component. It does
-    /// not change the millisecond or nanosecond components. To set
-    /// the fractional second component to nanosecond precision, use
-    /// [`ZonedWith::subsec_nanosecond`].
     ///
     /// # Errors
     ///
@@ -5127,11 +4950,6 @@ impl ZonedWith {
     ///
     /// This overrides any previous nanosecond settings.
     ///
-    /// Note that this only sets the nanosecond component. It does
-    /// not change the millisecond or microsecond components. To set
-    /// the fractional second component to nanosecond precision, use
-    /// [`ZonedWith::subsec_nanosecond`].
-    ///
     /// # Errors
     ///
     /// This returns an error when [`ZonedWith::build`] is called if the
@@ -5166,12 +4984,6 @@ impl ZonedWith {
     /// [`Zoned::subsec_nanosecond`].
     ///
     /// This overrides any previous subsecond nanosecond settings.
-    ///
-    /// Note that this sets the entire fractional second component to
-    /// nanosecond precision, and overrides any individual millisecond,
-    /// microsecond or nanosecond settings. To set individual components,
-    /// use [`ZonedWith::millisecond`], [`ZonedWith::microsecond`] or
-    /// [`ZonedWith::nanosecond`].
     ///
     /// # Errors
     ///
@@ -5368,9 +5180,10 @@ impl ZonedWith {
     ///
     /// # Example: offset conflict resolution and disambiguation
     ///
-    /// This example shows how the disambiguation configuration can
-    /// interact with the default offset conflict resolution strategy of
-    /// [`OffsetConflict::PreferOffset`]:
+    /// This example shows how to set the disambiguation configuration can
+    /// interact with the default offset conflict resolution strategy in
+    /// unintuitive ways. For example, here, we request the "earlier" datetime
+    /// whenever there's an ambiguity:
     ///
     /// ```
     /// use jiff::{civil::date, tz, Zoned};
@@ -5384,20 +5197,19 @@ impl ZonedWith {
     ///     .disambiguation(tz::Disambiguation::Earlier)
     ///     .day(10)
     ///     .build()?;
-    /// assert_eq!(zdt2.datetime(), date(2024, 3, 10).at(1, 5, 0, 0));
-    /// assert_eq!(zdt2.offset(), tz::offset(-5));
+    /// assert_eq!(zdt2.datetime(), date(2024, 3, 10).at(3, 5, 0, 0));
+    /// assert_eq!(zdt2.offset(), tz::offset(-4));
     ///
     /// # Ok::<(), Box<dyn std::error::Error>>(())
     /// ```
     ///
-    /// Namely, while we started with an offset of `-04`, it (along with all
-    /// other offsets) are considered invalid during civil time gaps due to
-    /// time zone transitions (such as the beginning of daylight saving time in
-    /// most locations).
-    ///
-    /// The default disambiguation strategy is
-    /// [`Disambiguation::Compatible`], which in the case of gaps, chooses the
-    /// time after the gap:
+    /// Yet instead, we get the later time, after the gap. This is because
+    /// the default offset conflict resolution strategy is
+    /// [`OffsetConflict::PreferOffset`], and therefore, the offset in the
+    /// current zoned datetime is prioritized. In the example above, the
+    /// offset of `zdt1` is `-04`, since it comes after DST takes effect in
+    /// `America/New_York`. One can override the offset conflict resolution
+    /// to force disambiguation in cases like this:
     ///
     /// ```
     /// use jiff::{civil::date, tz, Zoned};
@@ -5408,34 +5220,11 @@ impl ZonedWith {
     /// // But the same time on March 10 is ambiguous because there is a gap!
     /// let zdt2 = zdt1
     ///     .with()
+    ///     .disambiguation(tz::Disambiguation::Earlier)
+    ///     // ignore any offset given
+    ///     .offset_conflict(tz::OffsetConflict::AlwaysTimeZone)
     ///     .day(10)
     ///     .build()?;
-    /// assert_eq!(zdt2.datetime(), date(2024, 3, 10).at(3, 5, 0, 0));
-    /// assert_eq!(zdt2.offset(), tz::offset(-4));
-    ///
-    /// # Ok::<(), Box<dyn std::error::Error>>(())
-    /// ```
-    ///
-    /// Alternatively, one can choose to always respect the offset, and thus
-    /// civil time for the provided time zone will be adjusted to match the
-    /// instant prescribed by the offset. In this case, no disambiguation is
-    /// performed:
-    ///
-    /// ```
-    /// use jiff::{civil::date, tz, Zoned};
-    ///
-    /// // This datetime is unambiguous. But `2024-03-10T02:05` is!
-    /// let zdt1 = "2024-03-11T02:05[America/New_York]".parse::<Zoned>()?;
-    /// assert_eq!(zdt1.offset(), tz::offset(-4));
-    /// // But the same time on March 10 is ambiguous because there is a gap!
-    /// let zdt2 = zdt1
-    ///     .with()
-    ///     .offset_conflict(tz::OffsetConflict::AlwaysOffset)
-    ///     .day(10)
-    ///     .build()?;
-    /// // Why do we get this result? Because `2024-03-10T02:05-04` is
-    /// // `2024-03-10T06:05Z`. And in `America/New_York`, the civil time
-    /// // for that timestamp is `2024-03-10T01:05-05`.
     /// assert_eq!(zdt2.datetime(), date(2024, 3, 10).at(1, 5, 0, 0));
     /// assert_eq!(zdt2.offset(), tz::offset(-5));
     ///
@@ -5445,6 +5234,41 @@ impl ZonedWith {
     pub fn disambiguation(self, strategy: Disambiguation) -> ZonedWith {
         ZonedWith { disambiguation: strategy, ..self }
     }
+}
+
+#[inline]
+fn day_length(
+    dt: DateTime,
+    tz: TimeZone,
+) -> Result<ZonedDayNanoseconds, Error> {
+    // FIXME: We should be doing this with a &TimeZone, but will need a
+    // refactor so that we do zone-aware arithmetic using just a Timestamp and
+    // a &TimeZone.
+    let tz2 = tz.clone();
+    let start = dt.start_of_day().to_zoned(tz).with_context(move || {
+        let tzname = tz2.diagnostic_name();
+        err!("failed to find start of day for {dt} in time zone {tzname}")
+    })?;
+    let end = start.checked_add(Span::new().days_ranged(C(1))).with_context(
+        || err!("failed to add 1 day to {start} to find length of day"),
+    )?;
+    let span = start
+        .timestamp()
+        .until((Unit::Nanosecond, end.timestamp()))
+        .with_context(|| {
+            err!(
+                "failed to compute span in nanoseconds \
+                 from {start} until {end}"
+            )
+        })?;
+    let nanos = span.get_nanoseconds_ranged();
+    ZonedDayNanoseconds::try_rfrom("nanoseconds-per-zoned-day", nanos)
+        .with_context(|| {
+            err!(
+                "failed to convert span between {start} until {end} \
+                 to nanoseconds",
+            )
+        })
 }
 
 #[cfg(test)]
@@ -5548,7 +5372,7 @@ mod tests {
             }
             #[cfg(all(target_pointer_width = "64", not(feature = "alloc")))]
             {
-                assert_eq!(96, core::mem::size_of::<Zoned>());
+                assert_eq!(120, core::mem::size_of::<Zoned>());
             }
         }
         #[cfg(not(debug_assertions))]
@@ -5559,13 +5383,7 @@ mod tests {
             }
             #[cfg(all(target_pointer_width = "64", not(feature = "alloc")))]
             {
-                // This asserts the same value as the alloc value above, but
-                // it wasn't always this way, which is why it's written out
-                // separately. Moreover, in theory, I'd be open to regressing
-                // this value if it led to an improvement in alloc-mode. But
-                // more likely, it would be nice to decrease this size in
-                // non-alloc modes.
-                assert_eq!(40, core::mem::size_of::<Zoned>());
+                assert_eq!(56, core::mem::size_of::<Zoned>());
             }
         }
     }
@@ -5650,9 +5468,8 @@ mod tests {
         let zdt2 = zdt1.with().hour(2).build().unwrap();
         assert_eq!(zdt2.to_string(), "2024-03-10T03:30:00-04:00[US/Eastern]");
 
-        // I originally thought that this was difference from Temporal. Namely,
-        // I thought that Temporal ignored the disambiguation setting (and the
-        // bad offset). But it doesn't. I was holding it wrong.
+        // This is a current difference from Temporal. Temporal ignores the
+        // disambiguation setting (and the bad offset).
         //
         // See: https://github.com/tc39/proposal-temporal/issues/3078
         let zdt1: Zoned = "2024-03-10T01:30[US/Eastern]".parse().unwrap();
@@ -5660,20 +5477,6 @@ mod tests {
         let zdt2 = zdt1
             .with()
             .offset(tz::offset(10))
-            .hour(2)
-            .disambiguation(Disambiguation::Earlier)
-            .build()
-            .unwrap();
-        assert_eq!(zdt2.to_string(), "2024-03-10T01:30:00-05:00[US/Eastern]");
-
-        // This should also respect the disambiguation setting even without
-        // explicitly specifying an invalid offset. This is becaue `02:30-05`
-        // is regarded as invalid since `02:30` isn't a valid civil time on
-        // this date in this time zone.
-        let zdt1: Zoned = "2024-03-10T01:30[US/Eastern]".parse().unwrap();
-        assert_eq!(zdt1.to_string(), "2024-03-10T01:30:00-05:00[US/Eastern]");
-        let zdt2 = zdt1
-            .with()
             .hour(2)
             .disambiguation(Disambiguation::Earlier)
             .build()
@@ -5697,134 +5500,5 @@ mod tests {
             "2025-01-25T19:32:22.783444592+01:00[Europe/Paris]"
         );
         assert_eq!(zdt1, &zdt2 - span, "should be reversible");
-    }
-
-    // See: https://github.com/BurntSushi/jiff/issues/290
-    #[test]
-    fn zoned_roundtrip_regression() {
-        if crate::tz::db().is_definitively_empty() {
-            return;
-        }
-
-        let zdt: Zoned =
-            "2063-03-31T10:00:00+11:00[Australia/Sydney]".parse().unwrap();
-        assert_eq!(zdt.offset(), super::Offset::constant(11));
-        let roundtrip = zdt.time_zone().to_zoned(zdt.datetime()).unwrap();
-        assert_eq!(zdt, roundtrip);
-    }
-
-    // See: https://github.com/BurntSushi/jiff/issues/305
-    #[test]
-    fn zoned_round_dst_day_length() {
-        if crate::tz::db().is_definitively_empty() {
-            return;
-        }
-
-        let zdt1: Zoned =
-            "2025-03-09T12:15[America/New_York]".parse().unwrap();
-        let zdt2 = zdt1.round(Unit::Day).unwrap();
-        // Since this day is only 23 hours long, it should round down instead
-        // of up (as it would on a normal 24 hour day). Interestingly, the bug
-        // was causing this to not only round up, but to a datetime that wasn't
-        // the start of a day. Specifically, 2025-03-10T01:00:00-04:00.
-        assert_eq!(
-            zdt2.to_string(),
-            "2025-03-09T00:00:00-05:00[America/New_York]"
-        );
-    }
-
-    #[test]
-    fn zoned_round_errors() {
-        if crate::tz::db().is_definitively_empty() {
-            return;
-        }
-
-        let zdt: Zoned = "2025-03-09T12:15[America/New_York]".parse().unwrap();
-
-        insta::assert_snapshot!(
-            zdt.round(Unit::Year).unwrap_err(),
-            @"datetime rounding does not support years"
-        );
-        insta::assert_snapshot!(
-            zdt.round(Unit::Month).unwrap_err(),
-            @"datetime rounding does not support months"
-        );
-        insta::assert_snapshot!(
-            zdt.round(Unit::Week).unwrap_err(),
-            @"datetime rounding does not support weeks"
-        );
-
-        let options = ZonedRound::new().smallest(Unit::Day).increment(2);
-        insta::assert_snapshot!(
-            zdt.round(options).unwrap_err(),
-            @"increment 2 for rounding datetime to days must be 1) less than 2, 2) divide into it evenly and 3) greater than zero"
-        );
-    }
-
-    // This tests that if we get a time zone offset with an explicit second
-    // component, then it must *exactly* match the correct offset for that
-    // civil time.
-    //
-    // See: https://github.com/tc39/proposal-temporal/issues/3099
-    // See: https://github.com/tc39/proposal-temporal/pull/3107
-    #[test]
-    fn time_zone_offset_seconds_exact_match() {
-        if crate::tz::db().is_definitively_empty() {
-            return;
-        }
-
-        let zdt: Zoned =
-            "1970-06-01T00:00:00-00:45[Africa/Monrovia]".parse().unwrap();
-        assert_eq!(
-            zdt.to_string(),
-            "1970-06-01T00:00:00-00:45[Africa/Monrovia]"
-        );
-
-        let zdt: Zoned =
-            "1970-06-01T00:00:00-00:44:30[Africa/Monrovia]".parse().unwrap();
-        assert_eq!(
-            zdt.to_string(),
-            "1970-06-01T00:00:00-00:45[Africa/Monrovia]"
-        );
-
-        insta::assert_snapshot!(
-            "1970-06-01T00:00:00-00:44:40[Africa/Monrovia]".parse::<Zoned>().unwrap_err(),
-            @r#"parsing "1970-06-01T00:00:00-00:44:40[Africa/Monrovia]" failed: datetime 1970-06-01T00:00:00 could not resolve to a timestamp since 'reject' conflict resolution was chosen, and because datetime has offset -00:44:40, but the time zone Africa/Monrovia for the given datetime unambiguously has offset -00:44:30"#,
-        );
-
-        insta::assert_snapshot!(
-            "1970-06-01T00:00:00-00:45:00[Africa/Monrovia]".parse::<Zoned>().unwrap_err(),
-            @r#"parsing "1970-06-01T00:00:00-00:45:00[Africa/Monrovia]" failed: datetime 1970-06-01T00:00:00 could not resolve to a timestamp since 'reject' conflict resolution was chosen, and because datetime has offset -00:45, but the time zone Africa/Monrovia for the given datetime unambiguously has offset -00:44:30"#,
-        );
-    }
-
-    // These are some interesting tests because the time zones have transitions
-    // that are very close to one another (within 14 days!). I picked these up
-    // from a bug report to Temporal. Their reference implementation uses
-    // different logic to examine time zone transitions than Jiff. In contrast,
-    // Jiff uses the IANA time zone database directly. So it was unaffected.
-    //
-    // [1]: https://github.com/tc39/proposal-temporal/issues/3110
-    #[test]
-    fn weird_time_zone_transitions() {
-        if crate::tz::db().is_definitively_empty() {
-            return;
-        }
-
-        let zdt: Zoned =
-            "2000-10-08T01:00:00-01:00[America/Noronha]".parse().unwrap();
-        let sod = zdt.start_of_day().unwrap();
-        assert_eq!(
-            sod.to_string(),
-            "2000-10-08T01:00:00-01:00[America/Noronha]"
-        );
-
-        let zdt: Zoned =
-            "2000-10-08T03:00:00-03:00[America/Boa_Vista]".parse().unwrap();
-        let sod = zdt.start_of_day().unwrap();
-        assert_eq!(
-            sod.to_string(),
-            "2000-10-08T01:00:00-03:00[America/Boa_Vista]",
-        );
     }
 }

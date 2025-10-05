@@ -8,10 +8,7 @@ use crate::{
         },
         Parsed,
     },
-    util::{
-        escape,
-        t::{self, C},
-    },
+    util::{escape, t},
     Error, SignedDuration, Span, Unit,
 };
 
@@ -255,7 +252,7 @@ impl SpanParser {
         Ok(sdur)
     }
 
-    #[cfg_attr(feature = "perf-inline", inline(always))]
+    #[inline(always)]
     fn parse_to_span<'i>(
         &self,
         input: &'i [u8],
@@ -296,7 +293,7 @@ impl SpanParser {
         Ok(Parsed { value: span * i64::from(sign.get()), input })
     }
 
-    #[cfg_attr(feature = "perf-inline", inline(always))]
+    #[inline(always)]
     fn parse_to_duration<'i>(
         &self,
         input: &'i [u8],
@@ -334,14 +331,14 @@ impl SpanParser {
             let parsed = self.parse_suffix_sign(sign, input)?;
             (parsed.value, parsed.input)
         };
-        if sign < C(0) {
+        if sign < 0 {
             sdur = -sdur;
         }
 
         Ok(Parsed { value: sdur, input })
     }
 
-    #[cfg_attr(feature = "perf-inline", inline(always))]
+    #[inline(always)]
     fn parse_units_to_span<'i>(
         &self,
         mut input: &'i [u8],
@@ -456,7 +453,7 @@ impl SpanParser {
         Ok(Parsed { value: span, input })
     }
 
-    #[cfg_attr(feature = "perf-inline", inline(always))]
+    #[inline(always)]
     fn parse_units_to_duration<'i>(
         &self,
         mut input: &'i [u8],
@@ -607,7 +604,7 @@ impl SpanParser {
     /// This expects that a unit value has been parsed and looks for a `:`
     /// at `input[0]`. If `:` is found, then this proceeds to parse HMS.
     /// Otherwise, a `None` value is returned.
-    #[cfg_attr(feature = "perf-inline", inline(always))]
+    #[inline(always)]
     fn parse_hms_maybe<'i>(
         &self,
         input: &'i [u8],
@@ -675,7 +672,7 @@ impl SpanParser {
     ///
     /// Note that this is safe to call on untrusted input. It will not attempt
     /// to consume more input than could possibly fit into a parsed integer.
-    #[cfg_attr(feature = "perf-inline", inline(always))]
+    #[inline(always)]
     fn parse_unit_value<'i>(
         &self,
         mut input: &'i [u8],
@@ -741,7 +738,7 @@ impl SpanParser {
     /// empty, then this return an error.
     ///
     /// This does not attempt to handle leading or trailing whitespace.
-    #[cfg_attr(feature = "perf-inline", inline(always))]
+    #[inline(always)]
     fn parse_unit_designator<'i>(
         &self,
         input: &'i [u8],
@@ -864,7 +861,7 @@ impl SpanParser {
     }
 
     /// Parses zero or more bytes of ASCII whitespace.
-    #[cfg_attr(feature = "perf-inline", inline(always))]
+    #[inline(always)]
     fn parse_optional_whitespace<'i>(
         &self,
         mut input: &'i [u8],
@@ -889,7 +886,7 @@ struct HMS {
 ///
 /// If the value outside the legal boundaries for the given unit, then an error
 /// is returned.
-#[cfg_attr(feature = "perf-inline", inline(always))]
+#[inline(always)]
 fn set_span_unit_value(
     unit: Unit,
     value: t::NoUnits,
@@ -934,7 +931,7 @@ fn set_span_unit_value(
 /// If the given unit is not supported for signed durations (i.e., calendar
 /// units), or if converting the given value to a `SignedDuration` for the
 /// given units overflows, then an error is returned.
-#[cfg_attr(feature = "perf-inline", inline(always))]
+#[inline(always)]
 fn duration_unit_value(
     unit: Unit,
     value: t::NoUnits,
@@ -978,12 +975,11 @@ fn duration_unit_value(
 }
 
 /// Returns true if the byte is ASCII whitespace.
-#[cfg_attr(feature = "perf-inline", inline(always))]
+#[inline(always)]
 fn is_whitespace(byte: &u8) -> bool {
     matches!(*byte, b' ' | b'\t' | b'\n' | b'\r' | b'\x0C')
 }
 
-#[cfg(feature = "alloc")]
 #[cfg(test)]
 mod tests {
     use super::*;

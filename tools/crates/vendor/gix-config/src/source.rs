@@ -71,7 +71,7 @@ impl Source {
                     .transpose()
                     .ok()
                     .flatten()
-                    .is_some_and(|b| b.0)
+                    .map_or(false, |b| b.0)
                 {
                     None
                 } else {
@@ -84,7 +84,7 @@ impl Source {
                     .transpose()
                     .ok()
                     .flatten()
-                    .is_some_and(|b| b.0)
+                    .map_or(false, |b| b.0)
                 {
                     None
                 } else {

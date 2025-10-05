@@ -6,12 +6,14 @@ pub struct SerializeValueArray {
 }
 
 impl SerializeValueArray {
-    pub(crate) fn seq(len: Option<usize>) -> Self {
-        let mut values = Vec::new();
-        if let Some(len) = len {
-            values.reserve(len);
+    pub(crate) fn new() -> Self {
+        Self { values: Vec::new() }
+    }
+
+    pub(crate) fn with_capacity(len: usize) -> Self {
+        Self {
+            values: Vec::with_capacity(len),
         }
-        Self { values }
     }
 }
 
@@ -49,7 +51,7 @@ impl serde::ser::SerializeTuple for SerializeValueArray {
     }
 }
 
-impl serde::ser::SerializeTupleStruct for SerializeValueArray {
+impl serde::ser::SerializeTupleVariant for SerializeValueArray {
     type Ok = crate::Value;
     type Error = Error;
 
@@ -65,21 +67,7 @@ impl serde::ser::SerializeTupleStruct for SerializeValueArray {
     }
 }
 
-pub struct SerializeTupleVariant {
-    variant: &'static str,
-    inner: SerializeValueArray,
-}
-
-impl SerializeTupleVariant {
-    pub(crate) fn tuple(variant: &'static str, len: usize) -> Self {
-        Self {
-            variant,
-            inner: SerializeValueArray::seq(Some(len)),
-        }
-    }
-}
-
-impl serde::ser::SerializeTupleVariant for SerializeTupleVariant {
+impl serde::ser::SerializeTupleStruct for SerializeValueArray {
     type Ok = crate::Value;
     type Error = Error;
 
@@ -87,16 +75,10 @@ impl serde::ser::SerializeTupleVariant for SerializeTupleVariant {
     where
         T: serde::ser::Serialize + ?Sized,
     {
-        serde::ser::SerializeSeq::serialize_element(&mut self.inner, value)
+        serde::ser::SerializeSeq::serialize_element(self, value)
     }
 
     fn end(self) -> Result<Self::Ok, Self::Error> {
-        let inner = serde::ser::SerializeSeq::end(self.inner)?;
-        let mut items = crate::table::KeyValuePairs::new();
-        let value = crate::Item::Value(inner);
-        items.insert(crate::Key::new(self.variant), value);
-        Ok(crate::Value::InlineTable(crate::InlineTable::with_pairs(
-            items,
-        )))
+        serde::ser::SerializeSeq::end(self)
     }
 }

@@ -8,6 +8,7 @@ use crate::{
 };
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod decode {
     use crate::store_impl::file::log;
 
@@ -88,11 +89,11 @@ pub struct Platform<'a, 's> {
     pub buf: Vec<u8>,
 }
 
-impl Platform<'_, '_> {
+impl<'a, 's> Platform<'a, 's> {
     /// Return a forward iterator over all log-lines, most recent to oldest.
     pub fn rev(&mut self) -> std::io::Result<Option<log::iter::Reverse<'_, std::fs::File>>> {
         self.buf.clear();
-        self.buf.resize(1024 * 4, 0);
+        self.buf.resize(512, 0);
         self.store
             .reflog_iter_rev(self.name, &mut self.buf)
             .map_err(must_be_io_err)
@@ -143,6 +144,7 @@ where
 }
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod reverse {
 
     use super::decode;
@@ -158,7 +160,7 @@ pub mod reverse {
     }
 }
 
-impl<F> Iterator for Reverse<'_, F>
+impl<'a, F> Iterator for Reverse<'a, F>
 where
     F: std::io::Read + std::io::Seek,
 {
@@ -180,7 +182,7 @@ where
                 let buf = &mut self.buf[..n];
                 if let Err(err) = read.read_exact(buf) {
                     return Some(Err(err.into()));
-                }
+                };
 
                 let last_byte = *buf.last().expect("we have read non-zero bytes before");
                 self.last_nl_pos = Some(if last_byte != b'\n' { buf.len() } else { buf.len() - 1 });
@@ -219,7 +221,7 @@ where
                         if npos == last_read_pos {
                             return Some(Err(std::io::Error::new(
                                 std::io::ErrorKind::Other,
-                                format!("buffer too small for line size, got until {:?}", self.buf.as_bstr()),
+                                "buffer too small for line size",
                             )
                             .into()));
                         }

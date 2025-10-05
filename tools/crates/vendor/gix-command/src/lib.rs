@@ -2,18 +2,17 @@
 #![deny(rust_2018_idioms, missing_docs)]
 #![forbid(unsafe_code)]
 
+use std::io::Read;
 use std::{
     ffi::OsString,
-    io::Read,
     path::{Path, PathBuf},
 };
 
 use bstr::{BString, ByteSlice};
 
-/// A structure to keep settings to use when invoking a command via [`spawn()`][Prepare::spawn()],
-/// after creating it with [`prepare()`].
+/// A structure to keep settings to use when invoking a command via [`spawn()`][Prepare::spawn()], after creating it with [`prepare()`].
 pub struct Prepare {
-    /// The command to invoke, either directly or with a shell depending on `use_shell`.
+    /// The command to invoke (either with or without shell depending on `use_shell`.
     pub command: OsString,
     /// Additional information to be passed to the spawned command.
     pub context: Option<Context>,
@@ -23,29 +22,24 @@ pub struct Prepare {
     pub stdout: std::process::Stdio,
     /// The way standard error is configured.
     pub stderr: std::process::Stdio,
-    /// The arguments to pass to the process being spawned.
+    /// The arguments to pass to the spawned process.
     pub args: Vec<OsString>,
-    /// Environment variables to set for the spawned process.
+    /// environment variables to set in the spawned process.
     pub env: Vec<(OsString, OsString)>,
-    /// If `true`, we will use `shell_program` or `sh` to execute the `command`.
+    /// If `true`, we will use `sh` to execute the `command`.
     pub use_shell: bool,
-    /// If `true`, `command` is assumed to be a command or path to the program to execute, and it
-    /// will be shell-quoted to assure it will be executed as is and without splitting across
-    /// whitespace.
-    pub quote_command: bool,
-    /// The name or path to the shell program to use instead of `sh`.
-    pub shell_program: Option<OsString>,
-    /// If `true` (default `true` on Windows and `false` everywhere else) we will see if it's safe
-    /// to manually invoke `command` after splitting its arguments as a shell would do.
+    /// If `true` (default `true` on windows and `false` everywhere else)
+    /// we will see if it's safe to manually invoke `command` after splitting
+    /// its arguments as a shell would do.
+    /// Note that outside of windows, it's generally not advisable as this
+    /// removes support for literal shell scripts with shell-builtins.
     ///
-    /// Note that outside of Windows, it's generally not advisable as this removes support for
-    /// literal shell scripts with shell-builtins.
+    /// This mimics the behaviour we see with `git` on windows, which also
+    /// won't invoke the shell there at all.
     ///
-    /// This mimics the behaviour we see with `git` on Windows, which also won't invoke the shell
-    /// there at all.
-    ///
-    /// Only effective if `use_shell` is `true` as well, as the shell will be used as a fallback if
-    /// it's not possible to split arguments as the command-line contains 'scripting'.
+    /// Only effective if `use_shell` is `true` as well, as the shell will
+    /// be used as a fallback if it's not possible to split arguments as
+    /// the command-line contains 'scripting'.
     pub allow_manual_arg_splitting: bool,
 }
 
@@ -85,8 +79,8 @@ pub struct Context {
 }
 
 mod prepare {
+    use std::borrow::Cow;
     use std::{
-        borrow::Cow,
         ffi::OsString,
         process::{Command, Stdio},
     };
@@ -97,82 +91,21 @@ mod prepare {
 
     /// Builder
     impl Prepare {
-        /// If called, the command will be checked for characters that are typical for shell
-        /// scripts, and if found will use `sh` to execute it or whatever is set as
-        /// [`with_shell_program()`](Self::with_shell_program()).
+        /// If called, the command will not be executed directly, but with `sh`, but only if the
+        /// command passed to [`prepare`](super::prepare()) requires this.
         ///
-        /// If the command isn't valid UTF-8, a shell will always be used.
-        ///
-        /// If a shell is used, then arguments given here with [arg()](Self::arg) or
-        /// [args()](Self::args) will be substituted via `"$@"` if it's not already present in the
-        /// command.
-        ///
-        ///
-        /// The [`command_may_be_shell_script_allow_manual_argument_splitting()`](Self::command_may_be_shell_script_allow_manual_argument_splitting())
-        /// and [`command_may_be_shell_script_disallow_manual_argument_splitting()`](Self::command_may_be_shell_script_disallow_manual_argument_splitting())
-        /// methods also call this method.
-        ///
-        /// If neither this method nor [`with_shell()`](Self::with_shell()) is called, commands are
-        /// always executed verbatim and directly, without the use of a shell.
-        pub fn command_may_be_shell_script(mut self) -> Self {
+        /// This also allows to pass shell scripts as command, or use commands that contain arguments which are subsequently
+        /// parsed by `sh`.
+        pub fn with_shell(mut self) -> Self {
             self.use_shell = self.command.to_str().map_or(true, |cmd| {
                 cmd.as_bytes().find_byteset(b"|&;<>()$`\\\"' \t\n*?[#~=%").is_some()
             });
             self
         }
 
-        /// If called, unconditionally use a shell to execute the command and its arguments.
-        ///
-        /// This uses `sh` to execute it, or whatever is set as
-        /// [`with_shell_program()`](Self::with_shell_program()).
-        ///
-        /// Arguments given here with [arg()](Self::arg) or [args()](Self::args) will be
-        /// substituted via `"$@"` if it's not already present in the command.
-        ///
-        /// If neither this method nor
-        /// [`command_may_be_shell_script()`](Self::command_may_be_shell_script()) is called,
-        /// commands are always executed verbatim and directly, without the use of a shell. (But
-        /// see [`command_may_be_shell_script()`](Self::command_may_be_shell_script()) on other
-        /// methods that call that method.)
-        pub fn with_shell(mut self) -> Self {
-            self.use_shell = true;
-            self
-        }
-
-        /// Quote the command if it is run in a shell, so its path is left intact.
-        ///
-        /// This is only meaningful if the command has been arranged to run in a shell, either
-        /// unconditionally with [`with_shell()`](Self::with_shell()), or conditionally with
-        /// [`command_may_be_shell_script()`](Self::command_may_be_shell_script()).
-        ///
-        /// Note that this should not be used if the command is a script - quoting is only the
-        /// right choice if it's known to be a program path.
-        ///
-        /// Note also that this does not affect arguments passed with [arg()](Self::arg) or
-        /// [args()](Self::args), which do not have to be quoted by the *caller* because they are
-        /// passed as `"$@"` positional parameters (`"$1"`, `"$2"`, and so on).
-        pub fn with_quoted_command(mut self) -> Self {
-            self.quote_command = true;
-            self
-        }
-
-        /// Set the name or path to the shell `program` to use if a shell is to be used, to avoid
-        /// using the default shell which is `sh`.
-        ///
-        /// Note that shells that are not Bourne-style cannot be expected to work correctly,
-        /// because POSIX shell syntax is assumed when searching for and conditionally adding
-        /// `"$@"` to receive arguments, where applicable (and in the behaviour of
-        /// [`with_quoted_command()`](Self::with_quoted_command()), if called).
-        pub fn with_shell_program(mut self, program: impl Into<OsString>) -> Self {
-            self.shell_program = Some(program.into());
-            self
-        }
-
         /// Unconditionally turn off using the shell when spawning the command.
-        ///
-        /// Note that not using the shell is the default. So an effective use of this method
-        /// is some time after [`command_may_be_shell_script()`](Self::command_may_be_shell_script())
-        /// or [`with_shell()`](Self::with_shell()) was called.
+        /// Note that not using the shell is the default so an effective use of this method
+        /// is some time after [`with_shell()`][Prepare::with_shell()] was called.
         pub fn without_shell(mut self) -> Self {
             self.use_shell = false;
             self
@@ -180,36 +113,22 @@ mod prepare {
 
         /// Set additional `ctx` to be used when spawning the process.
         ///
-        /// Note that this is a must for most kind of commands that `git` usually spawns, as at
-        /// least they need to know the correct Git repository to function.
+        /// Note that this is a must for most kind of commands that `git` usually spawns,
+        /// as at least they need to know the correct `git` repository to function.
         pub fn with_context(mut self, ctx: Context) -> Self {
             self.context = Some(ctx);
             self
         }
 
-        /// Like [`command_may_be_shell_script()`](Self::command_may_be_shell_script()), but try to
-        /// split arguments by hand if this can be safely done without a shell.
+        /// Use a shell, but try to split arguments by hand if this can be safely done without a shell.
         ///
-        /// This is useful on platforms where spawning processes is slow, or where many processes
-        /// have to be spawned in a row which should be sped up. Manual argument splitting is
-        /// enabled by default on Windows only.
-        ///
-        /// Note that this does *not* check for the use of possible shell builtins. Commands may
-        /// fail or behave differently if they are available as shell builtins and no corresponding
-        /// external command exists, or the external command behaves differently.
-        pub fn command_may_be_shell_script_allow_manual_argument_splitting(mut self) -> Self {
+        /// If that's not the case, use a shell instead.
+        pub fn with_shell_allow_argument_splitting(mut self) -> Self {
             self.allow_manual_arg_splitting = true;
-            self.command_may_be_shell_script()
+            self.with_shell()
         }
 
-        /// Like [`command_may_be_shell_script()`](Self::command_may_be_shell_script()), but don't
-        /// allow to bypass the shell even if manual argument splitting can be performed safely.
-        pub fn command_may_be_shell_script_disallow_manual_argument_splitting(mut self) -> Self {
-            self.allow_manual_arg_splitting = false;
-            self.command_may_be_shell_script()
-        }
-
-        /// Configure the process to use `stdio` for _stdin_.
+        /// Configure the process to use `stdio` for _stdin.
         pub fn stdin(mut self, stdio: Stdio) -> Self {
             self.stdin = stdio;
             self
@@ -219,7 +138,7 @@ mod prepare {
             self.stdout = stdio;
             self
         }
-        /// Configure the process to use `stdio` for _stderr_.
+        /// Configure the process to use `stdio` for _stderr.
         pub fn stderr(mut self, stdio: Stdio) -> Self {
             self.stderr = stdio;
             self
@@ -280,20 +199,14 @@ mod prepare {
                         cmd
                     }
                     None => {
-                        let shell = prep.shell_program.unwrap_or_else(|| gix_path::env::shell().into());
-                        let mut cmd = Command::new(shell);
+                        let mut cmd = Command::new(if cfg!(windows) { "sh" } else { "/bin/sh" });
                         cmd.arg("-c");
                         if !prep.args.is_empty() {
                             if prep.command.to_str().map_or(true, |cmd| !cmd.contains("$@")) {
-                                if prep.quote_command {
-                                    if let Ok(command) = gix_path::os_str_into_bstr(&prep.command) {
-                                        prep.command = gix_path::from_bstring(gix_quote::single(command)).into();
-                                    }
-                                }
-                                prep.command.push(r#" "$@""#);
+                                prep.command.push(" \"$@\"");
                             } else {
                                 gix_trace::debug!(
-                                    r#"Will not add '"$@"' to '{:?}' as it seems to contain '$@' already"#,
+                                    "Will not add '$@' to '{:?}' as it seems to contain it already",
                                     prep.command
                                 );
                             }
@@ -425,16 +338,16 @@ pub fn extract_interpreter(executable: &Path) -> Option<shebang::Data> {
 
 ///
 pub mod shebang {
-    use std::{ffi::OsString, path::PathBuf};
-
     use bstr::{BStr, ByteSlice};
+    use std::ffi::OsString;
+    use std::path::PathBuf;
 
     /// Parse `buf` to extract all shebang information.
     pub fn parse(buf: &BStr) -> Option<Data> {
         let mut line = buf.lines().next()?;
         line = line.strip_prefix(b"#!")?;
 
-        let slash_idx = line.rfind_byteset(br"/\")?;
+        let slash_idx = line.rfind_byteset(b"/\\")?;
         Some(match line[slash_idx..].find_byte(b' ') {
             Some(space_idx) => {
                 let space = slash_idx + space_idx;
@@ -504,7 +417,6 @@ pub mod shebang {
 pub fn prepare(cmd: impl Into<OsString>) -> Prepare {
     Prepare {
         command: cmd.into(),
-        shell_program: None,
         context: None,
         stdin: std::process::Stdio::null(),
         stdout: std::process::Stdio::piped(),
@@ -512,7 +424,6 @@ pub fn prepare(cmd: impl Into<OsString>) -> Prepare {
         args: Vec::new(),
         env: Vec::new(),
         use_shell: false,
-        quote_command: false,
         allow_manual_arg_splitting: cfg!(windows),
     }
 }

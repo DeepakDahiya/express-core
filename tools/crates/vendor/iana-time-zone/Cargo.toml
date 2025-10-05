@@ -10,17 +10,15 @@
 # See Cargo.toml.orig for the original contents.
 
 [package]
-edition = "2021"
-rust-version = "1.62.0"
+edition = "2018"
 name = "iana-time-zone"
-version = "0.1.63"
+version = "0.1.61"
 authors = [
     "Andrew Straw <strawman@astraw.com>",
     "René Kijewski <rene.kijewski@fu-berlin.de>",
     "Ryan Lopopolo <rjl@hyperbo.la>",
 ]
 build = false
-autolib = false
 autobins = false
 autoexamples = false
 autotests = false
@@ -39,9 +37,6 @@ categories = [
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/strawlab/iana-time-zone"
 
-[features]
-fallback = []
-
 [lib]
 name = "iana_time_zone"
 path = "src/lib.rs"
@@ -51,34 +46,23 @@ name = "get_timezone"
 path = "examples/get_timezone.rs"
 
 [[example]]
-name = "get_timezone_loop"
-path = "examples/get_timezone_loop.rs"
-
-[[example]]
 name = "stress-test"
 path = "examples/stress-test.rs"
 
-[dev-dependencies.chrono-tz]
-version = "0.10.1"
-
-[dev-dependencies.getrandom]
-version = "0.2.1"
+[features]
+fallback = []
 
 [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies.js-sys]
 version = "0.3.66"
 
-[target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies.log]
-version = "0.4.14"
-
 [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies.wasm-bindgen]
 version = "0.2.89"
 
-[target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dev-dependencies.getrandom]
-version = "0.2.1"
-features = ["js"]
-
 [target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dev-dependencies.wasm-bindgen-test]
-version = "0.3.46"
+version = "0.3"
+
+[target.'cfg(any(target_os = "macos", target_os = "ios"))'.dependencies.core-foundation-sys]
+version = "0.8.3"
 
 [target.'cfg(target_os = "android")'.dependencies.android_system_properties]
 version = "0.1.5"
@@ -87,7 +71,4 @@ version = "0.1.5"
 version = "0.1.1"
 
 [target.'cfg(target_os = "windows")'.dependencies.windows-core]
-version = ">=0.56, <=0.61"
-
-[target.'cfg(target_vendor = "apple")'.dependencies.core-foundation-sys]
-version = "0.8.6"
+version = ">=0.50, <=0.52"

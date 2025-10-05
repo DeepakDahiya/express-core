@@ -36,7 +36,10 @@ pub(crate) fn fanout(iter: &mut dyn ExactSizeIterator<Item = u8>) -> [u32; 256] 
 mod function {
     use std::io;
 
-    use gix_features::progress::{self, DynNestedProgress};
+    use gix_features::{
+        hash,
+        progress::{self, DynNestedProgress},
+    };
 
     use super::{fanout, HIGH_BIT, LARGE_OFFSET_THRESHOLD};
     use crate::index::V2_SIGNATURE;
@@ -73,7 +76,7 @@ mod function {
         pack_hash: &gix_hash::ObjectId,
         kind: crate::index::Version,
         progress: &mut dyn DynNestedProgress,
-    ) -> Result<gix_hash::ObjectId, gix_hash::io::Error> {
+    ) -> io::Result<gix_hash::ObjectId> {
         use io::Write;
         assert_eq!(kind, crate::index::Version::V2, "Can only write V2 packs right now");
         assert!(
@@ -84,7 +87,7 @@ mod function {
         // Write header
         let mut out = Count::new(std::io::BufWriter::with_capacity(
             8 * 4096,
-            gix_hash::io::Write::new(out, kind.hash()),
+            hash::Write::new(out, kind.hash()),
         ));
         out.write_all(V2_SIGNATURE)?;
         out.write_all(&(kind as u32).to_be_bytes())?;
@@ -135,8 +138,8 @@ mod function {
         out.write_all(pack_hash.as_slice())?;
 
         let bytes_written_without_trailer = out.bytes;
-        let out = out.inner.into_inner().map_err(io::Error::from)?;
-        let index_hash = out.hash.try_finalize()?;
+        let out = out.inner.into_inner()?;
+        let index_hash: gix_hash::ObjectId = out.hash.digest().into();
         out.inner.write_all(index_hash.as_slice())?;
         out.inner.flush()?;
 

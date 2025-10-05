@@ -40,7 +40,7 @@ impl Time {
         }
     }
 
-    #[cfg(all(feature = "server", feature = "http1"))]
+    #[cfg(feature = "http1")]
     pub(crate) fn sleep_until(&self, deadline: Instant) -> Pin<Box<dyn Sleep>> {
         match *self {
             Time::Empty => {

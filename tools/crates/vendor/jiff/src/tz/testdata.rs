@@ -1,5 +1,6 @@
-#[cfg(not(miri))]
-use crate::tz::tzif::TzifOwned;
+use alloc::string::ToString;
+
+use crate::tz::tzif::Tzif;
 
 /// A concatenated list of TZif data with a header and an index block.
 ///
@@ -64,19 +65,6 @@ pub(crate) static TZIF_TEST_FILES: &[TzifTestFile] = &[
         name: "Australia/Sydney/RHEL8",
         data: include_bytes!("testdata/australia-sydney-rhel8.tzif"),
     },
-    // I added this to test finding previous time zone transitions in a time
-    // zone that had somewhat recently eliminated DST. The bug was that Jiff
-    // wasn't reporting *any* previous time zone transitions.
-    TzifTestFile {
-        name: "America/Sao_Paulo",
-        data: include_bytes!("testdata/america-sao-paulo.tzif"),
-    },
-    // Another test file I added for a region that eliminated DST and thus
-    // has a "final" time zone transition.
-    TzifTestFile {
-        name: "America/Boa_Vista",
-        data: include_bytes!("testdata/america-boa-vista.tzif"),
-    },
     TzifTestFile { name: "UTC", data: include_bytes!("testdata/utc.tzif") },
 ];
 
@@ -105,25 +93,19 @@ impl TzifTestFile {
     }
 
     /// Parse this test TZif data into a structured representation.
-    #[cfg(not(miri))]
-    pub(crate) fn parse(self) -> TzifOwned {
-        use alloc::string::ToString;
-
+    pub(crate) fn parse(self) -> Tzif {
         let name = Some(self.name.to_string());
-        TzifOwned::parse(name, self.data).unwrap_or_else(|err| {
+        Tzif::parse(name, self.data).unwrap_or_else(|err| {
             panic!("failed to parse TZif test file for {:?}: {err}", self.name)
         })
     }
 
     /// Parse this test TZif data as if it were V1.
-    #[cfg(not(miri))]
-    pub(crate) fn parse_v1(self) -> TzifOwned {
-        use alloc::string::ToString;
-
+    pub(crate) fn parse_v1(self) -> Tzif {
         let name = Some(self.name.to_string());
         let mut data = self.data.to_vec();
         data[4] = 0;
-        TzifOwned::parse(name, &data).unwrap_or_else(|err| {
+        Tzif::parse(name, &data).unwrap_or_else(|err| {
             panic!(
                 "failed to parse V1 TZif test file for {:?}: {err}",
                 self.name

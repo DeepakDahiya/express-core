@@ -329,6 +329,7 @@ mod tests {
     use super::*;
     use crate::write;
     use crate::{BigEndian, LittleEndian};
+    use std::{i64, u64};
 
     #[test]
     fn test_writer() {

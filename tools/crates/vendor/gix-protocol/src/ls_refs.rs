@@ -1,4 +1,3 @@
-#[cfg(any(feature = "blocking-client", feature = "async-client"))]
 mod error {
     use crate::handshake::refs::parse;
 
@@ -12,8 +11,6 @@ mod error {
         Transport(#[from] gix_transport::client::Error),
         #[error(transparent)]
         Parse(#[from] parse::Error),
-        #[error(transparent)]
-        ArgumentValidation(#[from] crate::command::validate_argument_prefixes::Error),
     }
 
     impl gix_transport::IsSpuriousError for Error {
@@ -26,7 +23,6 @@ mod error {
         }
     }
 }
-#[cfg(any(feature = "blocking-client", feature = "async-client"))]
 pub use error::Error;
 
 /// What to do after preparing ls-refs in [`ls_refs()`][crate::ls_refs()].
@@ -41,7 +37,6 @@ pub enum Action {
     Skip,
 }
 
-#[cfg(any(feature = "blocking-client", feature = "async-client"))]
 pub(crate) mod function {
     use std::borrow::Cow;
 
@@ -75,7 +70,7 @@ pub(crate) mod function {
         let _span = gix_features::trace::detail!("gix_protocol::ls_refs()", capabilities = ?capabilities);
         let ls_refs = Command::LsRefs;
         let mut ls_features = ls_refs.default_features(gix_transport::Protocol::V2, capabilities);
-        let mut ls_args = ls_refs.initial_v2_arguments(&ls_features);
+        let mut ls_args = ls_refs.initial_arguments(&ls_features);
         if capabilities
             .capability("ls-refs")
             .and_then(|cap| cap.supports("unborn"))
@@ -86,12 +81,12 @@ pub(crate) mod function {
         let refs = match prepare_ls_refs(capabilities, &mut ls_args, &mut ls_features) {
             Ok(Action::Skip) => Vec::new(),
             Ok(Action::Continue) => {
-                ls_refs.validate_argument_prefixes(
+                ls_refs.validate_argument_prefixes_or_panic(
                     gix_transport::Protocol::V2,
                     capabilities,
                     &ls_args,
                     &ls_features,
-                )?;
+                );
 
                 progress.step();
                 progress.set_name("list refs".into());

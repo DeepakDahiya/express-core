@@ -5,7 +5,8 @@ use crate::repr::Decor;
 use crate::table::{Iter, IterMut, KeyValuePairs, TableLike};
 use crate::{InternalString, Item, KeyMut, RawString, Table, Value};
 
-/// A TOML [`Value`] that contains a collection of [`Key`]/[`Value`] pairs
+/// Type representing a TOML inline table,
+/// payload of the `Value::InlineTable` variant
 #[derive(Debug, Default, Clone)]
 pub struct InlineTable {
     // `preamble` represents whitespaces in an empty table
@@ -81,13 +82,7 @@ impl InlineTable {
         decorate_inline_table(self);
     }
 
-    /// Sorts [Key]/[Value]-pairs of the table
-    ///
-    /// <div class="warning">
-    ///
-    /// This is not recursive.
-    ///
-    /// </div>
+    /// Sorts the key/value pairs by key.
     pub fn sort_values(&mut self) {
         // Assuming standard tables have their position set and this won't negatively impact them
         self.items.sort_keys();
@@ -101,16 +96,10 @@ impl InlineTable {
         }
     }
 
-    /// Sort [Key]/[Value]-pairs of the table using the using the comparison function `compare`
+    /// Sort Key/Value Pairs of the table using the using the comparison function `compare`.
     ///
     /// The comparison function receives two key and value pairs to compare (you can sort by keys or
     /// values or their combination as needed).
-    ///
-    /// <div class="warning">
-    ///
-    /// This is not recursive.
-    ///
-    /// </div>
     pub fn sort_values_by<F>(&mut self, mut compare: F)
     where
         F: FnMut(&Key, &Value, &Key, &Value) -> std::cmp::Ordering,
@@ -522,11 +511,11 @@ fn decorate_inline_table(table: &mut InlineTable) {
     }
 }
 
-/// An owned iterator type over an [`InlineTable`]'s [`Key`]/[`Value`] pairs
+/// An owned iterator type over key/value pairs of an inline table.
 pub type InlineTableIntoIter = Box<dyn Iterator<Item = (InternalString, Value)>>;
-/// An iterator type over [`InlineTable`]'s [`Key`]/[`Value`] pairs
+/// An iterator type over key/value pairs of an inline table.
 pub type InlineTableIter<'a> = Box<dyn Iterator<Item = (&'a str, &'a Value)> + 'a>;
-/// A mutable iterator type over [`InlineTable`]'s [`Key`]/[`Value`] pairs
+/// A mutable iterator type over key/value pairs of an inline table.
 pub type InlineTableIterMut<'a> = Box<dyn Iterator<Item = (KeyMut<'a>, &'a mut Value)> + 'a>;
 
 impl TableLike for InlineTable {
@@ -624,7 +613,7 @@ impl TableLike for InlineTable {
 // `{ key1 = value1, ... }`
 pub(crate) const DEFAULT_INLINE_KEY_DECOR: (&str, &str) = (" ", " ");
 
-/// A view into a single location in an [`InlineTable`], which may be vacant or occupied.
+/// A view into a single location in a map, which may be vacant or occupied.
 pub enum InlineEntry<'a> {
     /// An occupied Entry.
     Occupied(InlineOccupiedEntry<'a>),
@@ -670,7 +659,7 @@ impl<'a> InlineEntry<'a> {
     }
 }
 
-/// A view into a single occupied location in an [`InlineTable`].
+/// A view into a single occupied location in a `IndexMap`.
 pub struct InlineOccupiedEntry<'a> {
     entry: indexmap::map::OccupiedEntry<'a, Key, Item>,
 }
@@ -725,7 +714,7 @@ impl<'a> InlineOccupiedEntry<'a> {
     }
 }
 
-/// A view into a single empty location in an [`InlineTable`].
+/// A view into a single empty location in a `IndexMap`.
 pub struct InlineVacantEntry<'a> {
     entry: indexmap::map::VacantEntry<'a, Key, Item>,
 }

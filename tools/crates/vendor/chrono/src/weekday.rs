@@ -161,7 +161,11 @@ impl Weekday {
     pub const fn days_since(&self, other: Weekday) -> u32 {
         let lhs = *self as u32;
         let rhs = other as u32;
-        if lhs < rhs { 7 + lhs - rhs } else { lhs - rhs }
+        if lhs < rhs {
+            7 + lhs - rhs
+        } else {
+            lhs - rhs
+        }
     }
 }
 
@@ -340,8 +344,8 @@ mod tests {
     #[test]
     #[cfg(feature = "serde")]
     fn test_serde_serialize() {
-        use Weekday::*;
         use serde_json::to_string;
+        use Weekday::*;
 
         let cases: Vec<(Weekday, &str)> = vec![
             (Mon, "\"Mon\""),
@@ -362,8 +366,8 @@ mod tests {
     #[test]
     #[cfg(feature = "serde")]
     fn test_serde_deserialize() {
-        use Weekday::*;
         use serde_json::from_str;
+        use Weekday::*;
 
         let cases: Vec<(&str, Weekday)> = vec![
             ("\"mon\"", Mon),

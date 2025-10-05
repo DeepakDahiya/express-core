@@ -5,14 +5,6 @@ use crate::{
     eol::{AttributesDigest, Configuration, Mode, Stats},
 };
 
-/// The error produced by [`convert_to_worktree()`].
-#[derive(Debug, thiserror::Error)]
-#[allow(missing_docs)]
-pub enum Error {
-    #[error("Could not allocate buffer")]
-    OutOfMemory(#[from] std::collections::TryReserveError),
-}
-
 /// Convert all `\n` in `src` to `crlf` if `digest` and `config` indicate it, returning `true` if `buf` holds the result, or `false`
 /// if no change was made after all.
 pub fn convert_to_worktree(
@@ -20,7 +12,7 @@ pub fn convert_to_worktree(
     digest: AttributesDigest,
     buf: &mut Vec<u8>,
     config: Configuration,
-) -> Result<bool, Error> {
+) -> Result<bool, std::collections::TryReserveError> {
     if src.is_empty() || digest.to_eol(config) != Some(Mode::CrLf) {
         return Ok(false);
     }

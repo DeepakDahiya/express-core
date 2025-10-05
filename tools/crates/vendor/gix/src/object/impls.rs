@@ -61,7 +61,7 @@ impl<'repo> From<Commit<'repo>> for Object<'repo> {
     }
 }
 
-impl AsRef<[u8]> for Object<'_> {
+impl<'repo> AsRef<[u8]> for Object<'repo> {
     fn as_ref(&self) -> &[u8] {
         &self.data
     }
@@ -137,7 +137,7 @@ impl<'repo> TryFrom<Object<'repo>> for Blob<'repo> {
     }
 }
 
-impl std::fmt::Debug for Object<'_> {
+impl<'r> std::fmt::Debug for Object<'r> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         use gix_object::Kind::*;
         let type_name = match self.kind {

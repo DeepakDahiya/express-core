@@ -1,6 +1,7 @@
 use crate::off_t;
 use crate::prelude::*;
 
+pub type c_char = u8;
 pub type wchar_t = u32;
 
 s! {
@@ -55,14 +56,6 @@ s! {
     }
 
     pub struct ipc_perm {
-        #[cfg(musl_v1_2_3)]
-        pub __key: crate::key_t,
-        #[cfg(not(musl_v1_2_3))]
-        #[deprecated(
-            since = "0.2.173",
-            note = "This field is incorrectly named and will be changed
-                to __key in a future release."
-        )]
         pub __ipc_perm_key: crate::key_t,
         pub uid: crate::uid_t,
         pub gid: crate::gid_t,
@@ -98,7 +91,7 @@ s! {
         __unused2: c_int,
         pub msg_ctime: crate::time_t,
         __unused3: c_int,
-        pub __msg_cbytes: c_ulong,
+        __msg_cbytes: c_ulong,
         pub msg_qnum: crate::msgqnum_t,
         pub msg_qbytes: crate::msglen_t,
         pub msg_lspid: crate::pid_t,
@@ -133,6 +126,7 @@ s! {
 }
 
 s_no_extra_traits! {
+    #[allow(missing_debug_implementations)]
     pub struct ucontext_t {
         pub uc_flags: c_ulong,
         pub uc_link: *mut ucontext_t,
@@ -142,6 +136,7 @@ s_no_extra_traits! {
         pub uc_regspace: [c_ulonglong; 64],
     }
 
+    #[allow(missing_debug_implementations)]
     #[repr(align(8))]
     pub struct max_align_t {
         priv_: (i64, i64),
@@ -160,6 +155,17 @@ cfg_if! {
             }
         }
         impl Eq for ucontext_t {}
+        impl fmt::Debug for ucontext_t {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                f.debug_struct("ucontext_t")
+                    .field("uc_flags", &self.uc_link)
+                    .field("uc_link", &self.uc_link)
+                    .field("uc_stack", &self.uc_stack)
+                    .field("uc_mcontext", &self.uc_mcontext)
+                    .field("uc_sigmask", &self.uc_sigmask)
+                    .finish()
+            }
+        }
         impl hash::Hash for ucontext_t {
             fn hash<H: hash::Hasher>(&self, state: &mut H) {
                 self.uc_flags.hash(state);
@@ -790,3 +796,7 @@ pub const SYS_process_mrelease: c_long = 448;
 pub const SYS_futex_waitv: c_long = 449;
 pub const SYS_set_mempolicy_home_node: c_long = 450;
 pub const SYS_mseal: c_long = 462;
+
+extern "C" {
+    pub fn getrandom(buf: *mut c_void, buflen: size_t, flags: c_uint) -> ssize_t;
+}

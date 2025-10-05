@@ -1,5 +1,9 @@
 use gix_object::bstr::{BString, ByteSlice};
-use winnow::{combinator::preceded, prelude::*, token::rest};
+use winnow::{
+    combinator::{preceded, rest},
+    prelude::*,
+    stream::Stream as _,
+};
 
 use crate::store_impl::{packed, packed::decode};
 

@@ -4,6 +4,8 @@
 #include <ring-core/asm_base.h>
 
 #if !defined(OPENSSL_NO_ASM) && defined(OPENSSL_AARCH64) && defined(__ELF__)
+#include <ring-core/arm_arch.h>
+
 .text
 
 .globl	gcm_init_neon

@@ -1,11 +1,11 @@
-use crate::tz::{TimeZone, TimeZoneNameIter};
+use crate::tz::TimeZone;
 
 #[derive(Clone)]
-pub(crate) struct Database;
+pub(crate) struct BundledZoneInfo;
 
-impl Database {
-    pub(crate) fn new() -> Database {
-        Database
+impl BundledZoneInfo {
+    pub(crate) fn new() -> BundledZoneInfo {
+        BundledZoneInfo
     }
 
     pub(crate) fn reset(&self) {}
@@ -14,8 +14,9 @@ impl Database {
         None
     }
 
-    pub(crate) fn available<'d>(&'d self) -> TimeZoneNameIter<'d> {
-        TimeZoneNameIter::empty()
+    #[cfg(feature = "alloc")]
+    pub(crate) fn available(&self) -> alloc::vec::Vec<alloc::string::String> {
+        alloc::vec::Vec::new()
     }
 
     pub(crate) fn is_definitively_empty(&self) -> bool {
@@ -23,7 +24,7 @@ impl Database {
     }
 }
 
-impl core::fmt::Debug for Database {
+impl core::fmt::Debug for BundledZoneInfo {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(f, "Bundled(unavailable)")
     }

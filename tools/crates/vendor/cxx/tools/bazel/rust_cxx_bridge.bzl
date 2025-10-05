@@ -1,9 +1,8 @@
-"""CXX Bridge rules."""
-
+# buildifier: disable=module-docstring
 load("@bazel_skylib//rules:run_binary.bzl", "run_binary")
 load("@rules_cc//cc:defs.bzl", "cc_library")
 
-def rust_cxx_bridge(name, src, deps = [], linkstatic = True, **kwargs):
+def rust_cxx_bridge(name, src, deps = [], **kwargs):
     """A macro defining a cxx bridge library
 
     Args:
@@ -32,11 +31,11 @@ def rust_cxx_bridge(name, src, deps = [], linkstatic = True, **kwargs):
             src + ".cc",
         ],
         args = [
-            "$(execpath %s)" % src,
+            "$(location %s)" % src,
             "-o",
-            "$(execpath %s.h)" % src,
+            "$(location %s.h)" % src,
             "-o",
-            "$(execpath %s.cc)" % src,
+            "$(location %s.cc)" % src,
         ],
         tool = "@cxx.rs//:codegen",
         **kwargs
@@ -46,7 +45,6 @@ def rust_cxx_bridge(name, src, deps = [], linkstatic = True, **kwargs):
         name = name,
         srcs = [src + ".cc"],
         deps = deps + [":%s/include" % name],
-        linkstatic = linkstatic,
         **kwargs
     )
 

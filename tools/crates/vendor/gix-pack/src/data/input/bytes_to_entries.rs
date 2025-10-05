@@ -1,7 +1,7 @@
 use std::{fs, io};
 
-use gix_features::zlib::Decompress;
-use gix_hash::{Hasher, ObjectId};
+use gix_features::{hash::Sha1, zlib::Decompress};
+use gix_hash::ObjectId;
 
 use crate::data::input;
 
@@ -15,7 +15,7 @@ pub struct BytesToEntriesIter<BR> {
     had_error: bool,
     version: crate::data::Version,
     objects_left: u32,
-    hash: Option<Hasher>,
+    hash: Option<Sha1>,
     mode: input::Mode,
     compressed: input::EntryDataMode,
     compressed_buf: Option<Vec<u8>>,
@@ -52,7 +52,7 @@ where
         object_hash: gix_hash::Kind,
     ) -> Result<BytesToEntriesIter<BR>, input::Error> {
         let mut header_data = [0u8; 12];
-        read.read_exact(&mut header_data).map_err(gix_hash::io::Error::from)?;
+        read.read_exact(&mut header_data)?;
 
         let (version, num_objects) = crate::data::header::decode(&header_data)?;
         assert_eq!(
@@ -69,7 +69,7 @@ where
             version,
             objects_left: num_objects,
             hash: (mode != input::Mode::AsIs).then(|| {
-                let mut hash = gix_hash::hasher(object_hash);
+                let mut hash = gix_features::hash::hasher(object_hash);
                 hash.update(&header_data);
                 hash
             }),
@@ -97,7 +97,7 @@ where
             }
             None => crate::data::Entry::from_read(&mut self.read, self.offset, self.hash_len),
         }
-        .map_err(gix_hash::io::Error::from)?;
+        .map_err(input::Error::from)?;
 
         // Decompress object to learn its compressed bytes
         let compressed_buf = self.compressed_buf.take().unwrap_or_else(|| Vec::with_capacity(4096));
@@ -114,7 +114,7 @@ where
             decompressor: &mut self.decompressor,
         };
 
-        let bytes_copied = io::copy(&mut decompressed_reader, &mut io::sink()).map_err(gix_hash::io::Error::from)?;
+        let bytes_copied = io::copy(&mut decompressed_reader, &mut io::sink())?;
         if bytes_copied != entry.decompressed_size {
             return Err(input::Error::IncompletePack {
                 actual: bytes_copied,
@@ -138,10 +138,7 @@ where
 
         let crc32 = if self.compressed.crc32() {
             let mut header_buf = [0u8; 12 + gix_hash::Kind::longest().len_in_bytes()];
-            let header_len = entry
-                .header
-                .write_to(bytes_copied, &mut header_buf.as_mut())
-                .map_err(gix_hash::io::Error::from)?;
+            let header_len = entry.header.write_to(bytes_copied, &mut header_buf.as_mut())?;
             let state = gix_features::hash::crc32_update(0, &header_buf[..header_len]);
             Some(gix_features::hash::crc32_update(state, &compressed))
         } else {
@@ -175,22 +172,26 @@ where
             let mut id = gix_hash::ObjectId::null(self.object_hash);
             if let Err(err) = self.read.read_exact(id.as_mut_slice()) {
                 if self.mode != input::Mode::Restore {
-                    return Err(input::Error::Io(err.into()));
+                    return Err(err.into());
                 }
             }
 
             if let Some(hash) = self.hash.take() {
-                let actual_id = hash.try_finalize().map_err(gix_hash::io::Error::from)?;
+                let actual_id = gix_hash::ObjectId::from(hash.digest());
                 if self.mode == input::Mode::Restore {
                     id = actual_id;
-                } else {
-                    actual_id.verify(&id)?;
+                }
+                if id != actual_id {
+                    return Err(input::Error::ChecksumMismatch {
+                        actual: actual_id,
+                        expected: id,
+                    });
                 }
             }
             Some(id)
         } else if self.mode == input::Mode::Restore {
             let hash = self.hash.clone().expect("in restore mode a hash is set");
-            Some(hash.try_finalize().map_err(gix_hash::io::Error::from)?)
+            Some(gix_hash::ObjectId::from(hash.digest()))
         } else {
             None
         })
@@ -253,7 +254,7 @@ where
         self.write
             .write_all(&buf[..amt])
             .expect("a write to never fail - should be a memory buffer");
-        self.read.consume(amt);
+        self.read.consume(amt)
     }
 }
 
@@ -272,8 +273,7 @@ where
 impl crate::data::File {
     /// Returns an iterator over [`Entries`][crate::data::input::Entry], without making use of the memory mapping.
     pub fn streaming_iter(&self) -> Result<BytesToEntriesIter<impl io::BufRead>, input::Error> {
-        let reader =
-            io::BufReader::with_capacity(4096 * 8, fs::File::open(&self.path).map_err(gix_hash::io::Error::from)?);
+        let reader = io::BufReader::with_capacity(4096 * 8, fs::File::open(&self.path)?);
         BytesToEntriesIter::new_from_header(
             reader,
             input::Mode::Verify,
@@ -291,7 +291,7 @@ pub struct DecompressRead<'a, R> {
     pub decompressor: &'a mut Decompress,
 }
 
-impl<R> io::Read for DecompressRead<'_, R>
+impl<'a, R> io::Read for DecompressRead<'a, R>
 where
     R: io::BufRead,
 {
@@ -303,12 +303,12 @@ where
 /// A utility to automatically generate a hash while writing into an inner writer.
 pub struct HashWrite<'a, T> {
     /// The hash implementation.
-    pub hash: &'a mut Hasher,
+    pub hash: &'a mut Sha1,
     /// The inner writer.
     pub inner: T,
 }
 
-impl<T> std::io::Write for HashWrite<'_, T>
+impl<'a, T> std::io::Write for HashWrite<'a, T>
 where
     T: std::io::Write,
 {

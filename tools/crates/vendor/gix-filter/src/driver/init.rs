@@ -92,7 +92,7 @@ fn spawn_driver(
     context: &gix_command::Context,
 ) -> Result<(std::process::Child, std::process::Command), Error> {
     let mut cmd: std::process::Command = gix_command::prepare(gix_path::from_bstr(cmd).into_owned())
-        .command_may_be_shell_script()
+        .with_shell()
         .with_context(context.clone())
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())

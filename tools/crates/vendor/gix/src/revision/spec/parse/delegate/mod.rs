@@ -56,22 +56,24 @@ impl<'repo> Delegate<'repo> {
                 let candidates = candidates.take();
                 match candidates {
                     None => *out = None,
-                    Some(candidates) => match candidates.len() {
-                        0 => {
-                            unreachable!("BUG: let's avoid still being around if no candidate matched the requirements")
-                        }
-                        1 => {
-                            *out = candidates.into_iter().next();
-                        }
-                        _ => {
-                            errors.insert(
-                                0,
-                                Error::ambiguous(candidates, prefix.expect("set when obtaining candidates"), repo),
-                            );
-                            return Err(Error::from_errors(errors));
-                        }
-                    },
-                }
+                    Some(candidates) => {
+                        match candidates.len() {
+                            0 => unreachable!(
+                                "BUG: let's avoid still being around if no candidate matched the requirements"
+                            ),
+                            1 => {
+                                *out = candidates.into_iter().next();
+                            }
+                            _ => {
+                                errors.insert(
+                                    0,
+                                    Error::ambiguous(candidates, prefix.expect("set when obtaining candidates"), repo),
+                                );
+                                return Err(Error::from_errors(errors));
+                            }
+                        };
+                    }
+                };
             }
             Ok(out)
         }
@@ -108,7 +110,7 @@ impl<'repo> Delegate<'repo> {
     }
 }
 
-impl parse::Delegate for Delegate<'_> {
+impl<'repo> parse::Delegate for Delegate<'repo> {
     fn done(&mut self) {
         self.follow_refs_to_objects_if_needed();
         self.disambiguate_objects_by_fallback_hint(
@@ -119,7 +121,7 @@ impl parse::Delegate for Delegate<'_> {
     }
 }
 
-impl delegate::Kind for Delegate<'_> {
+impl<'repo> delegate::Kind for Delegate<'repo> {
     fn kind(&mut self, kind: gix_revision::spec::Kind) -> Option<()> {
         use gix_revision::spec::Kind::*;
         self.kind = Some(kind);
@@ -135,7 +137,7 @@ impl delegate::Kind for Delegate<'_> {
     }
 }
 
-impl Delegate<'_> {
+impl<'repo> Delegate<'repo> {
     fn kind_implies_committish(&self) -> bool {
         self.kind.unwrap_or(gix_revision::spec::Kind::IncludeReachable) != gix_revision::spec::Kind::IncludeReachable
     }
@@ -213,8 +215,8 @@ impl Delegate<'_> {
                     }
                 }) {
                     obj_opt.get_or_insert_with(HashSet::default).insert(id);
-                }
-            }
+                };
+            };
         }
         Some(())
     }

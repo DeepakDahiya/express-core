@@ -8,7 +8,7 @@
 
 mod utils;
 
-use tame_index::{IndexCache, index::cache::ValidCacheEntry, utils::get_index_details};
+use tame_index::{index::cache::ValidCacheEntry, utils::get_index_details, IndexCache};
 
 /// Validates that we can parse the current version of cache entries emitted by
 /// cargo by reading the cache entry that should be there for one of this crate's
@@ -17,8 +17,7 @@ use tame_index::{IndexCache, index::cache::ValidCacheEntry, utils::get_index_det
 /// you do that, that is your fault.
 #[test]
 fn parses_current_cargo_cache() {
-    let stable = tame_index::utils::cargo_version(None).unwrap() >= semver::Version::new(1, 85, 0);
-    let (path, _url) = get_index_details(tame_index::CRATES_IO_HTTP_INDEX, None, stable).unwrap();
+    let (path, _url) = get_index_details(tame_index::CRATES_IO_HTTP_INDEX, None).unwrap();
     let cache = IndexCache::at_path(path);
     let lock = &utils::unlocked();
 
@@ -57,8 +56,7 @@ fn parses_current_cargo_cache() {
 /// Validates we can write cache files the exact same as the current version of cargo
 #[test]
 fn serializes_current_cargo_cache() {
-    let stable = tame_index::utils::cargo_version(None).unwrap() >= semver::Version::new(1, 85, 0);
-    let (path, _url) = get_index_details(tame_index::CRATES_IO_HTTP_INDEX, None, stable).unwrap();
+    let (path, _url) = get_index_details(tame_index::CRATES_IO_HTTP_INDEX, None).unwrap();
     let cache = IndexCache::at_path(path);
     let lock = &utils::unlocked();
 

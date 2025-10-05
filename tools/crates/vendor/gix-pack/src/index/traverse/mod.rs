@@ -6,8 +6,10 @@ use crate::index;
 
 mod reduce;
 ///
+#[allow(clippy::empty_docs)]
 pub mod with_index;
 ///
+#[allow(clippy::empty_docs)]
 pub mod with_lookup;
 use reduce::Reducer;
 
@@ -126,15 +128,18 @@ impl index::File {
         E: std::error::Error + Send + Sync + 'static,
     {
         Ok(if check.file_checksum() {
-            pack.checksum()
-                .verify(&self.pack_checksum())
-                .map_err(Error::PackMismatch)?;
+            if self.pack_checksum() != pack.checksum() {
+                return Err(Error::PackMismatch {
+                    actual: pack.checksum(),
+                    expected: self.pack_checksum(),
+                });
+            }
             let (pack_res, id) = parallel::join(
                 move || pack.verify_checksum(pack_progress, should_interrupt),
                 move || self.verify_checksum(index_progress, should_interrupt),
             );
-            pack_res.map_err(Error::PackVerify)?;
-            id.map_err(Error::IndexVerify)?
+            pack_res?;
+            id?
         } else {
             self.index_checksum()
         })
@@ -207,12 +212,15 @@ where
     E: std::error::Error + Send + Sync + 'static,
 {
     if check.object_checksum() {
-        gix_object::Data::new(object_kind, decompressed)
-            .verify_checksum(&index_entry.oid)
-            .map_err(|source| Error::PackObjectVerify {
+        let actual_oid = gix_object::compute_hash(index_entry.oid.kind(), object_kind, decompressed);
+        if actual_oid != index_entry.oid {
+            return Err(Error::PackObjectMismatch {
+                actual: actual_oid,
+                expected: index_entry.oid,
                 offset: index_entry.pack_offset,
-                source,
-            })?;
+                kind: object_kind,
+            });
+        }
         if let Some(desired_crc32) = index_entry.crc32 {
             let actual_crc32 = pack_entry_crc32();
             if actual_crc32 != desired_crc32 {

@@ -587,7 +587,6 @@ impl AsyncRead for File {
         dst: &mut ReadBuf<'_>,
     ) -> Poll<io::Result<()>> {
         ready!(crate::trace::trace_leaf(cx));
-
         let me = self.get_mut();
         let inner = me.inner.get_mut();
 
@@ -596,7 +595,7 @@ impl AsyncRead for File {
                 State::Idle(ref mut buf_cell) => {
                     let mut buf = buf_cell.take().unwrap();
 
-                    if !buf.is_empty() || dst.remaining() == 0 {
+                    if !buf.is_empty() {
                         buf.copy_to(dst);
                         *buf_cell = Some(buf);
                         return Poll::Ready(Ok(()));

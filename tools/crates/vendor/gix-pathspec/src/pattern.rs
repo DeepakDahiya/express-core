@@ -178,7 +178,7 @@ impl Pattern {
             } else {
                 buf.push_str("attr:");
                 for attr in &self.attributes {
-                    let attr = attr.as_ref().to_string().replace(',', r"\,");
+                    let attr = attr.as_ref().to_string().replace(',', "\\,");
                     buf.push_str(&attr);
                     buf.push(b' ');
                 }

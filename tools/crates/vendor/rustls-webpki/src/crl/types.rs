@@ -8,13 +8,13 @@ use pki_types::{SignatureVerificationAlgorithm, UnixTime};
 
 use crate::cert::lenient_certificate_serial_number;
 use crate::crl::crl_signature_err;
-use crate::der::{self, CONSTRUCTED, CONTEXT_SPECIFIC, DerIterator, FromDer, Tag};
+use crate::der::{self, DerIterator, FromDer, Tag, CONSTRUCTED, CONTEXT_SPECIFIC};
 use crate::error::{DerTypeId, Error};
 use crate::public_values_eq;
 use crate::signed_data::{self, SignedData};
 use crate::subject_name::GeneralName;
 use crate::verify_cert::{Budget, PathNode, Role};
-use crate::x509::{DistributionPointName, Extension, remember_extension, set_extension_once};
+use crate::x509::{remember_extension, set_extension_once, DistributionPointName, Extension};
 
 /// A RFC 5280[^1] profile Certificate Revocation List (CRL).
 ///
@@ -43,7 +43,7 @@ impl<'a> From<BorrowedCertRevocationList<'a>> for CertRevocationList<'a> {
     }
 }
 
-impl CertRevocationList<'_> {
+impl<'a> CertRevocationList<'a> {
     /// Return the DER encoded issuer of the CRL.
     pub fn issuer(&self) -> &[u8] {
         match self {
@@ -150,7 +150,7 @@ impl CertRevocationList<'_> {
         };
 
         if time >= next_update {
-            return Err(Error::CrlExpired { time, next_update });
+            return Err(Error::CrlExpired);
         }
 
         Ok(())
@@ -425,7 +425,6 @@ impl<'a> FromDer<'a> for BorrowedCertRevocationList<'a> {
                         Tag::Sequence,
                         Tag::Sequence,
                         Error::TrailingData(DerTypeId::CertRevocationListExtension),
-                        false,
                         |extension| {
                             // RFC 5280 §5.2:
                             //   If a CRL contains a critical extension
@@ -654,7 +653,7 @@ impl<'a> IssuingDistributionPoint<'a> {
                     UniformResourceIdentifier(other_uri)
                         if uri.as_slice_less_safe() == other_uri.as_slice_less_safe() =>
                     {
-                        return true;
+                        return true
                     }
                     _ => continue,
                 }
@@ -1163,7 +1162,7 @@ mod tests {
             #[cfg(feature = "alloc")]
             {
                 // revocation reasons should be Debug.
-                println!("{actual:?}");
+                println!("{:?}", actual);
             }
         }
 
@@ -1187,20 +1186,20 @@ mod tests {
         let crl =
             BorrowedCertRevocationList::from_der(include_bytes!("../../tests/crls/crl.valid.der"))
                 .unwrap();
-        println!("{crl:?}"); // BorrowedCertRevocationList should be debug.
+        println!("{:?}", crl); // BorrowedCertRevocationList should be debug.
 
         let owned_crl = crl.to_owned().unwrap();
-        println!("{owned_crl:?}"); // OwnedCertRevocationList should be debug.
+        println!("{:?}", owned_crl); // OwnedCertRevocationList should be debug.
         let _ = owned_crl.clone(); // OwnedCertRevocationList should be clone.
 
         let mut revoked_certs = crl.into_iter();
-        println!("{revoked_certs:?}"); // RevokedCert should be debug.
+        println!("{:?}", revoked_certs); // RevokedCert should be debug.
 
         let revoked_cert = revoked_certs.next().unwrap().unwrap();
-        println!("{revoked_cert:?}"); // BorrowedRevokedCert should be debug.
+        println!("{:?}", revoked_cert); // BorrowedRevokedCert should be debug.
 
         let owned_revoked_cert = revoked_cert.to_owned();
-        println!("{owned_revoked_cert:?}"); // OwnedRevokedCert should be debug.
+        println!("{:?}", owned_revoked_cert); // OwnedRevokedCert should be debug.
         let _ = owned_revoked_cert.clone(); // OwnedRevokedCert should be clone.
     }
 
@@ -1255,10 +1254,8 @@ mod tests {
         let crl = CertRevocationList::from(BorrowedCertRevocationList::from_der(&crl[..]).unwrap());
         //  Friday, February 2, 2024 8:26:19 PM GMT
         let time = UnixTime::since_unix_epoch(Duration::from_secs(1_706_905_579));
-        assert!(matches!(
-            crl.check_expiration(time),
-            Err(Error::CrlExpired { .. })
-        ));
+
+        assert!(matches!(crl.check_expiration(time), Err(Error::CrlExpired)));
     }
 
     #[test]

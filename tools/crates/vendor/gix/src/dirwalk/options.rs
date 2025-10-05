@@ -1,6 +1,5 @@
-use gix_dir::walk::{CollapsedEntriesEmissionMode, EmissionMode, ForDeletionMode};
-
 use crate::dirwalk::Options;
+use gix_dir::walk::{CollapsedEntriesEmissionMode, EmissionMode, ForDeletionMode};
 
 /// Construction
 impl Options {
@@ -116,13 +115,13 @@ impl Options {
         self
     }
     /// Controls the way untracked files are emitted. By default, this is happening immediately and without any simplification.
-    pub fn emit_untracked(mut self, mode: EmissionMode) -> Self {
-        self.emit_untracked = mode;
+    pub fn emit_untracked(mut self, toggle: EmissionMode) -> Self {
+        self.emit_untracked = toggle;
         self
     }
     /// Like [`emit_untracked()`](Self::emit_untracked), but only requires a mutably borrowed instance.
-    pub fn set_emit_untracked(&mut self, mode: EmissionMode) -> &mut Self {
-        self.emit_untracked = mode;
+    pub fn set_emit_untracked(&mut self, toggle: EmissionMode) -> &mut Self {
+        self.emit_untracked = toggle;
         self
     }
     /// If `toggle` is `true`, emit empty directories as well. Note that a directory also counts as empty if it has any
@@ -174,15 +173,15 @@ impl Options {
     /// if `true` it will be excluded as the symlink is considered a directory.
     ///
     /// In other words, for Git compatibility this flag should be `false`, the default, for `git2` compatibility it should be `true`.
-    pub fn symlinks_to_directories_are_ignored_like_directories(mut self, toggle: bool) -> Self {
+    pub fn symlinks_to_directories_are_ignored_like_directories(&mut self, toggle: bool) -> &mut Self {
         self.symlinks_to_directories_are_ignored_like_directories = toggle;
         self
     }
 
     /// Like [`symlinks_to_directories_are_ignored_like_directories()`](Self::symlinks_to_directories_are_ignored_like_directories),
     /// but only requires a mutably borrowed instance.
-    pub fn set_symlinks_to_directories_are_ignored_like_directories(&mut self, toggle: bool) -> &mut Self {
-        self.symlinks_to_directories_are_ignored_like_directories = toggle;
+    pub fn set_symlinks_to_directories_are_ignored_like_directories(&mut self, value: bool) -> &mut Self {
+        self.symlinks_to_directories_are_ignored_like_directories = value;
         self
     }
 }

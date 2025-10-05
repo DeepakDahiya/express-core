@@ -1,4 +1,6 @@
-use std::{borrow::Cow, ffi::OsStr, path::Path};
+use std::borrow::Cow;
+use std::ffi::OsStr;
+use std::path::Path;
 
 /// Assure that `s` is precomposed, i.e. `ä` is a single code-point, and not two i.e. `a` and `<umlaut>`.
 ///

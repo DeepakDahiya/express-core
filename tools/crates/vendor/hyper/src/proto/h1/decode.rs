@@ -4,7 +4,7 @@ use std::io;
 use std::task::{Context, Poll};
 
 use bytes::{BufMut, Bytes, BytesMut};
-use futures_core::ready;
+use futures_util::ready;
 use http::{HeaderMap, HeaderName, HeaderValue};
 use http_body::Frame;
 

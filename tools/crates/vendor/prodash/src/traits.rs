@@ -243,7 +243,7 @@ mod impls {
 
     pub trait Sealed {}
 
-    impl<T> Count for &T
+    impl<'a, T> Count for &'a T
     where
         T: Count + ?Sized,
     {
@@ -268,7 +268,7 @@ mod impls {
         }
     }
 
-    impl<T> Count for &mut T
+    impl<'a, T> Count for &'a mut T
     where
         T: Count + ?Sized,
     {
@@ -293,7 +293,7 @@ mod impls {
         }
     }
 
-    impl<T> Progress for &mut T
+    impl<'a, T> Progress for &'a mut T
     where
         T: Progress + ?Sized,
     {
@@ -350,7 +350,7 @@ mod impls {
         }
     }
 
-    impl<T> NestedProgress for &mut T
+    impl<'a, T> NestedProgress for &'a mut T
     where
         T: NestedProgress + ?Sized,
     {

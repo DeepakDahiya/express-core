@@ -5,8 +5,8 @@ use crate::Repository;
 pub struct EntryRef<'repo, 'a> {
     /// The actual entry ref we are wrapping.
     pub inner: gix_object::tree::EntryRef<'a>,
-    /// The owning repository.
-    pub repo: &'repo Repository,
+
+    pub(crate) repo: &'repo Repository,
 }
 
 impl<'repo, 'a> EntryRef<'repo, 'a> {
@@ -46,12 +46,12 @@ impl<'repo, 'a> EntryRef<'repo, 'a> {
     }
 }
 
-impl std::fmt::Display for EntryRef<'_, '_> {
+impl<'repo, 'a> std::fmt::Display for EntryRef<'repo, 'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "{:>6o} {:>6} {}\t{}",
-            self.mode(),
+            "{:06o} {:>6} {}\t{}",
+            *self.mode(),
             self.mode().as_str(),
             self.id().shorten_or_id(),
             self.filename()

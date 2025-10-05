@@ -5,6 +5,7 @@ use gix_object::Exists;
 use crate::store::{load_index, Handle};
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod lookup {
     use crate::loose;
 
@@ -24,6 +25,7 @@ pub mod lookup {
 }
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod disambiguate {
     /// A potentially ambiguous prefix for use with `Handle::disambiguate_prefix()`.
     #[derive(Debug, Copy, Clone)]
@@ -89,7 +91,7 @@ where
                 *snapshot = self.store.load_all_indices()?;
                 let mut obj_count = 0;
                 for index in &snapshot.indices {
-                    obj_count += u64::from(index.num_objects());
+                    obj_count += index.num_objects() as u64;
                 }
                 *count = Some(obj_count);
                 Ok(obj_count)

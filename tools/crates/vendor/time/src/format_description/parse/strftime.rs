@@ -91,7 +91,7 @@ fn lex(mut input: &[u8]) -> iter::Peekable<impl Iterator<Item = Result<Token<'_>
                         _inner: unused(percent_loc.error("unexpected end of input")),
                         public: InvalidFormatDescription::Expected {
                             what: "valid escape sequence",
-                            index: percent_loc.byte as usize,
+                            index: percent_loc.byte as _,
                         },
                     }));
                 }
@@ -210,7 +210,6 @@ fn parse_component(
             component!(Year {
                 padding: modifier::Padding::Zero,
                 repr: modifier::YearRepr::Full,
-                range: modifier::YearRange::Extended,
                 iso_week_based: false,
                 sign_is_mandatory: false,
             }),
@@ -218,7 +217,6 @@ fn parse_component(
         b'C' => component!(Year {
             padding: padding_or_default(*padding, modifier::Padding::Zero),
             repr: modifier::YearRepr::Century,
-            range: modifier::YearRange::Extended,
             iso_week_based: false,
             sign_is_mandatory: false,
         }),
@@ -239,7 +237,6 @@ fn parse_component(
             component!(Year {
                 padding: modifier::Padding::Zero,
                 repr: modifier::YearRepr::LastTwo,
-                range: modifier::YearRange::Extended,
                 iso_week_based: false,
                 sign_is_mandatory: false,
             }),
@@ -251,7 +248,6 @@ fn parse_component(
             component!(Year {
                 padding: modifier::Padding::Zero,
                 repr: modifier::YearRepr::Full,
-                range: modifier::YearRange::Extended,
                 iso_week_based: false,
                 sign_is_mandatory: false,
             }),
@@ -269,14 +265,12 @@ fn parse_component(
         b'g' => component!(Year {
             padding: padding_or_default(*padding, modifier::Padding::Zero),
             repr: modifier::YearRepr::LastTwo,
-            range: modifier::YearRange::Extended,
             iso_week_based: true,
             sign_is_mandatory: false,
         }),
         b'G' => component!(Year {
             padding: modifier::Padding::Zero,
             repr: modifier::YearRepr::Full,
-            range: modifier::YearRange::Extended,
             iso_week_based: true,
             sign_is_mandatory: false,
         }),
@@ -317,7 +311,7 @@ fn parse_component(
                 public: InvalidFormatDescription::NotSupported {
                     what: "modifier",
                     context: "",
-                    index: component.span.start.byte as usize,
+                    index: component.span.start.byte as _,
                 },
             })
         }
@@ -416,7 +410,6 @@ fn parse_component(
             component!(Year {
                 padding: modifier::Padding::Zero,
                 repr: modifier::YearRepr::LastTwo,
-                range: modifier::YearRange::Extended,
                 iso_week_based: false,
                 sign_is_mandatory: false,
             }),
@@ -438,14 +431,12 @@ fn parse_component(
         b'y' => component!(Year {
             padding: padding_or_default(*padding, modifier::Padding::Zero),
             repr: modifier::YearRepr::LastTwo,
-            range: modifier::YearRange::Extended,
             iso_week_based: false,
             sign_is_mandatory: false,
         }),
         b'Y' => component!(Year {
             padding: modifier::Padding::Zero,
             repr: modifier::YearRepr::Full,
-            range: modifier::YearRange::Extended,
             iso_week_based: false,
             sign_is_mandatory: false,
         }),
@@ -467,7 +458,7 @@ fn parse_component(
                 public: InvalidFormatDescription::NotSupported {
                     what: "component",
                     context: "",
-                    index: component.span.start.byte as usize,
+                    index: component.span.start.byte as _,
                 },
             })
         }
@@ -479,7 +470,7 @@ fn parse_component(
                 }),
                 public: InvalidFormatDescription::InvalidComponentName {
                     name: String::from_utf8_lossy(&[*component]).into_owned(),
-                    index: component.span.start.byte as usize,
+                    index: component.span.start.byte as _,
                 },
             })
         }

@@ -1,25 +1,20 @@
 use std::{
     future::Future,
+    io,
     pin::Pin,
+    sync::Arc,
     task::{Context, Poll},
     time::Instant,
 };
-#[cfg(any(feature = "runtime-smol", feature = "runtime-async-std"))]
-use std::{io, sync::Arc, task::ready};
 
-#[cfg(any(feature = "runtime-smol", feature = "runtime-async-std"))]
-use async_io::Async;
-use async_io::Timer;
+use async_io::{Async, Timer};
 
-use super::AsyncTimer;
-#[cfg(any(feature = "runtime-smol", feature = "runtime-async-std"))]
-use super::{AsyncUdpSocket, Runtime, UdpPollHelper};
+use super::{AsyncTimer, AsyncUdpSocket, Runtime, UdpPollHelper};
 
-#[cfg(feature = "runtime-smol")]
-// Due to MSRV, we must specify `self::` where there's crate/module ambiguity
+#[cfg(feature = "smol")]
 pub use self::smol::SmolRuntime;
 
-#[cfg(feature = "runtime-smol")]
+#[cfg(feature = "smol")]
 mod smol {
     use super::*;
 
@@ -45,11 +40,10 @@ mod smol {
     }
 }
 
-#[cfg(feature = "runtime-async-std")]
-// Due to MSRV, we must specify `self::` where there's crate/module ambiguity
+#[cfg(feature = "async-std")]
 pub use self::async_std::AsyncStdRuntime;
 
-#[cfg(feature = "runtime-async-std")]
+#[cfg(feature = "async-std")]
 mod async_std {
     use super::*;
 
@@ -85,24 +79,21 @@ impl AsyncTimer for Timer {
     }
 }
 
-#[cfg(any(feature = "runtime-smol", feature = "runtime-async-std"))]
 #[derive(Debug)]
 struct UdpSocket {
     io: Async<std::net::UdpSocket>,
     inner: udp::UdpSocketState,
 }
 
-#[cfg(any(feature = "runtime-smol", feature = "runtime-async-std"))]
 impl UdpSocket {
     fn new(sock: std::net::UdpSocket) -> io::Result<Self> {
         Ok(Self {
             inner: udp::UdpSocketState::new((&sock).into())?,
-            io: Async::new_nonblocking(sock)?,
+            io: Async::new(sock)?,
         })
     }
 }
 
-#[cfg(any(feature = "runtime-smol", feature = "runtime-async-std"))]
 impl AsyncUdpSocket for UdpSocket {
     fn create_io_poller(self: Arc<Self>) -> Pin<Box<dyn super::UdpPoller>> {
         Box::pin(UdpPollHelper::new(move || {

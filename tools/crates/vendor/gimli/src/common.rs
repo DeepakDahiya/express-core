@@ -48,6 +48,8 @@ pub struct Encoding {
     /// The size of an address.
     pub address_size: u8,
 
+    // The size of a segment selector.
+    // TODO: pub segment_size: u8,
     /// Whether the DWARF format is 32- or 64-bit.
     pub format: Format,
 
@@ -337,7 +339,6 @@ impl SectionId {
             // GNU split-dwarf extension to DWARF4.
             SectionId::DebugLoc => ".debug_loc.dwo",
             SectionId::DebugLocLists => ".debug_loclists.dwo",
-            SectionId::DebugMacinfo => ".debug_macinfo.dwo",
             SectionId::DebugMacro => ".debug_macro.dwo",
             SectionId::DebugRngLists => ".debug_rnglists.dwo",
             SectionId::DebugStr => ".debug_str.dwo",
@@ -364,13 +365,6 @@ impl SectionId {
             SectionId::DebugStr => ".dwstr",
             _ => return None,
         })
-    }
-
-    /// Returns true if this is a mergeable string section.
-    ///
-    /// This is useful for determining the correct section flags.
-    pub fn is_string(self) -> bool {
-        matches!(self, SectionId::DebugStr | SectionId::DebugLineStr)
     }
 }
 

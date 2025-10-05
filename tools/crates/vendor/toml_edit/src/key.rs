@@ -1,14 +1,10 @@
 use std::borrow::Cow;
 use std::str::FromStr;
 
-#[cfg(feature = "display")]
-use toml_write::ToTomlKey as _;
-
 use crate::repr::{Decor, Repr};
 use crate::InternalString;
 
-/// For Key/[`Value`][crate::Value] pairs under a [`Table`][crate::Table] header or inside an
-/// [`InlineTable`][crate::InlineTable]
+/// Key as part of a Key/Value Pair or a table header.
 ///
 /// # Examples
 ///
@@ -98,10 +94,7 @@ impl Key {
     /// Returns the default raw representation.
     #[cfg(feature = "display")]
     pub fn default_repr(&self) -> Repr {
-        let output = toml_write::TomlKeyBuilder::new(&self.key)
-            .as_default()
-            .to_toml_key();
-        Repr::new_unchecked(output)
+        to_key_repr(&self.key)
     }
 
     /// Returns a raw representation.
@@ -283,6 +276,32 @@ impl FromStr for Key {
     }
 }
 
+#[cfg(feature = "display")]
+fn to_key_repr(key: &str) -> Repr {
+    #[cfg(feature = "parse")]
+    {
+        if key
+            .as_bytes()
+            .iter()
+            .copied()
+            .all(crate::parser::key::is_unquoted_char)
+            && !key.is_empty()
+        {
+            Repr::new_unchecked(key)
+        } else {
+            crate::encode::to_string_repr(
+                key,
+                Some(crate::encode::StringStyle::OnelineSingle),
+                None,
+            )
+        }
+    }
+    #[cfg(not(feature = "parse"))]
+    {
+        crate::encode::to_string_repr(key, Some(crate::encode::StringStyle::OnelineSingle), None)
+    }
+}
+
 impl<'b> From<&'b str> for Key {
     fn from(s: &'b str) -> Self {
         Key::new(s)
@@ -314,7 +333,7 @@ impl From<Key> for InternalString {
     }
 }
 
-/// A mutable reference to a [`Key`]'s formatting
+/// A mutable reference to a `Key`'s formatting
 #[derive(Debug, Eq, PartialEq, PartialOrd, Ord, Hash)]
 pub struct KeyMut<'k> {
     key: &'k mut Key,

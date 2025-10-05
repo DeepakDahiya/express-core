@@ -56,8 +56,7 @@ pub(crate) struct Trace {
 pin_project_lite::pin_project! {
     #[derive(Debug, Clone)]
     #[must_use = "futures do nothing unless you `.await` or poll them"]
-    /// A future wrapper that roots traces (captured with [`Trace::capture`]).
-    pub struct Root<T> {
+    pub(crate) struct Root<T> {
         #[pin]
         future: T,
     }
@@ -202,6 +201,8 @@ pub(crate) fn trace_leaf(cx: &mut task::Context<'_>) -> Poll<()> {
                     scheduler::Context::CurrentThread(s) => s.defer.defer(cx.waker()),
                     #[cfg(feature = "rt-multi-thread")]
                     scheduler::Context::MultiThread(s) => s.defer.defer(cx.waker()),
+                    #[cfg(all(tokio_unstable, feature = "rt-multi-thread"))]
+                    scheduler::Context::MultiThreadAlt(_) => unimplemented!(),
                 }
             }
         });

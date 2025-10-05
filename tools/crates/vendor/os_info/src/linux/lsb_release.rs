@@ -18,7 +18,6 @@ pub fn get() -> Option<Info> {
     let os_type = match release.distribution.as_ref().map(String::as_ref) {
         Some("Alpaquita") => Type::Alpaquita,
         Some("Amazon") | Some("AmazonAMI") => Type::Amazon,
-        Some("AOSC") => Type::AOSC,
         Some("Arch") => Type::Arch,
         Some("Artix") => Type::Artix,
         Some("Bluefin") => Type::Bluefin,
@@ -32,7 +31,7 @@ pub fn get() -> Option<Info> {
         Some("Kali") => Type::Kali,
         Some("Linuxmint") => Type::Mint,
         Some("MaboxLinux") => Type::Mabox,
-        Some("ManjaroLinux") | Some("Manjaro-ARM") => Type::Manjaro,
+        Some("ManjaroLinux") => Type::Manjaro,
         Some("Mariner") => Type::Mariner,
         Some("NixOS") => Type::NixOS,
         Some("NobaraLinux") => Type::Nobara,
@@ -127,14 +126,6 @@ mod tests {
         assert_eq!(parse_results.distribution, Some("Alpaquita".to_string()));
         assert_eq!(parse_results.version, Some("23".to_string()));
         assert_eq!(parse_results.codename, None);
-    }
-
-    #[test]
-    fn aosc() {
-        let parse_results = parse(aosc_file());
-        assert_eq!(parse_results.distribution, Some("AOSC".to_string()));
-        assert_eq!(parse_results.version, Some("12.3.1".to_string()));
-        assert_eq!(parse_results.codename, Some("localhost".to_string()));
     }
 
     #[test]
@@ -326,14 +317,6 @@ mod tests {
     }
 
     #[test]
-    fn manjaro_arm() {
-        let parse_results = parse(manjaro_arm_24_04());
-        assert_eq!(parse_results.distribution, Some("Manjaro-ARM".to_string()));
-        assert_eq!(parse_results.version, Some("24.04".to_string()));
-        assert_eq!(parse_results.codename, None);
-    }
-
-    #[test]
     fn mariner() {
         let parse_results = parse(mariner_file());
         assert_eq!(parse_results.distribution, Some("Mariner".to_string()));
@@ -395,13 +378,6 @@ mod tests {
         Description:    BellSoft Alpaquita Linux Stream 23 (musl)\n\
         Release:        23\n\
         Codename:       n/a"
-    }
-
-    fn aosc_file() -> &'static str {
-        "\nDistributor ID: AOSC OS\n\
-        Description:    AOSC OS\n\
-        Release:        12.3.1\n\
-        Codename:       localhost"
     }
 
     fn arch_file() -> &'static str {
@@ -599,15 +575,6 @@ mod tests {
         Distributor ID: ManjaroLinux\n\
         Description:    Manjaro Linux\n\
         Release:        19.0.2\n\
-        Codename:       n/a\n\
-        "
-    }
-
-    fn manjaro_arm_24_04() -> &'static str {
-        "LSB Version:    n/a\n\
-        Distributor ID: Manjaro-ARM\n\
-        Description:    Manjaro ARM Linux\n\
-        Release:        24.04\n\
         Codename:       n/a\n\
         "
     }

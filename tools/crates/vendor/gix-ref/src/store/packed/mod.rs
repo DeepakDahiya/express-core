@@ -55,7 +55,7 @@ pub struct Reference<'a> {
     pub object: Option<&'a BStr>,
 }
 
-impl Reference<'_> {
+impl<'a> Reference<'a> {
     /// Decode the target as object
     pub fn target(&self) -> ObjectId {
         gix_hash::ObjectId::from_hex(self.target).expect("parser validation")
@@ -84,13 +84,17 @@ pub struct Iter<'a> {
 mod decode;
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod iter;
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod buffer;
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod find;
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod transaction;

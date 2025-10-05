@@ -1,6 +1,5 @@
-use bstr::{BStr, BString, ByteSlice};
-
 use crate::{State, StateRef};
+use bstr::{BStr, BString, ByteSlice};
 
 /// A container to encapsulate a tightly packed and typically unallocated byte value that isn't necessarily UTF8 encoded.
 #[derive(PartialEq, Eq, Debug, Hash, Ord, PartialOrd, Clone)]
@@ -24,9 +23,9 @@ impl<'a> ValueRef<'a> {
 }
 
 /// Access and conversions
-impl<'a> ValueRef<'a> {
+impl ValueRef<'_> {
     /// Access this value as byte string.
-    pub fn as_bstr(&self) -> &'a BStr {
+    pub fn as_bstr(&self) -> &BStr {
         self.0.as_bytes().as_bstr()
     }
 
@@ -97,7 +96,7 @@ impl<'a> StateRef<'a> {
 }
 
 /// Access
-impl StateRef<'_> {
+impl<'a> StateRef<'a> {
     /// Turn ourselves into our owned counterpart.
     pub fn to_owned(self) -> State {
         self.into()

@@ -1,14 +1,17 @@
-use crate::codecs::Decode;
-use crate::core::util::PartialBuffer;
-use crate::futures::write::{AsyncBufWrite, BufWriter};
-use futures_core::ready;
-use futures_io::{AsyncBufRead, AsyncRead, AsyncWrite, IoSliceMut};
-use pin_project_lite::pin_project;
 use std::{
     io,
     pin::Pin,
     task::{Context, Poll},
 };
+
+use crate::{
+    codec::Decode,
+    futures::write::{AsyncBufWrite, BufWriter},
+    util::PartialBuffer,
+};
+use futures_core::ready;
+use futures_io::{AsyncBufRead, AsyncRead, AsyncWrite, IoSliceMut};
+use pin_project_lite::pin_project;
 
 #[derive(Debug)]
 enum State {
@@ -24,16 +27,6 @@ pin_project! {
         writer: BufWriter<W>,
         decoder: D,
         state: State,
-    }
-}
-
-impl<W: AsyncWrite, D: Decode> Decoder<W, D> {
-    pub fn new(writer: W, decoder: D) -> Self {
-        Self {
-            writer: BufWriter::new(writer),
-            decoder,
-            state: State::Decoding,
-        }
     }
 }
 
@@ -56,6 +49,14 @@ impl<W, D> Decoder<W, D> {
 }
 
 impl<W: AsyncWrite, D: Decode> Decoder<W, D> {
+    pub fn new(writer: W, decoder: D) -> Self {
+        Self {
+            writer: BufWriter::new(writer),
+            decoder,
+            state: State::Decoding,
+        }
+    }
+
     fn do_poll_write(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
@@ -85,7 +86,10 @@ impl<W: AsyncWrite, D: Decode> Decoder<W, D> {
                 }
 
                 State::Done => {
-                    return Poll::Ready(Err(io::Error::other("Write after end of stream")))
+                    return Poll::Ready(Err(io::Error::new(
+                        io::ErrorKind::Other,
+                        "Write after end of stream",
+                    )))
                 }
             };
 
@@ -173,7 +177,8 @@ impl<W: AsyncWrite, D: Decode> AsyncWrite for Decoder<W, D> {
             ready!(self.as_mut().project().writer.as_mut().poll_close(cx))?;
             Poll::Ready(Ok(()))
         } else {
-            Poll::Ready(Err(io::Error::other(
+            Poll::Ready(Err(io::Error::new(
+                io::ErrorKind::Other,
                 "Attempt to close before finishing input",
             )))
         }

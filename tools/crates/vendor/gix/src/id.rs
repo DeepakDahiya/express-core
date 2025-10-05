@@ -64,11 +64,12 @@ impl<'repo> Id<'repo> {
 
 fn calculate_auto_hex_len(num_packed_objects: u64) -> usize {
     let mut len = 64 - num_packed_objects.leading_zeros();
-    len = len.div_ceil(2);
+    len = (len + 1) / 2;
     len.max(7) as usize
 }
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod shorten {
     /// Returned by [`Id::prefix()`][super::Id::shorten()].
     #[derive(Debug, thiserror::Error)]
@@ -83,7 +84,7 @@ pub mod shorten {
     }
 }
 
-impl Deref for Id<'_> {
+impl<'repo> Deref for Id<'repo> {
     type Target = oid;
 
     fn deref(&self) -> &Self::Target {
@@ -118,9 +119,9 @@ mod impls {
 
     // Eq, Hash, Ord, PartialOrd,
 
-    impl std::hash::Hash for Id<'_> {
+    impl<'a> std::hash::Hash for Id<'a> {
         fn hash<H: Hasher>(&self, state: &mut H) {
-            self.inner.hash(state);
+            self.inner.hash(state)
         }
     }
 
@@ -136,7 +137,7 @@ mod impls {
         }
     }
 
-    impl PartialEq<ObjectId> for Id<'_> {
+    impl<'repo> PartialEq<ObjectId> for Id<'repo> {
         fn eq(&self, other: &ObjectId) -> bool {
             &self.inner == other
         }
@@ -148,7 +149,7 @@ mod impls {
         }
     }
 
-    impl PartialEq<oid> for Id<'_> {
+    impl<'repo> PartialEq<oid> for Id<'repo> {
         fn eq(&self, other: &oid) -> bool {
             self.inner == other
         }
@@ -160,25 +161,25 @@ mod impls {
         }
     }
 
-    impl PartialEq<ObjectDetached> for Id<'_> {
+    impl<'repo> PartialEq<ObjectDetached> for Id<'repo> {
         fn eq(&self, other: &ObjectDetached) -> bool {
             self.inner == other.id
         }
     }
 
-    impl std::fmt::Debug for Id<'_> {
+    impl<'repo> std::fmt::Debug for Id<'repo> {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             self.inner.fmt(f)
         }
     }
 
-    impl std::fmt::Display for Id<'_> {
+    impl<'repo> std::fmt::Display for Id<'repo> {
         fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
             self.inner.fmt(f)
         }
     }
 
-    impl AsRef<oid> for Id<'_> {
+    impl<'repo> AsRef<oid> for Id<'repo> {
         fn as_ref(&self) -> &oid {
             &self.inner
         }
@@ -202,6 +203,6 @@ mod tests {
         assert!(
             actual <= ceiling,
             "size of oid shouldn't change without notice: {actual} <= {ceiling}"
-        );
+        )
     }
 }

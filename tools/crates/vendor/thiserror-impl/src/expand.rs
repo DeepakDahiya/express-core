@@ -181,12 +181,7 @@ fn impl_struct(input: Struct) -> TokenStream {
             }
         };
         Some(quote! {
-            #[allow(
-                deprecated,
-                unused_qualifications,
-                clippy::elidable_lifetime_names,
-                clippy::needless_lifetimes,
-            )]
+            #[allow(deprecated, unused_qualifications, clippy::needless_lifetimes)]
             #from_impl
         })
     });
@@ -456,12 +451,7 @@ fn impl_enum(input: Enum) -> TokenStream {
             }
         };
         Some(quote! {
-            #[allow(
-                deprecated,
-                unused_qualifications,
-                clippy::elidable_lifetime_names,
-                clippy::needless_lifetimes,
-            )]
+            #[allow(deprecated, unused_qualifications, clippy::needless_lifetimes)]
             #from_impl
         })
     });

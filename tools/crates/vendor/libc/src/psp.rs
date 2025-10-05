@@ -6,6 +6,16 @@
 
 use crate::prelude::*;
 
+pub type c_schar = i8;
+pub type c_uchar = u8;
+pub type c_short = i16;
+pub type c_ushort = u16;
+pub type c_int = i32;
+pub type c_uint = u32;
+pub type c_float = f32;
+pub type c_double = f64;
+pub type c_longlong = i64;
+pub type c_ulonglong = u64;
 pub type intmax_t = i64;
 pub type uintmax_t = u64;
 
@@ -14,6 +24,10 @@ pub type ptrdiff_t = isize;
 pub type intptr_t = isize;
 pub type uintptr_t = usize;
 pub type ssize_t = isize;
+
+pub type c_char = u8;
+pub type c_long = i64;
+pub type c_ulong = u64;
 
 pub type SceKernelVTimerHandler = unsafe extern "C" fn(
     uid: SceUid,
@@ -1415,8 +1429,6 @@ s! {
         pub stack: [u32; 8],
     }
 
-    // FIXME(1.0): This should not implement `PartialEq`
-    #[allow(unpredictable_function_pointer_comparisons)]
     pub struct GeCallbackData {
         pub signal_func: Option<extern "C" fn(id: i32, arg: *mut c_void)>,
         pub signal_arg: *mut c_void,
@@ -1539,8 +1551,6 @@ s! {
         pub stack_mpid: SceUid,
     }
 
-    // FIXME(1.0): This should not implement `PartialEq`
-    #[allow(unpredictable_function_pointer_comparisons)]
     pub struct SceKernelThreadInfo {
         pub size: usize,
         pub name: [u8; 32],
@@ -1615,8 +1625,6 @@ s! {
         pub first_message: *mut c_void,
     }
 
-    // FIXME(1.0): This should not implement `PartialEq`
-    #[allow(unpredictable_function_pointer_comparisons)]
     pub struct SceKernelVTimerInfo {
         pub size: usize,
         pub name: [u8; 32],
@@ -1628,8 +1636,6 @@ s! {
         pub common: *mut c_void,
     }
 
-    // FIXME(1.0): This should not implement `PartialEq`
-    #[allow(unpredictable_function_pointer_comparisons)]
     pub struct SceKernelThreadEventHandlerInfo {
         pub size: usize,
         pub name: [u8; 32],
@@ -1639,8 +1645,6 @@ s! {
         pub common: *mut c_void,
     }
 
-    // FIXME(1.0): This should not implement `PartialEq`
-    #[allow(unpredictable_function_pointer_comparisons)]
     pub struct SceKernelAlarmInfo {
         pub size: usize,
         pub schedule: SceKernelSysClock,
@@ -1698,8 +1702,6 @@ s! {
         pub size: usize,
     }
 
-    // FIXME(1.0): This should not implement `PartialEq`
-    #[allow(unpredictable_function_pointer_comparisons)]
     pub struct SceKernelCallbackInfo {
         pub size: usize,
         pub name: [u8; 32usize],
@@ -1799,8 +1801,6 @@ s! {
         pub type_: UmdType,
     }
 
-    // FIXME(1.0): This should not implement `PartialEq`
-    #[allow(unpredictable_function_pointer_comparisons)]
     pub struct SceMpegRingbuffer {
         pub packets: i32,
         pub unk0: u32,
@@ -2129,10 +2129,12 @@ s! {
 }
 
 s_no_extra_traits! {
+    #[allow(missing_debug_implementations)]
     pub struct GeContext {
         pub context: [u32; 512],
     }
 
+    #[allow(missing_debug_implementations)]
     pub struct SceKernelUtilsSha1Context {
         pub h: [u32; 5usize],
         pub us_remains: u16,
@@ -2141,11 +2143,13 @@ s_no_extra_traits! {
         pub buf: [u8; 64usize],
     }
 
+    #[allow(missing_debug_implementations)]
     pub struct SceKernelUtilsMt19937Context {
         pub count: u32,
         pub state: [u32; 624usize],
     }
 
+    #[allow(missing_debug_implementations)]
     pub struct SceKernelUtilsMd5Context {
         pub h: [u32; 4usize],
         pub pad: u32,
@@ -2155,6 +2159,7 @@ s_no_extra_traits! {
         pub buf: [u8; 64usize],
     }
 
+    #[allow(missing_debug_implementations)]
     pub struct SceIoDirent {
         pub d_stat: SceIoStat,
         pub d_name: [u8; 256usize],
@@ -2162,6 +2167,7 @@ s_no_extra_traits! {
         pub dummy: i32,
     }
 
+    #[cfg_attr(feature = "extra_traits", derive(Debug))]
     pub struct ScePspFRect {
         pub x: f32,
         pub y: f32,
@@ -2170,6 +2176,7 @@ s_no_extra_traits! {
     }
 
     #[repr(align(16))]
+    #[cfg_attr(feature = "extra_traits", derive(Debug))]
     pub struct ScePspFVector3 {
         pub x: f32,
         pub y: f32,
@@ -2177,6 +2184,7 @@ s_no_extra_traits! {
     }
 
     #[repr(align(16))]
+    #[cfg_attr(feature = "extra_traits", derive(Debug))]
     pub struct ScePspFVector4 {
         pub x: f32,
         pub y: f32,
@@ -2184,6 +2192,7 @@ s_no_extra_traits! {
         pub w: f32,
     }
 
+    #[cfg_attr(feature = "extra_traits", derive(Debug))]
     pub struct ScePspFVector4Unaligned {
         pub x: f32,
         pub y: f32,
@@ -2191,22 +2200,26 @@ s_no_extra_traits! {
         pub w: f32,
     }
 
+    #[cfg_attr(feature = "extra_traits", derive(Debug))]
     pub struct ScePspFVector2 {
         pub x: f32,
         pub y: f32,
     }
 
+    #[cfg_attr(feature = "extra_traits", derive(Debug))]
     pub struct ScePspFMatrix2 {
         pub x: ScePspFVector2,
         pub y: ScePspFVector2,
     }
 
+    #[cfg_attr(feature = "extra_traits", derive(Debug))]
     pub struct ScePspFMatrix3 {
         pub x: ScePspFVector3,
         pub y: ScePspFVector3,
         pub z: ScePspFVector3,
     }
 
+    #[cfg_attr(feature = "extra_traits", derive(Debug))]
     #[repr(align(16))]
     pub struct ScePspFMatrix4 {
         pub x: ScePspFVector4,
@@ -2215,6 +2228,7 @@ s_no_extra_traits! {
         pub w: ScePspFVector4,
     }
 
+    #[allow(missing_debug_implementations)]
     pub struct ScePspFMatrix4Unaligned {
         pub x: ScePspFVector4,
         pub y: ScePspFVector4,
@@ -2222,6 +2236,7 @@ s_no_extra_traits! {
         pub w: ScePspFVector4,
     }
 
+    #[allow(missing_debug_implementations)]
     pub union ScePspVector3 {
         pub fv: ScePspFVector3,
         pub iv: ScePspIVector3,
@@ -2229,6 +2244,7 @@ s_no_extra_traits! {
         pub i: [i32; 3usize],
     }
 
+    #[allow(missing_debug_implementations)]
     pub union ScePspVector4 {
         pub fv: ScePspFVector4,
         pub iv: ScePspIVector4,
@@ -2237,6 +2253,7 @@ s_no_extra_traits! {
         pub i: [i32; 4usize],
     }
 
+    #[allow(missing_debug_implementations)]
     pub union ScePspMatrix2 {
         pub fm: ScePspFMatrix2,
         pub im: ScePspIMatrix2,
@@ -2247,6 +2264,7 @@ s_no_extra_traits! {
         pub i: [[i32; 2usize]; 2usize],
     }
 
+    #[allow(missing_debug_implementations)]
     pub union ScePspMatrix3 {
         pub fm: ScePspFMatrix3,
         pub im: ScePspIMatrix3,
@@ -2257,6 +2275,7 @@ s_no_extra_traits! {
         pub i: [[i32; 3usize]; 3usize],
     }
 
+    #[allow(missing_debug_implementations)]
     pub union ScePspVector2 {
         pub fv: ScePspFVector2,
         pub iv: ScePspIVector2,
@@ -2264,6 +2283,7 @@ s_no_extra_traits! {
         pub i: [i32; 2usize],
     }
 
+    #[allow(missing_debug_implementations)]
     pub union ScePspMatrix4 {
         pub fm: ScePspFMatrix4,
         pub im: ScePspIMatrix4,
@@ -2274,6 +2294,7 @@ s_no_extra_traits! {
         pub i: [[i32; 4usize]; 4usize],
     }
 
+    #[allow(missing_debug_implementations)]
     pub struct Key {
         pub key_type: KeyType,
         pub name: [u8; 256usize],
@@ -2282,6 +2303,7 @@ s_no_extra_traits! {
         pub unk3: u32,
     }
 
+    #[allow(missing_debug_implementations)]
     pub struct UtilityMsgDialogParams {
         pub base: UtilityDialogCommon,
         pub unknown: i32,
@@ -2292,11 +2314,13 @@ s_no_extra_traits! {
         pub button_pressed: UtilityMsgDialogPressed,
     }
 
+    #[allow(missing_debug_implementations)]
     pub union UtilityNetData {
         pub as_uint: u32,
         pub as_string: [u8; 128usize],
     }
 
+    #[allow(missing_debug_implementations)]
     pub struct UtilitySavedataSFOParam {
         pub title: [u8; 128usize],
         pub savedata_title: [u8; 128usize],
@@ -2305,6 +2329,7 @@ s_no_extra_traits! {
         pub unknown: [u8; 3usize],
     }
 
+    #[allow(missing_debug_implementations)]
     pub struct SceUtilitySavedataParam {
         pub base: UtilityDialogCommon,
         pub mode: UtilitySavedataMode,
@@ -2331,6 +2356,7 @@ s_no_extra_traits! {
         pub unknown3: [u8; 20],
     }
 
+    #[allow(missing_debug_implementations)]
     pub struct SceNetAdhocctlPeerInfo {
         pub next: *mut SceNetAdhocctlPeerInfo,
         pub nickname: [u8; 128usize],
@@ -2339,6 +2365,7 @@ s_no_extra_traits! {
         pub timestamp: u32,
     }
 
+    #[allow(missing_debug_implementations)]
     pub struct SceNetAdhocctlParams {
         pub channel: i32,
         pub name: [u8; 8usize],
@@ -2346,6 +2373,7 @@ s_no_extra_traits! {
         pub nickname: [u8; 128usize],
     }
 
+    #[cfg_attr(feature = "extra_traits", allow(missing_debug_implementations))]
     pub union SceNetApctlInfo {
         pub name: [u8; 64usize],
         pub bssid: [u8; 6usize],
@@ -3271,18 +3299,18 @@ extern "C" {
     pub fn sceRtcGetWin32FileTime(date: *mut ScePspDateTime, time: *mut u64) -> i32;
     pub fn sceRtcParseDateTime(dest_tick: *mut u64, date_string: *const u8) -> i32;
     pub fn sceRtcFormatRFC3339(
-        psz_date_time: *mut c_char,
+        psz_date_time: *mut char,
         p_utc: *const u64,
         time_zone_minutes: i32,
     ) -> i32;
-    pub fn sceRtcFormatRFC3339LocalTime(psz_date_time: *mut c_char, p_utc: *const u64) -> i32;
+    pub fn sceRtcFormatRFC3339LocalTime(psz_date_time: *mut char, p_utc: *const u64) -> i32;
     pub fn sceRtcParseRFC3339(p_utc: *mut u64, psz_date_time: *const u8) -> i32;
     pub fn sceRtcFormatRFC2822(
-        psz_date_time: *mut c_char,
+        psz_date_time: *mut char,
         p_utc: *const u64,
         time_zone_minutes: i32,
     ) -> i32;
-    pub fn sceRtcFormatRFC2822LocalTime(psz_date_time: *mut c_char, p_utc: *const u64) -> i32;
+    pub fn sceRtcFormatRFC2822LocalTime(psz_date_time: *mut char, p_utc: *const u64) -> i32;
 
     pub fn sceIoOpen(file: *const u8, flags: i32, permissions: IoPermissions) -> SceUid;
     pub fn sceIoOpenAsync(file: *const u8, flags: i32, permissions: IoPermissions) -> SceUid;

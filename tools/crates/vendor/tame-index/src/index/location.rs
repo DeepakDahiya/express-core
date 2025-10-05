@@ -57,12 +57,9 @@ impl<'iu> IndexUrl<'iu> {
     ) -> Result<Self, Error> {
         // If the crates.io registry has been replaced it doesn't matter what
         // the protocol for it has been changed to
-        if let Some(replacement) = get_source_replacement(
-            config_root.clone(),
-            cargo_home,
-            crate::CRATES_IO_INDEX,
-            "crates-io",
-        )? {
+        if let Some(replacement) =
+            get_source_replacement(config_root.clone(), cargo_home, "crates-io")?
+        {
             return Ok(replacement);
         }
 
@@ -73,16 +70,17 @@ impl<'iu> IndexUrl<'iu> {
             Some("sparse") => true,
             Some("git") => false,
             _ => {
-                let sparse_index = read_cargo_config(config_root, cargo_home, |_, config| {
-                    match config
-                        .pointer("/registries/crates-io/protocol")
-                        .and_then(|p| p.as_str())?
-                    {
-                        "sparse" => Some(true),
-                        "git" => Some(false),
-                        _ => None,
-                    }
-                })?;
+                let sparse_index =
+                    read_cargo_config(config_root, cargo_home, |config| {
+                        match config
+                            .pointer("/registries/crates-io/protocol")
+                            .and_then(|p| p.as_str())?
+                        {
+                            "sparse" => Some(true),
+                            "git" => Some(false),
+                            _ => None,
+                        }
+                    })?;
 
                 if let Some(si) = sparse_index {
                     si
@@ -146,22 +144,20 @@ impl<'iu> IndexUrl<'iu> {
             }
         }
 
-        let registry_url = read_cargo_config(config_root.clone(), cargo_home, |_, config| {
-            let path = format!("/registries/{registry_name}/index");
-            config.pointer(&path)?.as_str().map(String::from)
-        })?
-        .ok_or_else(|| Error::UnknownRegistry(registry_name.into()))?;
-
-        if let Some(replacement) = get_source_replacement(
-            config_root.clone(),
-            cargo_home,
-            &registry_url,
-            registry_name,
-        )? {
+        if let Some(replacement) =
+            get_source_replacement(config_root.clone(), cargo_home, registry_name)?
+        {
             return Ok(replacement);
         }
 
-        Ok(Self::NonCratesIo(registry_url.into()))
+        read_cargo_config(config_root, cargo_home, |config| {
+            let path = format!("/registries/{registry_name}/index");
+            config
+                .pointer(&path)?
+                .as_str()
+                .map(|si| Self::NonCratesIo(si.to_owned().into()))
+        })?
+        .ok_or_else(|| Error::UnknownRegistry(registry_name.into()))
     }
 }
 
@@ -208,10 +204,6 @@ pub struct IndexLocation<'il> {
     pub url: IndexUrl<'il>,
     /// The local disk path of the index
     pub root: IndexPath,
-    /// The index location depends on the version of cargo used, as 1.85.0
-    /// introduced a change to how the url is hashed. Not specifying the version
-    /// will acquire the cargo version pertaining to the current environment.
-    pub cargo_version: Option<crate::Version>,
 }
 
 impl<'il> IndexLocation<'il> {
@@ -221,7 +213,6 @@ impl<'il> IndexLocation<'il> {
         Self {
             url,
             root: IndexPath::CargoHome,
-            cargo_version: None,
         }
     }
 
@@ -244,15 +235,7 @@ impl<'il> IndexLocation<'il> {
             IndexPath::Exact(path) => return Ok((path, url.to_owned())),
         };
 
-        let vers = if let Some(v) = self.cargo_version {
-            v
-        } else {
-            crate::utils::cargo_version(None)?
-        };
-
-        let stable = vers >= semver::Version::new(1, 85, 0);
-
-        let (path, mut url) = crate::utils::get_index_details(url, Some(root), stable)?;
+        let (path, mut url) = crate::utils::get_index_details(url, Some(root))?;
 
         if !url.ends_with('/') {
             url.push('/');
@@ -272,7 +255,7 @@ impl<'il> IndexLocation<'il> {
 pub(crate) fn read_cargo_config<T>(
     root: Option<PathBuf>,
     cargo_home: Option<&Path>,
-    callback: impl Fn(&Path, &toml_span::value::Value<'_>) -> Option<T>,
+    callback: impl Fn(&toml_span::value::Value<'_>) -> Option<T>,
 ) -> Result<Option<T>, Error> {
     if let Some(mut path) = root.or_else(|| {
         std::env::current_dir()
@@ -288,7 +271,7 @@ pub(crate) fn read_cargo_config<T>(
                 };
 
                 let toml = toml_span::parse(&contents).map_err(Box::new)?;
-                if let Some(value) = callback(&path, &toml) {
+                if let Some(value) = callback(&toml) {
                     return Ok(Some(value));
                 }
             }
@@ -310,7 +293,7 @@ pub(crate) fn read_cargo_config<T>(
         if path.exists() {
             let fc = std::fs::read_to_string(&path)?;
             let toml = toml_span::parse(&fc).map_err(Box::new)?;
-            if let Some(value) = callback(&path, &toml) {
+            if let Some(value) = callback(&toml) {
                 return Ok(Some(value));
             }
         }
@@ -326,19 +309,11 @@ pub(crate) fn read_cargo_config<T>(
 pub(crate) fn get_source_replacement<'iu>(
     root: Option<PathBuf>,
     cargo_home: Option<&Path>,
-    registry_url: &str,
     registry_name: &str,
 ) -> Result<Option<IndexUrl<'iu>>, Error> {
-    read_cargo_config(root, cargo_home, |config_path, config| {
-        let sources = config.as_table()?.get("source")?.as_table()?;
-        let repw = sources.iter().find_map(|(source_name, source)| {
-            let source = source.as_table()?;
-
-            let matches = registry_name == source_name.name
-                || registry_url == source.get("registry")?.as_str()?;
-            matches.then_some(source.get("replace-with")?.as_str()?)
-        })?;
-
+    read_cargo_config(root, cargo_home, |config| {
+        let path = format!("/source/{registry_name}/replace-with");
+        let repw = config.pointer(&path)?.as_str()?;
         let sources = config.pointer("/source")?.as_table()?;
         let replace_src = sources.get(repw)?.as_table()?;
 
@@ -346,10 +321,8 @@ pub(crate) fn get_source_replacement<'iu>(
             rr.as_str()
                 .map(|r| IndexUrl::NonCratesIo(r.to_owned().into()))
         } else if let Some(rlr) = replace_src.get("local-registry") {
-            let rel_path = rlr.as_str()?;
-            Some(IndexUrl::Local(
-                config_path.parent()?.parent()?.join(rel_path).into(),
-            ))
+            rlr.as_str()
+                .map(|l| IndexUrl::Local(PathBuf::from(l).into()))
         } else {
             None
         }
@@ -415,7 +388,6 @@ protocol = "git"
     }
 
     #[test]
-    #[allow(unsafe_code)]
     fn custom() {
         assert!(std::env::var_os("CARGO_REGISTRIES_TAME_INDEX_TEST_INDEX").is_none());
 
@@ -433,7 +405,7 @@ index = "sparse+https://some-url.com"
         index = "https://some-url.com"
         "#;
 
-        unsafe {
+        {
             std::fs::write(&cfg_toml, SPARSE).unwrap();
 
             let iurl =
@@ -456,7 +428,7 @@ index = "sparse+https://some-url.com"
             std::env::remove_var("CARGO_REGISTRIES_TAME_INDEX_TEST_INDEX");
         }
 
-        unsafe {
+        {
             std::fs::write(&cfg_toml, GIT).unwrap();
 
             let iurl =

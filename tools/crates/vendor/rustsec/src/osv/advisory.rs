@@ -8,9 +8,9 @@ use tame_index::external::gix;
 use super::ranges_for_advisory;
 use crate::advisory::Versions;
 use crate::{
-    Advisory,
-    advisory::{Affected, Category, Id, Informational, affected::FunctionPath},
+    advisory::{affected::FunctionPath, Affected, Category, Id, Informational},
     repository::git::{self, GitModificationTimes, GitPath},
+    Advisory,
 };
 use serde::{Deserialize, Deserializer, Serialize};
 use std::str::FromStr;
@@ -96,34 +96,6 @@ pub struct OsvJsonRange {
     kind: String,
     events: Vec<OsvTimelineEvent>,
     // 'repo' field is not used because we don't track or export git commit data
-}
-
-impl OsvJsonRange {
-    /// Generates the timeline of the bug being introduced and fixed for the
-    /// [`affected[].ranges[].events`](https://github.com/ossf/osv-schema/blob/main/schema.md#affectedrangesevents-fields) field.
-    fn new(versions: &Versions) -> Self {
-        let ranges = ranges_for_advisory(versions);
-        assert!(!ranges.is_empty()); // zero ranges means nothing is affected, so why even have an advisory?
-        let mut timeline = Vec::new();
-        for range in ranges {
-            match range.introduced {
-                Some(ver) => timeline.push(OsvTimelineEvent::Introduced(ver)),
-                None => timeline.push(OsvTimelineEvent::Introduced(
-                    semver::Version::parse("0.0.0-0").unwrap(),
-                )),
-            }
-            #[allow(clippy::single_match)]
-            match range.fixed {
-                Some(ver) => timeline.push(OsvTimelineEvent::Fixed(ver)),
-                None => (), // "everything after 'introduced' is affected" is implicit in OSV
-            }
-        }
-
-        Self {
-            kind: "SEMVER".to_string(),
-            events: timeline,
-        }
-    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -266,7 +238,7 @@ impl OsvAdvisory {
             published: rustsec_date_to_rfc3339(&metadata.date),
             affected: vec![OsvAffected {
                 package: (&metadata.package).into(),
-                ranges: Some(vec![OsvJsonRange::new(&advisory.versions)]),
+                ranges: Some(vec![timeline_for_advisory(&advisory.versions)]),
                 versions: Some(vec![]),
                 ecosystem_specific: Some(OsvEcosystemSpecific {
                     affects: Some(advisory.affected.unwrap_or_default().into()),
@@ -352,6 +324,31 @@ fn guess_url_kind(url: &Url) -> OsvReferenceKind {
         OsvReferenceKind::PACKAGE
     } else {
         OsvReferenceKind::WEB
+    }
+}
+
+/// Generates the timeline of the bug being introduced and fixed for the
+/// [`affected[].ranges[].events`](https://github.com/ossf/osv-schema/blob/main/schema.md#affectedrangesevents-fields) field.
+fn timeline_for_advisory(versions: &Versions) -> OsvJsonRange {
+    let ranges = ranges_for_advisory(versions);
+    assert!(!ranges.is_empty()); // zero ranges means nothing is affected, so why even have an advisory?
+    let mut timeline = Vec::new();
+    for range in ranges {
+        match range.introduced {
+            Some(ver) => timeline.push(OsvTimelineEvent::Introduced(ver)),
+            None => timeline.push(OsvTimelineEvent::Introduced(
+                semver::Version::parse("0.0.0-0").unwrap(),
+            )),
+        }
+        #[allow(clippy::single_match)]
+        match range.fixed {
+            Some(ver) => timeline.push(OsvTimelineEvent::Fixed(ver)),
+            None => (), // "everything after 'introduced' is affected" is implicit in OSV
+        }
+    }
+    OsvJsonRange {
+        kind: "SEMVER".to_string(),
+        events: timeline,
     }
 }
 

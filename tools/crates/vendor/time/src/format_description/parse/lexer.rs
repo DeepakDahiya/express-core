@@ -124,7 +124,9 @@ pub(super) enum BracketKind {
 
 /// Indicates whether the component is whitespace or not.
 pub(super) enum ComponentKind {
+    #[allow(clippy::missing_docs_in_private_items)]
     Whitespace,
+    #[allow(clippy::missing_docs_in_private_items)]
     NotWhitespace,
 }
 
@@ -180,7 +182,7 @@ pub(super) fn lex<const VERSION: usize>(
                             _inner: unused(loc.error("invalid escape sequence")),
                             public: crate::error::InvalidFormatDescription::Expected {
                                 what: "valid escape sequence",
-                                index: loc.byte as usize,
+                                index: loc.byte as _,
                             },
                         }));
                     }
@@ -189,7 +191,7 @@ pub(super) fn lex<const VERSION: usize>(
                             _inner: unused(backslash_loc.error("unexpected end of input")),
                             public: crate::error::InvalidFormatDescription::Expected {
                                 what: "valid escape sequence",
-                                index: backslash_loc.byte as usize,
+                                index: backslash_loc.byte as _,
                             },
                         }));
                     }

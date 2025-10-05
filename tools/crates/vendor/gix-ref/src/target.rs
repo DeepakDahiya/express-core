@@ -4,7 +4,7 @@ use gix_hash::{oid, ObjectId};
 
 use crate::{FullName, FullNameRef, Kind, Target, TargetRef};
 
-impl TargetRef<'_> {
+impl<'a> TargetRef<'a> {
     /// Returns the kind of the target the ref is pointing to.
     pub fn kind(&self) -> Kind {
         match self {

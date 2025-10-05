@@ -1,5 +1,4 @@
 #![allow(
-    clippy::elidable_lifetime_names,
     clippy::needless_lifetimes,
     clippy::shadow_unrelated,
     clippy::too_many_lines,
@@ -7,9 +6,7 @@
 )]
 
 #[macro_use]
-mod snapshot;
-
-mod debug;
+mod macros;
 
 use syn::{Meta, MetaList, MetaNameValue};
 

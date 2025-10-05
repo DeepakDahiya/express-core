@@ -1,6 +1,5 @@
 use crate::io::{Interest, PollEvented, ReadBuf, Ready};
 use crate::net::{to_socket_addrs, ToSocketAddrs};
-use crate::util::check_socket_for_blocking;
 
 use std::fmt;
 use std::io;
@@ -135,12 +134,12 @@ impl UdpSocket {
     /// # Example
     ///
     /// ```no_run
+    /// # if cfg!(miri) { return } // No `socket` in miri.
     /// use tokio::net::UdpSocket;
     /// use std::io;
     ///
     /// #[tokio::main]
     /// async fn main() -> io::Result<()> {
-    /// #   if cfg!(miri) { return Ok(()); } // No `socket` in miri.
     ///     let sock = UdpSocket::bind("0.0.0.0:8080").await?;
     ///     // use `sock`
     /// #   let _ = sock;
@@ -193,10 +192,6 @@ impl UdpSocket {
     /// will block the thread, which will cause unexpected behavior.
     /// Non-blocking mode can be set using [`set_nonblocking`].
     ///
-    /// Passing a listener in blocking mode is always erroneous,
-    /// and the behavior in that case may change in the future.
-    /// For example, it could panic.
-    ///
     /// [`set_nonblocking`]: std::net::UdpSocket::set_nonblocking
     ///
     /// # Panics
@@ -225,8 +220,6 @@ impl UdpSocket {
     /// ```
     #[track_caller]
     pub fn from_std(socket: net::UdpSocket) -> io::Result<UdpSocket> {
-        check_socket_for_blocking(&socket)?;
-
         let io = mio::net::UdpSocket::from_std(socket);
         UdpSocket::new(io)
     }
@@ -303,12 +296,12 @@ impl UdpSocket {
     /// # Example
     ///
     /// ```
+    /// # if cfg!(miri) { return } // No `socket` in miri.
     /// use tokio::net::UdpSocket;
     ///
     /// # use std::{io, net::SocketAddr};
     /// # #[tokio::main]
     /// # async fn main() -> io::Result<()> {
-    /// # if cfg!(miri) { return Ok(()); } // No `socket` in miri.
     /// let addr = "0.0.0.0:8080".parse::<SocketAddr>().unwrap();
     /// let peer = "127.0.0.1:11100".parse::<SocketAddr>().unwrap();
     /// let sock = UdpSocket::bind(addr).await?;
@@ -1171,8 +1164,8 @@ impl UdpSocket {
     ///     Ok(())
     /// }
     /// ```
-    pub async fn send_to<A: ToSocketAddrs>(&self, buf: &[u8], addr: A) -> io::Result<usize> {
-        let mut addrs = to_socket_addrs(addr).await?;
+    pub async fn send_to<A: ToSocketAddrs>(&self, buf: &[u8], target: A) -> io::Result<usize> {
+        let mut addrs = to_socket_addrs(target).await?;
 
         match addrs.next() {
             Some(target) => self.send_to_addr(buf, target).await,
@@ -2028,7 +2021,7 @@ impl UdpSocket {
         ))))
     )]
     pub fn tos(&self) -> io::Result<u32> {
-        self.as_socket().tos_v4()
+        self.as_socket().tos()
     }
 
     /// Sets the value for the `IP_TOS` option on this socket.
@@ -2057,7 +2050,7 @@ impl UdpSocket {
         ))))
     )]
     pub fn set_tos(&self, tos: u32) -> io::Result<()> {
-        self.as_socket().set_tos_v4(tos)
+        self.as_socket().set_tos(tos)
     }
 
     /// Gets the value for the `SO_BINDTODEVICE` option on this socket
@@ -2130,12 +2123,12 @@ impl UdpSocket {
     ///
     /// # Examples
     /// ```
+    /// # if cfg!(miri) { return } // No `socket` in miri.
     /// use tokio::net::UdpSocket;
     /// use std::io;
     ///
     /// #[tokio::main]
     /// async fn main() -> io::Result<()> {
-    /// #   if cfg!(miri) { return Ok(()); } // No `socket` in miri.
     ///     // Create a socket
     ///     let socket = UdpSocket::bind("0.0.0.0:8080").await?;
     ///

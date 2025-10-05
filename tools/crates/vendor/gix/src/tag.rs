@@ -12,8 +12,6 @@ mod error {
         WriteObject(#[from] crate::object::write::Error),
         #[error(transparent)]
         ReferenceEdit(#[from] crate::reference::edit::Error),
-        #[error(transparent)]
-        DateParseError(#[from] gix_date::parse::Error),
     }
 }
 pub use error::Error;

@@ -1,17 +1,17 @@
-use crate::tz::{TimeZone, TimeZoneNameIter};
+use crate::tz::TimeZone;
 
 #[derive(Clone)]
-pub(crate) struct Database;
+pub(crate) struct ZoneInfo;
 
-impl Database {
-    pub(crate) fn from_env() -> Database {
-        Database
+impl ZoneInfo {
+    pub(crate) fn from_env() -> ZoneInfo {
+        ZoneInfo
     }
 
     #[cfg(feature = "std")]
     pub(crate) fn from_dir(
         dir: &std::path::Path,
-    ) -> Result<Database, crate::Error> {
+    ) -> Result<ZoneInfo, crate::Error> {
         Err(crate::error::err!(
             "system tzdb unavailable: \
              crate feature `tzdb-zoneinfo` is disabled, \
@@ -20,8 +20,8 @@ impl Database {
         ))
     }
 
-    pub(crate) fn none() -> Database {
-        Database
+    pub(crate) fn none() -> ZoneInfo {
+        ZoneInfo
     }
 
     pub(crate) fn reset(&self) {}
@@ -30,8 +30,9 @@ impl Database {
         None
     }
 
-    pub(crate) fn available<'d>(&'d self) -> TimeZoneNameIter<'d> {
-        TimeZoneNameIter::empty()
+    #[cfg(feature = "alloc")]
+    pub(crate) fn available(&self) -> alloc::vec::Vec<alloc::string::String> {
+        alloc::vec::Vec::new()
     }
 
     pub(crate) fn is_definitively_empty(&self) -> bool {
@@ -39,7 +40,7 @@ impl Database {
     }
 }
 
-impl core::fmt::Debug for Database {
+impl core::fmt::Debug for ZoneInfo {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         write!(f, "ZoneInfo(unavailable)")
     }

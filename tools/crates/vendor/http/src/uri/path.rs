@@ -22,8 +22,6 @@ impl PathAndQuery {
         let mut query = NONE;
         let mut fragment = None;
 
-        let mut is_maybe_not_utf8 = false;
-
         // block for iterator borrow
         {
             let mut iter = src.as_ref().iter().enumerate();
@@ -53,11 +51,6 @@ impl PathAndQuery {
                     0x61..=0x7A |
                     0x7C |
                     0x7E => {}
-
-                    // potentially utf8, might not, should check
-                    0x7F..=0xFF => {
-                        is_maybe_not_utf8 = true;
-                    }
 
                     // These are code points that are supposed to be
                     // percent-encoded in the path but there are clients
@@ -91,10 +84,6 @@ impl PathAndQuery {
                         0x3D |
                         0x3F..=0x7E => {}
 
-                        0x7F..=0xFF => {
-                            is_maybe_not_utf8 = true;
-                        }
-
                         b'#' => {
                             fragment = Some(i);
                             break;
@@ -110,13 +99,10 @@ impl PathAndQuery {
             src.truncate(i);
         }
 
-        let data = if is_maybe_not_utf8 {
-            ByteStr::from_utf8(src).map_err(|_| ErrorKind::InvalidUriChar)?
-        } else {
-            unsafe { ByteStr::from_utf8_unchecked(src) }
-        };
-
-        Ok(PathAndQuery { data, query })
+        Ok(PathAndQuery {
+            data: unsafe { ByteStr::from_utf8_unchecked(src) },
+            query,
+        })
     }
 
     /// Convert a `PathAndQuery` from a static string.
@@ -568,26 +554,6 @@ mod tests {
         assert_eq!("/aa%2", pq("/aa%2").path());
         assert_eq!("/aa%2", pq("/aa%2?r=1").path());
         assert_eq!("qr=%3", pq("/a/b?qr=%3").query().unwrap());
-    }
-
-    #[test]
-    fn allow_utf8_in_path() {
-        assert_eq!("/🍕", pq("/🍕").path());
-    }
-
-    #[test]
-    fn allow_utf8_in_query() {
-        assert_eq!(Some("pizza=🍕"), pq("/test?pizza=🍕").query());
-    }
-
-    #[test]
-    fn rejects_invalid_utf8_in_path() {
-        PathAndQuery::try_from(&[b'/', 0xFF][..]).expect_err("reject invalid utf8");
-    }
-
-    #[test]
-    fn rejects_invalid_utf8_in_query() {
-        PathAndQuery::try_from(&[b'/', b'a', b'?', 0xFF][..]).expect_err("reject invalid utf8");
     }
 
     #[test]

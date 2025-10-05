@@ -1,6 +1,5 @@
-use std::path::PathBuf;
-
 use crate::{parse, path::interpolate};
+use std::path::PathBuf;
 
 /// The error returned when following includes.
 #[derive(Debug, thiserror::Error)]
@@ -119,6 +118,7 @@ impl Default for Options<'_> {
 }
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod conditional {
     /// Options to handle conditional includes like `includeIf.<condition>.path`.
     #[derive(Clone, Copy, Default)]

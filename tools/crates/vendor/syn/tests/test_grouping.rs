@@ -1,13 +1,7 @@
-#![allow(
-    clippy::elidable_lifetime_names,
-    clippy::needless_lifetimes,
-    clippy::uninlined_format_args
-)]
+#![allow(clippy::needless_lifetimes, clippy::uninlined_format_args)]
 
 #[macro_use]
-mod snapshot;
-
-mod debug;
+mod macros;
 
 use proc_macro2::{Delimiter, Group, Literal, Punct, Spacing, TokenStream, TokenTree};
 use syn::Expr;

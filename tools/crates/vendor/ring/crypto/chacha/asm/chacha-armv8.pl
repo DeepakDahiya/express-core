@@ -1,22 +1,17 @@
 #! /usr/bin/env perl
 # Copyright 2016 The OpenSSL Project Authors. All Rights Reserved.
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Licensed under the OpenSSL license (the "License").  You may not use
+# this file except in compliance with the License.  You can obtain a copy
+# in the file LICENSE in the source distribution or at
+# https://www.openssl.org/source/license.html
 
 #
 # ====================================================================
 # Written by Andy Polyakov <appro@openssl.org> for the OpenSSL
-# project.
+# project. The module is, however, dual licensed under OpenSSL and
+# CRYPTOGAMS licenses depending on where you obtain it. For further
+# details see http://www.openssl.org/~appro/cryptogams/.
 # ====================================================================
 #
 # June 2015
@@ -125,6 +120,11 @@ my ($a3,$b3,$c3,$d3)=map(($_&~3)+(($_+1)&3),($a2,$b2,$c2,$d2));
 }
 
 $code.=<<___;
+#include <ring-core/arm_arch.h>
+
+.extern	OPENSSL_armcap_P
+.hidden	OPENSSL_armcap_P
+
 .section .rodata
 
 .align	5
@@ -136,10 +136,24 @@ $code.=<<___;
 
 .text
 
-.globl	ChaCha20_ctr32_nohw
-.type	ChaCha20_ctr32_nohw,%function
+.globl	ChaCha20_ctr32
+.type	ChaCha20_ctr32,%function
 .align	5
-ChaCha20_ctr32_nohw:
+ChaCha20_ctr32:
+	AARCH64_VALID_CALL_TARGET
+	cbz	$len,.Labort
+#if defined(OPENSSL_HWASAN) && __clang_major__ >= 10
+	adrp	@x[0],:pg_hi21_nc:OPENSSL_armcap_P
+#else
+	adrp	@x[0],:pg_hi21:OPENSSL_armcap_P
+#endif
+	cmp	$len,#192
+	b.lo	.Lshort
+	ldr	w17,[@x[0],:lo12:OPENSSL_armcap_P]
+	tst	w17,#ARMV7_NEON
+	b.ne	ChaCha20_neon
+
+.Lshort:
 	AARCH64_SIGN_LINK_REGISTER
 	stp	x29,x30,[sp,#-96]!
 	add	x29,sp,#0
@@ -262,6 +276,7 @@ $code.=<<___;
 	ldp	x27,x28,[x29,#80]
 	ldp	x29,x30,[sp],#96
 	AARCH64_VALIDATE_LINK_REGISTER
+.Labort:
 	ret
 
 .align	4
@@ -319,7 +334,7 @@ $code.=<<___;
 	ldp	x29,x30,[sp],#96
 	AARCH64_VALIDATE_LINK_REGISTER
 	ret
-.size	ChaCha20_ctr32_nohw,.-ChaCha20_ctr32_nohw
+.size	ChaCha20_ctr32,.-ChaCha20_ctr32
 ___
 
 {{{
@@ -360,10 +375,9 @@ my ($a,$b,$c,$d,$t)=@_;
 
 $code.=<<___;
 
-.globl	ChaCha20_ctr32_neon
-.type	ChaCha20_ctr32_neon,%function
+.type	ChaCha20_neon,%function
 .align	5
-ChaCha20_ctr32_neon:
+ChaCha20_neon:
 	AARCH64_SIGN_LINK_REGISTER
 	stp	x29,x30,[sp,#-96]!
 	add	x29,sp,#0
@@ -676,7 +690,7 @@ $code.=<<___;
 	ldp	x29,x30,[sp],#96
 	AARCH64_VALIDATE_LINK_REGISTER
 	ret
-.size	ChaCha20_ctr32_neon,.-ChaCha20_ctr32_neon
+.size	ChaCha20_neon,.-ChaCha20_neon
 ___
 {
 my ($T0,$T1,$T2,$T3,$T4,$T5)=@K;

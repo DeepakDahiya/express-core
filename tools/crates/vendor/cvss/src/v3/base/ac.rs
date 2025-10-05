@@ -50,7 +50,6 @@ pub enum AttackComplexity {
     Low,
 }
 
-#[allow(clippy::derivable_impls)]
 impl Default for AttackComplexity {
     fn default() -> AttackComplexity {
         AttackComplexity::High

@@ -106,8 +106,7 @@ impl RoundMode {
         rounded
     }
 
-    /// Rounds `quantity` to the nearest `increment` in units of nanoseconds.
-    pub(crate) fn round(
+    fn round(
         self,
         quantity: impl RInto<NoUnits128>,
         increment: impl RInto<NoUnits128>,
@@ -120,22 +119,22 @@ impl RoundMode {
         ) -> NoUnits128 {
             let mut quotient = quantity.div_ceil(increment);
             let remainder = quantity.rem_ceil(increment);
-            if remainder == C(0) {
+            if remainder == 0 {
                 return quantity;
             }
-            let sign = if remainder < C(0) { C128(-1) } else { C128(1) };
+            let sign = if remainder < 0 { C128(-1) } else { C128(1) };
             let tiebreaker = (remainder * C128(2)).abs();
             let tie = tiebreaker == increment;
             let expand_is_nearer = tiebreaker > increment;
             // ref: https://tc39.es/proposal-temporal/#sec-temporal-roundnumbertoincrement
             match mode {
                 RoundMode::Ceil => {
-                    if sign > C(0) {
+                    if sign > 0 {
                         quotient += sign;
                     }
                 }
                 RoundMode::Floor => {
-                    if sign < C(0) {
+                    if sign < 0 {
                         quotient += sign;
                     }
                 }
@@ -144,12 +143,12 @@ impl RoundMode {
                 }
                 RoundMode::Trunc => {}
                 RoundMode::HalfCeil => {
-                    if expand_is_nearer || (tie && sign > C(0)) {
+                    if expand_is_nearer || (tie && sign > 0) {
                         quotient += sign;
                     }
                 }
                 RoundMode::HalfFloor => {
-                    if expand_is_nearer || (tie && sign < C(0)) {
+                    if expand_is_nearer || (tie && sign < 0) {
                         quotient += sign;
                     }
                 }
@@ -164,7 +163,7 @@ impl RoundMode {
                     }
                 }
                 RoundMode::HalfEven => {
-                    if expand_is_nearer || (tie && quotient % C(2) == C(1)) {
+                    if expand_is_nearer || (tie && quotient % C(2) == 1) {
                         quotient += sign;
                     }
                 }

@@ -2,8 +2,9 @@
 
 use core::fmt::Debug;
 
-use crate::read::{self, ComdatKind, ObjectComdat, ReadRef, Result, SectionIndex, SymbolIndex};
 use crate::xcoff;
+
+use crate::read::{self, ComdatKind, ObjectComdat, ReadRef, Result, SectionIndex, SymbolIndex};
 
 use super::{FileHeader, XcoffFile};
 
@@ -86,12 +87,12 @@ where
     }
 
     #[inline]
-    fn name_bytes(&self) -> Result<&'data [u8]> {
+    fn name_bytes(&self) -> Result<&[u8]> {
         unreachable!();
     }
 
     #[inline]
-    fn name(&self) -> Result<&'data str> {
+    fn name(&self) -> Result<&str> {
         unreachable!();
     }
 

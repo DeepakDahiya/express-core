@@ -457,7 +457,7 @@ impl field::Visit for PrettyVisitor<'_> {
                 field,
                 &format_args!(
                     "{}, {}{}.sources{}: {}",
-                    Escape(&format_args!("{}", value)),
+                    value,
                     bold.prefix(),
                     field,
                     bold.infix(self.style),
@@ -465,7 +465,7 @@ impl field::Visit for PrettyVisitor<'_> {
                 ),
             )
         } else {
-            self.record_debug(field, &Escape(&format_args!("{}", value)))
+            self.record_debug(field, &format_args!("{}", value))
         }
     }
 
@@ -475,10 +475,7 @@ impl field::Visit for PrettyVisitor<'_> {
         }
         let bold = self.bold();
         match field.name() {
-            "message" => {
-                // Escape ANSI characters to prevent malicious patterns (e.g., terminal injection attacks)
-                self.write_padded(&format_args!("{}{:?}", self.style.prefix(), Escape(value)))
-            },
+            "message" => self.write_padded(&format_args!("{}{:?}", self.style.prefix(), value,)),
             // Skip fields that are actually log metadata that have already been handled
             #[cfg(feature = "tracing-log")]
             name if name.starts_with("log.") => self.result = Ok(()),

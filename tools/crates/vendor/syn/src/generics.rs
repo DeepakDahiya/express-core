@@ -344,7 +344,7 @@ generics_wrapper_impls!(Turbofish);
 #[cfg(feature = "printing")]
 impl<'a> TypeGenerics<'a> {
     /// Turn a type's generics like `<X, Y>` into a turbofish like `::<X, Y>`.
-    pub fn as_turbofish(&self) -> Turbofish<'a> {
+    pub fn as_turbofish(&self) -> Turbofish {
         Turbofish(self.0)
     }
 }
@@ -514,9 +514,7 @@ ast_struct! {
 #[cfg(feature = "parsing")]
 pub(crate) mod parsing {
     use crate::attr::Attribute;
-    #[cfg(feature = "full")]
-    use crate::error;
-    use crate::error::{Error, Result};
+    use crate::error::{self, Result};
     use crate::ext::IdentExt as _;
     use crate::generics::{
         BoundLifetimes, ConstParam, GenericParam, Generics, LifetimeParam, PredicateLifetime,
@@ -671,7 +669,14 @@ pub(crate) mod parsing {
                 lifetimes: {
                     let mut lifetimes = Punctuated::new();
                     while !input.peek(Token![>]) {
-                        lifetimes.push_value(input.parse()?);
+                        let attrs = input.call(Attribute::parse_outer)?;
+                        let lifetime: Lifetime = input.parse()?;
+                        lifetimes.push_value(GenericParam::Lifetime(LifetimeParam {
+                            attrs,
+                            lifetime,
+                            colon_token: None,
+                            bounds: Punctuated::new(),
+                        }));
                         if input.peek(Token![>]) {
                             break;
                         }
@@ -710,8 +715,12 @@ pub(crate) mod parsing {
                     }
                     bounds.push_value({
                         let allow_precise_capture = false;
-                        let allow_const = true;
-                        TypeParamBound::parse_single(input, allow_precise_capture, allow_const)?
+                        let allow_tilde_const = true;
+                        TypeParamBound::parse_single(
+                            input,
+                            allow_precise_capture,
+                            allow_tilde_const,
+                        )?
                     });
                     if !input.peek(Token![+]) {
                         break;
@@ -743,8 +752,8 @@ pub(crate) mod parsing {
     impl Parse for TypeParamBound {
         fn parse(input: ParseStream) -> Result<Self> {
             let allow_precise_capture = true;
-            let allow_const = true;
-            Self::parse_single(input, allow_precise_capture, allow_const)
+            let allow_tilde_const = true;
+            Self::parse_single(input, allow_precise_capture, allow_tilde_const)
         }
     }
 
@@ -752,11 +761,13 @@ pub(crate) mod parsing {
         pub(crate) fn parse_single(
             input: ParseStream,
             #[cfg_attr(not(feature = "full"), allow(unused_variables))] allow_precise_capture: bool,
-            allow_const: bool,
+            allow_tilde_const: bool,
         ) -> Result<Self> {
             if input.peek(Lifetime) {
                 return input.parse().map(TypeParamBound::Lifetime);
             }
+
+            let begin = input.fork();
 
             #[cfg(feature = "full")]
             {
@@ -775,8 +786,6 @@ pub(crate) mod parsing {
                 }
             }
 
-            let begin = input.fork();
-
             let content;
             let (paren_token, content) = if input.peek(token::Paren) {
                 (Some(parenthesized!(content in input)), &content)
@@ -784,11 +793,24 @@ pub(crate) mod parsing {
                 (None, input)
             };
 
-            if let Some(mut bound) = TraitBound::do_parse(content, allow_const)? {
-                bound.paren_token = paren_token;
-                Ok(TypeParamBound::Trait(bound))
-            } else {
+            let is_tilde_const =
+                cfg!(feature = "full") && content.peek(Token![~]) && content.peek2(Token![const]);
+            if is_tilde_const {
+                let tilde_token: Token![~] = content.parse()?;
+                let const_token: Token![const] = content.parse()?;
+                if !allow_tilde_const {
+                    let msg = "`~const` is not allowed here";
+                    return Err(error::new2(tilde_token.span, const_token.span, msg));
+                }
+            }
+
+            let mut bound: TraitBound = content.parse()?;
+            bound.paren_token = paren_token;
+
+            if is_tilde_const {
                 Ok(TypeParamBound::Verbatim(verbatim::between(&begin, input)))
+            } else {
+                Ok(TypeParamBound::Trait(bound))
             }
         }
 
@@ -796,11 +818,11 @@ pub(crate) mod parsing {
             input: ParseStream,
             allow_plus: bool,
             allow_precise_capture: bool,
-            allow_const: bool,
+            allow_tilde_const: bool,
         ) -> Result<Punctuated<Self, Token![+]>> {
             let mut bounds = Punctuated::new();
             loop {
-                let bound = Self::parse_single(input, allow_precise_capture, allow_const)?;
+                let bound = Self::parse_single(input, allow_precise_capture, allow_tilde_const)?;
                 bounds.push_value(bound);
                 if !(allow_plus && input.peek(Token![+])) {
                     break;
@@ -811,7 +833,7 @@ pub(crate) mod parsing {
                     || input.peek(Token![?])
                     || input.peek(Lifetime)
                     || input.peek(token::Paren)
-                    || (allow_const && (input.peek(token::Bracket) || input.peek(Token![const]))))
+                    || input.peek(Token![~]))
                 {
                     break;
                 }
@@ -823,37 +845,8 @@ pub(crate) mod parsing {
     #[cfg_attr(docsrs, doc(cfg(feature = "parsing")))]
     impl Parse for TraitBound {
         fn parse(input: ParseStream) -> Result<Self> {
-            let allow_const = false;
-            Self::do_parse(input, allow_const).map(Option::unwrap)
-        }
-    }
-
-    impl TraitBound {
-        fn do_parse(input: ParseStream, allow_const: bool) -> Result<Option<Self>> {
-            let mut lifetimes: Option<BoundLifetimes> = input.parse()?;
-
-            let is_conditionally_const = cfg!(feature = "full") && input.peek(token::Bracket);
-            let is_unconditionally_const = cfg!(feature = "full") && input.peek(Token![const]);
-            if is_conditionally_const {
-                let conditionally_const;
-                let bracket_token = bracketed!(conditionally_const in input);
-                conditionally_const.parse::<Token![const]>()?;
-                if !allow_const {
-                    let msg = "`[const]` is not allowed here";
-                    return Err(Error::new(bracket_token.span.join(), msg));
-                }
-            } else if is_unconditionally_const {
-                let const_token: Token![const] = input.parse()?;
-                if !allow_const {
-                    let msg = "`const` is not allowed here";
-                    return Err(Error::new(const_token.span, msg));
-                }
-            }
-
             let modifier: TraitBoundModifier = input.parse()?;
-            if lifetimes.is_none() && matches!(modifier, TraitBoundModifier::Maybe(_)) {
-                lifetimes = input.parse()?;
-            }
+            let lifetimes: Option<BoundLifetimes> = input.parse()?;
 
             let mut path: Path = input.parse()?;
             if path.segments.last().unwrap().arguments.is_empty()
@@ -865,26 +858,12 @@ pub(crate) mod parsing {
                 path.segments.last_mut().unwrap().arguments = parenthesized;
             }
 
-            if lifetimes.is_some() {
-                match modifier {
-                    TraitBoundModifier::None => {}
-                    TraitBoundModifier::Maybe(maybe) => {
-                        let msg = "`for<...>` binder not allowed with `?` trait polarity modifier";
-                        return Err(Error::new(maybe.span, msg));
-                    }
-                }
-            }
-
-            if is_conditionally_const || is_unconditionally_const {
-                Ok(None)
-            } else {
-                Ok(Some(TraitBound {
-                    paren_token: None,
-                    modifier,
-                    lifetimes,
-                    path,
-                }))
-            }
+            Ok(TraitBound {
+                paren_token: None,
+                modifier,
+                lifetimes,
+                path,
+            })
         }
     }
 
@@ -926,15 +905,8 @@ pub(crate) mod parsing {
     #[cfg_attr(docsrs, doc(cfg(feature = "parsing")))]
     impl Parse for WhereClause {
         fn parse(input: ParseStream) -> Result<Self> {
-            let where_token: Token![where] = input.parse()?;
-
-            if choose_generics_over_qpath(input) {
-                return Err(input
-                    .error("generic parameters on `where` clauses are reserved for future use"));
-            }
-
             Ok(WhereClause {
-                where_token,
+                where_token: input.parse()?,
                 predicates: {
                     let mut predicates = Punctuated::new();
                     loop {
@@ -1021,11 +993,11 @@ pub(crate) mod parsing {
                             }
                             bounds.push_value({
                                 let allow_precise_capture = false;
-                                let allow_const = true;
+                                let allow_tilde_const = true;
                                 TypeParamBound::parse_single(
                                     input,
                                     allow_precise_capture,
-                                    allow_const,
+                                    allow_tilde_const,
                                 )?
                             });
                             if !input.peek(Token![+]) {
@@ -1092,47 +1064,6 @@ pub(crate) mod parsing {
                 Err(lookahead.error())
             }
         }
-    }
-
-    pub(crate) fn choose_generics_over_qpath(input: ParseStream) -> bool {
-        // Rust syntax has an ambiguity between generic parameters and qualified
-        // paths. In `impl <T> :: Thing<T, U> {}` this may either be a generic
-        // inherent impl `impl<T> ::Thing<T, U>` or a non-generic inherent impl
-        // for an associated type `impl <T>::Thing<T, U>`.
-        //
-        // After `<` the following continuations can only begin generics, not a
-        // qualified path:
-        //
-        //     `<` `>`                  - empty generic parameters
-        //     `<` `#`                  - generic parameters with attribute
-        //     `<` LIFETIME `>`         - single lifetime parameter
-        //     `<` (LIFETIME|IDENT) `,` - first generic parameter in a list
-        //     `<` (LIFETIME|IDENT) `:` - generic parameter with bounds
-        //     `<` (LIFETIME|IDENT) `=` - generic parameter with a default
-        //     `<` const                - generic const parameter
-        //
-        // The only truly ambiguous case is:
-        //
-        //     `<` IDENT `>` `::` IDENT ...
-        //
-        // which we disambiguate in favor of generics because this is almost
-        // always the expected one in the context of real-world code.
-        input.peek(Token![<])
-            && (input.peek2(Token![>])
-                || input.peek2(Token![#])
-                || (input.peek2(Lifetime) || input.peek2(Ident))
-                    && (input.peek3(Token![>])
-                        || input.peek3(Token![,])
-                        || input.peek3(Token![:]) && !input.peek3(Token![::])
-                        || input.peek3(Token![=]))
-                || input.peek2(Token![const]))
-    }
-
-    #[cfg(feature = "full")]
-    pub(crate) fn choose_generics_over_qpath_after_keyword(input: ParseStream) -> bool {
-        let input = input.fork();
-        input.call(Ident::parse_any).unwrap(); // `impl` or `for` or `where`
-        choose_generics_over_qpath(&input)
     }
 }
 

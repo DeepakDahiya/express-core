@@ -53,7 +53,7 @@ to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-unicode-width = "0.2"
+unicode-width = "0.1.11"
 ```
 
 

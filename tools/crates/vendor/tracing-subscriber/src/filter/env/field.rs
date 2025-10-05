@@ -234,8 +234,7 @@ impl ValueMatch {
     /// This returns an error if the string didn't contain a valid `bool`,
     /// `u64`, `i64`, or `f64` literal, and couldn't be parsed as a regular
     /// expression.
-    #[allow(clippy::result_large_err)]
-    fn parse_regex(s: &str) -> Result<Self, matchers::BuildError> {
+    fn parse_regex(s: &str) -> Result<Self, matchers::Error> {
         s.parse::<bool>()
             .map(ValueMatch::Bool)
             .or_else(|_| s.parse::<u64>().map(ValueMatch::U64))
@@ -280,7 +279,7 @@ impl fmt::Display for ValueMatch {
 // === impl MatchPattern ===
 
 impl FromStr for MatchPattern {
-    type Err = matchers::BuildError;
+    type Err = matchers::Error;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         let matcher = s.parse::<Pattern>()?;
         Ok(Self {
@@ -334,7 +333,7 @@ impl Eq for MatchPattern {}
 impl PartialOrd for MatchPattern {
     #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
+        Some(self.pattern.cmp(&other.pattern))
     }
 }
 
@@ -430,7 +429,7 @@ impl Eq for MatchDebug {}
 impl PartialOrd for MatchDebug {
     #[inline]
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(self.cmp(other))
+        Some(self.pattern.cmp(&other.pattern))
     }
 }
 

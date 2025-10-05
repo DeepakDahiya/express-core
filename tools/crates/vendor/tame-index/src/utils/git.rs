@@ -1,6 +1,6 @@
 //! Utilities for working with gix that might be useful for downstream users
 
-use crate::{Error, error::GitError};
+use crate::{error::GitError, Error};
 
 /// Writes the `FETCH_HEAD` for the specified fetch outcome to the specified git
 /// repository
@@ -38,7 +38,7 @@ pub fn write_fetch_head(
         .mappings
         .iter()
         .find_map(|mapping| {
-            let gix::remote::fetch::refmap::Source::Ref(rref) = &mapping.remote else {
+            let gix::remote::fetch::Source::Ref(rref) = &mapping.remote else {
                 return None;
             };
 
@@ -88,15 +88,18 @@ pub fn write_fetch_head(
             .iter()
             .any(|rspec| {
                 let rspec = rspec.to_ref();
-                if !rspec.remote().is_some_and(|r| r.ends_with(b"HEAD")) {
+                if !rspec.remote().map_or(false, |r| r.ends_with(b"HEAD")) {
                     return false;
                 }
 
-                rspec.local().is_some_and(|l| {
-                    l.to_str().ok().and_then(|l| {
-                        l.strip_prefix("refs/remotes/")
-                            .and_then(|l| l.strip_suffix("/HEAD"))
-                    }) == Some(remote_name)
+                rspec.local().map_or(false, |l| {
+                    l.to_str()
+                        .ok()
+                        .and_then(|l| {
+                            l.strip_prefix("refs/remotes/")
+                                .and_then(|l| l.strip_suffix("/HEAD"))
+                        })
+                        .map_or(false, |remote| remote == remote_name)
                 })
             })
         {

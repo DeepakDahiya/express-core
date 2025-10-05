@@ -5,14 +5,14 @@ use pki_types::{CertificateDer, PrivateKeyDer};
 
 use super::client_conn::Resumption;
 use crate::builder::{ConfigBuilder, WantsVerifier};
-use crate::client::{ClientConfig, EchMode, ResolvesClientCert, handy};
+use crate::client::{handy, ClientConfig, EchMode, ResolvesClientCert};
 use crate::error::Error;
 use crate::key_log::NoKeyLog;
-use crate::sign::{CertifiedKey, SingleCertAndKey};
+use crate::msgs::handshake::CertificateChain;
 use crate::sync::Arc;
 use crate::versions::TLS13;
 use crate::webpki::{self, WebPkiServerVerifier};
-use crate::{WantsVersions, compress, verify, versions};
+use crate::{compress, verify, versions, WantsVersions};
 
 impl ConfigBuilder<ClientConfig, WantsVersions> {
     /// Enable Encrypted Client Hello (ECH) in the given mode.
@@ -93,7 +93,7 @@ pub(super) mod danger {
 
     use crate::client::WantsClientCert;
     use crate::sync::Arc;
-    use crate::{ClientConfig, ConfigBuilder, WantsVerifier, verify};
+    use crate::{verify, ClientConfig, ConfigBuilder, WantsVerifier};
 
     /// Accessor for dangerous configuration options.
     #[derive(Debug)]
@@ -148,8 +148,13 @@ impl ConfigBuilder<ClientConfig, WantsClientCert> {
         cert_chain: Vec<CertificateDer<'static>>,
         key_der: PrivateKeyDer<'static>,
     ) -> Result<ClientConfig, Error> {
-        let certified_key = CertifiedKey::from_der(cert_chain, key_der, &self.provider)?;
-        Ok(self.with_client_cert_resolver(Arc::new(SingleCertAndKey::from(certified_key))))
+        let private_key = self
+            .provider
+            .key_provider
+            .load_private_key(key_der)?;
+        let resolver =
+            handy::AlwaysResolvesClientCert::new(private_key, CertificateChain(cert_chain))?;
+        Ok(self.with_client_cert_resolver(Arc::new(resolver)))
     }
 
     /// Do not support client auth.

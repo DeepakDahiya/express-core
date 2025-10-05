@@ -38,10 +38,11 @@
 //!
 //! ```toml
 //! [dependencies.uuid]
-//! version = "1.18.0"
-//! # Lets you generate random UUIDs
+//! version = "1.13.1"
 //! features = [
-//!     "v4",
+//!     "v4",                # Lets you generate random UUIDs
+//!     "fast-rng",          # Use a faster (but still sufficiently random) RNG
+//!     "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
 //! ]
 //! ```
 //!
@@ -106,11 +107,9 @@
 //!   `borsh`.
 //! * `arbitrary` - adds an `Arbitrary` trait implementation to `Uuid` for
 //!   fuzzing.
-//! * `fast-rng` - uses a faster algorithm for generating random UUIDs when available.
+//! * `fast-rng` - uses a faster algorithm for generating random UUIDs.
 //!   This feature requires more dependencies to compile, but is just as suitable for
 //!   UUIDs as the default algorithm.
-//! * `rng-rand` - forces `rand` as the backend for randomness.
-//! * `rng-getrandom` - forces `getrandom` as the backend for randomness.
 //! * `bytemuck` - adds a `Pod` trait implementation to `Uuid` for byte manipulation
 //!
 //! # Unstable features
@@ -139,7 +138,7 @@
 //!
 //! ```toml
 //! [dependencies.uuid]
-//! version = "1.18.0"
+//! version = "1.13.1"
 //! features = [
 //!     "v4",
 //!     "v7",
@@ -154,7 +153,7 @@
 //!
 //! ```toml
 //! [dependencies.uuid]
-//! version = "1.18.0"
+//! version = "1.13.1"
 //! default-features = false
 //! ```
 //!
@@ -167,9 +166,9 @@
 //! produce random bytes yourself and then pass them to [`Builder::from_random_bytes`]
 //! without enabling the `v4` or `v7` features.
 //!
-//! If you're using `getrandom`, you can specify the `rng-getrandom` or `rng-rand`
-//! features of `uuid` and configure `getrandom`'s provider per its docs. `uuid`
-//! may upgrade its version of `getrandom` in minor releases.
+//! Versions of `uuid` `1.12` or earlier relied on `getrandom` for randomness, this
+//! is no longer guaranteed and configuring `getrandom`'s provider is not guaranteed
+//! to make other features relying on randomness work.
 //!
 //! # Examples
 //!
@@ -212,7 +211,7 @@
 #![doc(
     html_logo_url = "https://www.rust-lang.org/logos/rust-logo-128x128-blk-v2.png",
     html_favicon_url = "https://www.rust-lang.org/favicon.ico",
-    html_root_url = "https://docs.rs/uuid/1.18.0"
+    html_root_url = "https://docs.rs/uuid/1.13.1"
 )]
 
 #[cfg(any(feature = "std", test))]
@@ -231,7 +230,6 @@ mod parser;
 pub mod fmt;
 pub mod timestamp;
 
-use core::hash::{Hash, Hasher};
 pub use timestamp::{context::NoContext, ClockSequence, Timestamp};
 
 #[cfg(any(feature = "v1", feature = "v6"))]
@@ -435,7 +433,7 @@ pub enum Variant {
 /// # ABI
 ///
 /// The `Uuid` type is always guaranteed to be have the same ABI as [`Bytes`].
-#[derive(Clone, Copy, Eq, Ord, PartialEq, PartialOrd)]
+#[derive(Clone, Copy, Eq, Hash, Ord, PartialEq, PartialOrd)]
 #[repr(transparent)]
 // NOTE: Also check `NonNilUuid` when ading new derives here
 #[cfg_attr(
@@ -938,12 +936,6 @@ impl Uuid {
     }
 }
 
-impl Hash for Uuid {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        state.write(&self.0);
-    }
-}
-
 impl Default for Uuid {
     #[inline]
     fn default() -> Self {
@@ -998,7 +990,11 @@ mod tests {
 
     use crate::std::string::{String, ToString};
 
-    #[cfg(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))]
+    #[cfg(all(
+        target_arch = "wasm32",
+        target_vendor = "unknown",
+        target_os = "unknown"
+    ))]
     use wasm_bindgen_test::*;
 
     macro_rules! check {
@@ -1026,7 +1022,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_uuid_compare() {
@@ -1042,7 +1042,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_uuid_default() {
@@ -1054,7 +1058,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_uuid_display() {
@@ -1073,7 +1081,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_uuid_lowerhex() {
@@ -1090,7 +1102,11 @@ mod tests {
     // noinspection RsAssertEqual
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_uuid_operator_eq() {
@@ -1110,7 +1126,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_uuid_to_string() {
@@ -1129,7 +1149,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_non_conforming() {
@@ -1141,7 +1165,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_nil() {
@@ -1164,7 +1192,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_max() {
@@ -1187,7 +1219,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_predefined_namespaces() {
@@ -1212,7 +1248,11 @@ mod tests {
     #[cfg(feature = "v3")]
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_get_version_v3() {
@@ -1224,7 +1264,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_get_timestamp_unsupported_version() {
@@ -1239,7 +1283,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_get_node_id_unsupported_version() {
@@ -1253,7 +1301,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_get_variant() {
@@ -1274,7 +1326,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_to_simple_string() {
@@ -1287,7 +1343,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_hyphenated_string() {
@@ -1300,7 +1360,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_upper_lower_hex() {
@@ -1356,7 +1420,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_to_urn_string() {
@@ -1371,7 +1439,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_to_simple_string_matching() {
@@ -1387,7 +1459,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_string_roundtrip() {
@@ -1404,7 +1480,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_from_fields() {
@@ -1422,7 +1502,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_from_fields_le() {
@@ -1440,7 +1524,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_as_fields() {
@@ -1456,7 +1544,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_fields_roundtrip() {
@@ -1476,7 +1568,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_fields_le_roundtrip() {
@@ -1496,7 +1592,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_fields_le_are_actually_le() {
@@ -1516,7 +1616,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_from_u128() {
@@ -1531,7 +1635,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_from_u128_le() {
@@ -1546,7 +1654,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_from_u64_pair() {
@@ -1562,7 +1674,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_u128_roundtrip() {
@@ -1576,7 +1692,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_u128_le_roundtrip() {
@@ -1590,7 +1710,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_u64_pair_roundtrip() {
@@ -1606,7 +1730,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_u128_le_is_actually_le() {
@@ -1620,7 +1748,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_from_slice() {
@@ -1637,7 +1769,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_from_bytes() {
@@ -1654,7 +1790,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_as_bytes() {
@@ -1671,7 +1811,11 @@ mod tests {
     #[test]
     #[cfg(feature = "std")]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_convert_vec() {
@@ -1691,7 +1835,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_bytes_roundtrip() {
@@ -1709,7 +1857,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_bytes_le_roundtrip() {
@@ -1729,7 +1881,11 @@ mod tests {
 
     #[test]
     #[cfg_attr(
-        all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")),
+        all(
+            target_arch = "wasm32",
+            target_vendor = "unknown",
+            target_os = "unknown"
+        ),
         wasm_bindgen_test
     )]
     fn test_iterbytes_impl_for_uuid() {

@@ -62,12 +62,7 @@ lazy_static! {
     };
 }
 
-async fn start_client(
-    addr: SocketAddr,
-    domain: &str,
-    config: Arc<ClientConfig>,
-    use_buf_read: bool,
-) -> io::Result<()> {
+async fn start_client(addr: SocketAddr, domain: &str, config: Arc<ClientConfig>) -> io::Result<()> {
     const FILE: &[u8] = include_bytes!("../README.md");
 
     let domain = ServerName::try_from(domain).unwrap().to_owned();
@@ -78,22 +73,15 @@ async fn start_client(
     let mut stream = config.connect(domain, stream).await?;
     stream.write_all(FILE).await?;
     stream.flush().await?;
-    if use_buf_read {
-        tokio::io::copy_buf(
-            &mut (&mut stream).take(FILE.len() as u64),
-            &mut Cursor::new(&mut buf),
-        )
-        .await?;
-    } else {
-        stream.read_exact(&mut buf).await?;
-    }
+    stream.read_exact(&mut buf).await?;
 
     assert_eq!(buf, FILE);
 
     Ok(())
 }
 
-async fn pass_impl(use_buf_read: bool) -> io::Result<()> {
+#[tokio::test]
+async fn pass() -> io::Result<()> {
     // TODO: not sure how to resolve this right now but since
     // TcpStream::bind now returns a future it creates a race
     // condition until its ready sometimes.
@@ -103,25 +91,9 @@ async fn pass_impl(use_buf_read: bool) -> io::Result<()> {
     let (_, config) = utils::make_configs();
     let config = Arc::new(config);
 
-    start_client(
-        *TEST_SERVER,
-        utils::TEST_SERVER_DOMAIN,
-        config,
-        use_buf_read,
-    )
-    .await?;
+    start_client(*TEST_SERVER, utils::TEST_SERVER_DOMAIN, config).await?;
 
     Ok(())
-}
-
-#[tokio::test]
-async fn pass() -> io::Result<()> {
-    pass_impl(false).await
-}
-
-#[tokio::test]
-async fn pass_buf_read() -> io::Result<()> {
-    pass_impl(true).await
 }
 
 #[tokio::test]
@@ -130,7 +102,7 @@ async fn fail() -> io::Result<()> {
     let config = Arc::new(config);
 
     assert_ne!(utils::TEST_SERVER_DOMAIN, "google.com");
-    let ret = start_client(*TEST_SERVER, "google.com", config, false).await;
+    let ret = start_client(*TEST_SERVER, "google.com", config).await;
     assert!(ret.is_err());
 
     Ok(())

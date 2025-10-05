@@ -1,5 +1,5 @@
 use self::kind::{Kind, Opaque, Trivial};
-use crate::string::CxxString;
+use crate::CxxString;
 #[cfg(feature = "alloc")]
 use alloc::string::String;
 

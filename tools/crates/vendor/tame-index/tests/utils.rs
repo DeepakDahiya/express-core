@@ -1,5 +1,4 @@
 #![allow(dead_code)]
-#![allow(missing_docs)]
 
 pub use tame_index::{IndexKrate, Path, PathBuf};
 

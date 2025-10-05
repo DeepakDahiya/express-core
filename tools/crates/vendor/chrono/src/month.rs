@@ -4,7 +4,6 @@ use core::fmt;
 use rkyv::{Archive, Deserialize, Serialize};
 
 use crate::OutOfRange;
-use crate::naive::NaiveDate;
 
 /// The month of the year.
 ///
@@ -161,29 +160,6 @@ impl Month {
             Month::November => "November",
             Month::December => "December",
         }
-    }
-
-    /// Get the length in days of the month
-    ///
-    /// Yields `None` if `year` is out of range for `NaiveDate`.
-    pub fn num_days(&self, year: i32) -> Option<u8> {
-        Some(match *self {
-            Month::January => 31,
-            Month::February => match NaiveDate::from_ymd_opt(year, 2, 1)?.leap_year() {
-                true => 29,
-                false => 28,
-            },
-            Month::March => 31,
-            Month::April => 30,
-            Month::May => 31,
-            Month::June => 30,
-            Month::July => 31,
-            Month::August => 31,
-            Month::September => 30,
-            Month::October => 31,
-            Month::November => 30,
-            Month::December => 31,
-        })
     }
 }
 
@@ -395,8 +371,8 @@ mod tests {
     #[test]
     #[cfg(feature = "serde")]
     fn test_serde_serialize() {
-        use Month::*;
         use serde_json::to_string;
+        use Month::*;
 
         let cases: Vec<(Month, &str)> = vec![
             (January, "\"January\""),
@@ -422,8 +398,8 @@ mod tests {
     #[test]
     #[cfg(feature = "serde")]
     fn test_serde_deserialize() {
-        use Month::*;
         use serde_json::from_str;
+        use Month::*;
 
         let cases: Vec<(&str, Month)> = vec![
             ("\"january\"", January),
@@ -461,12 +437,5 @@ mod tests {
         let month = Month::January;
         let bytes = rkyv::to_bytes::<_, 1>(&month).unwrap();
         assert_eq!(rkyv::from_bytes::<Month>(&bytes).unwrap(), month);
-    }
-
-    #[test]
-    fn num_days() {
-        assert_eq!(Month::January.num_days(2020), Some(31));
-        assert_eq!(Month::February.num_days(2020), Some(29));
-        assert_eq!(Month::February.num_days(2019), Some(28));
     }
 }

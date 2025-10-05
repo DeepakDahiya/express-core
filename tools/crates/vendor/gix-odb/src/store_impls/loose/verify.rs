@@ -5,9 +5,10 @@ use std::{
 
 use gix_features::progress::{Count, DynNestedProgress, Progress};
 
-use crate::loose::Store;
+use crate::{loose::Store, Write};
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod integrity {
     /// The error returned by [`verify_integrity()`][super::Store::verify_integrity()].
     #[derive(Debug, thiserror::Error)]
@@ -19,18 +20,11 @@ pub mod integrity {
             kind: gix_object::Kind,
             id: gix_hash::ObjectId,
         },
-        #[error("{kind} object {expected} could not be hashed")]
-        ObjectHasher {
-            #[source]
-            source: gix_hash::hasher::Error,
+        #[error("{kind} object {expected} wasn't re-encoded without change - new hash is {actual}")]
+        ObjectHashMismatch {
             kind: gix_object::Kind,
+            actual: gix_hash::ObjectId,
             expected: gix_hash::ObjectId,
-        },
-        #[error("{kind} object wasn't re-encoded without change")]
-        ObjectEncodeMismatch {
-            #[source]
-            source: gix_hash::verify::Error,
-            kind: gix_object::Kind,
         },
         #[error("Objects were deleted during iteration - try again")]
         Retry,
@@ -71,7 +65,6 @@ impl Store {
         progress: &mut dyn DynNestedProgress,
         should_interrupt: &AtomicBool,
     ) -> Result<integrity::Statistics, integrity::Error> {
-        use gix_object::Write;
         let mut buf = Vec::new();
         let sink = crate::sink(self.object_hash);
 
@@ -84,17 +77,14 @@ impl Store {
                 .try_find(&id, &mut buf)
                 .map_err(|_| integrity::Error::Retry)?
                 .ok_or(integrity::Error::Retry)?;
-            sink.write_buf(object.kind, object.data)
-                .map_err(|err| integrity::Error::ObjectHasher {
-                    source: *err.downcast().expect("sink can only fail in hasher"),
+            let actual_id = sink.write_buf(object.kind, object.data).expect("sink never fails");
+            if actual_id != id {
+                return Err(integrity::Error::ObjectHashMismatch {
                     kind: object.kind,
+                    actual: actual_id,
                     expected: id,
-                })?
-                .verify(&id)
-                .map_err(|err| integrity::Error::ObjectEncodeMismatch {
-                    source: err,
-                    kind: object.kind,
-                })?;
+                });
+            }
             object.decode().map_err(|err| integrity::Error::ObjectDecode {
                 source: err,
                 kind: object.kind,

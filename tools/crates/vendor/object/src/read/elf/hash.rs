@@ -1,8 +1,8 @@
 use core::mem;
 
 use crate::elf;
-use crate::endian::{U32, U64};
-use crate::read::{ReadError, ReadRef, Result, SymbolIndex};
+use crate::read::{ReadError, ReadRef, Result};
+use crate::{U32, U64};
 
 use super::{FileHeader, Sym, SymbolTable, Version, VersionTable};
 
@@ -41,14 +41,6 @@ impl<'data, Elf: FileHeader> HashTable<'data, Elf> {
         self.chains.len() as u32
     }
 
-    fn bucket(&self, endian: Elf::Endian, hash: u32) -> SymbolIndex {
-        SymbolIndex(self.buckets[(hash as usize) % self.buckets.len()].get(endian) as usize)
-    }
-
-    fn chain(&self, endian: Elf::Endian, index: SymbolIndex) -> SymbolIndex {
-        SymbolIndex(self.chains[index.0].get(endian) as usize)
-    }
-
     /// Use the hash table to find the symbol table entry with the given name, hash and version.
     pub fn find<R: ReadRef<'data>>(
         &self,
@@ -58,13 +50,13 @@ impl<'data, Elf: FileHeader> HashTable<'data, Elf> {
         version: Option<&Version<'_>>,
         symbols: &SymbolTable<'data, Elf, R>,
         versions: &VersionTable<'data, Elf>,
-    ) -> Option<(SymbolIndex, &'data Elf::Sym)> {
+    ) -> Option<(usize, &'data Elf::Sym)> {
         // Get the chain start from the bucket for this hash.
-        let mut index = self.bucket(endian, hash);
+        let mut index = self.buckets[(hash as usize) % self.buckets.len()].get(endian) as usize;
         // Avoid infinite loop.
         let mut i = 0;
         let strings = symbols.strings();
-        while index != SymbolIndex(0) && i < self.chains.len() {
+        while index != 0 && i < self.chains.len() {
             if let Ok(symbol) = symbols.symbol(index) {
                 if symbol.name(endian, strings) == Ok(name)
                     && versions.matches(endian, index, version)
@@ -72,7 +64,7 @@ impl<'data, Elf: FileHeader> HashTable<'data, Elf> {
                     return Some((index, symbol));
                 }
             }
-            index = self.chain(endian, index);
+            index = self.chains.get(index)?.get(endian) as usize;
             i += 1;
         }
         None
@@ -166,10 +158,6 @@ impl<'data, Elf: FileHeader> GnuHashTable<'data, Elf> {
         None
     }
 
-    fn bucket(&self, endian: Elf::Endian, hash: u32) -> SymbolIndex {
-        SymbolIndex(self.buckets[(hash as usize) % self.buckets.len()].get(endian) as usize)
-    }
-
     /// Use the hash table to find the symbol table entry with the given name, hash, and version.
     pub fn find<R: ReadRef<'data>>(
         &self,
@@ -179,7 +167,7 @@ impl<'data, Elf: FileHeader> GnuHashTable<'data, Elf> {
         version: Option<&Version<'_>>,
         symbols: &SymbolTable<'data, Elf, R>,
         versions: &VersionTable<'data, Elf>,
-    ) -> Option<(SymbolIndex, &'data Elf::Sym)> {
+    ) -> Option<(usize, &'data Elf::Sym)> {
         let word_bits = mem::size_of::<Elf::Word>() as u32 * 8;
 
         // Test against bloom filter.
@@ -206,17 +194,17 @@ impl<'data, Elf: FileHeader> GnuHashTable<'data, Elf> {
         }
 
         // Get the chain start from the bucket for this hash.
-        let mut index = self.bucket(endian, hash);
-        if index == SymbolIndex(0) {
+        let mut index = self.buckets[(hash as usize) % self.buckets.len()].get(endian) as usize;
+        if index == 0 {
             return None;
         }
 
         // Test symbols in the chain.
         let strings = symbols.strings();
-        let symbols = symbols.symbols().get(index.0..)?;
+        let symbols = symbols.symbols().get(index..)?;
         let values = self
             .values
-            .get(index.0.checked_sub(self.symbol_base as usize)?..)?;
+            .get(index.checked_sub(self.symbol_base as usize)?..)?;
         for (symbol, value) in symbols.iter().zip(values.iter()) {
             let value = value.get(endian);
             if value | 1 == hash | 1 {
@@ -229,7 +217,7 @@ impl<'data, Elf: FileHeader> GnuHashTable<'data, Elf> {
             if value & 1 != 0 {
                 break;
             }
-            index.0 += 1;
+            index += 1;
         }
         None
     }

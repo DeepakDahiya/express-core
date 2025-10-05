@@ -41,6 +41,7 @@ where
 
     fn poll(self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<io::Result<usize>> {
         use crate::io::ReadBuf;
+        use std::mem::MaybeUninit;
 
         let me = self.project();
 
@@ -50,7 +51,7 @@ where
 
         let n = {
             let dst = me.buf.chunk_mut();
-            let dst = unsafe { dst.as_uninit_slice_mut() };
+            let dst = unsafe { &mut *(dst as *mut _ as *mut [MaybeUninit<u8>]) };
             let mut buf = ReadBuf::uninit(dst);
             let ptr = buf.filled().as_ptr();
             ready!(Pin::new(me.reader).poll_read(cx, &mut buf)?);

@@ -1,8 +1,8 @@
 #[cfg(feature = "local")]
 use crate::index::LocalRegistry;
 use crate::{
-    Error, IndexKrate, KrateName,
     index::{FileLock, RemoteGitIndex, RemoteSparseIndex},
+    Error, IndexKrate, KrateName,
 };
 
 /// A wrapper around either a [`RemoteGitIndex`] or [`RemoteSparseIndex`]
@@ -10,7 +10,7 @@ use crate::{
 pub enum ComboIndex {
     /// A standard git based registry index. No longer the default for crates.io
     /// as of 1.70.0
-    Git(Box<RemoteGitIndex>),
+    Git(RemoteGitIndex),
     /// An HTTP sparse index
     Sparse(RemoteSparseIndex),
     /// A local registry
@@ -58,7 +58,7 @@ impl ComboIndex {
 impl From<RemoteGitIndex> for ComboIndex {
     #[inline]
     fn from(index: RemoteGitIndex) -> Self {
-        Self::Git(Box::new(index))
+        Self::Git(index)
     }
 }
 

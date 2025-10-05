@@ -47,8 +47,6 @@ pub(crate) mod root {
         pub const INIT: sections::Init = sections::Init;
         /// The `mailmap` section.
         pub const MAILMAP: sections::Mailmap = sections::Mailmap;
-        /// The `merge` section.
-        pub const MERGE: sections::Merge = sections::Merge;
         /// The `pack` section.
         pub const PACK: sections::Pack = sections::Pack;
         /// The `protocol` section.
@@ -88,7 +86,6 @@ pub(crate) mod root {
                 &Self::INDEX,
                 &Self::INIT,
                 &Self::MAILMAP,
-                &Self::MERGE,
                 &Self::PACK,
                 &Self::PROTOCOL,
                 &Self::PUSH,
@@ -108,7 +105,7 @@ mod sections;
 pub use sections::{
     branch, checkout, core, credential, extensions, fetch, gitoxide, http, index, protocol, push, remote, ssh, Author,
     Branch, Checkout, Clone, Committer, Core, Credential, Extensions, Fetch, Gitoxide, Http, Index, Init, Mailmap,
-    Merge, Pack, Protocol, Push, Remote, Safe, Ssh, Url, User,
+    Pack, Protocol, Push, Remote, Safe, Ssh, Url, User,
 };
 #[cfg(feature = "blob-diff")]
 pub use sections::{diff, Diff};
@@ -119,8 +116,10 @@ pub use sections::{status, Status};
 pub mod keys;
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod key {
     ///
+    #[allow(clippy::empty_docs)]
     pub mod validate {
         /// The error returned by [`Key::validate()`][crate::config::tree::Key::validate()].
         #[derive(Debug, thiserror::Error)]
@@ -132,6 +131,7 @@ pub mod key {
         }
     }
     ///
+    #[allow(clippy::empty_docs)]
     pub mod validate_assignment {
         /// The error returned by [`Key::validated_assignment`*()][crate::config::tree::Key::validated_assignment_fmt()].
         #[derive(Debug, thiserror::Error)]

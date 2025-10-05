@@ -16,17 +16,11 @@ pub enum OS {
     /// `aix`
     Aix,
 
-    /// `amdhsa`
-    Amdhsa,
-
     /// `android`: Google's Android mobile operating system
     Android,
 
     /// `cuda`: CUDA parallel computing platform
     Cuda,
-
-    /// `cygwin`
-    Cygwin,
 
     /// `dragonfly`: DragonflyBSD
     Dragonfly,
@@ -68,9 +62,6 @@ pub enum OS {
     /// `linux`: Linux
     Linux,
 
-    /// `lynxos178`
-    Lynxos178,
-
     /// `macos`: Apple's Mac OS X
     MacOS,
 
@@ -91,9 +82,6 @@ pub enum OS {
 
     /// `psp`
     Psp,
-
-    /// `psx`
-    Psx,
 
     /// `redox`: Redox, a Unix-like OS written in Rust
     Redox,
@@ -152,10 +140,8 @@ impl OS {
     pub fn as_str(self) -> &'static str {
         match self {
             OS::Aix => "aix",
-            OS::Amdhsa => "amdhsa",
             OS::Android => "android",
             OS::Cuda => "cuda",
-            OS::Cygwin => "cygwin",
             OS::Dragonfly => "dragonfly",
             OS::Emscripten => "emscripten",
             OS::Espidf => "espidf",
@@ -169,7 +155,6 @@ impl OS {
             OS::iOS => "ios",
             OS::L4re => "l4re",
             OS::Linux => "linux",
-            OS::Lynxos178 => "lynxos178",
             OS::MacOS => "macos",
             OS::NetBSD => "netbsd",
             OS::None => "none",
@@ -177,7 +162,6 @@ impl OS {
             OS::Nuttx => "nuttx",
             OS::OpenBSD => "openbsd",
             OS::Psp => "psp",
-            OS::Psx => "psx",
             OS::Redox => "redox",
             OS::Rtems => "rtems",
             OS::Solaris => "solaris",
@@ -206,10 +190,8 @@ impl FromStr for OS {
     fn from_str(name: &str) -> Result<Self, Self::Err> {
         let result = match name {
             "aix" => OS::Aix,
-            "amdhsa" => OS::Amdhsa,
             "android" => OS::Android,
             "cuda" => OS::Cuda,
-            "cygwin" => OS::Cygwin,
             "dragonfly" => OS::Dragonfly,
             "emscripten" => OS::Emscripten,
             "espidf" => OS::Espidf,
@@ -223,7 +205,6 @@ impl FromStr for OS {
             "ios" => OS::iOS,
             "l4re" => OS::L4re,
             "linux" => OS::Linux,
-            "lynxos178" => OS::Lynxos178,
             "macos" => OS::MacOS,
             "netbsd" => OS::NetBSD,
             "none" => OS::None,
@@ -231,7 +212,6 @@ impl FromStr for OS {
             "nuttx" => OS::Nuttx,
             "openbsd" => OS::OpenBSD,
             "psp" => OS::Psp,
-            "psx" => OS::Psx,
             "redox" => OS::Redox,
             "rtems" => OS::Rtems,
             "solaris" => OS::Solaris,

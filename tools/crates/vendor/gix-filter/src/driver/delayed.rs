@@ -6,6 +6,7 @@ use crate::{
 };
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod list {
     use crate::driver;
 
@@ -23,6 +24,7 @@ pub mod list {
 }
 
 ///
+#[allow(clippy::empty_docs)]
 pub mod fetch {
     use crate::driver;
 
@@ -68,7 +70,7 @@ impl State {
         let mut out = Vec::new();
         let result = client.invoke_without_content("list_available_blobs", &mut None.into_iter(), &mut |line| {
             if let Some(path) = line.strip_prefix(b"pathname=") {
-                out.push(path.into());
+                out.push(path.into())
             }
         });
         let status = match result {
