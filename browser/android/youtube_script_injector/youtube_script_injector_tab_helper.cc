@@ -1463,27 +1463,27 @@ constexpr char16_t kYoutubeFullscreen[] =
 // Add this new constant for the tab restoration fix.
 constexpr char16_t kYoutubePipNavigationFix[] =
     uR"(
-    (function() {
+    (async function() {
         if (window.bravePipFixAttached) return;
         window.bravePipFixAttached = true;
 
         // VISUAL DEBUG 1: If the page border turns red, the script was injected and started.
-        document.body.style.border = '0px solid red';
+        await new Promise(r => setTimeout(r, 100));
 
         let originalTabUrl = null;
         let videoEl = null;
 
-        const handleEnterPiP = (event) => {
+        const handleEnterPiP = async (event) => {
             originalTabUrl = window.location.href;
             console.log('Brave PiP Fix: Entered PiP. Storing URL:', originalTabUrl);
             
             // VISUAL DEBUG 3: If the video border turns blue, the 'enter' event fired successfully.
-            if (videoEl) videoEl.style.border = '0px solid blue';
+            if (videoEl) await new Promise(r => setTimeout(r, 100));
         };
 
-        const handleLeavePiP = (event) => {
+        const handleLeavePiP = async (event) => {
             // VISUAL DEBUG 4: If the video border turns magenta, the 'leave' event fired. THIS IS THE KEY TEST.
-            if (videoEl) videoEl.style.border = '0px solid magenta';
+            if (videoEl) await new Promise(r => setTimeout(r, 100));
 
             if (originalTabUrl && window.BravePiPNavigator && window.BravePiPNavigator.restoreTabWithUrl) {
                 console.log('Brave PiP Fix: Calling native bridge with URL:', originalTabUrl);
@@ -1496,7 +1496,7 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             originalTabUrl = null;
         };
 
-        const attachListeners = (vid) => {
+        const attachListeners = async (vid) => {
             if (!vid) return;
             // Remove old listeners to be safe.
             if (videoEl) {
@@ -1508,7 +1508,7 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             videoEl.addEventListener('leavepictureinpicture', handleLeavePiP);
             
             // VISUAL DEBUG 2: If the video border turns green, the event listeners were attached.
-            videoEl.style.border = '0px solid green';
+            await new Promise(r => setTimeout(r, 100));
             console.log('Brave PiP Fix: Attached listeners to video element.');
         };
 
