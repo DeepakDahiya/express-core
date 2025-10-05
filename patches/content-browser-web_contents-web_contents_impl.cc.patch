@@ -1,16 +1,8 @@
 diff --git a/content/browser/web_contents/web_contents_impl.cc b/content/browser/web_contents/web_contents_impl.cc
-index be06cbb8229a4cc85abf63a42aef0884e200e59b..1fd08f537d721ac8ad88bd22aff555b18791ce3e 100644
+index be06cbb8229a4cc85abf63a42aef0884e200e59b..e5e3aea8028248b0c8e8b0daa8805548f39021e9 100644
 --- a/content/browser/web_contents/web_contents_impl.cc
 +++ b/content/browser/web_contents/web_contents_impl.cc
-@@ -225,6 +225,7 @@
- #include "ui/display/types/display_constants.h"
- #include "ui/events/base_event_utils.h"
- #include "ui/gfx/animation/animation.h"
-+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
- 
- #if BUILDFLAG(IS_WIN)
- #include "base/threading/thread_restrictions.h"
-@@ -5382,7 +5383,7 @@ FrameTree* WebContentsImpl::CreateNewWindow(
+@@ -5382,7 +5382,7 @@ FrameTree* WebContentsImpl::CreateNewWindow(
  
    // Save the window for later if we're not suppressing the opener (since it
    // will be shown immediately).

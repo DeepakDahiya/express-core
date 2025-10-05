@@ -1,16 +1,8 @@
 diff --git a/content/browser/BUILD.gn b/content/browser/BUILD.gn
-index adce27e6feaed7172cac9bdcd1b2e83930eb0a77..bf5711ee503f90b19a97e308e0d1d59dd3fa8051 100644
+index adce27e6feaed7172cac9bdcd1b2e83930eb0a77..d83426d65ce612d01fb15c5da58e0072923b73be 100644
 --- a/content/browser/BUILD.gn
 +++ b/content/browser/BUILD.gn
-@@ -71,6 +71,7 @@ source_set("browser") {
-     "//content/test/fuzzer:first_party_set_parser_fuzzer_support",
-     "//content/test/fuzzer:indexed_db_fuzzer_support",
-     "//content/test/fuzzer:media_stream_dispatcher_host_mojolpm_fuzzer",
-+    "//brave/browser/android/youtube_script_injector:youtube_script_injector",
-   ]
- 
-   if (use_fuzzing_engine && is_android) {
-@@ -3673,6 +3674,7 @@ source_set("browser") {
+@@ -3673,6 +3673,7 @@ source_set("browser") {
    if (is_chromeos) {
      deps += [ "//ash/constants" ]
    }
