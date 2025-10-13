@@ -1468,7 +1468,7 @@ constexpr char16_t kYoutubePipNavigationFix[] =
         window.bravePipFixAttached = true;
 
         // VISUAL DEBUG 1: If the page border turns red, the script was injected and started.
-        await new Promise(r => setTimeout(r, 100));
+        const forceReflow1 = document.body.offsetHeight;
 
         let originalTabUrl = null;
         let videoEl = null;
@@ -1478,12 +1478,12 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             console.log('Brave PiP Fix: Entered PiP. Storing URL:', originalTabUrl);
             
             // VISUAL DEBUG 3: If the video border turns blue, the 'enter' event fired successfully.
-            if (videoEl) await new Promise(r => setTimeout(r, 100));
+            if (videoEl) { const forceReflow3 = videoEl.offsetHeight; }
         };
 
         const handleLeavePiP = async (event) => {
             // VISUAL DEBUG 4: If the video border turns magenta, the 'leave' event fired. THIS IS THE KEY TEST.
-            if (videoEl) await new Promise(r => setTimeout(r, 100));
+            if (videoEl) { const forceReflow4 = videoEl.offsetHeight; }
 
             if (originalTabUrl && window.BravePiPNavigator && window.BravePiPNavigator.restoreTabWithUrl) {
                 console.log('Brave PiP Fix: Calling native bridge with URL:', originalTabUrl);
@@ -1508,7 +1508,7 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             videoEl.addEventListener('leavepictureinpicture', handleLeavePiP);
             
             // VISUAL DEBUG 2: If the video border turns green, the event listeners were attached.
-            await new Promise(r => setTimeout(r, 100));
+            const forceReflow2 = videoEl.offsetHeight;
             console.log('Brave PiP Fix: Attached listeners to video element.');
         };
 
