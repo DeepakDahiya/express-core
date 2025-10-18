@@ -1504,8 +1504,7 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             console.log('Brave PiP Fix: Attached listeners to video element.');
             const _p = videoEl.parentElement || videoEl;
             _p.style.border = '5px solid green';
-            setTimeout(() => { _p.style.border = ''; }, 300);
-
+            requestAnimationFrame(() => requestAnimationFrame(() => { _p.style.border = ''; }));
         };
 
         // Use a MutationObserver to robustly find the video element as it's added to the page.
