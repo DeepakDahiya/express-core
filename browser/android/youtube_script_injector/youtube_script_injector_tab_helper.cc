@@ -1467,24 +1467,15 @@ constexpr char16_t kYoutubePipNavigationFix[] =
         if (window.bravePipFixAttached) return;
         window.bravePipFixAttached = true;
 
-        // VISUAL DEBUG 1: If the page border turns red, the script was injected and started.
-        document.body.style.boxShadow = '0 0 1px rgba(255, 0, 0, 0.01)';
-
         let originalTabUrl = null;
         let videoEl = null;
 
-        const handleEnterPiP = async (event) => {
+        const handleEnterPiP = (event) => {
             originalTabUrl = window.location.href;
             console.log('Brave PiP Fix: Entered PiP. Storing URL:', originalTabUrl);
-            
-            // VISUAL DEBUG 3: If the video border turns blue, the 'enter' event fired successfully.
-            if (videoEl) videoEl.style.boxShadow = '0 0 1px rgba(255, 0, 0, 0.01)';
         };
 
-        const handleLeavePiP = async (event) => {
-            // VISUAL DEBUG 4: If the video border turns magenta, the 'leave' event fired. THIS IS THE KEY TEST.
-            if (videoEl) videoEl.style.boxShadow = '0 0 1px rgba(255, 0, 0, 0.01)';
-
+        const handleLeavePiP = (event) => {
             if (originalTabUrl && window.BravePiPNavigator && window.BravePiPNavigator.restoreTabWithUrl) {
                 console.log('Brave PiP Fix: Calling native bridge with URL:', originalTabUrl);
                 try {
@@ -1496,7 +1487,8 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             originalTabUrl = null;
         };
 
-        const attachListeners = async (vid) => {
+        // This function now cleanly attaches the listeners without any visual side effects.
+        const attachListeners = (vid) => {
             if (!vid) return;
             // Remove old listeners to be safe.
             if (videoEl) {
@@ -1506,28 +1498,55 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             videoEl = vid;
             videoEl.addEventListener('enterpictureinpicture', handleEnterPiP);
             videoEl.addEventListener('leavepictureinpicture', handleLeavePiP);
-            
-            // VISUAL DEBUG 2: If the video border turns green, the event listeners were attached.
-            videoEl.style.boxShadow = '0 0 1px rgba(255, 0, 0, 0.01)';
-            console.log('Brave PiP Fix: Attached listeners to video element.');
+            console.log('Brave PiP Fix: Listeners attached after video metadata was loaded.');
         };
 
-        // Use a MutationObserver to robustly find the video element as it's added to the page.
-        const observer = new MutationObserver(() => {
-            const newVideoEl = document.querySelector('video');
-            if (newVideoEl && !newVideoEl.hasAttribute('data-pip-fix-attached')) {
-                newVideoEl.setAttribute('data-pip-fix-attached', 'true');
-                attachListeners(newVideoEl);
+        // This is the core of the robust solution.
+        // It ensures we only attach listeners when the video element is truly ready.
+        const initializePipFixForVideo = (vid) => {
+            // Check if we've already processed this video element.
+            if (!vid || vid.hasAttribute('data-pip-fix-attached')) {
+                return;
+            }
+            vid.setAttribute('data-pip-fix-attached', 'true');
+
+            // The video might already be loaded if the script is injected late.
+            // The 'readyState' property tells us its status. 0 = HAVE_NOTHING, 1 = HAVE_METADATA.
+            if (vid.readyState >= 1) {
+                attachListeners(vid);
+            } else {
+                // If the video isn't ready, we wait for the 'loadedmetadata' event.
+                // { once: true } ensures the listener is automatically removed after it fires.
+                vid.addEventListener('loadedmetadata', () => attachListeners(vid), { once: true });
+            }
+        };
+
+        // The MutationObserver now efficiently checks for newly added video elements.
+        const observer = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                for (const node of mutation.addedNodes) {
+                    // Check if the added node is a VIDEO element itself.
+                    if (node.nodeName === 'VIDEO') {
+                        initializePipFixForVideo(node);
+                    }
+                    // Or if the added node CONTAINS a video element.
+                    else if (typeof node.querySelector === 'function') {
+                        const video = node.querySelector('video');
+                        if (video) {
+                            initializePipFixForVideo(video);
+                        }
+                    }
+                }
             }
         });
 
-        // Try to find it immediately.
+        // Try to find a video that might already be on the page when the script runs.
         const initialVideoEl = document.querySelector('video');
         if (initialVideoEl) {
-            attachListeners(initialVideoEl);
+            initializePipFixForVideo(initialVideoEl);
         }
 
-        // And observe for any future changes.
+        // And observe for any future videos added to the page.
         observer.observe(document.body, { childList: true, subtree: true });
     })();
 )";
