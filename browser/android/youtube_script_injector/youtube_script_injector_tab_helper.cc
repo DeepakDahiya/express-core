@@ -1502,7 +1502,7 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             // VISUAL DEBUG 2: If the video border turns green, the event listeners were attached.
             console.log('Brave PiP Fix: Attached listeners to video element.');
             const _p = videoEl;
-            _p.style.border = '2px solid #D4AF37';
+            _p.style.border = '1px solid black';
             // setTimeout(() => { _p.style.border = ''; }, 2000);
             // requestAnimationFrame(() => requestAnimationFrame(() => { _p.style.border = ''; }));
         };
