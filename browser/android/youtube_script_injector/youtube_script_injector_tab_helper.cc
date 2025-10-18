@@ -1462,77 +1462,94 @@ constexpr char16_t kYoutubeFullscreen[] =
 
 constexpr char16_t kYoutubePipNavigationFix[] =
     uR"(
-    (function() {
+    (async function() {
         if (window.bravePipFixAttached) return;
         window.bravePipFixAttached = true;
 
+        console.log('Brave PiP Fix: Script injected.');
+
         let originalTabUrl = null;
         let videoEl = null;
+        let observer = null;
+        let attachInProgress = false;
 
-        const handleEnterPiP = (event) => {
-            originalTabUrl = window.location.href;
-            console.log('Brave PiP Fix: Entered PiP. Storing URL:', originalTabUrl);
+        // Wait until the <video> element is truly initialized in the media pipeline.
+        const waitForVideoReady = async (vid) => {
+            if (!vid) return false;
+            let tries = 0;
+            while (tries < 50) { // ~5 seconds total
+                if (vid.readyState >= 2 && vid.videoWidth > 0 && vid.videoHeight > 0) {
+                    return true;
+                }
+                await new Promise(r => setTimeout(r, 100));
+                tries++;
+            }
+            return false;
         };
 
-        const handleLeavePiP = (event) => {
+        const handleEnterPiP = async (event) => {
+            originalTabUrl = window.location.href;
+            console.log('Brave PiP Fix: Entered PiP. Stored URL:', originalTabUrl);
+        };
+
+        const handleLeavePiP = async (event) => {
+            console.log('Brave PiP Fix: Leaving PiP.');
             if (originalTabUrl && window.BravePiPNavigator && window.BravePiPNavigator.restoreTabWithUrl) {
-                console.log('Brave PiP Fix: Calling native bridge with URL:', originalTabUrl);
                 try {
+                    console.log('Brave PiP Fix: Calling native bridge with URL:', originalTabUrl);
                     window.BravePiPNavigator.restoreTabWithUrl(originalTabUrl);
                 } catch (e) {
-                    console.error('Failed to call BravePiPNavigator bridge:', e);
+                    console.error('Brave PiP Fix: Bridge call failed:', e);
                 }
             }
             originalTabUrl = null;
         };
 
-        const attachListeners = (vid) => {
-            if (!vid) return;
-            // Remove old listeners to be safe, in case we are re-attaching.
+        const attachListeners = async (vid) => {
+            if (!vid || attachInProgress) return;
+            attachInProgress = true;
+
+            // Wait for video readiness to ensure event hooks attach correctly.
+            const ready = await waitForVideoReady(vid);
+            if (!ready) {
+                console.warn('Brave PiP Fix: Video never reached readyState 2.');
+                attachInProgress = false;
+                return;
+            }
+
+            // Remove old listeners if any.
             if (videoEl) {
                 videoEl.removeEventListener('enterpictureinpicture', handleEnterPiP);
                 videoEl.removeEventListener('leavepictureinpicture', handleLeavePiP);
             }
+
             videoEl = vid;
             videoEl.addEventListener('enterpictureinpicture', handleEnterPiP);
             videoEl.addEventListener('leavepictureinpicture', handleLeavePiP);
-            console.log('Brave PiP Fix: Listeners attached after a delay to allow framework initialization.');
+
+            console.log('Brave PiP Fix: Listeners attached to ready video element.');
+            attachInProgress = false;
         };
 
-        const initializePipFixForVideo = (vid) => {
-            if (!vid || vid.hasAttribute('data-pip-fix-attached')) {
-                return;
+        const findAndAttach = async () => {
+            const newVideoEl = document.querySelector('video');
+            if (newVideoEl && !newVideoEl.hasAttribute('data-pip-fix-attached')) {
+                newVideoEl.setAttribute('data-pip-fix-attached', 'true');
+                await attachListeners(newVideoEl);
             }
-            vid.setAttribute('data-pip-fix-attached', 'true');
-
-            // This is the solution. We yield to the browser's event loop.
-            // This gives YouTube's own scripts the time they need to finish setting up
-            // the video element before we attach our listeners. 100ms is a safe
-            // but still imperceptible delay.
-            setTimeout(() => {
-                attachListeners(vid);
-            }, 100);
         };
 
-        const observer = new MutationObserver((mutations) => {
-            for (const mutation of mutations) {
-                for (const node of mutation.addedNodes) {
-                    if (node.nodeType === 1) { // ELEMENT_NODE
-                        if (node.tagName === 'VIDEO') {
-                            initializePipFixForVideo(node);
-                        } else {
-                            node.querySelectorAll('video').forEach(initializePipFixForVideo);
-                        }
-                    }
-                }
-            }
+        // Watch for new video elements being created by YouTube.
+        observer = new MutationObserver(() => {
+            findAndAttach();
         });
 
-        // Find any videos that already exist on the page when the script is injected.
-        document.querySelectorAll('video').forEach(initializePipFixForVideo);
-
-        // Start observing for any videos added later.
         observer.observe(document.body, { childList: true, subtree: true });
+
+        // Try to find one immediately if already loaded.
+        await findAndAttach();
+
+        console.log('Brave PiP Fix: MutationObserver started.');
     })();
 )";
 
