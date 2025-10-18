@@ -1462,7 +1462,7 @@ constexpr char16_t kYoutubeFullscreen[] =
 
 constexpr char16_t kYoutubePipNavigationFix[] =
     uR"(
-    (async function() {
+    (function() {
         if (window.bravePipFixAttached) return;
         window.bravePipFixAttached = true;
 
@@ -1488,7 +1488,7 @@ constexpr char16_t kYoutubePipNavigationFix[] =
 
         const attachListeners = (vid) => {
             if (!vid) return;
-            // Remove old listeners to be safe.
+            // Remove old listeners to be safe, in case we are re-attaching.
             if (videoEl) {
                 videoEl.removeEventListener('enterpictureinpicture', handleEnterPiP);
                 videoEl.removeEventListener('leavepictureinpicture', handleLeavePiP);
@@ -1496,23 +1496,7 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             videoEl = vid;
             videoEl.addEventListener('enterpictureinpicture', handleEnterPiP);
             videoEl.addEventListener('leavepictureinpicture', handleLeavePiP);
-            console.log('Brave PiP Fix: Listeners attached successfully after synchronous flush.');
-        };
-        
-        // This function programmatically triggers the same browser behavior as the
-        // border-color hack, but does so invisibly and without side effects.
-        const forceSyncRender = (element) => {
-            // Apply a trivial, non-visible style change. 'outline' is a good choice
-            // as it doesn't affect the element's dimensions (layout).
-            element.style.outline = '1px solid transparent';
-            
-            // By immediately requesting a layout property like offsetHeight, we force the
-            // browser to synchronously stop and calculate all pending style and layout
-            // changes. This is the "flush" that resolves the race condition.
-            void element.offsetHeight;
-            
-            // Clean up by removing the style.
-            element.style.outline = '';
+            console.log('Brave PiP Fix: Listeners attached after a delay to allow framework initialization.');
         };
 
         const initializePipFixForVideo = (vid) => {
@@ -1521,32 +1505,33 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             }
             vid.setAttribute('data-pip-fix-attached', 'true');
 
-            // 1. Force the browser to synchronously process pending rendering updates for the video element.
-            forceSyncRender(vid);
-            
-            // 2. Immediately attach the listeners now that the element is guaranteed to be ready.
-            attachListeners(vid);
+            // This is the solution. We yield to the browser's event loop.
+            // This gives YouTube's own scripts the time they need to finish setting up
+            // the video element before we attach our listeners. 100ms is a safe
+            // but still imperceptible delay.
+            setTimeout(() => {
+                attachListeners(vid);
+            }, 100);
         };
 
         const observer = new MutationObserver((mutations) => {
             for (const mutation of mutations) {
                 for (const node of mutation.addedNodes) {
-                    if (node.nodeType === 1) { // Check if it's an Element node
+                    if (node.nodeType === 1) { // ELEMENT_NODE
                         if (node.tagName === 'VIDEO') {
                             initializePipFixForVideo(node);
                         } else {
-                            const videos = node.querySelectorAll('video');
-                            videos.forEach(initializePipFixForVideo);
+                            node.querySelectorAll('video').forEach(initializePipFixForVideo);
                         }
                     }
                 }
             }
         });
 
-        // Find any videos already on the page when the script injects.
+        // Find any videos that already exist on the page when the script is injected.
         document.querySelectorAll('video').forEach(initializePipFixForVideo);
 
-        // Observe for future videos.
+        // Start observing for any videos added later.
         observer.observe(document.body, { childList: true, subtree: true });
     })();
 )";
