@@ -1462,74 +1462,81 @@ constexpr char16_t kYoutubeFullscreen[] =
 
 constexpr char16_t kYoutubePipNavigationFix[] =
     uR"(
-    (async function() {
-    if (window.bravePipFixAttached) return;
-    window.bravePipFixAttached = true;
+    (function() {
+        if (window.bravePipFixAttached) return;
+        window.bravePipFixAttached = true;
 
-    let originalTabUrl = null;
-    let videoEl = null;
+        let originalTabUrl = null;
+        let videoEl = null;
 
-    const handleEnterPiP = async () => {
-        originalTabUrl = window.location.href;
-        console.log('Brave PiP Fix: Entered PiP ->', originalTabUrl);
-    };
+        const handleEnterPiP = (event) => {
+            originalTabUrl = window.location.href;
+            console.log('Brave PiP Fix: Entered PiP. Storing URL:', originalTabUrl);
+        };
 
-    const handleLeavePiP = async () => {
-        if (originalTabUrl && window.BravePiPNavigator?.restoreTabWithUrl) {
-            console.log('Brave PiP Fix: Leaving PiP, restoring tab ->', originalTabUrl);
-            try {
-                window.BravePiPNavigator.restoreTabWithUrl(originalTabUrl);
-            } catch (e) {
-                console.error('Brave PiP Fix: restoreTabWithUrl failed', e);
+        const handleLeavePiP = (event) => {
+            if (originalTabUrl && window.BravePiPNavigator && window.BravePiPNavigator.restoreTabWithUrl) {
+                console.log('Brave PiP Fix: Calling native bridge with URL:', originalTabUrl);
+                try {
+                    window.BravePiPNavigator.restoreTabWithUrl(originalTabUrl);
+                } catch (e) {
+                    console.error('Failed to call BravePiPNavigator bridge:', e);
+                }
             }
-        }
-        originalTabUrl = null;
-    };
+            originalTabUrl = null;
+        };
 
-    const attachListeners = async (vid) => {
-        if (!vid) return;
-        if (videoEl === vid) return;
-
-        // Clean up old
-        if (videoEl) {
-            videoEl.removeEventListener('enterpictureinpicture', handleEnterPiP);
-            videoEl.removeEventListener('leavepictureinpicture', handleLeavePiP);
-        }
-
-        // Attach new
-        videoEl = vid;
-        videoEl.addEventListener('enterpictureinpicture', handleEnterPiP);
-        videoEl.addEventListener('leavepictureinpicture', handleLeavePiP);
-
-        // Force layout stabilization (minimal visual impact)
-        videoEl.style.outline = '1px solid transparent';
-        videoEl.offsetWidth; // trigger reflow
-        videoEl.style.outline = '';
-
-        console.log('Brave PiP Fix: Listeners attached to video.');
-    };
-
-    // Debounced deferred attach
-    let attachTimeout;
-    const scheduleAttach = () => {
-        if (attachTimeout) clearTimeout(attachTimeout);
-        attachTimeout = setTimeout(() => {
-            const newVid = document.querySelector('video');
-            if (newVid && !newVid.hasAttribute('data-pip-fix-attached')) {
-                newVid.setAttribute('data-pip-fix-attached', 'true');
-                attachListeners(newVid);
+        const attachListeners = (vid) => {
+            if (!vid) return;
+            // Clean up previous listeners if any
+            if (videoEl) {
+                videoEl.removeEventListener('enterpictureinpicture', handleEnterPiP);
+                videoEl.removeEventListener('leavepictureinpicture', handleLeavePiP);
             }
-        }, 300); // small delay lets YouTube finalize DOM
-    };
+            videoEl = vid;
+            videoEl.addEventListener('enterpictureinpicture', handleEnterPiP);
+            videoEl.addEventListener('leavepictureinpicture', handleLeavePiP);
+            console.log('Brave PiP Fix: Listeners attached after forcing GPU layer promotion.');
+        };
 
-    // Observe DOM for changes
-    const observer = new MutationObserver(scheduleAttach);
-    observer.observe(document.body, { childList: true, subtree: true });
+        const initializePipFixForVideo = (vid) => {
+            if (!vid || vid.hasAttribute('data-pip-fix-attached')) {
+                return;
+            }
+            vid.setAttribute('data-pip-fix-attached', 'true');
 
-    // Try immediately too
-    scheduleAttach();
-})();
+            // This is the definitive, invisible fix.
+            // 1. Applying a 3D transform is the canonical way to hint to the browser
+            //    that this element should be promoted to its own composited layer.
+            //    This moves it to the GPU and changes its internal rendering state.
+            vid.style.transform = 'translateZ(0)';
 
+            // 2. Attach the listeners. Now that the video element is in the correct
+            //    state (promoted to a layer), the PiP API will recognize and interact
+            //    with it correctly.
+            attachListeners(vid);
+        };
+
+        const observer = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                for (const node of mutation.addedNodes) {
+                    if (node.nodeType === 1) { // ELEMENT_NODE
+                        if (node.tagName === 'VIDEO') {
+                            initializePipFixForVideo(node);
+                        } else {
+                            node.querySelectorAll('video').forEach(initializePipFixForVideo);
+                        }
+                    }
+                }
+            }
+        });
+
+        // Find videos that already exist when the script runs.
+        document.querySelectorAll('video').forEach(initializePipFixForVideo);
+
+        // Observe for videos added later.
+        observer.observe(document.body, { childList: true, subtree: true });
+    })();
 )";
 
 bool IsBackgroundVideoPlaybackEnabled(content::WebContents* contents) {
