@@ -68,7 +68,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
 
     // prefs
     private static final String PREF_BRAVE_VPN_CALLOUT = "pref_vpn_callout";
-    private static final String PREF_GET_STARTED = "get_started";
+    // private static final String PREF_GET_STARTED = "get_started";
     private static final String PREF_CLOSING_ALL_TABS_CLOSES_BRAVE =
             "closing_all_tabs_closes_brave";
     private static final String PREF_PRIVACY = "privacy";
@@ -466,17 +466,17 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
     // }
 
     private void initBraveAccount() {
-        Preference getStartedPreference = findPreference(PREF_GET_STARTED);
-        if (getStartedPreference != null) {
-            getStartedPreference.setOnPreferenceClickListener(
-                    new Preference.OnPreferenceClickListener() {
-                        @Override
-                        public boolean onPreferenceClick(Preference preference) {
-                            BraveAccountCustomTabActivity.show(getActivity());
-                            return true;
-                        }
-                    });
-        }
+        // Preference getStartedPreference = findPreference(PREF_GET_STARTED);
+        // if (getStartedPreference != null) {
+        //     getStartedPreference.setOnPreferenceClickListener(
+        //             new Preference.OnPreferenceClickListener() {
+        //                 @Override
+        //                 public boolean onPreferenceClick(Preference preference) {
+        //                     BraveAccountCustomTabActivity.show(getActivity());
+        //                     return true;
+        //                 }
+        //             });
+        // }
     }
 
     private void overrideChromiumPreferences() {

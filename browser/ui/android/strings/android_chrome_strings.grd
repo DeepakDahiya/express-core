@@ -2122,16 +2122,16 @@ Your Brave account may have other forms of browsing history like searches and ac
 
       <!-- About Brave preferences -->
       <message name="IDS_PREFS_ABOUT_CHROME" desc="Title for the About Brave page. [CHAR_LIMIT=32]">
-        About Brave
+        About Browser Express
       </message>
       <message name="IDS_LEGAL_INFORMATION_SUMMARY" desc="Summary for legal information" meaning="Android">
-        Copyright © <ph name="year">%1$d<ex>2014</ex></ph> The Brave Authors. All rights reserved.
+        Copyright © <ph name="year">%1$d<ex>2023</ex></ph> Browser Express. All rights reserved.
       </message>
       <message name="IDS_APPLICATION_VERSION_TITLE" desc="Title for application version">
         Application version
       </message>
       <message name="IDS_VERSION_WITH_UPDATE_TIME" desc="Message showing Brave's version and the time it was last updated">
-        <ph name="VERSION">%1$s<ex>Brave 40.0.2214.67</ex></ph> (Updated <ph name="TIME_SINCE_UPDATE">%2$s<ex>5 minutes ago</ex></ph>)
+        <ph name="VERSION">%1$s<ex>Browser Express 40.0.2214.67</ex></ph> (Updated <ph name="TIME_SINCE_UPDATE">%2$s<ex>5 minutes ago</ex></ph>)
       </message>
       <message name="IDS_OS_VERSION_TITLE" desc="Title for operating system version">
         Operating system

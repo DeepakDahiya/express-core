@@ -16,7 +16,7 @@ content::OpenURLParams MaybeOverrideURLParams(content::OpenURLParams params,
                                               TemplateURL* template_url) {
   if (template_url &&
       template_url->prepopulate_id() ==
-          TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_BRAVE) {
+          TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_GOOGLE) {
     params.url =
         net::AppendOrReplaceQueryParameter(params.url, "source", "newtab");
   }

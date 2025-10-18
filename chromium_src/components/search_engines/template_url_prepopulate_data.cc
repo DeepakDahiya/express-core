@@ -53,7 +53,7 @@ std::unique_ptr<TemplateURLData> GetPrepopulatedFallbackSearch(
     if (engine->prepopulate_id == static_cast<int>(default_engine_id)) {
       return std::move(engine);
     } else if (engine->prepopulate_id ==
-               TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_BRAVE) {
+               TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_GOOGLE) {
       brave_engine = std::move(engine);
     }
   }

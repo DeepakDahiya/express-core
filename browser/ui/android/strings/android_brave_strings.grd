@@ -1521,7 +1521,7 @@ Are you sure you want to do this?
         Oops, something is wrong. Please try again later.
       </message>
       <message name="IDS_PREFS_RATE_BRAVE" desc="Title for rate brave settings option.">
-        Rate Brave
+        Rate Browser Express
       </message>
       <message name="IDS_PREFS_SECTION_GENERAL" desc="Title for the general section in settings.">
         General
