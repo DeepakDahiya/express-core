@@ -1500,10 +1500,9 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             videoEl.addEventListener('leavepictureinpicture', handleLeavePiP);
             
             // VISUAL DEBUG 2: If the video border turns green, the event listeners were attached.
-            videoEl.style.border = '5px solid green';
             console.log('Brave PiP Fix: Attached listeners to video element.');
-            const _p = videoEl.parentElement || videoEl;
-            _p.style.border = '5px solid green';
+            const _p = videoEl;
+            _p.style.border = '5px solid red';
             requestAnimationFrame(() => requestAnimationFrame(() => { _p.style.border = ''; }));
         };
 
