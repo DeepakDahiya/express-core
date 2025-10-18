@@ -1629,7 +1629,7 @@ void YouTubeScriptInjectorTabHelper::PrimaryMainDocumentElementAvailable() {
         contents->GetPrimaryMainFrame()->ExecuteJavaScript(
             kYoutubePipNavigationFix, base::NullCallback());
       }, contents),
-      base::Milliseconds(1000));
+      base::Milliseconds(300));
 
   if (IsBackgroundVideoPlaybackEnabled(contents)) {
     contents->GetPrimaryMainFrame()->ExecuteJavaScript(
