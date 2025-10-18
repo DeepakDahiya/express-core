@@ -119,11 +119,11 @@
         android:order="22"
         android:icon="@drawable/ic_sync"
         android:title="@string/sync_category_title"/> -->
-    <!-- <Preference
+    <Preference
         android:key="rate_brave"
         android:order="28"
         android:icon="@drawable/ic_rate"
-        android:title="@string/prefs_rate_brave"/> -->
+        android:title="@string/prefs_rate_brave"/>
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
         android:key="use_custom_tabs"
         android:order="20"

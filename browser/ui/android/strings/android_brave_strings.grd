@@ -477,12 +477,12 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
       <message name="IDS_PREFS_SECTION_BRAVE_ACCOUNT" desc="Title for the Brave Account section in settings">
         Brave Account
       </message>
-      <message name="IDS_GET_STARTED" desc="Button text to get started with Brave Account">
+      <!-- <message name="IDS_GET_STARTED" desc="Button text to get started with Brave Account">
         Get started
-      </message>
-      <message name="IDS_PREFS_SECTION_FEATURES" desc="Title for Brave-specific features section">
+      </message> -->
+      <!-- <message name="IDS_PREFS_SECTION_FEATURES" desc="Title for Brave-specific features section">
         Features
-      </message>
+      </message> -->
       <message name="IDS_BRAVE_SHIELDS_AND_PRIVACY" desc="Label for the settings related to shields and privacy">
         Brave Shields &amp; privacy
       </message>
@@ -3395,9 +3395,9 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_SEARCH_WITH_SEARCH_ENGINE" desc="Dynamic string used in QuickActionSearchAndBookmarkWidget's search bar. Placeholder is replaced by default search engine.">
       Search with <ph name="DEFAULT_SEARCH_ENGINE">%1$s</ph>
     </message>
-    <message name="IDS_HOME_SCREEN_WIDGET" desc="Home scren widget option in settings">
+    <!-- <message name="IDS_HOME_SCREEN_WIDGET" desc="Home scren widget option in settings">
       Home screen widget
-    </message>
+    </message> -->
     <message name="IDS_WIDGET_ADDED_TO_HOME_SCREEN" desc="Toast message to display that widget has been successfully added to the home screen">
       Widget added to the home screen
     </message>
