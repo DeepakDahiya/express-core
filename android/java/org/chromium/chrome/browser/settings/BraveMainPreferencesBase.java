@@ -73,9 +73,9 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
             "closing_all_tabs_closes_brave";
     private static final String PREF_PRIVACY = "privacy";
     private static final String PREF_SHIELDS_AND_PRIVACY = "brave_shields_and_privacy";
-    private static final String PREF_BRAVE_SEARCH_ENGINES = "brave_search_engines";
+    // private static final String PREF_BRAVE_SEARCH_ENGINES = "brave_search_engines";
     // private static final String PREF_BRAVE_NEWS_V2 = "brave_news_v2";
-    private static final String PREF_BRAVE_PLAYLIST = "brave_playlist";
+    // private static final String PREF_BRAVE_PLAYLIST = "brave_playlist";
     // private static final String PREF_SYNC = "brave_sync_layout";
     private static final String PREF_PASSWORDS = "passwords";
     private static final String PREF_NOTIFICATIONS = "notifications";
@@ -83,13 +83,13 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
     private static final String PREF_ADDRESSES = "autofill_addresses";
     private static final String PREF_AUTOFILL_PRIVATE_WINDOW = "autofill_private_window";
     private static final String PREF_TABS = "tabs";
-    private static final String PREF_MEDIA = "media";
+    // private static final String PREF_MEDIA = "media";
     // private static final String PREF_APPEARANCE = "appearance";
     // private static final String PREF_NEW_TAB_PAGE = "background_images";
     private static final String PREF_ACCESSIBILITY = "accessibility";
     private static final String PREF_CONTENT_SETTINGS = "content_settings";
     private static final String PREF_ABOUT_CHROME = "about_chrome";
-    private static final String PREF_BACKGROUND_IMAGES = "backgroud_images";
+    // private static final String PREF_BACKGROUND_IMAGES = "backgroud_images";
     // private static final String PREF_BRAVE_WALLET = "brave_wallet";
     // private static final String PREF_BRAVE_VPN = "brave_vpn";
     // private static final String PREF_BRAVE_LEO = "brave_leo";
@@ -203,9 +203,9 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         removePreferenceIfPresent(PREF_PRIVACY);
         removePreferenceIfPresent(PREF_BRAVE_VPN_CALLOUT);
 
-        if (!ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_PLAYLIST)) {
-            removePreferenceIfPresent(PREF_BRAVE_PLAYLIST);
-        }
+        // if (!ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_PLAYLIST)) {
+        //     removePreferenceIfPresent(PREF_BRAVE_PLAYLIST);
+        // }
         updateSearchEnginePreference();
 
         // updateSummaries();
@@ -215,11 +215,11 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         // rearanges programmatically the order for the prefs from Brave and Chromium
         rearrangePreferenceOrders();
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M
-                || (NTPImageUtil.isReferralEnabled()
-                        && NTPBackgroundImagesBridge.enableSponsoredImages())) {
-            removePreferenceIfPresent(PREF_BACKGROUND_IMAGES);
-        }
+        // if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M
+        //         || (NTPImageUtil.isReferralEnabled()
+        //                 && NTPBackgroundImagesBridge.enableSponsoredImages())) {
+        //     removePreferenceIfPresent(PREF_BACKGROUND_IMAGES);
+        // }
         setCustomTabPreference();
         setAutofillPrivateWindowPreference();
     }
@@ -319,7 +319,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         int generalOrder = featuresSectionOrder;
         setPreferenceOrder(PREF_GENERAL_SECTION, ++generalOrder);
 
-        setPreferenceOrder(PREF_BRAVE_SEARCH_ENGINES, ++generalOrder);
+        // setPreferenceOrder(PREF_BRAVE_SEARCH_ENGINES, ++generalOrder);
         Preference preference = findPreference(MainSettings.PREF_HOMEPAGE);
         if (preference != null) {
             preference.setOrder(++generalOrder);
@@ -350,7 +350,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         setPreferenceOrder(PREF_DISPLAY_SECTION, ++displaySectionOrder);
 
         setPreferenceOrder(PREF_TABS, ++displaySectionOrder);
-        setPreferenceOrder(PREF_MEDIA, ++displaySectionOrder);
+        // setPreferenceOrder(PREF_MEDIA, ++displaySectionOrder);
         // setPreferenceOrder(PREF_APPEARANCE, ++displaySectionOrder);
         // setPreferenceOrder(PREF_NEW_TAB_PAGE, ++displaySectionOrder);
         setPreferenceOrder(PREF_ACCESSIBILITY, ++displaySectionOrder);
@@ -445,14 +445,14 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
     }
 
     private void updateSearchEnginePreference() {
-        if (!TemplateUrlServiceFactory.getForProfile(ProfileManager.getLastUsedRegularProfile())
-                .isLoaded()) {
-            ChromeBasePreference searchEnginePref =
-                    (ChromeBasePreference) findPreference(PREF_BRAVE_SEARCH_ENGINES);
-            assumeNonNull(searchEnginePref);
-            searchEnginePref.setEnabled(false);
-            return;
-        }
+        // if (!TemplateUrlServiceFactory.getForProfile(ProfileManager.getLastUsedRegularProfile())
+        //         .isLoaded()) {
+        //     ChromeBasePreference searchEnginePref =
+        //             (ChromeBasePreference) findPreference(PREF_BRAVE_SEARCH_ENGINES);
+        //     assumeNonNull(searchEnginePref);
+        //     searchEnginePref.setEnabled(false);
+        //     return;
+        // }
     }
 
     // private void updateSummary(String preferenceString, int summary) {
