@@ -1476,10 +1476,10 @@ constexpr char16_t kYoutubePipNavigationFix[] =
         };
 
         const handleLeavePiP = (event) => {
-            if (originalTabUrl && window.BravePiPNavigator && window.BravePiPNavigator.restoreTabWithUrl) {
+            if (originalTabUrl && window.BravePipNavigator && window.BravePipNavigator.restoreTabWithUrl) {
                 console.log('Brave PiP Fix: Calling native bridge with URL:', originalTabUrl);
                 try {
-                    window.BravePiPNavigator.restoreTabWithUrl(originalTabUrl);
+                    window.BravePipNavigator.restoreTabWithUrl(originalTabUrl);
                 } catch (e) {
                     console.error('Failed to call BravePiPNavigator bridge:', e);
                 }
@@ -1487,7 +1487,6 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             originalTabUrl = null;
         };
 
-        // This function now cleanly attaches the listeners without any visual side effects.
         const attachListeners = (vid) => {
             if (!vid) return;
             // Remove old listeners to be safe.
@@ -1498,55 +1497,44 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             videoEl = vid;
             videoEl.addEventListener('enterpictureinpicture', handleEnterPiP);
             videoEl.addEventListener('leavepictureinpicture', handleLeavePiP);
-            console.log('Brave PiP Fix: Listeners attached after video metadata was loaded.');
+            console.log('Brave PiP Fix: Listeners attached successfully on next animation frame.');
         };
 
-        // This is the core of the robust solution.
-        // It ensures we only attach listeners when the video element is truly ready.
         const initializePipFixForVideo = (vid) => {
-            // Check if we've already processed this video element.
             if (!vid || vid.hasAttribute('data-pip-fix-attached')) {
                 return;
             }
             vid.setAttribute('data-pip-fix-attached', 'true');
 
-            // The video might already be loaded if the script is injected late.
-            // The 'readyState' property tells us its status. 0 = HAVE_NOTHING, 1 = HAVE_METADATA.
-            if (vid.readyState >= 1) {
+            // This is the key. We defer attaching the listeners until the browser
+            // is about to perform its next paint. This ensures all of YouTube's
+            // own scripts have finished their updates for the current frame,
+            // and the video element is fully ready for interaction.
+            requestAnimationFrame(() => {
                 attachListeners(vid);
-            } else {
-                // If the video isn't ready, we wait for the 'loadedmetadata' event.
-                // { once: true } ensures the listener is automatically removed after it fires.
-                vid.addEventListener('loadedmetadata', () => attachListeners(vid), { once: true });
-            }
+            });
         };
 
-        // The MutationObserver now efficiently checks for newly added video elements.
         const observer = new MutationObserver((mutations) => {
             for (const mutation of mutations) {
                 for (const node of mutation.addedNodes) {
-                    // Check if the added node is a VIDEO element itself.
-                    if (node.nodeName === 'VIDEO') {
-                        initializePipFixForVideo(node);
-                    }
-                    // Or if the added node CONTAINS a video element.
-                    else if (typeof node.querySelector === 'function') {
-                        const video = node.querySelector('video');
-                        if (video) {
-                            initializePipFixForVideo(video);
+                    if (node.nodeType === Node.ELEMENT_NODE) { // Ensure it's an element
+                        if (node.tagName === 'VIDEO') {
+                            initializePipFixForVideo(node);
+                        } else {
+                            // Check for video elements within the added node
+                            const videos = node.querySelectorAll('video');
+                            videos.forEach(initializePipFixForVideo);
                         }
                     }
                 }
             }
         });
 
-        // Try to find a video that might already be on the page when the script runs.
-        const initialVideoEl = document.querySelector('video');
-        if (initialVideoEl) {
-            initializePipFixForVideo(initialVideoEl);
-        }
+        // Try to find any video that might already be on the page.
+        document.querySelectorAll('video').forEach(initializePipFixForVideo);
 
-        // And observe for any future videos added to the page.
+        // Observe for any future videos added to the page.
         observer.observe(document.body, { childList: true, subtree: true });
     })();
 )";
