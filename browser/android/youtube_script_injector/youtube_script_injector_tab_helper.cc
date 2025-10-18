@@ -1509,6 +1509,11 @@ constexpr char16_t kYoutubePipNavigationFix[] =
                 videoEl.style.transform = '';
                 videoEl.style.willChange = '';
             });
+
+            videoEl.style.border = '5px solid transparent';
+            videoEl.offsetHeight; // force reflow
+            videoEl.style.border = '0px solid transparent';
+            videoEl.style.outline = '5px solid transparent';
         };
 
         // Use a MutationObserver to robustly find the video element as it's added to the page.
