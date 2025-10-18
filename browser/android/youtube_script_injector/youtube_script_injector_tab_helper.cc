@@ -1467,9 +1467,6 @@ constexpr char16_t kYoutubePipNavigationFix[] =
         if (window.bravePipFixAttached) return;
         window.bravePipFixAttached = true;
 
-        // VISUAL DEBUG 1: If the page border turns red, the script was injected and started.
-        document.body.style.border = '5px solid red';
-
         let originalTabUrl = null;
         let videoEl = null;
 
@@ -1501,6 +1498,10 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             videoEl = vid;
             videoEl.addEventListener('enterpictureinpicture', handleEnterPiP);
             videoEl.addEventListener('leavepictureinpicture', handleLeavePiP);
+            
+            // VISUAL DEBUG 2: If the video border turns green, the event listeners were attached.
+            videoEl.style.border = '5px solid green';
+            console.log('Brave PiP Fix: Attached listeners to video element.');
         };
 
         // Use a MutationObserver to robustly find the video element as it's added to the page.
