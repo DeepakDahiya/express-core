@@ -1503,7 +1503,7 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             console.log('Brave PiP Fix: Attached listeners to video element.');
             const _p = videoEl;
             _p.style.border = '2px solid #D4AF37';
-            setTimeout(() => { _p.style.border = ''; }, 2000);
+            // setTimeout(() => { _p.style.border = ''; }, 2000);
             // requestAnimationFrame(() => requestAnimationFrame(() => { _p.style.border = ''; }));
         };
 
