@@ -1460,7 +1460,6 @@ constexpr char16_t kYoutubeFullscreen[] =
 }());
 )";
 
-// Add this new constant for the tab restoration fix.
 constexpr char16_t kYoutubePipNavigationFix[] =
     uR"(
     (async function() {
@@ -1476,10 +1475,10 @@ constexpr char16_t kYoutubePipNavigationFix[] =
         };
 
         const handleLeavePiP = (event) => {
-            if (originalTabUrl && window.BravePipNavigator && window.BravePipNavigator.restoreTabWithUrl) {
+            if (originalTabUrl && window.BravePiPNavigator && window.BravePiPNavigator.restoreTabWithUrl) {
                 console.log('Brave PiP Fix: Calling native bridge with URL:', originalTabUrl);
                 try {
-                    window.BravePipNavigator.restoreTabWithUrl(originalTabUrl);
+                    window.BravePiPNavigator.restoreTabWithUrl(originalTabUrl);
                 } catch (e) {
                     console.error('Failed to call BravePiPNavigator bridge:', e);
                 }
@@ -1497,7 +1496,23 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             videoEl = vid;
             videoEl.addEventListener('enterpictureinpicture', handleEnterPiP);
             videoEl.addEventListener('leavepictureinpicture', handleLeavePiP);
-            console.log('Brave PiP Fix: Listeners attached successfully on next animation frame.');
+            console.log('Brave PiP Fix: Listeners attached successfully after synchronous flush.');
+        };
+        
+        // This function programmatically triggers the same browser behavior as the
+        // border-color hack, but does so invisibly and without side effects.
+        const forceSyncRender = (element) => {
+            // Apply a trivial, non-visible style change. 'outline' is a good choice
+            // as it doesn't affect the element's dimensions (layout).
+            element.style.outline = '1px solid transparent';
+            
+            // By immediately requesting a layout property like offsetHeight, we force the
+            // browser to synchronously stop and calculate all pending style and layout
+            // changes. This is the "flush" that resolves the race condition.
+            void element.offsetHeight;
+            
+            // Clean up by removing the style.
+            element.style.outline = '';
         };
 
         const initializePipFixForVideo = (vid) => {
@@ -1506,23 +1521,20 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             }
             vid.setAttribute('data-pip-fix-attached', 'true');
 
-            // This is the key. We defer attaching the listeners until the browser
-            // is about to perform its next paint. This ensures all of YouTube's
-            // own scripts have finished their updates for the current frame,
-            // and the video element is fully ready for interaction.
-            requestAnimationFrame(() => {
-                attachListeners(vid);
-            });
+            // 1. Force the browser to synchronously process pending rendering updates for the video element.
+            forceSyncRender(vid);
+            
+            // 2. Immediately attach the listeners now that the element is guaranteed to be ready.
+            attachListeners(vid);
         };
 
         const observer = new MutationObserver((mutations) => {
             for (const mutation of mutations) {
                 for (const node of mutation.addedNodes) {
-                    if (node.nodeType === Node.ELEMENT_NODE) { // Ensure it's an element
+                    if (node.nodeType === 1) { // Check if it's an Element node
                         if (node.tagName === 'VIDEO') {
                             initializePipFixForVideo(node);
                         } else {
-                            // Check for video elements within the added node
                             const videos = node.querySelectorAll('video');
                             videos.forEach(initializePipFixForVideo);
                         }
@@ -1531,10 +1543,10 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             }
         });
 
-        // Try to find any video that might already be on the page.
+        // Find any videos already on the page when the script injects.
         document.querySelectorAll('video').forEach(initializePipFixForVideo);
 
-        // Observe for any future videos added to the page.
+        // Observe for future videos.
         observer.observe(document.body, { childList: true, subtree: true });
     })();
 )";
