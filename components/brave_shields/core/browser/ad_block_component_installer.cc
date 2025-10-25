@@ -18,6 +18,7 @@
 #include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_service.h"
 #include "crypto/sha2.h"
+#include "base/logging.h"
 
 using brave_component_updater::BraveOnDemandUpdater;
 
