@@ -285,6 +285,7 @@ void AdBlockComponentServiceManager::EnableFilterList(const std::string& uuid,
 void AdBlockComponentServiceManager::UpdateFilterLists(
     base::OnceCallback<void(bool)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  LOG(INFO) << "Brave AdBlock: UpdateFilterLists called for " << component_filters_providers_.size() << " providers.";
 
   // If there are currently no components to update, then run the callback with
   // a success value in a future turn.
@@ -303,6 +304,7 @@ void AdBlockComponentServiceManager::UpdateFilterLists(
   }
 
   auto on_updated = [](decltype(callback) cb, update_client::Error error) {
+    LOG(INFO) << "Brave AdBlock: On-demand update finished with error code: " << static_cast<int>(error);
     std::move(cb).Run(error == update_client::Error::NONE ||
                       error == update_client::Error::UPDATE_IN_PROGRESS);
   };

@@ -103,12 +103,15 @@ void AdBlockComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& path,
     base::Value::Dict manifest) {
+  LOG(INFO) << "Brave AdBlock: ComponentReady called for " << component_name_
+            << ". Version: " << version.GetString() << ", Path: " << path.value();
   ready_callback_.Run(path);
 }
 
 bool AdBlockComponentInstallerPolicy::VerifyInstallation(
     const base::Value::Dict& manifest,
     const base::FilePath& install_dir) const {
+  LOG(INFO) << "Brave AdBlock: Verifying installation for " << component_name_ << " at " << install_dir.value();
   return true;
 }
 
@@ -138,6 +141,7 @@ void OnRegistered(const std::string& component_id) {
   // Unlike other components, which are only installed but not updated in
   // `OnRegistered`, we do always want to update the ad block component upon
   // registration.
+  LOG(INFO) << "Brave AdBlock: Component registered, triggering on-demand update for " << component_id;
   BraveOnDemandUpdater::GetInstance()->OnDemandUpdate(
       component_id, component_updater::OnDemandUpdater::Priority::FOREGROUND);
 }
@@ -148,6 +152,7 @@ void RegisterAdBlockDefaultResourceComponent(
     component_updater::ComponentUpdateService* cus,
     OnComponentReadyCallback callback) {
   // In test, |cus| could be nullptr.
+  LOG(INFO) << "Brave AdBlock: Registering default resource component.";
   if (!cus ||
       BraveOnDemandUpdater::GetInstance()->is_component_update_disabled()) {
     return;
