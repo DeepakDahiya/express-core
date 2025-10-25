@@ -365,6 +365,7 @@ base::Value::List AdBlockComponentServiceManager::GetRegionalLists() {
 void AdBlockComponentServiceManager::OnFilterListCatalogLoaded(
     const std::string& catalog_json) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  LOG(INFO) << "Brave AdBlock: Filter list catalog has been loaded. JSON size: " << catalog_json.length();
   SetFilterListCatalog(FilterListCatalogFromJSON(catalog_json));
 
   update_check_timer_.Start(
