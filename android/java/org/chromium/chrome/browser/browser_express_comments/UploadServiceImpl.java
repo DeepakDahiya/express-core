@@ -16,7 +16,7 @@ import android.app.NotificationChannel;
 import androidx.core.app.NotificationManagerCompat;
 import android.app.NotificationManager;
 
-public class UploadServiceImpl extends HlsService.Impl implements JobIntentService {
+public class UploadServiceImpl extends UploadService.Impl {
     public static final String ACTION_UPLOAD_COMMENT = "org.chromium.chrome.browser.browser_express_comments.action.UPLOAD_COMMENT";
     public static final String EXTRA_TEMP_ID = "EXTRA_TEMP_ID";
     public static final String EXTRA_COMMENT_CONTENT = "EXTRA_COMMENT_CONTENT";
