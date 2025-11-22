@@ -92,36 +92,56 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
     private final boolean mIsReplyAdapter;
     private final boolean mIsReplyToReplyAdapter;
 
-    interface DimensionCallback {
-        void onDimensionsReady(int position, int width, int height);
-    }
-    // private final DimensionCallback mDimensionCallback;
-
     public CommentListAdapter(Context context, List<Comment> commentList, EditText messageEditText, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyToReplyAdapter) {
         mCommentList = commentList;
         mMessageEditText = messageEditText;
         mParentFragment = parentFragment;
         mIsReplyAdapter = isReplyAdapter;
         mIsReplyToReplyAdapter = isReplyToReplyAdapter;
+    }
 
-        // mDimensionCallback = (position, width, height) -> {
-        //     if (position >= 0 && position < mCommentList.size()) {
-        //         Comment comment = mCommentList.get(position);
-        //         comment.setMediaWidth(width);
-        //         comment.setMediaHeight(height);
-                
-        //         notifyItemChanged(position);
-        //     }
-        // };
+    /**
+     * Updates a comment after a successful upload.
+     * Finds the temporary item, replaces it with the real item, and notifies the specific row.
+     */
+    public void updateCommentForSuccess(String tempId, Comment realComment) {
+        if (mCommentList == null || tempId == null) return;
+        
+        for (int i = 0; i < mCommentList.size(); i++) {
+            Comment c = mCommentList.get(i);
+            // Check for ID match. Safe check for null IDs.
+            if (c.getId() != null && c.getId().equals(tempId)) {
+                // Replace the temporary comment with the real one from server
+                mCommentList.set(i, realComment);
+                // Trigger the bind method again for this position to remove progress bar
+                notifyItemChanged(i);
+                return;
+            }
+        }
+    }
+
+    /**
+     * Updates a comment after a failed upload.
+     * Finds the temporary item, marks it as failed, and notifies the specific row.
+     */
+    public void updateCommentForFailure(String tempId) {
+        if (mCommentList == null || tempId == null) return;
+
+        for (int i = 0; i < mCommentList.size(); i++) {
+            Comment c = mCommentList.get(i);
+            if (c.getId() != null && c.getId().equals(tempId)) {
+                c.setUploadStatus(Comment.UploadStatus.FAILED);
+                notifyItemChanged(i);
+                return;
+            }
+        }
     }
 
     @Override
     public int getItemViewType(int position) {
-        // In a reply list, the first item (position 0) is always the main comment we are replying to.
         if (position == 0 && mIsReplyAdapter) {
             return VIEW_TYPE_TOP_COMMENT;
         }
-        // All other items are standard replies.
         return VIEW_TYPE_REPLY_COMMENT;
     }
 
@@ -130,7 +150,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         return mCommentList.size();
     }
 
-    @NonNull // Added NonNull
+    @NonNull
     @Override
     public CommentListAdapter.CommentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view;
@@ -149,46 +169,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         holder.bind(comment, position);
     }
 
-    // private class VideoDimensionTask extends AsyncTask<int[]> {
-    //     private final Uri mMediaUri;
-    //     private final int mPosition;
-    //     private final DimensionCallback mCallback;
-
-    //     VideoDimensionTask(Context context, Uri mediaUri, int position, DimensionCallback callback) {
-    //         this.mMediaUri = mediaUri;
-    //         this.mPosition = position;
-    //         this.mCallback = callback;
-    //     }
-
-    //     @Override
-    //     protected int[] doInBackground() {
-    //         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-    //         int[] dimensions = new int[]{0, 0};
-    //         try {
-    //             retriever.setDataSource(mMediaUri.toString(), new java.util.HashMap<String, String>());
-                
-    //             String width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
-    //             String height = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
-    //             if (width != null && height != null) {
-    //                 dimensions[0] = Integer.parseInt(width);
-    //                 dimensions[1] = Integer.parseInt(height);
-    //             }
-    //         } catch (Exception e) {
-    //             Log.e("cr_VideoDimensionTask", "Failed to get dimensions for " + mMediaUri.toString(), e);
-    //         } finally {
-    //             try { retriever.release(); } catch (Exception e) {}
-    //         }
-    //         return dimensions;
-    //     }
-
-    //     @Override
-    //     protected void onPostExecute(int[] dimensions) {
-    //         if (mCallback != null && dimensions[0] > 0) {
-    //             mCallback.onDimensionsReady(mPosition, dimensions[0], dimensions[1]);
-    //         }
-    //     }
-    // }
-
     public class CommentHolder extends RecyclerView.ViewHolder {
         TextView usernameText;
         TextView contentText;
@@ -200,30 +180,26 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         private final Button mShareButton;
         private String didVoteType;
         private int finalVote;
-        private BraveActivity activity; // Consider how this is used, if context is enough
+        private BraveActivity activity;
         private final Button mReadMoreButton;
 
         private final ProgressBar mPostingProgressBar;
         private final TextView mFailedTextView;
 
-        // private CommentListAdapter mCommentAdapter; // Not used in this class, consider removing
-        // private List<Comment> mComments; // Not used in this class, consider removing
-
         private final LinearLayout mActionItemsLayout;
         private final LinearLayout mVoteLayout;
 
-        private final EditText mMessageEditText; // From constructor
+        private final EditText mMessageEditText;
         private final LinearLayout mCommentLayout;
 
         private Animation bounceUp;
         private Animation bounceDown;
 
-        // private int myPosition; // Set in bind
-        private final BrowserExpressCommentsBottomSheetFragment mParentFragment; // From constructor
+        private final BrowserExpressCommentsBottomSheetFragment mParentFragment;
 
-        private final boolean mIsReplyAdapter; // From constructor
-        private final boolean mIsReplyTopComment; // From constructor
-        private final boolean mIsReplyToReplyAdapter; // From constructor
+        private final boolean mIsReplyAdapter;
+        private final boolean mIsReplyTopComment;
+        private final boolean mIsReplyToReplyAdapter;
 
         ImageView commentImage;
         CardView commentMediaCard;
@@ -231,8 +207,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         ExoPlayer player;
         ImageView playPauseIcon;
         ProgressBar videoProgressBar;
-        ValueAnimator progressAnimator;
-        private Context context; // Should be initialized from itemView.getContext()
+        private Context context;
 
         ImageButton muteButton;
         Space mediaAspectRatioSpacer;
@@ -245,7 +220,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
         CommentHolder(@NonNull View itemView, EditText messageEditText, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment, boolean isReplyToReplyAdapter, int viewType) {
             super(itemView);
-            this.context = itemView.getContext(); // Initialize context
+            this.context = itemView.getContext();
 
             mMessageEditText = messageEditText;
             mParentFragment = parentFragment;
@@ -281,30 +256,25 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             mediaAspectRatioSpacer = itemView.findViewById(R.id.media_aspect_ratio_spacer);
             mediaContainer = (ConstraintLayout) mediaAspectRatioSpacer.getParent();
 
-            // Assign activity carefully. itemView.getContext() might not always be BraveActivity.
-            // It's better to pass specific callbacks or data if needed, or check instance.
             if (this.context instanceof BraveActivity) {
                 this.activity = (BraveActivity) this.context;
             } else {
                 try {
-                    this.activity = BraveActivity.getBraveActivity(); // Fallback, use with caution
+                    this.activity = BraveActivity.getBraveActivity();
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
                     Log.e("CommentHolder", "BraveActivity not found for holder", e);
-                    // Handle case where activity is null - dependent UIs might fail
                 }
             }
         }
 
         void bind(Comment comment, int position) {
-            // myPosition = getBindingAdapterPosition(); // getAbsoluteAdapterPosition() is also an option
-
-            // Ensure activity is not null before using it extensively
             if (activity == null) {
                 Log.e("CommentHolder.bind", "Activity is null, some UI updates might fail.");
-                // Potentially return or disable UI elements that depend on activity
             }
 
             Comment.UploadStatus status = comment.getUploadStatus();
+            
+            // 1. RESET STATE: Always assume success/normal state first
             mCommentLayout.setAlpha(1.0f);
             mPostingProgressBar.setVisibility(View.GONE);
             mFailedTextView.setVisibility(View.GONE);
@@ -312,10 +282,10 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             mDownvoteButton.setEnabled(true);
             mReplyButton.setEnabled(true);
 
+            // 2. APPLY STATUS: Override defaults if status is special
             if (status == Comment.UploadStatus.POSTING) {
                 mCommentLayout.setAlpha(0.6f);
                 mPostingProgressBar.setVisibility(View.VISIBLE);
-                // Disable actions on the optimistic item
                 mUpvoteButton.setEnabled(false);
                 mDownvoteButton.setEnabled(false);
                 mReplyButton.setEnabled(false);
@@ -345,7 +315,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 });
             }else{
                 contentText.setText(comment.getContent());
-                mReadMoreButton.setVisibility(View.GONE); // Ensure it's hidden if not needed
+                mReadMoreButton.setVisibility(View.GONE);
             }
 
             finalVote = comment.getUpvoteCount() - comment.getDownvoteCount();
@@ -386,7 +356,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 String urlString;
                 String mediaType;
 
-                // Prioritize video over image if both exist
                 if (hasVideo) {
                     urlString = videoUrl;
                     mediaType = "video";
@@ -396,16 +365,13 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 }
                 
                 Uri mediaUri = Uri.parse(urlString);
-                
                 commentMediaCard.setOnClickListener(v -> openFullScreenViewer(mediaUri, mediaType));
 
                 setAspectRatio(16, 9);
                 bindMediaContent(mediaUri, mediaType);
-
             }
 
             if(mMessageEditText == null && mParentFragment == null && activity != null){
-                // Post top comments specific UI adjustments
                 mVoteLayout.setVisibility(View.GONE);
                 mActionItemsLayout.setVisibility(View.GONE);
 
@@ -420,7 +386,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 mCommentLayout.setPadding(10, 10, 10, 0);
 
                 View.OnClickListener postClickListener = v -> {
-                    if (activity != null) { // Check activity again
+                    if (activity != null) {
                         JSONObject payload = new JSONObject();
                         try {
                             payload.put("comment_id", comment.getId());
@@ -445,34 +411,32 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 
             if(comment.getUser().getAvatar() != null && !comment.getUser().getAvatar().isEmpty() && activity != null){
                 ImageLoader.downloadImage(comment.getUser().getAvatar(), Glide.with(activity), true, 5, mAvatarImage, null);
-            } else if (activity != null) { // Ensure activity isn't null for Glide
+            } else if (activity != null) {
                 ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + comment.getUser().getId() + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), true, 5, mAvatarImage, null);
             }
 
-
-            if (activity != null) { // Ensure activity isn't null
+            if (activity != null) {
                 bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
                 bounceDown = AnimationUtils.loadAnimation(activity ,R.anim.bounce_down);
             }
             
             Vote didVote = comment.getDidVote();
-            // Reset button backgrounds first
             if (mUpvoteButton != null) mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
             if (mDownvoteButton != null) mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
 
             if(didVote != null){
                 String type = didVote.getType();
-                didVoteType = type; // Store initial vote state
+                didVoteType = type; 
                 if(type.equals("up") && mUpvoteButton != null){
                     mUpvoteButton.setBackgroundResource(R.drawable.btn_blue_upvote);
                 }else if(type.equals("down") && mDownvoteButton != null){
                     mDownvoteButton.setBackgroundResource(R.drawable.btn_white_downvote);
                 }
             } else {
-                didVoteType = null; // No initial vote
+                didVoteType = null;
             }
 
-            if(mReplyButton != null && activity != null) { // Check activity
+            if(mReplyButton != null && activity != null) {
                 if(comment.getCommentCount() > 0){
                     String mReplyButtonText = comment.getCommentCount() == 1
                             ? "1 reply"
@@ -487,10 +451,9 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 }
             }
 
-
             if(mReplyButton != null){
                 mReplyButton.setOnClickListener(v -> {
-                    if (activity == null || mParentFragment == null) return; // Guard clause
+                    if (activity == null || mParentFragment == null) return; 
 
                     if(shouldCloseKeyboardOnReply){
                         mParentFragment.hideKeyboard();
@@ -508,13 +471,12 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     if(mIsReplyAdapter){
                         sendEventToPostHog(PostHogEventKeys.CLICKED_TO_VIEW_REPLY2REPLY, accessToken, activity.getCurrentAppVersion(), payload);
                         mParentFragment.openRepliesToReply(comment.getId());
-                    } else if (!mIsReplyToReplyAdapter){ // This condition was: !mIsReplyAdapter && !mIsReplyToReplyAdapter
+                    } else if (!mIsReplyToReplyAdapter){
                         sendEventToPostHog(PostHogEventKeys.CLICKED_TO_VIEW_REPLIES, accessToken, activity.getCurrentAppVersion(), payload);
                         mParentFragment.openReplies(comment.getId());
                     }
                 });
             }
-
 
             if(mShareButton != null){
                 mShareButton.setOnClickListener(v -> {
@@ -533,41 +495,37 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     Intent sharingIntent = new Intent(Intent.ACTION_SEND);
                     sharingIntent.setType("text/plain");
                     sharingIntent.putExtra(Intent.EXTRA_TEXT, message);
-                    activity.startActivity(Intent.createChooser(sharingIntent, "Share via")); // Added title
+                    activity.startActivity(Intent.createChooser(sharingIntent, "Share via")); 
                 });
             }
-
 
             if (mUpvoteButton != null) {
                 mUpvoteButton.setOnClickListener(v -> {
                     if (activity == null) return;
                     String accessToken = activity.getAccessToken();
-                    // Handle accessToken == null case (e.g., show login/prompt)
-                    // if (accessToken == null) { activity.showGenerateUsernameBottomSheet(); return; }
-
 
                     mUpvoteButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
                     if (bounceUp != null) mUpvoteButton.startAnimation(bounceUp);
                     
-                    int oldFinalVote = finalVote; // Store for rollback on error
+                    int oldFinalVote = finalVote;
 
-                    if(didVoteType != null && didVoteType.equals("down")){ // Was downvoted, now upvoting
+                    if(didVoteType != null && didVoteType.equals("down")){ 
                         finalVote += 2;
                         didVoteType = "up";
                         mUpvoteButton.setBackgroundResource(R.drawable.btn_blue_upvote);
                         mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
-                    } else if (didVoteType != null && didVoteType.equals("up")){ // Was upvoted, now un-upvoting
+                    } else if (didVoteType != null && didVoteType.equals("up")){ 
                         finalVote -= 1;
                         didVoteType = null;
                         mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
-                    } else { // No vote or other vote, now upvoting
+                    } else { 
                         finalVote += 1;
                         didVoteType = "up";
                         mUpvoteButton.setBackgroundResource(R.drawable.btn_blue_upvote);
-                        mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote); // Ensure downvote is normal
+                        mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
                     }
                     voteCountText.setText(formatNumberCompact(finalVote));
-                    mUpvoteButton.setClickable(false); // Prevent multi-click
+                    mUpvoteButton.setClickable(false); 
                     mDownvoteButton.setClickable(false);
 
                     JSONObject payload = new JSONObject();
@@ -582,7 +540,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                                 comment.getId(), "up", "comment", accessToken, new BrowserExpressAddVoteUtil.AddVoteCallback() {
                                     @Override
                                     public void addVoteSuccessful(String newAccessToken, String newRefreshToken) {
-                                        // Vote successful, UI is already updated optimistically
                                         mUpvoteButton.setClickable(true);
                                         mDownvoteButton.setClickable(true);
                                         if (newRefreshToken != null && !newRefreshToken.isEmpty() && activity != null) {
@@ -592,14 +549,8 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
                                     @Override
                                     public void addVoteFailed(String error) {
-                                        // Rollback UI
                                         finalVote = oldFinalVote;
-                                        // Re-evaluate didVoteType based on oldFinalVote or comment.getDidVote() if fetched again
-                                        // For simplicity, just reset to previous text. A more robust rollback would reset button states too.
                                         voteCountText.setText(formatNumberCompact(finalVote));
-                                        // Reset button backgrounds to before click based on 'oldFinalVote' and previous 'didVoteType'
-                                        // This part is complex and depends on how 'didVoteType' was before this click.
-                                        // For now, just re-enable buttons.
                                         mUpvoteButton.setClickable(true);
                                         mDownvoteButton.setClickable(true);
                                         Toast.makeText(context, "Vote failed: " + error, Toast.LENGTH_SHORT).show();
@@ -609,32 +560,30 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 });
             }
 
-
             if(mDownvoteButton != null) {
                 mDownvoteButton.setOnClickListener(v -> {
                     if (activity == null) return;
                     String accessToken = activity.getAccessToken();
-                    // if (accessToken == null) { activity.showGenerateUsernameBottomSheet(); return; }
 
                     mDownvoteButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
                     if (bounceDown != null) mDownvoteButton.startAnimation(bounceDown);
 
                     int oldFinalVote = finalVote;
 
-                    if(didVoteType != null && didVoteType.equals("up")){ // Was upvoted, now downvoting
+                    if(didVoteType != null && didVoteType.equals("up")){ 
                         finalVote -= 2;
                         didVoteType = "down";
                         mDownvoteButton.setBackgroundResource(R.drawable.btn_white_downvote);
                         mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
-                    } else if (didVoteType != null && didVoteType.equals("down")){ // Was downvoted, now un-downvoting
+                    } else if (didVoteType != null && didVoteType.equals("down")){ 
                         finalVote += 1;
                         didVoteType = null;
                         mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
-                    } else { // No vote or other vote, now downvoting
+                    } else { 
                         finalVote -= 1;
                         didVoteType = "down";
                         mDownvoteButton.setBackgroundResource(R.drawable.btn_white_downvote);
-                        mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote); // Ensure upvote is normal
+                        mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote); 
                     }
                     voteCountText.setText(formatNumberCompact(finalVote));
                     mUpvoteButton.setClickable(false);
@@ -682,14 +631,14 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
         private void bindMediaContent(Uri mediaUri, String mediaType) {
             if ("video".equals(mediaType)) {
-                mHasVideo = true; // Add this line
+                mHasVideo = true; 
                 commentImage.setVisibility(View.GONE);
                 commentVideo.setVisibility(View.VISIBLE);
                 muteButton.setVisibility(View.VISIBLE);
                 
                 initializePlayer(mediaUri);
             } else {
-                mHasVideo = false; // Add this line
+                mHasVideo = false;
                 GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
 
                 commentVideo.setVisibility(View.GONE);
@@ -699,27 +648,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 ImageLoader.downloadImage(mediaUri.toString(), Glide.with(activity), false, 5, commentImage, null);
             }
         }
-
-        // private void calculateAndCacheDimensions(Comment comment, int position, Uri mediaUri, String mediaType) {
-        //     if ("video".equals(mediaType)) {
-        //         new VideoDimensionTask(context, mediaUri, position, mDimensionCallback).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        //     } else {
-        //         // For images, load with Glide to get dimensions
-        //         Glide.with(context)
-        //             .asBitmap()
-        //             .load(mediaUri)
-        //             .into(new CustomTarget<Bitmap>() {
-        //                 @Override 
-        //                 public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-        //                     if (getBindingAdapterPosition() == position) {
-        //                         mDimensionCallback.onDimensionsReady(position, resource.getWidth(), resource.getHeight());
-        //                     }
-        //                 }
-        //                 @Override 
-        //                 public void onLoadCleared(@Nullable Drawable placeholder) {}
-        //             });
-        //     }
-        // }
 
         private void setAspectRatio(int width, int height) {
             if (width > 0 && height > 0) {
@@ -741,7 +669,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             commentVideo.setUseController(false);
             player.setRepeatMode(Player.REPEAT_MODE_ALL);
 
-            // Set up mute button
             muteButton.setOnClickListener(v -> {
                 if (player != null) {
                     if (player.getVolume() > 0) {
@@ -754,11 +681,9 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 }
             });
             
-            // Start muted
             player.setVolume(0f);
             muteButton.setImageResource(R.drawable.volume_off);
             
-            // Prepare media
             MediaItem mediaItem;
             String urlString = videoUri.toString();
             if (urlString.startsWith("http")) {
@@ -773,7 +698,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             mIsVideoInitialized = true;
         }
 
-        public void onViewRecycled() { // This is your custom method
+        public void onViewRecycled() { 
             if (GlobalVideoPlaybackManager.getInstance().getCurrentlyPlayingHolder() == this) {
                 GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
             }
@@ -793,8 +718,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         private void handleNewToken(String newAccessToken) {
             if (activity == null) return;
             try {
-                activity.setAccessToken(newAccessToken); // Assuming this method exists and handles storage
-                // Potentially update other parts of UI if needed based on new token
+                activity.setAccessToken(newAccessToken);
                 JSONObject decodedAccessTokenObj = getDecodedToken(newAccessToken);
                 if (decodedAccessTokenObj != null && decodedAccessTokenObj.has("username")) {
                     Log.i("TokenHandler", "Token refreshed. New username (if changed): " + decodedAccessTokenObj.getString("username"));
@@ -805,7 +729,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         }
 
 
-        public String formatNumberCompact(long number) { // Changed to long for safety
+        public String formatNumberCompact(long number) { 
             if (number >= 1_000_000_000) { // Billions
                 return String.format(Locale.getDefault(), "%.1fB", number / 1_000_000_000.0);
             } else if (number >= 1_000_000) { // Millions
@@ -837,12 +761,12 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             if (accessToken == null || accessToken.isEmpty()) return null;
             try{
                 String[] split_string = accessToken.split("\\.");
-                if (split_string.length < 2) { // JWT must have at least header and payload
+                if (split_string.length < 2) {
                     Log.e("TokenDecoder", "Invalid JWT format");
                     return null;
                 }
                 String base64EncodedBody = split_string[1];
-                byte[] data = Base64.decode(base64EncodedBody, Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP); // Use URL_SAFE for JWTs
+                byte[] data = Base64.decode(base64EncodedBody, Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP); 
                 String decodedString = new String(data, "UTF-8");
                 return new JSONObject(decodedString);
             }catch(JSONException e){
@@ -875,7 +799,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
     @Override
     public void onViewRecycled(@NonNull CommentHolder holder) {
-        super.onViewRecycled(holder); // This now calls the correct super method
-        holder.onViewRecycled();      // Call the custom cleanup in your CommentHolder
+        super.onViewRecycled(holder); 
+        holder.onViewRecycled();      
     }
 }
