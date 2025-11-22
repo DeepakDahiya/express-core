@@ -1,45 +1,30 @@
+/* Copyright (c) 2023 The Brave Authors. All rights reserved.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 package org.chromium.chrome.browser.browser_express_comments;
 
-import android.content.Context;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.Service;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
-import androidx.annotation.NonNull;
-import androidx.core.app.JobIntentService;
+import android.os.IBinder;
+import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+
 import com.google.gson.Gson;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import android.app.Notification;
-import android.app.NotificationChannel;
-import androidx.core.app.NotificationManagerCompat;
-import android.app.NotificationManager;
 
 public class UploadServiceImpl extends UploadService.Impl {
-    public static final String ACTION_UPLOAD_COMMENT = "org.chromium.chrome.browser.browser_express_comments.action.UPLOAD_COMMENT";
-    public static final String EXTRA_TEMP_ID = "EXTRA_TEMP_ID";
-    public static final String EXTRA_COMMENT_CONTENT = "EXTRA_COMMENT_CONTENT";
-    public static final String EXTRA_COMMENT_TYPE = "EXTRA_COMMENT_TYPE";
-    public static final String EXTRA_URL = "EXTRA_URL";
-    public static final String EXTRA_POST_ID = "EXTRA_POST_ID";
-    public static final String EXTRA_MEDIA_URI = "EXTRA_MEDIA_URI";
-    public static final String EXTRA_MEDIA_TYPE = "EXTRA_MEDIA_TYPE";
-    public static final String EXTRA_ACCESS_TOKEN = "EXTRA_ACCESS_TOKEN";
-    
-    public static final String BROADCAST_UPLOAD_COMPLETE = "broadcast_upload_complete";
-    public static final String BROADCAST_UPLOAD_FAILED = "broadcast_upload_failed";
-    public static final String EXTRA_REAL_COMMENT_JSON = "extra_real_comment_json";
-    public static final String EXTRA_NEW_ACCESS_TOKEN = "extra_new_access_token";
-    public static final String EXTRA_NEW_REFRESH_TOKEN = "extra_new_refresh_token";
-
-    private static final int JOB_ID = 1001;
+    private static final String TAG = "UploadServiceImpl";
     private static final String CHANNEL_ID = "UploadServiceChannel";
     private static final int NOTIFICATION_ID = 1001;
-
-    public static void enqueueWork(Context context, Intent work) {
-        enqueueWork(context, UploadService.class, JOB_ID, work);
-    }
 
     @Override
     public void onCreate() {
@@ -47,9 +32,21 @@ public class UploadServiceImpl extends UploadService.Impl {
         createNotificationChannel();
     }
 
+    @Nullable
     @Override
-    protected void onHandleWork(@NonNull Intent intent) {
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        if (intent == null) {
+            getService().stopSelf();
+            return Service.START_NOT_STICKY;
+        }
+
+        // 1. Show notification immediately (Required for Foreground Service)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(getService(), CHANNEL_ID)
                 .setContentTitle("Posting Comment")
                 .setContentText("Uploading your media...")
                 .setSmallIcon(R.drawable.ic_chrome)
@@ -57,84 +54,92 @@ public class UploadServiceImpl extends UploadService.Impl {
                 .setOngoing(true)
                 .setProgress(100, 0, true);
 
-        startForeground(NOTIFICATION_ID, builder.build());
+        // Use getService() to call startForeground
+        getService().startForeground(NOTIFICATION_ID, builder.build());
 
-        String tempId = intent.getStringExtra(EXTRA_TEMP_ID);
-        String content = intent.getStringExtra(EXTRA_COMMENT_CONTENT);
-        String pType = intent.getStringExtra(EXTRA_COMMENT_TYPE);
-        String url = intent.getStringExtra(EXTRA_URL);
-        String pId = intent.getStringExtra(EXTRA_POST_ID);
-        Uri mediaUri = intent.getParcelableExtra(EXTRA_MEDIA_URI);
-        String mediaType = intent.getStringExtra(EXTRA_MEDIA_TYPE);
-        String accessToken = intent.getStringExtra(EXTRA_ACCESS_TOKEN);
+        // 2. Run upload logic on a background thread (replacing JobIntentService behavior)
+        new Thread(() -> handleUpload(intent)).start();
+
+        return Service.START_NOT_STICKY;
+    }
+
+    /**
+     * Actual background logic.
+     * NOTE: We reference constants from UploadService (the shell).
+     */
+    private void handleUpload(Intent intent) {
+        String tempId = intent.getStringExtra(UploadService.EXTRA_TEMP_ID);
+        
+        if (tempId == null) {
+            getService().stopSelf();
+            return;
+        }
 
         try {
-            BrowserExpressAddCommentUtil.CommentResult result = BrowserExpressAddCommentUtil.uploadSynchronously(content, pType, url, pId, mediaUri, mediaType, accessToken);
-            Log.d("UploadService", "Upload succeeded: " + tempId);
+            String content = intent.getStringExtra(UploadService.EXTRA_COMMENT_CONTENT);
+            String pType = intent.getStringExtra(UploadService.EXTRA_COMMENT_TYPE);
+            String url = intent.getStringExtra(UploadService.EXTRA_URL);
+            String pId = intent.getStringExtra(UploadService.EXTRA_POST_ID);
+            Uri mediaUri = intent.getParcelableExtra(UploadService.EXTRA_MEDIA_URI);
+            String mediaType = intent.getStringExtra(UploadService.EXTRA_MEDIA_TYPE);
+            String accessToken = intent.getStringExtra(UploadService.EXTRA_ACCESS_TOKEN);
 
-            stopForeground(true); // Remove the foreground notification
+            BrowserExpressAddCommentUtil.CommentResult result = 
+                BrowserExpressAddCommentUtil.uploadSynchronously(
+                    content, pType, url, pId, mediaUri, mediaType, accessToken);
+            
+            Log.d(TAG, "Upload succeeded: " + tempId);
+
+            // Remove foreground state
+            getService().stopForeground(true); 
+            
             sendSuccessBroadcast(result.getComment(), tempId, result.getNewAccessToken(), result.getNewRefreshToken());
 
         } catch (Exception e) {
-            Log.e("UploadService", "Upload failed for tempId: " + tempId + ". Scheduling retry...", e);
+            Log.e(TAG, "Upload failed for tempId: " + tempId, e);
 
-            NotificationCompat.Builder failureBuilder = new NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Upload Failed")
-            .setContentText("Couldn't post your comment. Tap to retry.")
-            .setSmallIcon(R.drawable.ic_chrome); // Use an error icon
-    
-            NotificationManagerCompat.from(this).notify(NOTIFICATION_ID, failureBuilder.build());
+            NotificationCompat.Builder failureBuilder = new NotificationCompat.Builder(getService(), CHANNEL_ID)
+                    .setContentTitle("Upload Failed")
+                    .setContentText("Couldn't post your comment. Tap to retry.")
+                    .setSmallIcon(R.drawable.ic_chrome); 
 
+            // Use getService() for Context
+            NotificationManagerCompat.from(getService()).notify(NOTIFICATION_ID, failureBuilder.build());
+
+            // Stop foreground but keep service alive briefly to finish cleanup if needed
+            getService().stopForeground(false);
+            
             sendFailureBroadcast(tempId, e.getMessage());
+        } finally {
+            getService().stopSelf();
         }
     }
 
     private void sendSuccessBroadcast(Comment realComment, String tempId, String newAccessToken, String newRefreshToken) {
-        Intent successIntent = new Intent(BROADCAST_UPLOAD_COMPLETE);
-        successIntent.putExtra(EXTRA_TEMP_ID, tempId);
-        successIntent.putExtra(EXTRA_REAL_COMMENT_JSON, new Gson().toJson(realComment));
-        successIntent.putExtra(EXTRA_NEW_ACCESS_TOKEN, newAccessToken);
-        successIntent.putExtra(EXTRA_NEW_REFRESH_TOKEN, newRefreshToken);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(successIntent);
+        Intent successIntent = new Intent(UploadService.BROADCAST_UPLOAD_COMPLETE);
+        successIntent.putExtra(UploadService.EXTRA_TEMP_ID, tempId);
+        successIntent.putExtra(UploadService.EXTRA_REAL_COMMENT_JSON, new Gson().toJson(realComment));
+        successIntent.putExtra(UploadService.EXTRA_NEW_ACCESS_TOKEN, newAccessToken);
+        successIntent.putExtra(UploadService.EXTRA_NEW_REFRESH_TOKEN, newRefreshToken);
+        
+        LocalBroadcastManager.getInstance(getService()).sendBroadcast(successIntent);
     }
 
     private void sendFailureBroadcast(String tempId, String errorMessage) {
-        Intent failureIntent = new Intent(BROADCAST_UPLOAD_FAILED);
-        failureIntent.putExtra(EXTRA_TEMP_ID, tempId);
+        Intent failureIntent = new Intent(UploadService.BROADCAST_UPLOAD_FAILED);
+        failureIntent.putExtra(UploadService.EXTRA_TEMP_ID, tempId);
         failureIntent.putExtra("error_message", errorMessage);
-        LocalBroadcastManager.getInstance(this).sendBroadcast(failureIntent);
+        
+        LocalBroadcastManager.getInstance(getService()).sendBroadcast(failureIntent);
     }
-
-    // private void scheduleRetryWithWorkManager(Intent originalIntent) {
-    //     Data.Builder dataBuilder = new Data.Builder();
-    //     dataBuilder.putString("EXTRA_TEMP_ID", originalIntent.getStringExtra("EXTRA_TEMP_ID"));
-    //     dataBuilder.putString("EXTRA_COMMENT_CONTENT", originalIntent.getStringExtra("EXTRA_COMMENT_CONTENT"));
-    //     dataBuilder.putString("EXTRA_COMMENT_TYPE", originalIntent.getStringExtra("EXTRA_COMMENT_TYPE"));
-    //     dataBuilder.putString("EXTRA_URL", originalIntent.getStringExtra("EXTRA_URL"));
-    //     dataBuilder.putString("EXTRA_POST_ID", originalIntent.getStringExtra("EXTRA_POST_ID"));
-    //     dataBuilder.putString("EXTRA_MEDIA_TYPE", originalIntent.getStringExtra("EXTRA_MEDIA_TYPE"));
-    //     dataBuilder.putString("EXTRA_ACCESS_TOKEN", originalIntent.getStringExtra("EXTRA_ACCESS_TOKEN"));
-    //     Uri mediaUri = originalIntent.getParcelableExtra("EXTRA_MEDIA_URI");
-    //     if (mediaUri != null) {
-    //         dataBuilder.putString("EXTRA_MEDIA_URI", mediaUri.toString());
-    //     }
-
-    //     OneTimeWorkRequest retryWork = new OneTimeWorkRequest.Builder(UploadWorker.class)
-    //         .setInputData(dataBuilder.build())
-    //         .setConstraints(new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
-    //         .build();
-
-    //     WorkManager.getInstance(this).enqueue(retryWork);
-    // }
     
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            // Use a higher importance so the user sees it
             NotificationChannel channel = new NotificationChannel(
                 CHANNEL_ID, "Comment Uploads", NotificationManager.IMPORTANCE_DEFAULT);
             channel.setDescription("Notifications for comment upload status");
             
-            NotificationManager manager = getSystemService(NotificationManager.class);
+            NotificationManager manager = getService().getSystemService(NotificationManager.class);
             if (manager != null) {
                 manager.createNotificationChannel(channel);
             }
