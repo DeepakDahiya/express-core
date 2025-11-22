@@ -210,7 +210,7 @@ public class BrowsingModeBottomToolbarCoordinator {
             mNewTabButton.setVisibility(View.VISIBLE);
         }
         if (BottomToolbarVariationManager.isHomeButtonOnBottomControls()) {
-            mBraveHomeButton.setVisibility(View.VISIBLE);
+            // mBraveHomeButton.setVisibility(View.VISIBLE);
             mBraveHomeText.setVisibility(View.VISIBLE);
             mBeHomeButton.setVisibility(View.VISIBLE);
         }

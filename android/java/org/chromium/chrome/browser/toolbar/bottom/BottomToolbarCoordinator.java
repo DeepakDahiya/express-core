@@ -380,16 +380,16 @@ class BottomToolbarCoordinator implements View.OnLongClickListener {
 
     public void updateHomeButtonState() {
         assert (mHomeButton != null);
-        if (!mHomepageManager.isHomepageEnabled()) {
-            mHomeButton.setImageDrawable(
-                    ContextCompat.getDrawable(mContext, R.drawable.new_tab_icon));
-            mHomeButton.setEnabled(true);
-            mHomeButton.setVisibility(View.VISIBLE);
-        } else {
-            mHomeButton.setVisibility(View.VISIBLE);
-            mHomeButton.setImageDrawable(
-                    ContextCompat.getDrawable(mContext, R.drawable.btn_toolbar_home));
-        }
+        // if (!mHomepageManager.isHomepageEnabled()) {
+        //     mHomeButton.setImageDrawable(
+        //             ContextCompat.getDrawable(mContext, R.drawable.new_tab_icon));
+        //     mHomeButton.setEnabled(true);
+        //     mHomeButton.setVisibility(View.VISIBLE);
+        // } else {
+        //     mHomeButton.setVisibility(View.VISIBLE);
+        //     mHomeButton.setImageDrawable(
+        //             ContextCompat.getDrawable(mContext, R.drawable.btn_toolbar_home));
+        // }
     }
 
     public boolean isInTabSwitcherMode() {
