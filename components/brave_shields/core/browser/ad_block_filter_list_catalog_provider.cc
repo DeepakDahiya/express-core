@@ -12,6 +12,7 @@
 #include "base/task/thread_pool.h"
 #include "base/trace_event/trace_event.h"
 #include "brave/components/brave_shields/core/browser/ad_block_component_installer.h"
+#include "base/logging.h"
 
 constexpr char kListCatalogFile[] = "list_catalog.json";
 
