@@ -72,9 +72,17 @@ AdBlockComponentServiceManager::AdBlockComponentServiceManager(
       component_update_service_(cus),
       catalog_provider_(catalog_provider),
       list_p3a_(list_p3a) {
+  LOG(ERROR) << "Brave AdBlock: AdBlockComponentServiceManager constructor called";
+  LOG(ERROR) << "Brave AdBlock: locale=" << locale_
+             << ", local_state=" << (local_state_ ? "valid" : "null")
+             << ", cus=" << (cus ? "valid" : "null")
+             << ", catalog_provider=" << (catalog_provider_ ? "valid" : "null");
+
+  LOG(ERROR) << "Brave AdBlock: Calling LoadFilterListCatalog (may return empty if component not ready)";
   catalog_provider_->LoadFilterListCatalog(
       base::BindOnce(&AdBlockComponentServiceManager::OnFilterListCatalogLoaded,
                      weak_factory_.GetWeakPtr()));
+  LOG(ERROR) << "Brave AdBlock: Adding self as observer to catalog_provider";
   catalog_provider_->AddObserver(this);
 }
 
@@ -326,7 +334,9 @@ void AdBlockComponentServiceManager::UpdateFilterLists(
 void AdBlockComponentServiceManager::SetFilterListCatalog(
     std::vector<FilterListCatalogEntry> catalog) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  LOG(ERROR) << "Brave AdBlock: SetFilterListCatalog called with " << catalog.size() << " entries";
   filter_list_catalog_ = std::move(catalog);
+  LOG(ERROR) << "Brave AdBlock: Calling StartRegionalServices";
   StartRegionalServices();
   RecordP3ACookieListEnabled();
 

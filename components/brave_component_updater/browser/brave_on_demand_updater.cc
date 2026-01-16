@@ -12,6 +12,7 @@
 #include "base/check_is_test.h"
 #include "base/command_line.h"
 #include "base/functional/callback.h"  // IWYU pragma: keep
+#include "base/logging.h"
 #include "base/no_destructor.h"
 
 namespace brave_component_updater {
@@ -34,6 +35,9 @@ component_updater::OnDemandUpdater*
 BraveOnDemandUpdater::RegisterOnDemandUpdater(
     bool is_component_update_disabled,
     component_updater::OnDemandUpdater* on_demand_updater) {
+  LOG(ERROR) << "Brave AdBlock: RegisterOnDemandUpdater called"
+             << ", is_component_update_disabled param: " << is_component_update_disabled
+             << ", on_demand_updater: " << (on_demand_updater ? "valid" : "null");
   if (!on_demand_updater) {
     CHECK_IS_TEST();
   }
@@ -42,6 +46,9 @@ BraveOnDemandUpdater::RegisterOnDemandUpdater(
           kAllowBraveComponentUpdate);
   is_component_update_disabled_ =
       is_component_update_disabled && !allow_brave_component_update;
+  LOG(ERROR) << "Brave AdBlock: RegisterOnDemandUpdater"
+             << ", allow_brave_component_update: " << allow_brave_component_update
+             << ", final is_component_update_disabled_: " << is_component_update_disabled_;
   return std::exchange(on_demand_updater_, on_demand_updater);
 }
 
@@ -57,6 +64,9 @@ void BraveOnDemandUpdater::OnDemandUpdate(
     const std::string& id,
     component_updater::OnDemandUpdater::Priority priority,
     component_updater::Callback callback) {
+  LOG(ERROR) << "Brave AdBlock: BraveOnDemandUpdater::OnDemandUpdate called for: " << id
+             << ", is_component_update_disabled: " << is_component_update_disabled()
+             << ", on_demand_updater_: " << (on_demand_updater_ ? "valid" : "null");
   CHECK(on_demand_updater_);
   DCHECK(!is_component_update_disabled());
   on_demand_updater_->OnDemandUpdate(id, priority, std::move(callback));

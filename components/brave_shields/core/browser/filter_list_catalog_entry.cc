@@ -209,25 +209,46 @@ FindAdBlockFilterListsByLocale(
 
 std::vector<FilterListCatalogEntry> FilterListCatalogFromJSON(
     const std::string& catalog_json) {
+  LOG(ERROR) << "Brave AdBlock: FilterListCatalogFromJSON called, JSON size: " << catalog_json.size();
   std::vector<FilterListCatalogEntry> catalog =
       std::vector<FilterListCatalogEntry>();
+
+  if (catalog_json.empty()) {
+    LOG(ERROR) << "Brave AdBlock: FilterListCatalogFromJSON - JSON is empty!";
+    return catalog;
+  }
+
+  // Log first 500 chars of JSON for debugging
+  LOG(ERROR) << "Brave AdBlock: FilterListCatalogFromJSON - JSON preview: "
+             << catalog_json.substr(0, std::min(size_t(500), catalog_json.size()));
 
   std::optional<base::Value::List> parsed_json =
       base::JSONReader::ReadList(catalog_json);
   if (!parsed_json) {
-    LOG(ERROR) << "Could not load regional adblock catalog";
+    LOG(ERROR) << "Brave AdBlock: Could not parse regional adblock catalog JSON";
     return catalog;
   }
+
+  LOG(ERROR) << "Brave AdBlock: FilterListCatalogFromJSON - parsed " << parsed_json->size() << " entries";
 
   base::JSONValueConverter<FilterListCatalogEntry> converter;
 
   for (const auto& item : *parsed_json) {
     DCHECK(item.is_dict());
     FilterListCatalogEntry entry;
-    converter.Convert(item, &entry);
-    catalog.push_back(entry);
+    bool convert_result = converter.Convert(item, &entry);
+    if (convert_result) {
+      LOG(ERROR) << "Brave AdBlock: Parsed catalog entry: uuid=" << entry.uuid
+                 << ", title=" << entry.title
+                 << ", component_id=" << entry.component_id
+                 << ", default_enabled=" << entry.default_enabled;
+      catalog.push_back(entry);
+    } else {
+      LOG(ERROR) << "Brave AdBlock: Failed to convert catalog entry";
+    }
   }
 
+  LOG(ERROR) << "Brave AdBlock: FilterListCatalogFromJSON - returning " << catalog.size() << " entries";
   return catalog;
 }
 

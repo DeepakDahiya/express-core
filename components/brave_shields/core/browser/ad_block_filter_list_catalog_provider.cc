@@ -60,17 +60,21 @@ void AdBlockFilterListCatalogProvider::OnFilterListCatalogLoaded(
 
 void AdBlockFilterListCatalogProvider::OnComponentReady(
     const base::FilePath& path) {
-  LOG(ERROR) << "Brave AdBlock: AdBlockFilterListCatalogProvider::OnComponentReady, path: " << path.value();
+  LOG(ERROR) << "Brave AdBlock: AdBlockFilterListCatalogProvider::OnComponentReady called!";
+  LOG(ERROR) << "Brave AdBlock: Component path: " << path.value();
   TRACE_EVENT("brave.adblock",
               "AdBlockFilterListCatalogProvider::OnComponentReady",
               perfetto::Flow::FromPointer(this), "path", path.value());
   component_path_ = path;
 
+  base::FilePath catalog_file_path = component_path_.AppendASCII(kListCatalogFile);
+  LOG(ERROR) << "Brave AdBlock: Loading catalog from: " << catalog_file_path.value();
+
   // Load the filter list catalog (as a string)
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(&brave_component_updater::GetDATFileAsString,
-                     component_path_.AppendASCII(kListCatalogFile)),
+                     catalog_file_path),
       base::BindOnce(
           &AdBlockFilterListCatalogProvider::OnFilterListCatalogLoaded,
           weak_factory_.GetWeakPtr()));
@@ -78,16 +82,21 @@ void AdBlockFilterListCatalogProvider::OnComponentReady(
 
 void AdBlockFilterListCatalogProvider::LoadFilterListCatalog(
     base::OnceCallback<void(const std::string& catalog_json)> cb) {
+  LOG(ERROR) << "Brave AdBlock: LoadFilterListCatalog called, component_path_: "
+             << (component_path_.empty() ? "(empty)" : component_path_.value());
   if (component_path_.empty()) {
     // If the path is not ready yet, don't run the callback. An update should be
     // pushed soon.
+    LOG(ERROR) << "Brave AdBlock: LoadFilterListCatalog - path is empty, waiting for component";
     return;
   }
 
+  base::FilePath catalog_file_path = component_path_.AppendASCII(kListCatalogFile);
+  LOG(ERROR) << "Brave AdBlock: LoadFilterListCatalog - loading from: " << catalog_file_path.value();
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(&brave_component_updater::GetDATFileAsString,
-                     component_path_.AppendASCII(kListCatalogFile)),
+                     catalog_file_path),
       std::move(cb));
 }
 

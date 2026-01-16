@@ -74,10 +74,19 @@ AdBlockComponentInstallerPolicy::AdBlockComponentInstallerPolicy(
     : component_id_(component_id),
       component_name_(component_name),
       ready_callback_(callback) {
+  LOG(ERROR) << "Brave AdBlock: AdBlockComponentInstallerPolicy constructor for "
+             << component_name_ << " (id: " << component_id_ << ")";
   // Generate hash from public key.
   auto decoded_public_key = base::Base64Decode(component_public_key);
+  if (!decoded_public_key) {
+    LOG(ERROR) << "Brave AdBlock: FAILED to decode base64 public key for " << component_name_;
+  } else {
+    LOG(ERROR) << "Brave AdBlock: Successfully decoded public key for " << component_name_
+               << ", decoded key size: " << decoded_public_key->size();
+  }
   CHECK(decoded_public_key);
   component_hash_ = crypto::SHA256Hash(*decoded_public_key);
+  LOG(ERROR) << "Brave AdBlock: Generated component hash for " << component_name_;
 }
 
 AdBlockComponentInstallerPolicy::~AdBlockComponentInstallerPolicy() = default;
@@ -118,11 +127,14 @@ bool AdBlockComponentInstallerPolicy::VerifyInstallation(
 }
 
 base::FilePath AdBlockComponentInstallerPolicy::GetRelativeInstallDir() const {
+  LOG(ERROR) << "Brave AdBlock: GetRelativeInstallDir called for " << component_name_
+             << ", returning: " << component_id_;
   return base::FilePath::FromUTF8Unsafe(component_id_);
 }
 
 void AdBlockComponentInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
+  LOG(ERROR) << "Brave AdBlock: GetHash called for " << component_name_;
   *hash = base::ToVector(component_hash_);
 }
 
@@ -175,16 +187,26 @@ void RegisterAdBlockFilterListCatalogComponent(
     component_updater::ComponentUpdateService* cus,
     OnComponentReadyCallback callback) {
   // In test, |cus| could be nullptr.
-  if (!cus ||
-      BraveOnDemandUpdater::GetInstance()->is_component_update_disabled()) {
+  LOG(ERROR) << "Brave AdBlock: RegisterAdBlockFilterListCatalogComponent called";
+  if (!cus) {
+    LOG(ERROR) << "Brave AdBlock: CUS is null, cannot register catalog component";
     return;
   }
+  if (BraveOnDemandUpdater::GetInstance()->is_component_update_disabled()) {
+    LOG(ERROR) << "Brave AdBlock: Component updates disabled, cannot register catalog component";
+    return;
+  }
+
+  LOG(ERROR) << "Brave AdBlock: Creating installer for catalog component with ID: "
+             << kAdBlockFilterListCatalogComponentId;
 
   auto installer = base::MakeRefCounted<component_updater::ComponentInstaller>(
       std::make_unique<AdBlockComponentInstallerPolicy>(
           kAdBlockFilterListCatalogComponentBase64PublicKey,
           kAdBlockFilterListCatalogComponentId,
           kAdBlockFilterListCatalogComponentName, callback));
+
+  LOG(ERROR) << "Brave AdBlock: Calling Register() for catalog component";
   installer->Register(
       cus, base::BindOnce(&OnRegistered, kAdBlockFilterListCatalogComponentId));
 }
