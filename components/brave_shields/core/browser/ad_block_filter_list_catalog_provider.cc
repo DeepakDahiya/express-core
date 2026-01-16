@@ -23,10 +23,13 @@ AdBlockFilterListCatalogProvider::AdBlockFilterListCatalogProvider(
               perfetto::Flow::FromPointer(this));
   // Can be nullptr in unit tests
   if (cus) {
+    LOG(ERROR) << "Brave AdBlock: Registering filter list catalog component";
     RegisterAdBlockFilterListCatalogComponent(
         cus,
         base::BindRepeating(&AdBlockFilterListCatalogProvider::OnComponentReady,
                             weak_factory_.GetWeakPtr()));
+  } else {
+    LOG(ERROR) << "Brave AdBlock: CUS is null in AdBlockFilterListCatalogProvider";
   }
 }
 
@@ -44,6 +47,7 @@ void AdBlockFilterListCatalogProvider::RemoveObserver(
 
 void AdBlockFilterListCatalogProvider::OnFilterListCatalogLoaded(
     const std::string& catalog_json) {
+  LOG(ERROR) << "Brave AdBlock: AdBlockFilterListCatalogProvider::OnFilterListCatalogLoaded, JSON size: " << catalog_json.size();
   TRACE_EVENT("brave.adblock",
               "AdBlockFilterListCatalogProvider::OnFilterListCatalogLoaded",
               perfetto::TerminatingFlow::FromPointer(this), "catalog_json_size",
@@ -55,6 +59,7 @@ void AdBlockFilterListCatalogProvider::OnFilterListCatalogLoaded(
 
 void AdBlockFilterListCatalogProvider::OnComponentReady(
     const base::FilePath& path) {
+  LOG(ERROR) << "Brave AdBlock: AdBlockFilterListCatalogProvider::OnComponentReady, path: " << path.value();
   TRACE_EVENT("brave.adblock",
               "AdBlockFilterListCatalogProvider::OnComponentReady",
               perfetto::Flow::FromPointer(this), "path", path.value());

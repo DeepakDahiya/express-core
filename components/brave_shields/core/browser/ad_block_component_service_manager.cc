@@ -115,8 +115,11 @@ void AdBlockComponentServiceManager::StartRegionalServices() {
   }
 
   if (filter_list_catalog_.size() == 0) {
+    LOG(ERROR) << "Brave AdBlock: StartRegionalServices, catalog is empty.";
     return;
   }
+
+  LOG(ERROR) << "Brave AdBlock: StartRegionalServices, processing " << filter_list_catalog_.size() << " catalog entries.";
 
   // Enable the default regional lists, but only do this once so that user can
   // override this setting in the future
@@ -147,13 +150,18 @@ void AdBlockComponentServiceManager::StartRegionalServices() {
       // existing providers to account for modified or removed catalog entries.
       // They'll be handled after a browser restart.
       if (existing_provider == component_filters_providers_.end()) {
+        LOG(ERROR) << "Brave AdBlock: Enabling new regional component: " << catalog_entry.uuid << ", component_id: " << catalog_entry.component_id;
         auto regional_filters_provider =
             std::make_unique<AdBlockComponentFiltersProvider>(
                 component_update_service_, catalog_entry,
                 catalog_entry.first_party_protections);
         component_filters_providers_.insert(
             {catalog_entry.uuid, std::move(regional_filters_provider)});
+      } else {
+        LOG(ERROR) << "Brave AdBlock: Component already enabled: " << catalog_entry.uuid;
       }
+    } else {
+       LOG(ERROR) << "Brave AdBlock: Component not enabled: " << catalog_entry.uuid;
     }
   }
 }
@@ -365,6 +373,7 @@ base::Value::List AdBlockComponentServiceManager::GetRegionalLists() {
 void AdBlockComponentServiceManager::OnFilterListCatalogLoaded(
     const std::string& catalog_json) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  LOG(ERROR) << "Brave AdBlock: AdBlockComponentServiceManager::OnFilterListCatalogLoaded catalog JSON size: " << catalog_json.length();
   LOG(INFO) << "Brave AdBlock: Filter list catalog has been loaded. JSON size: " << catalog_json.length();
   SetFilterListCatalog(FilterListCatalogFromJSON(catalog_json));
 

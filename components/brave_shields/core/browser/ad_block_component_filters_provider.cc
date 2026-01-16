@@ -66,6 +66,7 @@ AdBlockComponentFiltersProvider::AdBlockComponentFiltersProvider(
       component_updater_service_(cus) {
   // Can be nullptr in unit tests
   if (cus) {
+    LOG(ERROR) << "Brave AdBlock: AdBlockComponentFiltersProvider registering component: " << component_id_ << " title: " << title;
     TRACE_EVENT("brave.adblock", "AdBlockComponentFiltersProvider::Register",
                 perfetto::Flow::FromPointer(this), "component_id",
                 component_id_);
@@ -73,6 +74,8 @@ AdBlockComponentFiltersProvider::AdBlockComponentFiltersProvider(
         cus, base64_public_key, component_id_, title,
         base::BindRepeating(&AdBlockComponentFiltersProvider::OnComponentReady,
                             weak_factory_.GetWeakPtr()));
+  } else {
+    LOG(ERROR) << "Brave AdBlock: AdBlockComponentFiltersProvider CUS is null for component: " << component_id_;
   }
 }
 
@@ -102,6 +105,7 @@ void AdBlockComponentFiltersProvider::UnregisterComponent() {
 
 void AdBlockComponentFiltersProvider::OnComponentReady(
     const base::FilePath& path) {
+  LOG(ERROR) << "Brave AdBlock: AdBlockComponentFiltersProvider::OnComponentReady, component_id: " << component_id_ << " path: " << path.value();
   TRACE_EVENT(
       "brave.adblock", "AdBlockComponentFiltersProvider::OnComponentReady",
       perfetto::TerminatingFlow::FromPointer(this), "path", path.value());
@@ -142,6 +146,7 @@ void AdBlockComponentFiltersProvider::LoadFilterSet(
   if (list_file_path.empty()) {
     // If the path is not ready yet, provide a no-op callback immediately. An
     // update will be pushed later to notify about the newly available list.
+    LOG(ERROR) << "Brave AdBlock: AdBlockComponentFiltersProvider::LoadFilterSet path is empty for component: " << component_id_;
     std::move(cb).Run(base::BindOnce(AddNothingToFilterSet));
     return;
   }

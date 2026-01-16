@@ -104,7 +104,7 @@ void AdBlockComponentInstallerPolicy::ComponentReady(
     const base::Version& version,
     const base::FilePath& path,
     base::Value::Dict manifest) {
-  LOG(INFO) << "Brave AdBlock: ComponentReady called for " << component_name_
+  LOG(ERROR) << "Brave AdBlock: ComponentReady called for " << component_name_
             << ". Version: " << version.GetString() << ", Path: " << path.value();
   ready_callback_.Run(path);
 }
@@ -142,7 +142,7 @@ void OnRegistered(const std::string& component_id) {
   // Unlike other components, which are only installed but not updated in
   // `OnRegistered`, we do always want to update the ad block component upon
   // registration.
-  LOG(INFO) << "Brave AdBlock: Component registered, triggering on-demand update for " << component_id;
+  LOG(ERROR) << "Brave AdBlock: Component registered, triggering on-demand update for " << component_id;
   BraveOnDemandUpdater::GetInstance()->OnDemandUpdate(
       component_id, component_updater::OnDemandUpdater::Priority::FOREGROUND);
 }
@@ -194,9 +194,11 @@ void RegisterAdBlockFiltersComponent(
   // In test, |cus| could be nullptr.
   if (!cus ||
       BraveOnDemandUpdater::GetInstance()->is_component_update_disabled()) {
+    LOG(ERROR) << "Brave AdBlock: Not registering component " << component_name << " (id: " << component_id << ") because CUS is null (test?) or updates disabled.";
     return;
   }
 
+  LOG(ERROR) << "Brave AdBlock: Registering component " << component_name << " (id: " << component_id << ")";
   auto installer = base::MakeRefCounted<component_updater::ComponentInstaller>(
       std::make_unique<AdBlockComponentInstallerPolicy>(
           component_public_key, component_id, component_name, callback));
