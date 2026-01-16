@@ -168,8 +168,14 @@ void OnRegistered(const std::string& component_id) {
           case update_client::Error::UPDATE_IN_PROGRESS:
             error_desc = "UPDATE_IN_PROGRESS";
             break;
-          case update_client::Error::UPDATE_NOT_FOUND:
-            error_desc = "UPDATE_NOT_FOUND (component not on server!)";
+          case update_client::Error::UPDATE_CANCELED:
+            error_desc = "UPDATE_CANCELED";
+            break;
+          case update_client::Error::RETRY_LATER:
+            error_desc = "RETRY_LATER";
+            break;
+          case update_client::Error::SERVICE_ERROR:
+            error_desc = "SERVICE_ERROR";
             break;
           case update_client::Error::UPDATE_CHECK_ERROR:
             error_desc = "UPDATE_CHECK_ERROR";
@@ -179,6 +185,9 @@ void OnRegistered(const std::string& component_id) {
             break;
           case update_client::Error::INVALID_ARGUMENT:
             error_desc = "INVALID_ARGUMENT";
+            break;
+          case update_client::Error::BAD_CRX_DATA_CALLBACK:
+            error_desc = "BAD_CRX_DATA_CALLBACK";
             break;
           case update_client::Error::MAX_VALUE:
             error_desc = "MAX_VALUE";
