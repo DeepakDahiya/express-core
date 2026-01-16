@@ -10,6 +10,7 @@
 #include "components/component_updater/component_updater_service_internal.h"
 
 #include <components/component_updater/component_updater_service.cc>
+#include "base/logging.h"
 
 namespace component_updater {
 
@@ -57,6 +58,7 @@ void CrxUpdateService::OnDemandUpdate(const std::vector<std::string>& ids,
 
   for (const auto& id : ids) {
     if (!GetComponent(id)) {
+      LOG(ERROR) << "Brave AdBlock: CrxUpdateService::OnDemandUpdate - Component not found: " << id;
       if (callback) {
         base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
             FROM_HERE, base::BindOnce(std::move(callback),
@@ -66,6 +68,7 @@ void CrxUpdateService::OnDemandUpdate(const std::vector<std::string>& ids,
     }
   }
 
+  LOG(ERROR) << "Brave AdBlock: CrxUpdateService::OnDemandUpdate - Calling update_client_->Update for " << ids.size() << " components.";
   auto crx_data_callback = base::BindOnce(&CrxUpdateService::GetCrxComponents,
                                           base::Unretained(this));
   auto update_complete_callback = base::BindOnce(
