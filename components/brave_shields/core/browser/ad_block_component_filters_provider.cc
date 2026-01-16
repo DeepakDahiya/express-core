@@ -19,6 +19,7 @@
 #include "brave/components/brave_shields/core/browser/ad_block_filters_provider_manager.h"
 #include "brave/components/brave_shields/core/browser/filter_list_catalog_entry.h"
 #include "components/component_updater/component_updater_service.h"
+#include "base/logging.h"
 
 constexpr char kListFile[] = "list.txt";
 
