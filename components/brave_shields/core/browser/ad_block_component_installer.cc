@@ -17,6 +17,7 @@
 #include "brave/components/brave_shields/core/common/brave_shield_constants.h"
 #include "components/component_updater/component_installer.h"
 #include "components/component_updater/component_updater_service.h"
+#include "components/update_client/update_client_errors.h"
 #include "crypto/sha2.h"
 #include "base/logging.h"
 
@@ -159,7 +160,34 @@ void OnRegistered(const std::string& component_id) {
   BraveOnDemandUpdater::GetInstance()->OnDemandUpdate(
       component_id, component_updater::OnDemandUpdater::Priority::FOREGROUND,
       base::BindOnce([](const std::string& cid, update_client::Error error) {
-        LOG(ERROR) << "Brave AdBlock: On-demand update result for " << cid << ": " << static_cast<int>(error);
+        std::string error_desc;
+        switch (error) {
+          case update_client::Error::NONE:
+            error_desc = "NONE (success or no update available)";
+            break;
+          case update_client::Error::UPDATE_IN_PROGRESS:
+            error_desc = "UPDATE_IN_PROGRESS";
+            break;
+          case update_client::Error::UPDATE_NOT_FOUND:
+            error_desc = "UPDATE_NOT_FOUND (component not on server!)";
+            break;
+          case update_client::Error::UPDATE_CHECK_ERROR:
+            error_desc = "UPDATE_CHECK_ERROR";
+            break;
+          case update_client::Error::CRX_NOT_FOUND:
+            error_desc = "CRX_NOT_FOUND";
+            break;
+          case update_client::Error::INVALID_ARGUMENT:
+            error_desc = "INVALID_ARGUMENT";
+            break;
+          case update_client::Error::MAX_VALUE:
+            error_desc = "MAX_VALUE";
+            break;
+          default:
+            error_desc = "UNKNOWN";
+        }
+        LOG(ERROR) << "Brave AdBlock: On-demand update result for " << cid
+                   << ": " << static_cast<int>(error) << " (" << error_desc << ")";
       }, component_id));
 }
 
@@ -196,6 +224,16 @@ void RegisterAdBlockFilterListCatalogComponent(
     LOG(ERROR) << "Brave AdBlock: Component updates disabled, cannot register catalog component";
     return;
   }
+
+  // Verify component ID format (should be 32 lowercase chars a-p)
+  std::string comp_id = kAdBlockFilterListCatalogComponentId;
+  LOG(ERROR) << "Brave AdBlock: Catalog component ID: '" << comp_id << "'";
+  LOG(ERROR) << "Brave AdBlock: Catalog component ID length: " << comp_id.length()
+             << " (should be 32)";
+
+  // Log the public key for verification
+  LOG(ERROR) << "Brave AdBlock: Catalog public key (first 50 chars): "
+             << std::string(kAdBlockFilterListCatalogComponentBase64PublicKey).substr(0, 50) << "...";
 
   LOG(ERROR) << "Brave AdBlock: Creating installer for catalog component with ID: "
              << kAdBlockFilterListCatalogComponentId;
