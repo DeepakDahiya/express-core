@@ -95,6 +95,7 @@ update_client::CrxInstaller::Result
 AdBlockComponentInstallerPolicy::OnCustomInstall(
     const base::Value::Dict& manifest,
     const base::FilePath& install_dir) {
+  LOG(ERROR) << "Brave AdBlock: OnCustomInstall for " << component_name_;
   return update_client::CrxInstaller::Result(0);
 }
 
@@ -112,7 +113,7 @@ void AdBlockComponentInstallerPolicy::ComponentReady(
 bool AdBlockComponentInstallerPolicy::VerifyInstallation(
     const base::Value::Dict& manifest,
     const base::FilePath& install_dir) const {
-  LOG(INFO) << "Brave AdBlock: Verifying installation for " << component_name_ << " at " << install_dir.value();
+  LOG(ERROR) << "Brave AdBlock: Verifying installation for " << component_name_ << " at " << install_dir.value();
   return true;
 }
 
