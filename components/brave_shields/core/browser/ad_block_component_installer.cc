@@ -144,7 +144,10 @@ void OnRegistered(const std::string& component_id) {
   // registration.
   LOG(ERROR) << "Brave AdBlock: Component registered, triggering on-demand update for " << component_id;
   BraveOnDemandUpdater::GetInstance()->OnDemandUpdate(
-      component_id, component_updater::OnDemandUpdater::Priority::FOREGROUND);
+      component_id, component_updater::OnDemandUpdater::Priority::FOREGROUND,
+      base::BindOnce([](const std::string& cid, update_client::Error error) {
+        LOG(ERROR) << "Brave AdBlock: On-demand update result for " << cid << ": " << static_cast<int>(error);
+      }, component_id));
 }
 
 }  // namespace
