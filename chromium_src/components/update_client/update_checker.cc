@@ -145,9 +145,8 @@ void SequentialUpdateChecker::UpdateResultAvailable(
     // practice during development, it has sometimes happened that the list was
     // empty. A for loop is an easy way to guard against such unexpected cases:
     for (const auto& result : results->apps) {
-      LOG(ERROR) << "Brave AdBlock: Result app_id=" << result.extension_id
-                 << ", status=" << result.status
-                 << ", manifest.version=" << result.manifest.version;
+      LOG(ERROR) << "Brave AdBlock: Result app_id=" << result.appid
+                 << ", status=" << result.status;
       results_.apps.push_back(result);
     }
   } else {
