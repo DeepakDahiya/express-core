@@ -47,7 +47,12 @@ void SequentialUpdateChecker::CheckForUpdates(
     UpdateCheckCallback update_check_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(!update_context->components_to_check_for_updates.empty());
-  VLOG(3) << "> CheckForUpdates";
+  LOG(ERROR) << "Brave AdBlock: SequentialUpdateChecker::CheckForUpdates called";
+  LOG(ERROR) << "Brave AdBlock: components_to_check_for_updates.size()="
+             << update_context->components_to_check_for_updates.size();
+  for (const auto& id : update_context->components_to_check_for_updates) {
+    LOG(ERROR) << "Brave AdBlock: Component to check: " << id;
+  }
 
   update_context_ = std::move(update_context);
   additional_attributes_ = additional_attributes;
@@ -73,6 +78,7 @@ void SequentialUpdateChecker::CheckForUpdates(
 
 void SequentialUpdateChecker::CheckNext() {
   VLOG(3) << "> CheckNext()";
+  LOG(ERROR) << "Brave AdBlock: SequentialUpdateChecker::CheckNext called";
   DCHECK(!remaining_ids_.empty());
   DCHECK(update_context_);
 
@@ -80,12 +86,17 @@ void SequentialUpdateChecker::CheckNext() {
   std::vector<std::string> ids;
   for (auto id_it = remaining_ids_.begin(); id_it != remaining_ids_.end();) {
     const auto& component = update_context_->components[*id_it];
-    if (!ids.empty() && !IsBraveComponent(component.get())) {
+    bool is_brave = IsBraveComponent(component.get());
+    LOG(ERROR) << "Brave AdBlock: Processing component " << *id_it
+               << ", IsBraveComponent=" << is_brave;
+    if (!ids.empty() && !is_brave) {
       break;
     }
     ids.push_back(*id_it);
     id_it = remaining_ids_.erase(id_it);
   }
+
+  LOG(ERROR) << "Brave AdBlock: CheckNext will check " << ids.size() << " components";
 
   scoped_refptr<UpdateContext> context = new UpdateContext(
       update_context_->config, update_context_->is_foreground,
@@ -122,16 +133,25 @@ void SequentialUpdateChecker::UpdateResultAvailable(
     int error,
     int retry_after_sec) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  VLOG(3) << "< UpdateResultAvailable(" << error << ")";
+  LOG(ERROR) << "Brave AdBlock: SequentialUpdateChecker::UpdateResultAvailable called";
+  LOG(ERROR) << "Brave AdBlock: error_category=" << static_cast<int>(error_category)
+             << ", error=" << error
+             << ", retry_after_sec=" << retry_after_sec;
 
   if (!error) {
     DCHECK(results);
+    LOG(ERROR) << "Brave AdBlock: Update check succeeded, results->apps.size()=" << results->apps.size();
     // We expect results->list to contain precisely one element. However, in
     // practice during development, it has sometimes happened that the list was
     // empty. A for loop is an easy way to guard against such unexpected cases:
     for (const auto& result : results->apps) {
+      LOG(ERROR) << "Brave AdBlock: Result app_id=" << result.extension_id
+                 << ", status=" << result.status
+                 << ", manifest.version=" << result.manifest.version;
       results_.apps.push_back(result);
     }
+  } else {
+    LOG(ERROR) << "Brave AdBlock: Update check FAILED with error=" << error;
   }
 
   bool done = error || remaining_ids_.empty();

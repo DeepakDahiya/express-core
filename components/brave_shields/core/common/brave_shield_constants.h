@@ -53,28 +53,28 @@ inline constexpr char kExperimentalListUuid[] =
 inline constexpr char kAdBlockResourceComponentName[] =
     "Brave Ad Block Resources Library";
 inline constexpr char kAdBlockResourceComponentId[] =
-    "dlibbfbdhhamaleoofdjnejelcgldodb";
+    "mfddibmblmbccpadfndgakiopmmhebop";
 inline constexpr char kAdBlockResourceComponentBase64PublicKey[] =
-    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlYa/Beo8ErS7GB31gsjH"
-    "QOerBEGD58eXXf6GLPxp8cyJ/DFF06Svo8uXEZMuFK6pT6Qi1byX5UVjNmeB5Xwb"
-    "6TndxJGQAYPL2YA8R60OpKDL8fKRmikI6vBleV1Fw56qYi/SoT47xqxf/F7uOFms"
-    "W6768ImB9lyF6YWW5ZpUDaHj1H5XemUWSF3JzY6uBYEkjdn1KmbE+zz+tNh1UXrd"
-    "AkWSXr3opGDFNWKEg9kOBa2gEZh42mwNJDS8Olo8RgrKQbSHr5zxMCuxsntdua22"
-    "mH4vBzHoauLRwQqYpLW64Kkl5xx0cDizUF7EGbqhB+Xcm4yD5kvNzmDzQ6WdNMRL"
-    "kwIDAQAB";
+    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7Qk6xtml8Siq8RD6cCbd"
+    "JpArt0kMci82W/KYw3KR96y67MZAsKJa8rOV2WC1BIpW539Qgl5b5lMS04cjw+sS"
+    "B7f2ZKM1WOqKNij24nvEKVubunP32u8tbjtzQk9VYNcM2MZMs330eqk7iuBRTvRV"
+    "iSMSeE3ymqp03HFpUGsdtjEBh1A5lroCg41eVnMn1I4GKPvuhT/Qc9Yem5gzXT/3"
+    "n7H6vOGQ2dVBHz44mhgwtiDcsduh+Det6lCE2TgHOhHPdCewklgcoiNXP4zfXxfp"
+    "Py1jbwb4w5KUnHSRelhfDnt+jI3jgHsD4IXdVNE5H5ZAnmcOJttbkRiT8kOVS0rJ"
+    "XwIDAQAB";
 
 inline constexpr char kAdBlockFilterListCatalogComponentName[] =
     "Brave Ad Block List Catalog";
 inline constexpr char kAdBlockFilterListCatalogComponentId[] =
-    "bbhodghhfoljambigkiibfnmgkobming";
+    "gkboaolpopklhgplhaaiboijnklogmbc";
 inline constexpr char kAdBlockFilterListCatalogComponentBase64PublicKey[] =
-    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAteLpEXUrGmrqoP0zVdrr"
-    "G6ryZX4zuM6uKMSFjTFwGYD3BmqKPZis65HABWe1dSVE96YojLBG+uGK9McNwHb7"
-    "pC+Ht3L9TRF4qY/vLLHFSb1lBzgNo+IVOC+s7cj0tQ5CquKd4I14xJTAlHovsI6y"
-    "tki4N89is2wFGuJCv+zY6Y8fBmseykhlcp3EHHNX3iKaQMX5B66omEw57iAHMXcB"
-    "xNzQEcssBcPnej3FlaPojgdtg+Fzb55OpRgYCq/N5VP8oKGG2LZAxW8rjyab4wVp"
-    "I5cNRpVJZzdDhRdkIU05TpIiC0drDprKvNdUpumTVxTtzeOfWjXQPqW7iTSX6HJP"
-    "UwIDAQAB";
+    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsAnb1lw5UA1Ww4JIVE8P"
+    "jKNlPogAdFoie+Aczk6ppQ4OrHANxz6oAk1xFuT2W3uhGOc3b/1ydIUMqOIdRFvM"
+    "dEDUvKVeFyNAVXNSouFF7EBLEzcZfFtqoxeIbwEplVISUm+WUbsdVB9MInY3a4O3"
+    "kNNuUijY7bmHzAqWMTrBfenw0Lqv38OfREXCiNq/+Jm/gt7FhyBd2oviXWEGp6as"
+    "UwNavFnj8gQDGVvCf+dse8HRMJn00QH0MOypsZSWFZRmF08ybOu/jTiUo/TuIaHL"
+    "1H8y9SR970LqsUMozu3ioSHtFh/IVgq7Nqy4TljaKsTE+3AdtjiOyHpW9ZaOkA7j"
+    "2QIDAQAB";
 
 inline constexpr char kCookieListEnabledHistogram[] =
     "Brave.Shields.CookieListEnabled";
