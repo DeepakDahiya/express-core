@@ -1294,7 +1294,7 @@ const char16_t kYoutubePipButton[] =
         }
 
         const observer = new MutationObserver(() => {
-            const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');
+            const buttonContainerElement = document.querySelector('.page-container');
             if (window.location.pathname !== '/watch' || !buttonContainerElement || buttonContainerElement.contains(buttonElement)) return;
             buttonContainerElement.prepend(buttonElement);
         });
