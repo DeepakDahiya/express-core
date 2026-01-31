@@ -287,7 +287,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         int featuresSectionOrder = braveAccountSectionOrder;
         // setPreferenceOrder(PREF_FEATURES_SECTION, ++featuresSectionOrder);
 
-        setPreferenceOrder(PREF_SHIELDS_AND_PRIVACY, ++featuresSectionOrder);
+        // setPreferenceOrder(PREF_SHIELDS_AND_PRIVACY, ++featuresSectionOrder);
         // setPreferenceOrder(PREF_BRAVE_NEWS_V2, ++featuresSectionOrder);
 
         // if (ChromeFeatureList.isEnabled(BraveFeatureList.NATIVE_BRAVE_WALLET)) {
