@@ -5,7 +5,7 @@ public class Comment{
     private final String content;  
     private final int upvoteCount;  
     private final int downvoteCount; 
-    private final int trendingScore; 
+    private int trendingScore; 
     private final int commentCount;  
     private final String commentParent;  
     private final String pageParent;  
