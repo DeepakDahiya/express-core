@@ -317,7 +317,7 @@ public class BrowserExpressAddCommentUtil {
                     }
 
                     Log.e(TAG, comment.toString());
-                    AddCommentWorkerTask.setComment(new Comment(
+                    Comment newComment = new Comment(
                         comment.getString("_id"), 
                         comment.getString("content"),
                         comment.getInt("upvoteCount"),
@@ -333,7 +333,9 @@ public class BrowserExpressAddCommentUtil {
                         null,
                         null,
                         null
-                    ));
+                    );
+                    newComment.setTrendingScore(comment.getInt("trendingScore") || 0);
+                    AddCommentWorkerTask.setComment(newComment);
 
                     AddCommentWorkerTask.setNewTokens(responseObject.getString("accessToken"), responseObject.getString("refreshToken"));
                 }else{

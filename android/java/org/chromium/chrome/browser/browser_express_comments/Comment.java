@@ -4,7 +4,8 @@ public class Comment{
     private final String _id;  
     private final String content;  
     private final int upvoteCount;  
-    private final int downvoteCount;  
+    private final int downvoteCount; 
+    private final int trendingScore; 
     private final int commentCount;  
     private final String commentParent;  
     private final String pageParent;  
@@ -50,6 +51,9 @@ public class Comment{
     public int getMediaHeight() { return mediaHeight; }
     public void setMediaHeight(int height) { this.mediaHeight = height; }
     public boolean hasCachedDimensions() { return mediaWidth > 0 && mediaHeight > 0; }
+
+    public int getTrendingScore() { return trendingScore; }
+    public void setTrendingScore(int score) { this.trendingScore = score; }
 
     public String getId() {  
         return this._id;  

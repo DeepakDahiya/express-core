@@ -185,7 +185,7 @@ public class BrowserExpressGetCommentsUtil {
                                 commentParent = parentComment.getString("commentParent");
                             }
                             User u = new User(user.getString("_id"), user.getString("username"), user.optString("avatar", null));
-                            GetCommentsWorkerTask.setGrandParentComment(new Comment(
+                            Comment newComment = new Comment(
                                 parentComment.getString("_id"), 
                                 parentComment.getString("content"),
                                 parentComment.getInt("upvoteCount"),
@@ -194,14 +194,16 @@ public class BrowserExpressGetCommentsUtil {
                                 pageParent,
                                 postParent,
                                 commentParent,
-                                u, 
+                                u,
                                 v,
                                 parentComment.optString("mediaImageUrl", null),
                                 parentComment.optString("mediaVideoUrl", null),
                                 null,
                                 null,
                                 null
-                            ));
+                            );
+                            newComment.setTrendingScore(parentComment.getInt("trendingScore") || 0);
+                            GetCommentsWorkerTask.setGrandParentComment(newComment);    
                         }
                     }
 
@@ -229,7 +231,7 @@ public class BrowserExpressGetCommentsUtil {
                                 commentParent = parentComment.getString("commentParent");
                             }
                             User u = new User(user.getString("_id"), user.getString("username"), user.optString("avatar", null));
-                            GetCommentsWorkerTask.setParentComment(new Comment(
+                            Comment newComment = new Comment(
                                 parentComment.getString("_id"), 
                                 parentComment.getString("content"),
                                 parentComment.getInt("upvoteCount"),
@@ -245,7 +247,9 @@ public class BrowserExpressGetCommentsUtil {
                                 null,
                                 null,
                                 null
-                            ));
+                            );
+                            newComment.setTrendingScore(parentComment.getInt("trendingScore") || 0);
+                            GetCommentsWorkerTask.setParentComment(newComment);
                         }
                     }
                     List<Comment> comments = new ArrayList<Comment>();
@@ -273,7 +277,7 @@ public class BrowserExpressGetCommentsUtil {
                         }
 
                         User u = new User(user.getString("_id"), user.getString("username"), user.optString("avatar", null));
-                        comments.add(new Comment(
+                        Comment newComment = new Comment(
                             comment.getString("_id"), 
                             comment.getString("content"),
                             comment.getInt("upvoteCount"),
@@ -289,7 +293,9 @@ public class BrowserExpressGetCommentsUtil {
                             null,
                             null,
                             null
-                        ));
+                        );
+                        newComment.setTrendingScore(comment.getInt("trendingScore") || 0);
+                        comments.add(newComment);
 
                     }
 

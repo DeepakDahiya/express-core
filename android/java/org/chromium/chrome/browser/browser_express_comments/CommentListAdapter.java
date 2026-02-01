@@ -318,7 +318,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 mReadMoreButton.setVisibility(View.GONE);
             }
 
-            finalVote = comment.getUpvoteCount() - comment.getDownvoteCount();
+            finalVote = comment.getTrendingScore();
             voteCountText.setText(formatNumberCompact(finalVote));
 
             if(!mIsReplyToReplyAdapter){
