@@ -334,7 +334,7 @@ public class BrowserExpressAddCommentUtil {
                         null,
                         null
                     );
-                    newComment.setTrendingScore(comment.getInt("trendingScore") || 0);
+                    newComment.setTrendingScore(comment.getInt("trendingScore"));
                     AddCommentWorkerTask.setComment(newComment);
 
                     AddCommentWorkerTask.setNewTokens(responseObject.getString("accessToken"), responseObject.getString("refreshToken"));

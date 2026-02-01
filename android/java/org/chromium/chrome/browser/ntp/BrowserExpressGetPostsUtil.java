@@ -236,7 +236,7 @@ public class BrowserExpressGetPostsUtil {
                                     postUsername,
                                     postAvatarUrl
                                 );
-                                tempComment.setTrendingScore(comment.getInt("trendingScore") || 0);
+                                tempComment.setTrendingScore(comment.getInt("trendingScore"));
                                 newComments.add(tempComment);
                             }
                         }

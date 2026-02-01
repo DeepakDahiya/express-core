@@ -202,7 +202,7 @@ public class BrowserExpressGetCommentsUtil {
                                 null,
                                 null
                             );
-                            newComment.setTrendingScore(parentComment.getInt("trendingScore") || 0);
+                            newComment.setTrendingScore(parentComment.getInt("trendingScore"));
                             GetCommentsWorkerTask.setGrandParentComment(newComment);    
                         }
                     }
@@ -248,7 +248,7 @@ public class BrowserExpressGetCommentsUtil {
                                 null,
                                 null
                             );
-                            newComment.setTrendingScore(parentComment.getInt("trendingScore") || 0);
+                            newComment.setTrendingScore(parentComment.getInt("trendingScore"));
                             GetCommentsWorkerTask.setParentComment(newComment);
                         }
                     }
@@ -294,7 +294,7 @@ public class BrowserExpressGetCommentsUtil {
                             null,
                             null
                         );
-                        newComment.setTrendingScore(comment.getInt("trendingScore") || 0);
+                        newComment.setTrendingScore(comment.getInt("trendingScore"));
                         comments.add(newComment);
 
                     }
