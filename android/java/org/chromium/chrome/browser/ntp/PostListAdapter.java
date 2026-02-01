@@ -40,6 +40,7 @@ import android.view.animation.AnimationUtils;
 import org.chromium.chrome.browser.browser_express_comments.BrowserExpressGetCommentsUtil;
 import org.chromium.chrome.browser.browser_express_comments.Vote;
 import org.chromium.chrome.browser.browser_express_comments.BrowserExpressAddVoteUtil;
+import org.chromium.chrome.browser.browser_express_comments.GlobalVideoPlaybackManager;
 import com.bumptech.glide.Glide;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
 import android.content.Intent;
@@ -78,6 +79,9 @@ import java.io.UnsupportedEncodingException;
 import org.chromium.chrome.browser.settings.PostHogEventKeys;
 import org.chromium.chrome.browser.settings.PostHogUtil;
 import android.content.pm.PackageInfo;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
+import android.widget.Space;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private static final int VIEW_TYPE_HEADER = 0;
@@ -301,6 +305,13 @@ public class PostListAdapter extends RecyclerView.Adapter {
         final ProgressBar videoProgressBar;
         ValueAnimator progressAnimator;
 
+        // New fields for unified video handling
+        final ImageButton muteButton;
+        final ConstraintLayout mediaContainer;
+        final Space mediaAspectRatioSpacer;
+        private boolean mHasVideo;
+        private boolean mIsVideoInitialized;
+
         final ImageView postImage;
         final CardView cardView;
         final TextView publisherNameText;
@@ -332,6 +343,11 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
             playPauseIcon = (ImageView) itemView.findViewById(R.id.play_pause_icon);
             videoProgressBar = (ProgressBar) itemView.findViewById(R.id.video_progress);
+
+            // New unified video handling fields
+            muteButton = (ImageButton) itemView.findViewById(R.id.video_mute_button);
+            mediaContainer = (ConstraintLayout) itemView.findViewById(R.id.twitter_media_container);
+            mediaAspectRatioSpacer = (Space) itemView.findViewById(R.id.media_aspect_ratio_spacer);
 
             editTextLayout = (LinearLayout) itemView.findViewById(R.id.edit_text_layout);
 
@@ -379,9 +395,11 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     @Override
                     public void onViewDetachedFromWindow(View v) {
                         stopAutoScroll();
-                        if (player != null && player.isPlaying()) {
-                            player.pause();
-                            updatePlayPauseUI(false);
+                        if (hasVideo()) {
+                            stopPlayback();
+                            if (GlobalVideoPlaybackManager.getInstance().getCurrentlyPlayingHolder() == PostHolder.this) {
+                                GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
+                            }
                         }
                     }
                 });
@@ -481,89 +499,13 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 postImage.setVisibility(View.GONE);
 
                 if(videoUrl != null && !"null".equals(videoUrl)){
-                    releasePlayer();
-                    player = new ExoPlayer.Builder(context).build();
-
-                    twitterVideo.setPlayer(player);
-                    twitterVideo.setUseController(false); // Hide default controls
+                    mHasVideo = true;
+                    twitterImage.setVisibility(View.GONE);
+                    twitterVideo.setVisibility(View.VISIBLE);
+                    muteButton.setVisibility(View.VISIBLE);
+                    playPauseIcon.setVisibility(View.GONE);
                     
-                    // Create MediaItem
-                    MediaItem mediaItem = MediaItem.fromUri(videoUrl);
-                    player.setMediaItem(mediaItem);
-                    
-                    // Set player properties
-                    player.setRepeatMode(Player.REPEAT_MODE_ALL);
-                    player.setPlayWhenReady(false);
-
-                    // Prepare player
-                    player.prepare();
-
-                    playPauseIcon.setImageResource(R.drawable.ic_play_circle2);
-                    playPauseIcon.setVisibility(View.VISIBLE);
-
-                    twitterVideo.setClickable(true);
-                    twitterVideo.setFocusable(true);
-
-                    View videoParent = (View) twitterVideo.getParent();
-                    if (videoParent != null) {
-                        videoParent.setClickable(true);
-                        videoParent.setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                Log.e("VideoPlayer", "Parent view clicked");
-                                togglePlayPause();
-                            }
-                        });
-                    }
-
-                    View.OnClickListener videoClickListener = new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            togglePlayPause();
-                        }
-                    };
-
-                    twitterVideo.setOnClickListener(videoClickListener);
-                    playPauseIcon.setOnClickListener(videoClickListener);
-
-                    twitterImage.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            int h = twitterImage.getHeight();
-                            twitterVideo.getLayoutParams().height = h;
-                            twitterVideo.requestLayout();
-                        }
-                    });
-
-                    player.addListener(new Player.Listener() {
-                        @Override
-                        public void onPlaybackStateChanged(int state) {
-                            if (state == Player.STATE_READY) {
-                                twitterImage.setVisibility(View.GONE);
-                                twitterVideo.setVisibility(View.VISIBLE);
-                                setupProgressBar();
-                            }
-                        }
-                        
-                        @Override
-                        public void onIsPlayingChanged(boolean isPlaying) {
-                            updatePlayPauseIcon(isPlaying);
-                            if (isPlaying) {
-                                startProgressAnimation();
-                            } else {
-                                pauseProgressAnimation();
-                            }
-                        }
-                    });
-
-                    // twitterVideo.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                    //     @Override
-                    //     public void onPrepared(MediaPlayer mp) {
-                    //         twitterImage.setVisibility(View.GONE);
-                    //         twitterVideo.setVisibility(View.VISIBLE);
-                    //         twitterVideo.start();
-                    //     }
-                    // });
+                    initializePlayer(Uri.parse(videoUrl));
                 }
             } else {
                 twitterPostLayout.setVisibility(View.GONE);
@@ -756,7 +698,76 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 R.drawable.ic_pause_circle2 : R.drawable.ic_play_circle2);
         }
 
+        // --- New unified video handling methods (matching CommentListAdapter) ---
+
+        public boolean hasVideo() {
+            return mHasVideo && mIsVideoInitialized && player != null;
+        }
+
+        public void startPlayback() { 
+            if (player != null) player.setPlayWhenReady(true); 
+        }
+        
+        public void stopPlayback() { 
+            if (player != null) player.setPlayWhenReady(false); 
+        }
+
+        private void setAspectRatio(int width, int height) {
+            if (width > 0 && height > 0 && mediaContainer != null) {
+                ConstraintSet constraintSet = new ConstraintSet();
+                constraintSet.clone(mediaContainer);
+                constraintSet.setDimensionRatio(mediaAspectRatioSpacer.getId(), String.format(Locale.US, "H,%d:%d", width, height));
+                constraintSet.applyTo(mediaContainer);
+            }
+        }
+
+        private void initializePlayer(Uri videoUri) {
+            if (player != null) {
+                player.stop();
+                player.release();
+            }
+            
+            player = new ExoPlayer.Builder(context).build();
+            twitterVideo.setPlayer(player);
+            twitterVideo.setUseController(false);
+            player.setRepeatMode(Player.REPEAT_MODE_ALL);
+
+            // Set up mute button
+            muteButton.setOnClickListener(v -> {
+                if (player != null) {
+                    if (player.getVolume() > 0) {
+                        player.setVolume(0f);
+                        muteButton.setImageResource(R.drawable.volume_off);
+                    } else {
+                        player.setVolume(1f);
+                        muteButton.setImageResource(R.drawable.volume_on);
+                    }
+                }
+            });
+            
+            // Start muted (like comments)
+            player.setVolume(0f);
+            muteButton.setImageResource(R.drawable.volume_off);
+            
+            MediaItem mediaItem;
+            String urlString = videoUri.toString();
+            if (urlString.startsWith("http")) {
+                mediaItem = MediaItem.fromUri(urlString);
+            } else {
+                mediaItem = MediaItem.fromUri(videoUri);
+            }
+            
+            player.setMediaItem(mediaItem);
+            player.prepare();
+
+            mIsVideoInitialized = true;
+        }
+
         private void releasePlayer() {
+            if (GlobalVideoPlaybackManager.getInstance().getCurrentlyPlayingHolder() == this) {
+                GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
+            }
+
             if (progressAnimator != null) {
                 progressAnimator.cancel();
                 progressAnimator = null;
@@ -768,6 +779,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
             if (playPauseIcon != null) {
                 playPauseIcon.animate().cancel();
             }
+            
+            mIsVideoInitialized = false;
+            mHasVideo = false;
         }
 
         // Make sure to release the player when the view is recycled
