@@ -40,7 +40,6 @@ import android.view.animation.AnimationUtils;
 import org.chromium.chrome.browser.browser_express_comments.BrowserExpressGetCommentsUtil;
 import org.chromium.chrome.browser.browser_express_comments.Vote;
 import org.chromium.chrome.browser.browser_express_comments.BrowserExpressAddVoteUtil;
-import org.chromium.chrome.browser.browser_express_comments.GlobalVideoPlaybackManager;
 import com.bumptech.glide.Glide;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
 import android.content.Intent;
@@ -397,9 +396,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         stopAutoScroll();
                         if (hasVideo()) {
                             stopPlayback();
-                            if (GlobalVideoPlaybackManager.getInstance().getCurrentlyPlayingHolder() == PostHolder.this) {
-                                GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
-                            }
                         }
                     }
                 });
@@ -764,10 +760,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
         }
 
         private void releasePlayer() {
-            if (GlobalVideoPlaybackManager.getInstance().getCurrentlyPlayingHolder() == this) {
-                GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
-            }
-
             if (progressAnimator != null) {
                 progressAnimator.cancel();
                 progressAnimator = null;
