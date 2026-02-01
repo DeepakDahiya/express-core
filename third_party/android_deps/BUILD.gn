@@ -17,9 +17,6 @@ group("android_deps") {
     ":com_wireguard_android_java",
     ":google_play_services_safetynet_java",
     ":com_android_volley_java",
-    ":androidx_media3_media3_common_java",
-    ":androidx_media3_media3_exoplayer_java",
-    ":androidx_media3_media3_ui_java",
   ]
 }
 
@@ -105,11 +102,11 @@ android_aar_prebuilt("com_brave_playlist_java") {
     ":com_google_android_exoplayer_extension_cast_java",
     ":com_google_android_exoplayer_extension_mediasession_java",
     ":androidx_media3_media3_exoplayer_hls_java",
-    ":androidx_media3_media3_common_java",
-    ":androidx_media3_media3_exoplayer_java",
-    ":androidx_media3_media3_ui_java",
     "//third_party/android_deps:material_design_java",
+    "//third_party/androidx:androidx_media3_media3_common_java",
+    "//third_party/androidx:androidx_media3_media3_exoplayer_java",
     "//third_party/androidx:androidx_media3_media3_session_java",
+    "//third_party/androidx:androidx_media3_media3_ui_java",
     "//third_party/androidx:androidx_appcompat_appcompat_java",
     "//third_party/androidx:androidx_constraintlayout_constraintlayout_java",
     "//third_party/androidx:androidx_fragment_fragment_java",
@@ -127,11 +124,7 @@ android_aar_prebuilt("com_brave_playlist_java") {
 android_aar_prebuilt("androidx_media3_media3_exoplayer_hls_java") {
   aar_path =
       "libs/androidx_media3_media3_exoplayer_hls/media3-exoplayer-hls-1.2.0.aar"
-  deps = [
-    ":androidx_media3_media3_common_java",
-    ":androidx_media3_media3_exoplayer_java",
-    "//third_party/androidx:androidx_room_room_common_jvm_java",
-  ]
+  deps = [ "//third_party/androidx:androidx_room_room_common_jvm_java" ]
   info_path = "libs/androidx_media3_media3_exoplayer_hls/androidx_media3_media3_exoplayer_hls.info"
 }
 
@@ -242,33 +235,5 @@ android_aar_prebuilt("com_google_android_play_integrity_java") {
   deps = [
     "//third_party/android_deps:google_play_services_basement_java",
     "//third_party/android_deps:google_play_services_tasks_java",
-  ]
-}
-
-android_aar_prebuilt("androidx_media3_media3_common_java") {
-  aar_path = "libs/androidx_media3_media3_common/media3-common-1.2.0.aar"
-  info_path = "libs/androidx_media3_media3_common/androidx_media3_media3_common.info"
-  deps = [
-    "//third_party/androidx:androidx_annotation_annotation_java",
-  ]
-}
-
-android_aar_prebuilt("androidx_media3_media3_exoplayer_java") {
-  aar_path = "libs/androidx_media3_media3_exoplayer/media3-exoplayer-1.2.0.aar"
-  info_path = "libs/androidx_media3_media3_exoplayer/androidx_media3_media3_exoplayer.info"
-  deps = [
-    ":androidx_media3_media3_common_java",
-    "//third_party/androidx:androidx_annotation_annotation_java",
-  ]
-}
-
-android_aar_prebuilt("androidx_media3_media3_ui_java") {
-  aar_path = "libs/androidx_media3_media3_ui/media3-ui-1.2.0.aar"
-  info_path = "libs/androidx_media3_media3_ui/androidx_media3_media3_ui.info"
-  deps = [
-    ":androidx_media3_media3_common_java",
-    "//third_party/androidx:androidx_annotation_annotation_java",
-    "//third_party/androidx:androidx_core_core_java",
-    "//third_party/androidx:androidx_recyclerview_recyclerview_java",
   ]
 }
