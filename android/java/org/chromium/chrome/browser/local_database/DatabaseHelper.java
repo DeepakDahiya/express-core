@@ -41,7 +41,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // Database Name
     private static final String DATABASE_NAME = "brave_db";
 
-    private static final String DEFAULT_YOUTUBE_URL    = "https://m.youtube.com";
+    private static final String DEFAULT_YOUTUBE_URL = "https://accounts.google.com/ServiceLogin?service=youtube&amp;uilel=3&amp;passive=true&amp;continue=https%3A%2F%2Fm.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Dm%26hl%3Den-GB%26next%3D%252F&amp;hl=en-GB";
 
     public static DatabaseHelper getInstance() {
         synchronized (DatabaseHelper.class) {

@@ -178,7 +178,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                             Log.e("Express Browser", "Error creating JSON payload", e);
                         }
 
-                        TabUtils.openUrlInSameTab("https://m.youtube.com");
+                        TabUtils.openUrlInSameTab("https://accounts.google.com/ServiceLogin?service=youtube&amp;uilel=3&amp;passive=true&amp;continue=https%3A%2F%2Fm.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Dm%26hl%3Den-GB%26next%3D%252F&amp;hl=en-GB");
                         Intent intent = new Intent(mActivity != null ? mActivity : getActivity(), ChromeTabbedActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                         intent.setAction(Intent.ACTION_VIEW);

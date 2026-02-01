@@ -1212,7 +1212,7 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
 
         // Click listener to open website
         tileView.setOnClickListener(v -> {
-            if (topSite.getDestinationUrl().contains("m.youtube.com")) {
+            if (topSite.getDestinationUrl().contains("youtube")) {
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();
                     if(activity == null){
