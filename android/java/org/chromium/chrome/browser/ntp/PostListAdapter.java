@@ -755,6 +755,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
             
             player.setMediaItem(mediaItem);
             player.prepare();
+            
+            // Auto-play (muted) when video is ready
+            player.setPlayWhenReady(true);
 
             mIsVideoInitialized = true;
         }
