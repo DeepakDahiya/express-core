@@ -14,12 +14,13 @@
         android:visibility="gone"
         android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
-    <androidx.media3.ui.PlayerView
+    <com.google.android.exoplayer2.ui.PlayerView
         android:id="@+id/fullscreen_player_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="center"
         app:use_controller="true"
+        app:controller_layout_id="@layout/exo_player_control_view"
         android:visibility="gone" />
 
     <ImageButton
