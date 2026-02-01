@@ -122,14 +122,14 @@
 
                 <ImageView
                     android:id="@+id/twitter_image"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    app:layout_constraintTop_toTopOf="@id/media_aspect_ratio_spacer"
-                    app:layout_constraintBottom_toBottomOf="@id/media_aspect_ratio_spacer"
-                    app:layout_constraintStart_toStartOf="@id/media_aspect_ratio_spacer"
-                    app:layout_constraintEnd_toEndOf="@id/media_aspect_ratio_spacer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
                     android:src="@drawable/loading_image"
                     android:visibility="gone"
+                    android:adjustViewBounds="true"
                     android:scaleType="fitCenter"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
 
