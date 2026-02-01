@@ -562,8 +562,13 @@ public class ReplyListFragment extends Fragment {
     }
 
     private JSONObject getDecodedToken(String accessToken){
+        if (accessToken == null || accessToken.isEmpty()) return null;
         try{
             String[] split_string = accessToken.split("\\.");
+            if (split_string.length < 2) {
+                Log.e("TokenDecoder", "Invalid JWT format");
+                return null;
+            }
             String base64EncodedBody = split_string[1];
 
             byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
@@ -571,10 +576,13 @@ public class ReplyListFragment extends Fragment {
             JSONObject jsonObj = new JSONObject(decodedString.toString());
             return jsonObj;
         }catch(JSONException e){
-            Log.e("Express Browser Access Token", e.getMessage());
+            Log.e("TokenDecoder", "JSON parsing error: " + e.getMessage());
             return null;
         }catch(UnsupportedEncodingException e){
-            Log.e("Express Browser Access Token", e.getMessage());
+            Log.e("TokenDecoder", "Encoding error: " + e.getMessage());
+            return null;
+        }catch(Exception e){
+            Log.e("TokenDecoder", "Unexpected error: " + e.getMessage());
             return null;
         }
         

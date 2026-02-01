@@ -155,7 +155,16 @@ public class BrowsingModeBottomToolbarCoordinator {
                     String t = activity.getActivityTab().getUrl().getSpec();
 
                     String accessToken = activity.getAccessToken();
+                    if (accessToken == null || accessToken.isEmpty()) {
+                        activity.showCommentsBottomSheet();
+                        return;
+                    }
                     String[] split_string = accessToken.split("\\.");
+                    if (split_string.length < 2) {
+                        Log.e(TAG, "Invalid JWT format");
+                        activity.showCommentsBottomSheet();
+                        return;
+                    }
                     String base64EncodedBody = split_string[1];
 
                     byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
@@ -176,6 +185,8 @@ public class BrowsingModeBottomToolbarCoordinator {
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
                 } catch(JSONException e){
                 }catch(UnsupportedEncodingException e){
+                }catch(Exception e){
+                    Log.e(TAG, "Error in commentsClickHandler: " + e.getMessage());
                 }
             };
             mCommentsButton.setOnClickListener(commentsClickHandler);

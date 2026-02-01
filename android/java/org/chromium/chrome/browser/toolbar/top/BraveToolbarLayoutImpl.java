@@ -1951,8 +1951,13 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     // }
 
     private JSONObject getDecodedToken(String accessToken){
+        if (accessToken == null || accessToken.isEmpty()) return null;
         try{
             String[] split_string = accessToken.split("\\.");
+            if (split_string.length < 2) {
+                Log.e(TAG, "Invalid JWT format - token does not have header.payload.signature structure");
+                return null;
+            }
             String base64EncodedBody = split_string[1];
 
             byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
@@ -1960,10 +1965,13 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             JSONObject jsonObj = new JSONObject(decodedString.toString());
             return jsonObj;
         }catch(JSONException e){
-            Log.e("Express Browser Access Token", e.getMessage());
+            Log.e(TAG, "JSON parsing error: " + e.getMessage());
             return null;
         }catch(UnsupportedEncodingException e){
-            Log.e("Express Browser Access Token", e.getMessage());
+            Log.e(TAG, "Encoding error: " + e.getMessage());
+            return null;
+        }catch(Exception e){
+            Log.e(TAG, "Unexpected error decoding token: " + e.getMessage());
             return null;
         }
         
