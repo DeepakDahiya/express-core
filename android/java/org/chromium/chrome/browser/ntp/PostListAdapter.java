@@ -59,11 +59,10 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearSnapHelper;
 import android.os.Handler;
 import android.os.Looper;
-import com.google.android.exoplayer2.ExoPlayer;
-import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.Player;
-import com.google.android.exoplayer2.ui.StyledPlayerView;
-import com.google.android.exoplayer2.util.Util;
+import androidx.media3.common.MediaItem;
+import androidx.media3.common.Player;
+import androidx.media3.exoplayer.ExoPlayer;
+import androidx.media3.ui.PlayerView;
 import android.view.MotionEvent;
 import android.widget.ProgressBar;
 import android.animation.ValueAnimator;
@@ -295,7 +294,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
         List<Comment> mComments;
         final LinearLayout editTextLayout;
 
-        final StyledPlayerView twitterVideo;
+        final PlayerView twitterVideo;
         ExoPlayer player;
         final ImageView playPauseIcon;
         final ProgressBar videoProgressBar;
@@ -327,7 +326,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             twitterUsername = (TextView) itemView.findViewById(R.id.twitter_username);
             twitterContent = (TextView) itemView.findViewById(R.id.twitter_content);
             twitterImage = (ImageView) itemView.findViewById(R.id.twitter_image);
-            twitterVideo = (StyledPlayerView) itemView.findViewById(R.id.twitter_video);
+            twitterVideo = (PlayerView) itemView.findViewById(R.id.twitter_video);
             twitterMediaCard = (CardView) itemView.findViewById(R.id.twitter_media_card);
 
             playPauseIcon = (ImageView) itemView.findViewById(R.id.play_pause_icon);
