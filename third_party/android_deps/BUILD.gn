@@ -17,6 +17,9 @@ group("android_deps") {
     ":com_wireguard_android_java",
     ":google_play_services_safetynet_java",
     ":com_android_volley_java",
+    "//third_party/androidx:androidx_media3_media3_common_java",
+    "//third_party/androidx:androidx_media3_media3_exoplayer_java",
+    "//third_party/androidx:androidx_media3_media3_ui_java",
   ]
 }
 
