@@ -85,12 +85,33 @@ public class BraveSetDefaultBrowserUtils {
      * isBraveSetAsDefaultBrowser() by only checking if the current package is the default, rather
      * than checking for specific Brave browser variants.
      *
+     * <p>Checks both HTTP and HTTPS URLs as some Android versions may only set defaults for one
+     * protocol.
+     *
      * @param context The application context
      * @return true if this app is set as default browser, false otherwise
      */
     public static boolean isAppSetAsDefaultBrowser(Context context) {
-        Intent browserIntent =
-                new Intent(Intent.ACTION_VIEW, Uri.parse(UrlConstants.HTTP_URL_PREFIX));
+        // Check HTTP URL
+        if (isDefaultForUrl(context, UrlConstants.HTTP_URL_PREFIX)) {
+            return true;
+        }
+        // Also check HTTPS URL as some systems may only set defaults for HTTPS
+        if (isDefaultForUrl(context, "https://")) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Helper method to check if the current app is the default handler for a specific URL.
+     *
+     * @param context The application context
+     * @param url The URL to check
+     * @return true if this app is the default handler for the URL
+     */
+    private static boolean isDefaultForUrl(Context context, String url) {
+        Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
         ResolveInfo resolveInfo =
                 context.getPackageManager()
                         .resolveActivity(browserIntent, PackageManager.MATCH_DEFAULT_ONLY);
@@ -103,23 +124,38 @@ public class BraveSetDefaultBrowserUtils {
     }
 
     /**
-     * Checks if the current app is set as the default browser using the most reliable method
-     * available. On Android 10+ (API 29+), uses RoleManager to check if the browser role is held.
-     * Falls back to intent resolution for older Android versions.
+     * Checks if the current app is set as the default browser using multiple methods for maximum
+     * reliability. Returns true if ANY method detects the app as the default browser.
+     *
+     * <p>This uses both RoleManager (Android 10+) and intent resolution because: - RoleManager may
+     * not work correctly for apps installed from unknown sources (e.g., Google Drive) - Intent
+     * resolution serves as a reliable fallback
      *
      * @param activity The activity context (needed for RoleManager service)
      * @return true if this app is set as default browser, false otherwise
      */
     public static boolean isCurrentAppDefaultBrowser(Activity activity) {
-        // Use RoleManager for Android 10+ as it's more reliable
+        // Check using intent resolution first (works for all installation sources)
+        if (isAppSetAsDefaultBrowser(activity)) {
+            return true;
+        }
+
+        // Also check using RoleManager for Android 10+ as a secondary check
         if (supportsDefaultRoleManager()) {
             RoleManager roleManager = activity.getSystemService(RoleManager.class);
-            if (roleManager != null && roleManager.isRoleAvailable(RoleManager.ROLE_BROWSER)) {
-                return roleManager.isRoleHeld(RoleManager.ROLE_BROWSER);
+            if (roleManager != null
+                    && roleManager.isRoleAvailable(RoleManager.ROLE_BROWSER)
+                    && roleManager.isRoleHeld(RoleManager.ROLE_BROWSER)) {
+                return true;
             }
         }
-        // Fallback to intent resolution for older Android versions
-        return isAppSetAsDefaultBrowser(activity);
+
+        // Also check if any Brave variant is set as default
+        if (isBraveSetAsDefaultBrowser(activity)) {
+            return true;
+        }
+
+        return false;
     }
 
     /** Resets the bottom sheet visibility flag. Call this when the bottom sheet is dismissed. */
