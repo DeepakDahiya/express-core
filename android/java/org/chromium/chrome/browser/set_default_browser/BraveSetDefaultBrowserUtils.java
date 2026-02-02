@@ -103,6 +103,31 @@ public class BraveSetDefaultBrowserUtils {
     }
 
     /**
+     * Checks if the current app is set as the default browser using the most reliable method
+     * available. On Android 10+ (API 29+), uses RoleManager to check if the browser role is held.
+     * Falls back to intent resolution for older Android versions.
+     *
+     * @param activity The activity context (needed for RoleManager service)
+     * @return true if this app is set as default browser, false otherwise
+     */
+    public static boolean isCurrentAppDefaultBrowser(Activity activity) {
+        // Use RoleManager for Android 10+ as it's more reliable
+        if (supportsDefaultRoleManager()) {
+            RoleManager roleManager = activity.getSystemService(RoleManager.class);
+            if (roleManager != null && roleManager.isRoleAvailable(RoleManager.ROLE_BROWSER)) {
+                return roleManager.isRoleHeld(RoleManager.ROLE_BROWSER);
+            }
+        }
+        // Fallback to intent resolution for older Android versions
+        return isAppSetAsDefaultBrowser(activity);
+    }
+
+    /** Resets the bottom sheet visibility flag. Call this when the bottom sheet is dismissed. */
+    public static void resetBottomSheetVisibility() {
+        isBottomSheetVisible = false;
+    }
+
+    /**
      * Shows a bottom sheet dialog prompting the user to set Brave as their default browser. The
      * dialog will only be shown if no other bottom sheet is currently visible.
      *
