@@ -3462,13 +3462,11 @@ public abstract class BraveActivity extends ChromeActivity
         }
 
         // DEBUG: Test referral locally without Play Store
-        if (BuildConfig.DEBUG) {
-            String testReferral = getIntent().getStringExtra("test_referral");
-            if (testReferral != null) {
-                Log.d("REFERRAL", "DEBUG: Using test referral: " + testReferral);
-                processReferrerString(testReferral);
-                return;
-            }
+        String testReferral = getIntent().getStringExtra("test_referral");
+        if (testReferral != null) {
+            Log.d("REFERRAL", "DEBUG: Using test referral: " + testReferral);
+            processReferrerString(testReferral);
+            return;
         }
 
         InstallReferrerClient referrerClient = InstallReferrerClient.newBuilder(this).build();
@@ -3581,7 +3579,6 @@ public abstract class BraveActivity extends ChromeActivity
                 payload.put("device_id", deviceId);
                 payload.put("full_referrer", fullReferrerUrl);
                 payload.put("install_timestamp", System.currentTimeMillis());
-                payload.put("app_version", BuildConfig.VERSION_NAME);
                 payload.put("package_name", getPackageName());
 
                 OutputStream os = conn.getOutputStream();
