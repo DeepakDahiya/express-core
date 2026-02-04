@@ -92,6 +92,10 @@ public final class BravePreferenceKeys {
 
     public static final String DAY_ZERO_EXPT_VARIANT = "day_zero_expt_variant";
 
+    // Referral system keys
+    public static final String EXPRESS_REFERRAL_CODE = "express_referral_code";
+    public static final String EXPRESS_REFERRAL_PROCESSED = "express_referral_processed";
+
     public static final String SHOW_UNDO_WHEN_TABS_CLOSED = "show_undo_when_tabs_closed";
 
     public static final String OPEN_YT_IN_BRAVE_DIALOG = "open_yt_in_brave_dialog";

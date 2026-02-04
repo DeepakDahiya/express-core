@@ -41,6 +41,14 @@ import org.chromium.chrome.browser.notifications.BraveNotificationBuilder;
 import android.os.Looper;
 import androidx.annotation.RequiresApi;
 import android.widget.ImageView;
+import android.provider.Settings;
+
+import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.net.URLDecoder;
+
+import org.json.JSONObject;
 
 import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
@@ -3443,8 +3451,26 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     private void checkReferral() {
-        Log.e("CHECK REFERRAL", "REFERRAL IN BRAVE ACTIVITY");
-        String TAG = "REFERRAL";
+        Log.d("REFERRAL", "checkReferral called in BraveActivity");
+
+        // Only process referral once (on first install)
+        boolean alreadyProcessed = ChromeSharedPreferences.getInstance()
+                .readBoolean(BravePreferenceKeys.EXPRESS_REFERRAL_PROCESSED, false);
+        if (alreadyProcessed) {
+            Log.d("REFERRAL", "Referral already processed, skipping");
+            return;
+        }
+
+        // DEBUG: Test referral locally without Play Store
+        if (BuildConfig.DEBUG) {
+            String testReferral = getIntent().getStringExtra("test_referral");
+            if (testReferral != null) {
+                Log.d("REFERRAL", "DEBUG: Using test referral: " + testReferral);
+                processReferrerString(testReferral);
+                return;
+            }
+        }
+
         InstallReferrerClient referrerClient = InstallReferrerClient.newBuilder(this).build();
         referrerClient.startConnection(
                 new InstallReferrerStateListener() {
@@ -3455,42 +3481,121 @@ public abstract class BraveActivity extends ChromeActivity
                                 try {
                                     ReferrerDetails response = referrerClient.getInstallReferrer();
                                     String referrerUrl = response.getInstallReferrer();
-                                    if (referrerUrl == null) return;
+                                    Log.d("REFERRAL", "Raw referrer URL: " + referrerUrl);
 
-                                    if (referrerUrl.equals(
-                                            BraveConstants.DEEPLINK_ANDROID_PLAYLIST)) {
-                                        ChromeSharedPreferences.getInstance()
-                                                .writeBoolean(
-                                                        BravePreferenceKeys
-                                                                .BRAVE_DEFERRED_DEEPLINK_PLAYLIST,
-                                                        true);
-                                    } else if (referrerUrl.equals(
-                                            BraveConstants.DEEPLINK_ANDROID_VPN)) {
-                                        ChromeSharedPreferences.getInstance()
-                                                .writeBoolean(
-                                                        BravePreferenceKeys
-                                                                .BRAVE_DEFERRED_DEEPLINK_VPN,
-                                                        true);
+                                    if (referrerUrl == null || referrerUrl.isEmpty()) {
+                                        markReferralProcessed();
+                                        return;
                                     }
+
+                                    processReferrerString(referrerUrl);
+
                                 } catch (RemoteException e) {
-                                    Log.e(TAG, "Could not get referral: " + e.getMessage());
+                                    Log.e("REFERRAL", "Could not get referral: " + e.getMessage());
+                                } finally {
+                                    referrerClient.endConnection();
                                 }
-                                // Connection established.
                                 break;
                             case InstallReferrerResponse.FEATURE_NOT_SUPPORTED:
-                                // API not available on the current Play Store app.
-                                Log.e(TAG, "InstallReferrerResponse.FEATURE_NOT_SUPPORTED");
+                                Log.e("REFERRAL", "InstallReferrerResponse.FEATURE_NOT_SUPPORTED");
                                 break;
                             case InstallReferrerResponse.SERVICE_UNAVAILABLE:
-                                // Connection couldn't be established.
-                                Log.e(TAG, "InstallReferrerResponse.SERVICE_UNAVAILABLE");
+                                Log.e("REFERRAL", "InstallReferrerResponse.SERVICE_UNAVAILABLE");
                                 break;
                         }
                     }
 
                     @Override
-                    public void onInstallReferrerServiceDisconnected() {}
+                    public void onInstallReferrerServiceDisconnected() {
+                        Log.d("REFERRAL", "Install referrer service disconnected");
+                    }
                 });
+    }
+
+    private void processReferrerString(String referrerUrl) {
+        // Parse referral code from URL parameters
+        String referralCode = getReferrerParameter(referrerUrl, "referral_code");
+
+        if (referralCode != null && !referralCode.isEmpty()) {
+            Log.d("REFERRAL", "Found referral code: " + referralCode);
+
+            // Save referral code locally
+            ChromeSharedPreferences.getInstance()
+                    .writeString(BravePreferenceKeys.EXPRESS_REFERRAL_CODE, referralCode);
+
+            // Send to backend
+            sendReferralToBackend(referralCode, referrerUrl);
+        }
+
+        // Also keep existing deep link checks
+        if (referrerUrl.equals(BraveConstants.DEEPLINK_ANDROID_PLAYLIST)) {
+            ChromeSharedPreferences.getInstance()
+                    .writeBoolean(BravePreferenceKeys.BRAVE_DEFERRED_DEEPLINK_PLAYLIST, true);
+        } else if (referrerUrl.equals(BraveConstants.DEEPLINK_ANDROID_VPN)) {
+            ChromeSharedPreferences.getInstance()
+                    .writeBoolean(BravePreferenceKeys.BRAVE_DEFERRED_DEEPLINK_VPN, true);
+        }
+
+        markReferralProcessed();
+    }
+
+    private void markReferralProcessed() {
+        ChromeSharedPreferences.getInstance()
+                .writeBoolean(BravePreferenceKeys.EXPRESS_REFERRAL_PROCESSED, true);
+    }
+
+    private String getReferrerParameter(String referrerUrl, String paramName) {
+        try {
+            // URL decode first
+            String decodedUrl = URLDecoder.decode(referrerUrl, "UTF-8");
+            String[] pairs = decodedUrl.split("&");
+            for (String pair : pairs) {
+                String[] keyValue = pair.split("=", 2);
+                if (keyValue.length == 2 && keyValue[0].equals(paramName)) {
+                    return keyValue[1];
+                }
+            }
+        } catch (Exception e) {
+            Log.e("REFERRAL", "Error parsing URL parameter: " + e.getMessage());
+        }
+        return null;
+    }
+
+    private void sendReferralToBackend(String referralCode, String fullReferrerUrl) {
+        // Get device ID
+        String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
+
+        new Thread(() -> {
+            try {
+                // TODO: Replace with your actual backend endpoint
+                URL url = new URL("https://your-backend.com/api/referral/track");
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setDoOutput(true);
+                conn.setConnectTimeout(10000);
+                conn.setReadTimeout(10000);
+
+                JSONObject payload = new JSONObject();
+                payload.put("referral_code", referralCode);
+                payload.put("device_id", deviceId);
+                payload.put("full_referrer", fullReferrerUrl);
+                payload.put("install_timestamp", System.currentTimeMillis());
+                payload.put("app_version", BuildConfig.VERSION_NAME);
+                payload.put("package_name", getPackageName());
+
+                OutputStream os = conn.getOutputStream();
+                os.write(payload.toString().getBytes("UTF-8"));
+                os.close();
+
+                int responseCode = conn.getResponseCode();
+                Log.d("REFERRAL", "Backend response code: " + responseCode);
+
+                conn.disconnect();
+            } catch (Exception e) {
+                Log.e("REFERRAL", "Failed to send referral to backend: " + e.getMessage());
+            }
+        }).start();
     }
 
     private enum DifferenceType {
