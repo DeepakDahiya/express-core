@@ -487,7 +487,7 @@ public abstract class BraveActivity extends ChromeActivity
                             });
         }
 
-        checkReferral()
+        checkReferral();
         // Executes Leo voice prompt if it was triggered from quick search app widget
         // maybeExecuteLeoVoicePrompt();
     }
