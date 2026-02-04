@@ -114,6 +114,7 @@ public class WelcomeOnboardingActivity extends FirstRunActivityBase {
      * click listeners, and performing first-run setup tasks.
      */
     private void initializeViews() {
+        Log.e(TAG, "TESTING REFERRAL 1");
         assert !mInitializeViewsDone;
 
         setContentView(R.layout.activity_welcome_onboarding);
@@ -129,6 +130,8 @@ public class WelcomeOnboardingActivity extends FirstRunActivityBase {
         if (mInvokePostWorkAtInitializeViews) {
             finishNativeInitializationPostWork();
         }
+
+        Log.e(TAG, "TESTING REFERRAL 2");
 
         checkReferral();
 

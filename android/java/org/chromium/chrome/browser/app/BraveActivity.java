@@ -298,6 +298,11 @@ import org.chromium.content_public.browser.NavigationHandle;
 
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
 
+import com.android.installreferrer.api.InstallReferrerClient;
+import com.android.installreferrer.api.InstallReferrerClient.InstallReferrerResponse;
+import com.android.installreferrer.api.InstallReferrerStateListener;
+import com.android.installreferrer.api.ReferrerDetails;
+
 /** Brave's extension for ChromeActivity */
 @JNINamespace("chrome::android")
 @SuppressWarnings("UseSharedPreferencesManagerFromChromeCheck")
@@ -481,6 +486,8 @@ public abstract class BraveActivity extends ChromeActivity
                                 }
                             });
         }
+
+        checkReferral()
         // Executes Leo voice prompt if it was triggered from quick search app widget
         // maybeExecuteLeoVoicePrompt();
     }
@@ -3432,6 +3439,56 @@ public abstract class BraveActivity extends ChromeActivity
                 }
             }
         }
+    }
+
+    private void checkReferral() {
+        Log.e("CHECK REFERRAL", "REFERRAL IN BRAVE ACTIVITY");
+        InstallReferrerClient referrerClient = InstallReferrerClient.newBuilder(this).build();
+        referrerClient.startConnection(
+                new InstallReferrerStateListener() {
+                    @Override
+                    public void onInstallReferrerSetupFinished(int responseCode) {
+                        switch (responseCode) {
+                            case InstallReferrerResponse.OK:
+                                try {
+                                    ReferrerDetails response = referrerClient.getInstallReferrer();
+                                    String referrerUrl = response.getInstallReferrer();
+                                    if (referrerUrl == null) return;
+
+                                    if (referrerUrl.equals(
+                                            BraveConstants.DEEPLINK_ANDROID_PLAYLIST)) {
+                                        ChromeSharedPreferences.getInstance()
+                                                .writeBoolean(
+                                                        BravePreferenceKeys
+                                                                .BRAVE_DEFERRED_DEEPLINK_PLAYLIST,
+                                                        true);
+                                    } else if (referrerUrl.equals(
+                                            BraveConstants.DEEPLINK_ANDROID_VPN)) {
+                                        ChromeSharedPreferences.getInstance()
+                                                .writeBoolean(
+                                                        BravePreferenceKeys
+                                                                .BRAVE_DEFERRED_DEEPLINK_VPN,
+                                                        true);
+                                    }
+                                } catch (RemoteException e) {
+                                    Log.e(TAG, "Could not get referral: " + e.getMessage());
+                                }
+                                // Connection established.
+                                break;
+                            case InstallReferrerResponse.FEATURE_NOT_SUPPORTED:
+                                // API not available on the current Play Store app.
+                                Log.e(TAG, "InstallReferrerResponse.FEATURE_NOT_SUPPORTED");
+                                break;
+                            case InstallReferrerResponse.SERVICE_UNAVAILABLE:
+                                // Connection couldn't be established.
+                                Log.e(TAG, "InstallReferrerResponse.SERVICE_UNAVAILABLE");
+                                break;
+                        }
+                    }
+
+                    @Override
+                    public void onInstallReferrerServiceDisconnected() {}
+                });
     }
 
     private enum DifferenceType {
