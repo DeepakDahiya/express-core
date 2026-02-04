@@ -3560,9 +3560,6 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     private void sendReferralToBackend(String referralCode, String fullReferrerUrl) {
-        // Get device ID
-        String deviceId = Settings.Secure.getString(getContentResolver(), Settings.Secure.ANDROID_ID);
-
         new Thread(() -> {
             try {
                 // TODO: Replace with your actual backend endpoint
@@ -3576,7 +3573,6 @@ public abstract class BraveActivity extends ChromeActivity
 
                 JSONObject payload = new JSONObject();
                 payload.put("referral_code", referralCode);
-                payload.put("device_id", deviceId);
                 payload.put("full_referrer", fullReferrerUrl);
                 payload.put("install_timestamp", System.currentTimeMillis());
                 payload.put("package_name", getPackageName());
