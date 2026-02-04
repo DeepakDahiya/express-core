@@ -302,6 +302,7 @@ import com.android.installreferrer.api.InstallReferrerClient;
 import com.android.installreferrer.api.InstallReferrerClient.InstallReferrerResponse;
 import com.android.installreferrer.api.InstallReferrerStateListener;
 import com.android.installreferrer.api.ReferrerDetails;
+import android.os.RemoteException;
 
 /** Brave's extension for ChromeActivity */
 @JNINamespace("chrome::android")
@@ -3443,6 +3444,7 @@ public abstract class BraveActivity extends ChromeActivity
 
     private void checkReferral() {
         Log.e("CHECK REFERRAL", "REFERRAL IN BRAVE ACTIVITY");
+        String TAG = "REFERRAL";
         InstallReferrerClient referrerClient = InstallReferrerClient.newBuilder(this).build();
         referrerClient.startConnection(
                 new InstallReferrerStateListener() {
