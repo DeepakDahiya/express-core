@@ -45,8 +45,8 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
     private static final int COUNTDOWN_DURATION_MS = 5000;
     private static final int COUNTDOWN_INTERVAL_MS = 100;
     
-    // Cooldown period - show bottomsheet once per hour (in milliseconds)
-    private static final long COOLDOWN_MS = 60 * 60 * 1000;
+    // Cooldown period - show bottomsheet once per 30 seconds (for testing, change to 60*60*1000 for 1 hour in production)
+    private static final long COOLDOWN_MS = 30 * 1000; // 30 seconds for testing
 
     private CountDownTimer mCountDownTimer;
     private ObjectAnimator mProgressAnimator;
