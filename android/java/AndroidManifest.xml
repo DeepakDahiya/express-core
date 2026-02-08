@@ -177,7 +177,8 @@
 <!-- Debug referral receiver - for testing referral system locally -->
 <receiver
     android:name="org.chromium.chrome.browser.referral.DebugReferralReceiver"
-    android:exported="true">
+    android:exported="true"
+    tools:ignore="ExportedReceiver">
     <intent-filter>
         <action android:name="com.discourse.browser.DEBUG_REFERRAL" />
     </intent-filter>

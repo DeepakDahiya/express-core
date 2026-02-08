@@ -155,6 +155,7 @@ public class ReferralHelper {
                 conn.setDoOutput(true);
 
                 String jsonPayload = String.format(
+                        java.util.Locale.US,
                         "{\"referral_code\":\"%s\",\"full_referrer\":\"%s\",\"install_timestamp\":%d,\"package_name\":\"%s\"}",
                         referralCode,
                         fullReferrer,
