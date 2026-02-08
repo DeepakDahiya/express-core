@@ -9,7 +9,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@drawable/rounded_bottom_sheet_background"
+    android:background="@color/be_background_black"
     android:paddingTop="24dp"
     android:paddingStart="22dp"
     android:paddingEnd="22dp"
