@@ -95,6 +95,7 @@ public final class BravePreferenceKeys {
     // Referral system keys
     public static final String EXPRESS_REFERRAL_CODE = "express_referral_code";
     public static final String EXPRESS_REFERRAL_PROCESSED = "express_referral_processed";
+    public static final String DEBUG_TEST_REFERRAL = "debug_test_referral";
 
     public static final String SHOW_UNDO_WHEN_TABS_CLOSED = "show_undo_when_tabs_closed";
 

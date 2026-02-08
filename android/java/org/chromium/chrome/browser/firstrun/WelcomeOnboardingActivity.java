@@ -139,52 +139,8 @@ public class WelcomeOnboardingActivity extends FirstRunActivityBase {
     }
 
     private void checkReferral() {
-        InstallReferrerClient referrerClient = InstallReferrerClient.newBuilder(this).build();
-        referrerClient.startConnection(
-                new InstallReferrerStateListener() {
-                    @Override
-                    public void onInstallReferrerSetupFinished(int responseCode) {
-                        switch (responseCode) {
-                            case InstallReferrerResponse.OK:
-                                try {
-                                    ReferrerDetails response = referrerClient.getInstallReferrer();
-                                    String referrerUrl = response.getInstallReferrer();
-                                    if (referrerUrl == null) return;
-
-                                    if (referrerUrl.equals(
-                                            BraveConstants.DEEPLINK_ANDROID_PLAYLIST)) {
-                                        ChromeSharedPreferences.getInstance()
-                                                .writeBoolean(
-                                                        BravePreferenceKeys
-                                                                .BRAVE_DEFERRED_DEEPLINK_PLAYLIST,
-                                                        true);
-                                    } else if (referrerUrl.equals(
-                                            BraveConstants.DEEPLINK_ANDROID_VPN)) {
-                                        ChromeSharedPreferences.getInstance()
-                                                .writeBoolean(
-                                                        BravePreferenceKeys
-                                                                .BRAVE_DEFERRED_DEEPLINK_VPN,
-                                                        true);
-                                    }
-                                } catch (RemoteException e) {
-                                    Log.e(TAG, "Could not get referral: " + e.getMessage());
-                                }
-                                // Connection established.
-                                break;
-                            case InstallReferrerResponse.FEATURE_NOT_SUPPORTED:
-                                // API not available on the current Play Store app.
-                                Log.e(TAG, "InstallReferrerResponse.FEATURE_NOT_SUPPORTED");
-                                break;
-                            case InstallReferrerResponse.SERVICE_UNAVAILABLE:
-                                // Connection couldn't be established.
-                                Log.e(TAG, "InstallReferrerResponse.SERVICE_UNAVAILABLE");
-                                break;
-                        }
-                    }
-
-                    @Override
-                    public void onInstallReferrerServiceDisconnected() {}
-                });
+        // Referral is now handled centrally via ReferralHelper
+        org.chromium.chrome.browser.referral.ReferralHelper.checkAndProcessReferral(this);
     }
 
     private void initViews() {
