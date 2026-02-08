@@ -146,6 +146,7 @@ import java.io.UnsupportedEncodingException;
 import android.util.Base64;
 import org.chromium.chrome.browser.settings.PostHogEventKeys;
 import org.chromium.chrome.browser.settings.PostHogUtil;
+import org.chromium.chrome.browser.youtube_premium.YouTubePremiumBottomSheetFragment;
 import android.content.pm.PackageInfo;
 
 @SuppressWarnings("UseSharedPreferencesManagerFromChromeCheck")
@@ -377,6 +378,12 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
             workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
             fetchAndUpdateProfileImage();
+            
+            // Show YouTube premium bottomsheet on NTP
+            if (mActivity instanceof BraveActivity) {
+                YouTubePremiumBottomSheetFragment.showIfNeeded(
+                        ((BraveActivity) mActivity).getSupportFragmentManager());
+            }
         } catch (Exception e) {
             throw e; // Re-throw to see the original crash
         }
@@ -1222,12 +1229,14 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
 
                     if (accessToken != null) {
                         JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
-                        String pInfo = activity.getCurrentAppVersion();
-                        JSONObject payload = new JSONObject();
-                        payload.put("app_version", pInfo);
-                        PostHogUtil.PostHogWorkerTask postHogWorkerTask =
-                            new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.YTP_PREMIUM_CLICKED_ON_HOME, decodedAccessTokenObj.getString("_id"), payload);
-                        postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        if (decodedAccessTokenObj != null) {
+                            String pInfo = activity.getCurrentAppVersion();
+                            JSONObject payload = new JSONObject();
+                            payload.put("app_version", pInfo);
+                            PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                                new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.YTP_PREMIUM_CLICKED_ON_HOME, decodedAccessTokenObj.getString("_id"), payload);
+                            postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        }
                     }
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
                     Log.e(TAG, "maybeShowWalletPanel " + e);
@@ -1784,7 +1793,7 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                 JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
                 if (avatar != null) {
                     ImageLoader.downloadImage(avatar, Glide.with(activity), true, 5, mProfileButton, null);
-                }else{
+                }else if (decodedAccessTokenObj != null) {
                     ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), true, 5, mProfileButton, null);
                 }
 

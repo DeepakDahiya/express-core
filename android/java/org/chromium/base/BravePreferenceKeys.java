@@ -115,6 +115,14 @@ public final class BravePreferenceKeys {
     public static final String BRAVE_DEFAULT_SEARCH_ENGINE_MIGRATED_JP =
             "brave_default_search_engine_migrated_jp";
 
+    // YouTube Premium Bottomsheet keys
+    public static final String YOUTUBE_PREMIUM_BOTTOMSHEET_LAST_SHOWN =
+            "youtube_premium_bottomsheet_last_shown";
+    public static final String YOUTUBE_PREMIUM_ACCESS_DAYS =
+            "youtube_premium_access_days";
+    public static final String YOUTUBE_PREMIUM_USER_BLOCKED =
+            "youtube_premium_user_blocked";
+
     /*
      * Checks if preference key is used in Brave.
      * It's no op currently. We might reconsider
@@ -124,3 +132,4 @@ public final class BravePreferenceKeys {
         return true;
     }
 }
+

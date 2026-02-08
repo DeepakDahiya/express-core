@@ -168,6 +168,7 @@ import org.chromium.chrome.browser.settings.BrowserExpressGetProfilePreferencesU
 import org.chromium.chrome.browser.toolbar.BraveHomeButton;
 import org.chromium.chrome.browser.settings.PostHogEventKeys;
 import org.chromium.chrome.browser.settings.PostHogUtil;
+import org.chromium.chrome.browser.youtube_premium.YouTubePremiumBottomSheetFragment;
 import org.chromium.net.ChromiumNetworkAdapter;
 import org.chromium.net.NetworkTrafficAnnotationTag;
 import org.chromium.base.ContextUtils;
@@ -693,6 +694,10 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                                     PostHogUtil.PostHogWorkerTask postHogWorkerTask =
                                         new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.YOUTUBE_VISITED, decodedAccessTokenObj.getString("_id"), payload);
                                     postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                    
+                                    // Show YouTube premium bottomsheet
+                                    YouTubePremiumBottomSheetFragment.showIfNeeded(
+                                            activity.getSupportFragmentManager());
                                 }
                                 if (avatar != null) {
                                     ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mProfileButton, null);

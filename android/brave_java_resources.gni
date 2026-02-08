@@ -1029,6 +1029,10 @@ brave_java_resources = [
   "java/res/xml/secure_dns_settings.xml",
   "java/res/xml/sns_preferences.xml",
   "java/res/xml/unstoppable_domains_preferences.xml",
+  "java/res/layout/fragment_youtube_premium_bottom_sheet.xml",
+  "java/res/drawable/circular_timer_progress.xml",
+  "java/res/drawable/stats_card_background.xml",
+  "java/res/values/youtube_premium_strings.xml",
 ]
 
 brave_base_module_resources =

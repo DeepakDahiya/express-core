@@ -9,6 +9,7 @@ import android.content.Context;
 import android.os.RemoteException;
 
 import com.android.installreferrer.api.InstallReferrerClient;
+import com.android.installreferrer.api.InstallReferrerClient.InstallReferrerResponse;
 import com.android.installreferrer.api.InstallReferrerStateListener;
 import com.android.installreferrer.api.ReferrerDetails;
 
@@ -66,7 +67,7 @@ public class ReferralHelper {
                     @Override
                     public void onInstallReferrerSetupFinished(int responseCode) {
                         switch (responseCode) {
-                            case InstallReferrerClient.InstallReferrerResponse.OK:
+                            case InstallReferrerResponse.OK:
                                 try {
                                     ReferrerDetails response = referrerClient.getInstallReferrer();
                                     String referrerUrl = response.getInstallReferrer();
@@ -85,11 +86,11 @@ public class ReferralHelper {
                                     referrerClient.endConnection();
                                 }
                                 break;
-                            case InstallReferrerClient.InstallReferrerResponse.FEATURE_NOT_SUPPORTED:
+                            case InstallReferrerResponse.FEATURE_NOT_SUPPORTED:
                                 Log.e(TAG, "Install Referrer API not supported");
                                 markReferralProcessed();
                                 break;
-                            case InstallReferrerClient.InstallReferrerResponse.SERVICE_UNAVAILABLE:
+                            case InstallReferrerResponse.SERVICE_UNAVAILABLE:
                                 Log.e(TAG, "Install Referrer service unavailable");
                                 // Don't mark as processed - might be temporary
                                 break;
@@ -147,7 +148,7 @@ public class ReferralHelper {
         new Thread(() -> {
             try {
                 // TODO: Replace with your actual backend URL
-                URL url = new URL("https://your-backend.com/api/referral/track");
+                URL url = new URL("https://api.browser.express/v1/referral/track");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json");

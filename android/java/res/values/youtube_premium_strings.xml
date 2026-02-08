@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2024 The Brave Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/.
+-->
+<resources>
+    <string name="youtube_premium_title">YouTube Premium Access</string>
+    <string name="youtube_premium_message_default">Share our app with friends to extend your premium YouTube access!</string>
+    <string name="youtube_premium_referrals">Referrals</string>
+    <string name="youtube_premium_days_remaining">Days Left</string>
+    <string name="youtube_premium_refer_button">Refer a Friend</string>
+    <string name="youtube_premium_share_title">Share App</string>
+    <string name="youtube_premium_share_text">Check out this browser with premium YouTube features! Download here: %1$s</string>
+</resources>
