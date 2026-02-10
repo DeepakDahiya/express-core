@@ -189,7 +189,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                     }
                 });
 
-                mReferButton.setOnClickListener(view2 -> {
+                mReferralButton.setOnClickListener(view2 -> {
                     if (mActivity != null || getActivity() != null) {
                         JSONObject payload = new JSONObject();
                         try {
