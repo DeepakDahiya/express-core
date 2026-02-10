@@ -381,8 +381,9 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
             
             // Show YouTube premium bottomsheet on NTP
             if (mActivity instanceof BraveActivity) {
-                YouTubePremiumBottomSheetFragment.showIfNeeded(
-                        ((BraveActivity) mActivity).getSupportFragmentManager());
+                YouTubePremiumBottomSheetFragment.showPermanent(getParentFragmentManager());
+                // YouTubePremiumBottomSheetFragment.showIfNeeded(
+                //         ((BraveActivity) mActivity).getSupportFragmentManager());
             }
         } catch (Exception e) {
             throw e; // Re-throw to see the original crash

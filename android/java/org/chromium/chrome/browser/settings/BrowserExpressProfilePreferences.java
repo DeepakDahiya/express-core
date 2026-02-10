@@ -58,6 +58,7 @@ import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.util.BraveConstants;
 import org.chromium.chrome.browser.util.BraveTouchUtils;
+import org.chromium.chrome.browser.youtube_premium.YouTubePremiumBottomSheetFragment;
 import org.chromium.mojo.bindings.ConnectionErrorHandler;
 import org.chromium.mojo.system.MojoException;
 import com.bumptech.glide.Glide;
@@ -83,6 +84,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
     private TextView mUsernameText;
     private TextView mFullNameText;
     private Button mBtnYoutubePremium;
+    private Button mReferralButton;
 
     // private Button mDeleteButton;
     private Button mLogoutButton;
@@ -125,6 +127,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image_2);
             mFullNameText = (TextView) view.findViewById(R.id.browser_express_full_name);
             mBtnYoutubePremium = (Button) view.findViewById(R.id.youtube_premium_button);
+            mReferralButton = (Button) view.findViewById(R.id.referral_button);
 
             // mDeleteButton = (Button) view.findViewById(R.id.delete_button);
             mLogoutButton = (Button) view.findViewById(R.id.logout_button);
@@ -183,6 +186,23 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                         intent.setAction(Intent.ACTION_VIEW);
                         startActivity(intent);
+                    }
+                });
+
+                mReferButton.setOnClickListener(view2 -> {
+                    if (mActivity != null || getActivity() != null) {
+                        JSONObject payload = new JSONObject();
+                        try {
+                            payload.put("app_version", pInfo);
+                            PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                                new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.REFERRAL_CLICKED_IN_PROFILE, decodedAccessTokenObj.getString("_id"), payload);
+                            postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        } catch (JSONException e) {
+                            Log.e("Express Browser", "Error creating JSON payload", e);
+                        }
+
+                        // Open permanent bottom sheet
+                        YouTubePremiumBottomSheetFragment.showPermanent(getParentFragmentManager());
                     }
                 });
 

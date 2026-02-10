@@ -42,7 +42,8 @@ import org.chromium.chrome.browser.youtube_premium.YouTubePremiumAccessUtil.Prem
  */
 public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment {
     private static final String TAG = "YTPremiumBottomSheet";
-    private static final int COUNTDOWN_DURATION_MS = 5000;
+    private static final String ARG_IS_PERMANENT = "is_permanent";
+    private static final int COUNTDOWN_DURATION_MS = 10000;
     private static final int COUNTDOWN_INTERVAL_MS = 100;
     
     // Cooldown period - show bottomsheet once per 30 seconds (for testing, change to 60*60*1000 for 1 hour in production)
@@ -58,12 +59,22 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
     private TextView mReferralCount;
     private TextView mDaysRemaining;
     private Button mReferButton;
+    private View mCloseButton;
     private ProgressBar mLoadingIndicator;
 
     private boolean mIsBlocked = false;
+    private boolean mIsPermanent = false;
 
     public static YouTubePremiumBottomSheetFragment newInstance() {
         return new YouTubePremiumBottomSheetFragment();
+    }
+
+    public static YouTubePremiumBottomSheetFragment newInstance(boolean isPermanent) {
+        YouTubePremiumBottomSheetFragment fragment = new YouTubePremiumBottomSheetFragment();
+        Bundle args = new Bundle();
+        args.putBoolean(ARG_IS_PERMANENT, isPermanent);
+        fragment.setArguments(args);
+        return fragment;
     }
 
     /**
@@ -79,9 +90,12 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
     /**
      * Show the bottomsheet if cooldown has passed.
      */
+    /**
+     * Show the bottomsheet if cooldown has passed.
+     */
     public static void showIfNeeded(FragmentManager fragmentManager) {
         if (shouldShowBottomSheet()) {
-            YouTubePremiumBottomSheetFragment fragment = newInstance();
+            YouTubePremiumBottomSheetFragment fragment = newInstance(false);
             fragment.show(fragmentManager, TAG);
             
             // Update last shown timestamp
@@ -91,9 +105,21 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         }
     }
 
+    /**
+     * Show the bottomsheet permanently (until closed by user).
+     * Bypasses cooldown check.
+     */
+    public static void showPermanent(FragmentManager fragmentManager) {
+        YouTubePremiumBottomSheetFragment fragment = newInstance(true);
+        fragment.show(fragmentManager, TAG);
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            mIsPermanent = getArguments().getBoolean(ARG_IS_PERMANENT, false);
+        }
         setStyle(STYLE_NORMAL, R.style.AppSetDefaultBottomSheetDialogTheme);
     }
 
@@ -121,7 +147,21 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         mReferralCount = view.findViewById(R.id.referral_count);
         mDaysRemaining = view.findViewById(R.id.days_remaining);
         mReferButton = view.findViewById(R.id.btn_refer);
+        mReferralCount = view.findViewById(R.id.referral_count);
+        mDaysRemaining = view.findViewById(R.id.days_remaining);
+        mReferButton = view.findViewById(R.id.btn_refer);
+        mCloseButton = view.findViewById(R.id.close_button);
         mLoadingIndicator = view.findViewById(R.id.loading_indicator);
+
+        // Configure UI based on mode
+        if (mIsPermanent) {
+            mTimerContainer.setVisibility(View.GONE);
+            mCloseButton.setVisibility(View.VISIBLE);
+            mCloseButton.setOnClickListener(v -> dismiss());
+        } else {
+            mTimerContainer.setVisibility(View.VISIBLE);
+            mCloseButton.setVisibility(View.GONE);
+        }
 
         // Set up refer button
         mReferButton.setOnClickListener(v -> shareReferralLink());
@@ -161,7 +201,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                                               data.isBlocked);
 
                         // Start countdown only if not blocked
-                        if (!mIsBlocked) {
+                        if (!mIsBlocked && !mIsPermanent) {
                             startCountdown();
                         } else {
                             // Hide timer for blocked users
@@ -193,7 +233,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                                 cachedBlocked);
                         updateUI(fallbackData);
                         
-                        if (!cachedBlocked) {
+                        if (!cachedBlocked && !mIsPermanent) {
                             startCountdown();
                         } else {
                             mTimerContainer.setVisibility(View.GONE);

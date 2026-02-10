@@ -46,6 +46,21 @@
             android:textStyle="bold" />
     </FrameLayout>
 
+    <!-- Close button for permanent mode -->
+    <ImageView
+        android:id="@+id/close_button"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="end|top"
+        android:layout_marginTop="-4dp"
+        android:layout_marginEnd="4dp"
+        android:padding="4dp"
+        android:src="@drawable/btn_close"
+        app:tint="@color/default_icon_color"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:visibility="gone"
+        android:contentDescription="@string/close" />
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

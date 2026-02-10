@@ -47,4 +47,5 @@ public final class PostHogEventKeys {
         public static final String UPVOTE_GIVEN = "Upvote Given"; // DONE
         public static final String DOWNVOTE_GIVEN = "Downvote Given"; // DONE
         public static final String YOUTUBE_VISITED = "YouTube Visited"; // DONE
+        public static final String REFERRAL_CLICKED_IN_PROFILE = "Referral Clicked in Profile"; // DONE
 }
