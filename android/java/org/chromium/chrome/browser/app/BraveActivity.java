@@ -464,12 +464,13 @@ public abstract class BraveActivity extends ChromeActivity
             FullScreenCustomTabActivity.sIsFullScreenCustomTabActivityClosed = false;
 
             // Navigate to NTP if the app was dormant for more than 1 hour
+            // TODO: Change back to 3_600_000 (1 hour) after testing
             long backgroundTimestamp =
                     ChromeSharedPreferences.getInstance()
                             .readLong(BravePreferenceKeys.BRAVE_APP_BACKGROUND_TIMESTAMP, 0);
             if (backgroundTimestamp > 0) {
                 long elapsedMs = System.currentTimeMillis() - backgroundTimestamp;
-                if (elapsedMs > 3_600_000) {
+                if (elapsedMs > 10_000) {
                     Tab activeTab = getActivityTab();
                     boolean isAlreadyOnNtp =
                             activeTab != null
