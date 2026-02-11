@@ -2931,6 +2931,45 @@ public abstract class BraveActivity extends ChromeActivity
         }
     }
 
+    public void setRefreshToken(String refreshToken) {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_ACCESS_TOKEN, 0);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        if (refreshToken == null) {
+            editor.remove("RefreshToken");
+        } else {
+            editor.putString("RefreshToken", refreshToken);
+        }
+        editor.apply();
+    }
+
+    public String getRefreshToken() {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_ACCESS_TOKEN, 0);
+        return sharedPref.getString("RefreshToken", null);
+    }
+
+    /**
+     * Extract referralCode from the JWT access token payload.
+     * Returns null if token is missing, expired, or doesn't contain referralCode.
+     */
+    public String getReferralCodeFromToken() {
+        String accessToken = getAccessToken();
+        if (accessToken == null) return null;
+        try {
+            String[] parts = accessToken.split("\\.");
+            if (parts.length < 2) return null;
+            byte[] data = Base64.decode(parts[1], Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
+            JSONObject payload = new JSONObject(new String(data, "UTF-8"));
+            if (payload.has("referralCode")) {
+                return payload.getString("referralCode");
+            }
+        } catch (Exception e) {
+            Log.e("BraveActivity", "Failed to extract referralCode from token: " + e.getMessage());
+        }
+        return null;
+    }
+
     public void setBrowserExpressEmail(String email) {
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 BravePreferenceKeys.BROWSER_EXPRESS_EMAIL, 0);

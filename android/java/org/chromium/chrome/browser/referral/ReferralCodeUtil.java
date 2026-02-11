@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-package org.chromium.chrome.browser.youtube_premium;
+package org.chromium.chrome.browser.referral;
 
 import org.chromium.base.Log;
 import org.chromium.base.task.AsyncTask;
@@ -17,56 +17,31 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
 /**
- * Utility class to fetch YouTube premium access data from backend.
+ * Utility to fetch the user's referral code from the backend.
+ * Used as a fallback when the JWT access token doesn't contain referralCode
+ * (e.g. tokens issued before referralCode was added to the payload).
  */
-public class YouTubePremiumAccessUtil {
-    private static final String TAG = "YouTubePremiumAccess";
-    // TODO: Replace with actual backend URL
-    private static final String API_URL = "https://api.browser.express/v1/youtube/access";
+public class ReferralCodeUtil {
+    private static final String TAG = "ReferralCodeUtil";
+    private static final String API_URL = "https://api.browser.express/v1/referral/code";
 
-    /**
-     * Callback interface for premium access data fetch results.
-     */
-    public interface PremiumAccessCallback {
-        void onSuccess(PremiumAccessData data);
+    public interface ReferralCodeCallback {
+        void onSuccess(String referralCode);
         void onError(String error);
     }
 
-    /**
-     * Data class to hold premium access information.
-     */
-    public static class PremiumAccessData {
-        public final int referralCount;
-        public final int accessDaysRemaining;
-        public final String message;
-        public final boolean isBlocked;
-        public final String referralCode;
-
-        public PremiumAccessData(int referralCount, int accessDaysRemaining,
-                                 String message, boolean isBlocked, String referralCode) {
-            this.referralCount = referralCount;
-            this.accessDaysRemaining = accessDaysRemaining;
-            this.message = message;
-            this.isBlocked = isBlocked;
-            this.referralCode = referralCode;
-        }
-    }
-
-    /**
-     * AsyncTask to fetch premium access data from backend.
-     */
-    public static class GetPremiumAccessWorkerTask extends AsyncTask<PremiumAccessData> {
+    public static class GetReferralCodeWorkerTask extends AsyncTask<String> {
         private final String mAccessToken;
-        private final PremiumAccessCallback mCallback;
+        private final ReferralCodeCallback mCallback;
         private String mErrorMessage;
 
-        public GetPremiumAccessWorkerTask(String accessToken, PremiumAccessCallback callback) {
+        public GetReferralCodeWorkerTask(String accessToken, ReferralCodeCallback callback) {
             this.mAccessToken = accessToken;
             this.mCallback = callback;
         }
 
         @Override
-        protected PremiumAccessData doInBackground() {
+        protected String doInBackground() {
             try {
                 URL url = new URL(API_URL);
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -92,29 +67,24 @@ public class YouTubePremiumAccessUtil {
                     reader.close();
 
                     JSONObject jsonResponse = new JSONObject(response.toString());
-                    
-                    int referralCount = jsonResponse.optInt("referralCount", 0);
-                    int accessDaysRemaining = jsonResponse.optInt("accessDaysRemaining", 0);
-                    String message = jsonResponse.optString("message",
-                            "Share the app with friends to extend your premium access!");
-                    boolean isBlocked = jsonResponse.optBoolean("isBlocked", false);
-                    String referralCode = jsonResponse.optString("referralCode", null);
-
-                    return new PremiumAccessData(referralCount, accessDaysRemaining,
-                                                 message, isBlocked, referralCode);
+                    if (jsonResponse.optBoolean("success", false)) {
+                        return jsonResponse.optString("referralCode", null);
+                    }
+                    mErrorMessage = "API returned success=false";
+                    return null;
                 } else {
                     mErrorMessage = "Server returned error: " + responseCode;
                     return null;
                 }
             } catch (Exception e) {
-                Log.e(TAG, "Failed to fetch premium access data: " + e.getMessage());
+                Log.e(TAG, "Failed to fetch referral code: " + e.getMessage());
                 mErrorMessage = e.getMessage();
                 return null;
             }
         }
 
         @Override
-        protected void onPostExecute(PremiumAccessData result) {
+        protected void onPostExecute(String result) {
             if (mCallback != null) {
                 if (result != null) {
                     mCallback.onSuccess(result);

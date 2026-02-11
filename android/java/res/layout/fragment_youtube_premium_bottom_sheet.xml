@@ -47,19 +47,6 @@
     </FrameLayout>
 
     <!-- Close button for permanent mode -->
-    <ImageView
-        android:id="@+id/close_button"
-        android:layout_width="32dp"
-        android:layout_height="32dp"
-        android:layout_gravity="end|top"
-        android:layout_marginTop="-4dp"
-        android:layout_marginEnd="4dp"
-        android:padding="4dp"
-        android:src="@drawable/btn_close"
-        app:tint="@color/set_default_text_color"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:visibility="gone"
-        android:contentDescription="@string/close" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -80,15 +67,41 @@
                 android:layout_height="40dp"
                 android:src="@drawable/golden_youtube_icon"
                 android:contentDescription="@string/youtube" />
-
-            <TextView
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
-                android:text="@string/youtube_premium_title"
-                android:textColor="@color/set_default_text_color"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:orientation="vertical"
+                android:layout_marginTop="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:text="@string/youtube_premium_title"
+                    android:textColor="@color/set_default_text_color"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:text="@string/youtube_premium_subtitle"
+                    android:textColor="@color/set_default_text_color"
+                    android:textSize="12sp" />
+            </LinearLayout>
+            <ImageView
+                android:id="@+id/close_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="end|top"
+                android:layout_marginTop="-4dp"
+                android:layout_marginEnd="4dp"
+                android:padding="4dp"
+                android:src="@drawable/btn_close"
+                app:tint="@color/set_default_text_color"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:visibility="gone"
+                android:contentDescription="@string/close" />
         </LinearLayout>
 
         <!-- Message from API -->

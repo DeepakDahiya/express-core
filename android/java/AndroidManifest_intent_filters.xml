@@ -18,3 +18,13 @@
     <data android:scheme="https"
           android:host="brave.com" />
 </intent-filter>
+
+<!-- Deep link for referral system -->
+<intent-filter android:autoVerify="true">
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <data android:scheme="https"
+          android:host="browser.express"
+          android:pathPrefix="/refer" />
+</intent-filter>

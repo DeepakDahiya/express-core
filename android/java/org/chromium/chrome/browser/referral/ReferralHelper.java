@@ -5,8 +5,10 @@
 
 package org.chromium.chrome.browser.referral;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.RemoteException;
+import android.provider.Settings;
 
 import com.android.installreferrer.api.InstallReferrerClient;
 import com.android.installreferrer.api.InstallReferrerClient.InstallReferrerResponse;
@@ -34,8 +36,11 @@ public class ReferralHelper {
      * Check and process referral. Called from BraveLauncherActivity.onCreate()
      * This ensures referral is captured before any other activity routing.
      */
+    private static Context sAppContext;
+
     public static void checkAndProcessReferral(Context context) {
         Log.d(TAG, "checkAndProcessReferral called");
+        sAppContext = context.getApplicationContext();
 
         // Only process referral once (on first install)
         boolean alreadyProcessed = ChromeSharedPreferences.getInstance()
@@ -104,6 +109,30 @@ public class ReferralHelper {
                 });
     }
 
+    /**
+     * Process a referral from a deep link URL.
+     * Extracts referralCode, gets deviceId, and sends to backend.
+     */
+    public static void processDeepLinkReferral(Context context, String referralCode) {
+        if (referralCode == null || referralCode.isEmpty()) return;
+
+        Log.d(TAG, "Processing deep link referral code: " + referralCode);
+
+        // Check if this referral code was already tracked
+        String lastTracked = ChromeSharedPreferences.getInstance()
+                .readString(BravePreferenceKeys.EXPRESS_REFERRAL_CODE, null);
+        if (referralCode.equals(lastTracked)) {
+            Log.d(TAG, "Referral code already tracked, skipping");
+            return;
+        }
+
+        ChromeSharedPreferences.getInstance()
+                .writeString(BravePreferenceKeys.EXPRESS_REFERRAL_CODE, referralCode);
+
+        String deviceId = getDeviceId(context);
+        sendReferralToBackend(referralCode, deviceId);
+    }
+
     private static void processReferrerString(String referrerUrl) {
         // Parse referral code from URL parameters
         String referralCode = getReferrerParameter(referrerUrl, "referral_code");
@@ -116,7 +145,8 @@ public class ReferralHelper {
                     .writeString(BravePreferenceKeys.EXPRESS_REFERRAL_CODE, referralCode);
 
             // Send to backend
-            sendReferralToBackend(referralCode, referrerUrl);
+            String deviceId = getDeviceId(sAppContext);
+            sendReferralToBackend(referralCode, deviceId);
         }
 
         markReferralProcessed();
@@ -144,10 +174,22 @@ public class ReferralHelper {
         Log.d(TAG, "Marked referral as processed");
     }
 
-    private static void sendReferralToBackend(String referralCode, String fullReferrer) {
+    @SuppressLint("HardwareIds")
+    private static String getDeviceId(Context context) {
+        try {
+            if (context != null) {
+                return Settings.Secure.getString(
+                        context.getContentResolver(), Settings.Secure.ANDROID_ID);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to get device ID: " + e.getMessage());
+        }
+        return "unknown";
+    }
+
+    private static void sendReferralToBackend(String referralCode, String deviceId) {
         new Thread(() -> {
             try {
-                // TODO: Replace with your actual backend URL
                 URL url = new URL("https://api.browser.express/v1/referral/track");
                 HttpURLConnection conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
@@ -156,11 +198,9 @@ public class ReferralHelper {
 
                 String jsonPayload = String.format(
                         java.util.Locale.US,
-                        "{\"referral_code\":\"%s\",\"full_referrer\":\"%s\",\"install_timestamp\":%d,\"package_name\":\"%s\"}",
+                        "{\"referralCode\":\"%s\",\"deviceId\":\"%s\"}",
                         referralCode,
-                        fullReferrer,
-                        System.currentTimeMillis(),
-                        "com.discourse.browser"
+                        deviceId
                 );
 
                 try (OutputStream os = conn.getOutputStream()) {

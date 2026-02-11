@@ -33,6 +33,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
+import org.chromium.chrome.browser.referral.ReferralCodeUtil;
 import org.chromium.chrome.browser.youtube_premium.YouTubePremiumAccessUtil.PremiumAccessCallback;
 import org.chromium.chrome.browser.youtube_premium.YouTubePremiumAccessUtil.PremiumAccessData;
 
@@ -64,6 +65,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
 
     private boolean mIsBlocked = false;
     private boolean mIsPermanent = false;
+    private String mReferralCode = null;
 
     public static YouTubePremiumBottomSheetFragment newInstance() {
         return new YouTubePremiumBottomSheetFragment();
@@ -185,20 +187,27 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
             accessToken = activity.getAccessToken();
+            // Try to get referralCode from JWT first (preferred per doc)
+            mReferralCode = activity.getReferralCodeFromToken();
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e(TAG, "Could not get BraveActivity: " + e.getMessage());
         }
 
         YouTubePremiumAccessUtil.GetPremiumAccessWorkerTask workerTask =
-                new YouTubePremiumAccessUtil.GetPremiumAccessWorkerTask(accessToken, 
+                new YouTubePremiumAccessUtil.GetPremiumAccessWorkerTask(accessToken,
                         new PremiumAccessCallback() {
                     @Override
                     public void onSuccess(PremiumAccessData data) {
                         if (getActivity() == null || !isAdded()) return;
-                        
+
                         mLoadingIndicator.setVisibility(View.GONE);
                         updateUI(data);
                         mIsBlocked = data.isBlocked;
+
+                        // Use referralCode from access response if not in JWT
+                        if (mReferralCode == null && data.referralCode != null) {
+                            mReferralCode = data.referralCode;
+                        }
 
                         // Cache data
                         ChromeSharedPreferences.getInstance()
@@ -236,9 +245,9 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                                 .readBoolean(BravePreferenceKeys.YOUTUBE_PREMIUM_USER_BLOCKED, false);
                         
                         PremiumAccessData fallbackData = new PremiumAccessData(
-                                0, cachedDays, 
+                                0, cachedDays,
                                 getString(R.string.youtube_premium_message_default),
-                                cachedBlocked);
+                                cachedBlocked, null);
                         updateUI(fallbackData);
                         
                         if (!cachedBlocked && !mIsPermanent) {
@@ -283,24 +292,49 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
     }
 
     private void shareReferralLink() {
+        if (mReferralCode != null) {
+            doShareReferralLink(mReferralCode);
+            return;
+        }
+
+        // Fallback: fetch referralCode from GET /v1/referral/code endpoint
+        String accessToken = null;
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
-            
-            // TODO: Replace with actual referral link or app store link
-            String referralLink = "https://play.google.com/store/apps/details?id=" 
-                    + activity.getPackageName();
-            
-            String shareText = getString(R.string.youtube_premium_share_text, referralLink);
-            
-            Intent shareIntent = new Intent(Intent.ACTION_SEND);
-            shareIntent.setType("text/plain");
-            shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
-            
-            startActivity(Intent.createChooser(shareIntent, 
-                    getString(R.string.youtube_premium_share_title)));
+            accessToken = activity.getAccessToken();
         } catch (BraveActivity.BraveActivityNotFoundException e) {
-            Log.e(TAG, "Could not share referral link: " + e.getMessage());
+            Log.e(TAG, "Could not get BraveActivity: " + e.getMessage());
+            return;
         }
+
+        ReferralCodeUtil.GetReferralCodeWorkerTask task =
+                new ReferralCodeUtil.GetReferralCodeWorkerTask(accessToken,
+                        new ReferralCodeUtil.ReferralCodeCallback() {
+                    @Override
+                    public void onSuccess(String referralCode) {
+                        mReferralCode = referralCode;
+                        doShareReferralLink(referralCode);
+                    }
+
+                    @Override
+                    public void onError(String error) {
+                        Log.e(TAG, "Failed to fetch referral code: " + error);
+                    }
+                });
+        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    private void doShareReferralLink(String referralCode) {
+        String referralLink = "https://browser.express/refer?code=" + referralCode;
+
+        String shareText = getString(R.string.youtube_premium_share_text, referralLink);
+
+        Intent shareIntent = new Intent(Intent.ACTION_SEND);
+        shareIntent.setType("text/plain");
+        shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
+
+        startActivity(Intent.createChooser(shareIntent,
+                getString(R.string.youtube_premium_share_title)));
     }
 
     @Override

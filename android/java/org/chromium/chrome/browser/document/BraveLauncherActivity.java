@@ -6,6 +6,8 @@
 package org.chromium.chrome.browser.document;
 
 import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import org.chromium.base.Log;
@@ -26,8 +28,35 @@ public class BraveLauncherActivity extends Activity {
         BottomToolbarConfiguration.isBraveBottomControlsEnabled();
         BraveHelper.disableFREDRP();
 
-        // Check for referral early in app launch
+        // Handle incoming referral deep links (e.g. https://browser.express/refer?code=a1b2c3d4)
+        handleReferralDeepLink(getIntent());
+
+        // Check for referral early in app launch (Play Store Install Referrer)
         Log.d(TAG, "Checking referral in BraveLauncherActivity");
         ReferralHelper.checkAndProcessReferral(this);
+    }
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        handleReferralDeepLink(intent);
+    }
+
+    private void handleReferralDeepLink(Intent intent) {
+        if (intent == null || intent.getData() == null) return;
+
+        Uri uri = intent.getData();
+        if (uri == null) return;
+
+        String host = uri.getHost();
+        String path = uri.getPath();
+
+        if ("browser.express".equals(host) && path != null && path.startsWith("/refer")) {
+            String referralCode = uri.getQueryParameter("code");
+            if (referralCode != null && !referralCode.isEmpty()) {
+                Log.d(TAG, "Received referral deep link with code: " + referralCode);
+                ReferralHelper.processDeepLinkReferral(this, referralCode);
+            }
+        }
     }
 }
