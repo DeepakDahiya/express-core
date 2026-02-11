@@ -338,10 +338,10 @@ public class BrowserExpressAddCommentUtil {
                     newComment.setTrendingScore(comment.getInt("trendingScore"));
                     task.setComment(newComment);
 
-                    String accessToken = responseObject.getString("accessToken");
-                    String refreshToken = responseObject.getString("refreshToken");
-                    if(accessToken != null && refreshToken != null && accessToken.length() > 0 && refreshToken.length() > 0){
-                        task.setNewTokens(accessToken, refreshToken);
+                    String accessToken1 = responseObject.getString("accessToken");
+                    String refreshToken1 = responseObject.getString("refreshToken");
+                    if(accessToken1 != null && refreshToken1 != null && accessToken1.length() > 0 && refreshToken1.length() > 0){
+                        task.setNewTokens(accessToken1, refreshToken1);
                     }
                 }else{
                     task.setAddCommentSuccessStatus(false);
