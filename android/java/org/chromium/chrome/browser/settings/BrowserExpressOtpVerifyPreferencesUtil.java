@@ -131,7 +131,9 @@ public class BrowserExpressOtpVerifyPreferencesUtil {
                     OtpVerifyWorkerTask.setOtpVerifySuccessStatus(true);
                     String accessToken = responseObject.getString("accessToken");
                     String refreshToken = responseObject.getString("refreshToken");
-                    OtpVerifyWorkerTask.setAuthTokens(accessToken, refreshToken);
+                    if(accessToken != null && refreshToken != null && accessToken.length() > 0 && refreshToken.length() > 0){
+                        OtpVerifyWorkerTask.setAuthTokens(accessToken, refreshToken);
+                    }
                     Log.e(TAG, "INSIDE SUCCESS TRUE");
                 }else{
                     OtpVerifyWorkerTask.setOtpVerifySuccessStatus(false);

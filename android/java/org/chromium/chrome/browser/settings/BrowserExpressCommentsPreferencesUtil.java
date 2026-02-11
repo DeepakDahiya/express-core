@@ -129,7 +129,9 @@ public class BrowserExpressCommentsPreferencesUtil {
                     LoginWorkerTask.setLoginSuccessStatus(true);
                     String accessToken = responseObject.getString("accessToken");
                     String refreshToken = responseObject.getString("refreshToken");
-                    LoginWorkerTask.setAuthTokens(accessToken, refreshToken);
+                    if(accessToken != null && refreshToken != null && accessToken.length() > 0 && refreshToken.length() > 0){
+                        LoginWorkerTask.setAuthTokens(accessToken, refreshToken);
+                    }
                 }else{
                     LoginWorkerTask.setLoginSuccessStatus(false);
                     LoginWorkerTask.setErrorMessage(responseObject.getString("error"));

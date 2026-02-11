@@ -138,7 +138,9 @@ public class BrowserExpressClaimUsernameUtil {
                     task.setClaimUsernameSuccessStatus(true);
                     String accessToken = responseObject.getString("accessToken");
                     String refreshToken = responseObject.getString("refreshToken");
-                    task.setAuthTokens(accessToken, refreshToken);
+                    if(accessToken != null && refreshToken != null && accessToken.length() > 0 && refreshToken.length() > 0){
+                        task.setAuthTokens(accessToken, refreshToken);
+                    }
                 }else{
                     task.setClaimUsernameSuccessStatus(false);
                     task.setErrorMessage(responseObject.getString("error"));
