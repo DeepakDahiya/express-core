@@ -171,14 +171,16 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
 
                 mBtnYoutubePremium.setOnClickListener(view2 -> {
                     if (mActivity != null || getActivity() != null) {
-                        JSONObject payload = new JSONObject();
-                        try {
-                            payload.put("app_version", pInfo);
-                            PostHogUtil.PostHogWorkerTask postHogWorkerTask =
-                                new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.YTP_PREMIUM_CLICKED_ON_QUICKLINK, decodedAccessTokenObj.getString("_id"), payload);
-                            postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                        } catch (JSONException e) {
-                            Log.e("Express Browser", "Error creating JSON payload", e);
+                        if(decodedAccessTokenObj != null) {
+                            JSONObject payload = new JSONObject();
+                            try {
+                                payload.put("app_version", pInfo);
+                                PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                                    new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.YTP_PREMIUM_CLICKED_ON_QUICKLINK, decodedAccessTokenObj.getString("_id"), payload);
+                                postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                            } catch (JSONException e) {
+                                Log.e("Express Browser", "Error creating JSON payload", e);
+                            }
                         }
 
                         TabUtils.openUrlInSameTab("https://accounts.google.com/ServiceLogin?service=youtube&amp;uilel=3&amp;passive=true&amp;continue=https%3A%2F%2Fm.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Dm%26hl%3Den-GB%26next%3D%252F&amp;hl=en-GB");
