@@ -462,6 +462,23 @@ public abstract class BraveActivity extends ChromeActivity
             }
             // Reset the flag tracking whether a full screen custom tab was closed
             FullScreenCustomTabActivity.sIsFullScreenCustomTabActivityClosed = false;
+
+            // Navigate to NTP if the app was dormant for more than 1 hour
+            long backgroundTimestamp =
+                    ChromeSharedPreferences.getInstance()
+                            .readLong(BravePreferenceKeys.BRAVE_APP_BACKGROUND_TIMESTAMP, 0);
+            if (backgroundTimestamp > 0) {
+                long elapsedMs = System.currentTimeMillis() - backgroundTimestamp;
+                if (elapsedMs > 3_600_000) {
+                    Tab activeTab = getActivityTab();
+                    boolean isAlreadyOnNtp =
+                            activeTab != null
+                                    && UrlUtilities.isNtpUrl(activeTab.getUrl().getSpec());
+                    if (!isAlreadyOnNtp) {
+                        openNewOrSelectExistingTab(UrlConstants.NTP_URL, false);
+                    }
+                }
+            }
         }
 
         BraveSafeBrowsingApiHandler.getInstance()
@@ -504,12 +521,21 @@ public abstract class BraveActivity extends ChromeActivity
 
     @Override
     public void onPauseWithNative() {
+        // Allow screen to turn off when app goes to background
+        getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         if (mUsageMonitor != null) {
             mUsageMonitor.stop();
         }
         if (BraveVpnUtils.isVpnFeatureSupported(BraveActivity.this)) {
             BraveVpnNativeWorker.getInstance().removeObserver(this);
         }
+
+        // Store timestamp for dormancy-based NTP navigation
+        ChromeSharedPreferences.getInstance()
+                .writeLong(
+                        BravePreferenceKeys.BRAVE_APP_BACKGROUND_TIMESTAMP,
+                        System.currentTimeMillis());
+
         super.onPauseWithNative();
     }
 
@@ -1370,6 +1396,8 @@ public abstract class BraveActivity extends ChromeActivity
     @Override
     public void onResume() {
         super.onResume();
+        // Keep screen on while app is in the foreground
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         // mIsProcessingPendingDappsTxRequest = false;
         updateBackCallbackState();
 

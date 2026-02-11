@@ -123,6 +123,9 @@ public final class BravePreferenceKeys {
     public static final String YOUTUBE_PREMIUM_USER_BLOCKED =
             "youtube_premium_user_blocked";
 
+    public static final String BRAVE_APP_BACKGROUND_TIMESTAMP =
+            "brave_app_background_timestamp";
+
     /*
      * Checks if preference key is used in Brave.
      * It's no op currently. We might reconsider

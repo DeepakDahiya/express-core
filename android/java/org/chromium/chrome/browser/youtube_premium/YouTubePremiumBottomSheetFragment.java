@@ -5,13 +5,17 @@
 
 package org.chromium.chrome.browser.youtube_premium;
 
+import android.animation.ObjectAnimator;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.LinearInterpolator;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -41,10 +45,18 @@ import java.util.Locale;
 public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment {
     private static final String TAG = "YTPremiumBottomSheet";
     private static final String ARG_IS_PERMANENT = "is_permanent";
+    private static final int AUTO_DISMISS_DURATION_MS = 10000;
+    private static final int COUNTDOWN_INTERVAL_MS = 100;
 
     // Cooldown period - show bottomsheet once per 30 seconds (for testing, change to 60*60*1000 for 1 hour in production)
     private static final long COOLDOWN_MS = 30 * 1000; // 30 seconds for testing
 
+    private CountDownTimer mAutoDismissTimer;
+    private ObjectAnimator mProgressAnimator;
+
+    private FrameLayout mTimerContainer;
+    private ProgressBar mTimerProgress;
+    private TextView mTimerText;
     private TextView mTimerDays;
     private TextView mTimerHours;
     private TextView mTimerMinutes;
@@ -142,6 +154,9 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         }
 
         // Initialize views
+        mTimerContainer = view.findViewById(R.id.timer_container);
+        mTimerProgress = view.findViewById(R.id.timer_progress);
+        mTimerText = view.findViewById(R.id.timer_text);
         mTimerDays = view.findViewById(R.id.timer_days);
         mTimerHours = view.findViewById(R.id.timer_hours);
         mTimerMinutes = view.findViewById(R.id.timer_minutes);
@@ -211,11 +226,8 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                                 getDialog().setCanceledOnTouchOutside(false);
                             }
                         } else {
-                            // Dismissible by swipe or tapping outside
-                            setCancelable(true);
-                            if (getDialog() != null) {
-                                getDialog().setCanceledOnTouchOutside(true);
-                            }
+                            // Auto-dismiss after 10 seconds for youtube.com visits
+                            startAutoDismiss();
                         }
                     }
 
@@ -241,10 +253,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                         if (cachedBlocked || mIsPermanent) {
                             setCancelable(false);
                         } else {
-                            setCancelable(true);
-                            if (getDialog() != null) {
-                                getDialog().setCanceledOnTouchOutside(true);
-                            }
+                            startAutoDismiss();
                         }
                     }
                 });
@@ -255,15 +264,55 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         // Timer: display DD:00:00:00 (only days from backend, rest are 00)
         int days = data.accessDaysRemaining;
         mTimerDays.setText(String.format(Locale.US, "%02d", days));
-        mTimerHours.setText("00");
-        mTimerMinutes.setText("00");
-        mTimerSeconds.setText("00");
+        mTimerHours.setText(R.string.youtube_premium_timer_zero);
+        mTimerMinutes.setText(R.string.youtube_premium_timer_zero);
+        mTimerSeconds.setText(R.string.youtube_premium_timer_zero);
 
         // Referral count: "{N} referred"
-        mReferralCount.setText(getString(R.string.youtube_premium_referred, data.referralCount));
+        mReferralCount.setText(getResources().getQuantityString(R.plurals.youtube_premium_referred, data.referralCount, data.referralCount));
 
         // Backend message
         mPremiumMessage.setText(data.message);
+    }
+
+    private void startAutoDismiss() {
+        // Show circular timer
+        mTimerContainer.setVisibility(View.VISIBLE);
+
+        // Animate circular progress from 100 to 0
+        mProgressAnimator = ObjectAnimator.ofInt(mTimerProgress, "progress", 100, 0);
+        mProgressAnimator.setDuration(AUTO_DISMISS_DURATION_MS);
+        mProgressAnimator.setInterpolator(new LinearInterpolator());
+        mProgressAnimator.start();
+
+        // Countdown with seconds text
+        mAutoDismissTimer = new CountDownTimer(AUTO_DISMISS_DURATION_MS, COUNTDOWN_INTERVAL_MS) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                int secondsRemaining = (int) Math.ceil(millisUntilFinished / 1000.0);
+                mTimerText.setText(String.valueOf(secondsRemaining));
+            }
+
+            @Override
+            public void onFinish() {
+                mTimerText.setText("0");
+                if (isAdded()) {
+                    dismiss();
+                }
+            }
+        };
+        mAutoDismissTimer.start();
+    }
+
+    private void cancelAutoDismiss() {
+        if (mAutoDismissTimer != null) {
+            mAutoDismissTimer.cancel();
+            mAutoDismissTimer = null;
+        }
+        if (mProgressAnimator != null) {
+            mProgressAnimator.cancel();
+            mProgressAnimator = null;
+        }
     }
 
     private void shareReferralLink() {
@@ -321,5 +370,6 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
+        cancelAutoDismiss();
     }
 }

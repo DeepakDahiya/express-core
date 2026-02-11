@@ -8,14 +8,17 @@
     <string name="youtube_premium_title">Free Premium Access</string>
     <string name="youtube_premium_subtitle">Ad-free . Background play</string>
     <string name="youtube_premium_message_default">Share our app with friends to extend your premium YouTube access!</string>
-    <string name="youtube_premium_referrals">Referrals</string>
-    <string name="youtube_premium_days_remaining">Days Left</string>
+    <plurals name="youtube_premium_referred">
+        <item quantity="one">%d referred</item>
+        <item quantity="other">%d referred</item>
+    </plurals>
     <string name="youtube_premium_refer_button">Refer now to extend</string>
     <string name="youtube_premium_share_title">Share App</string>
     <string name="youtube_premium_share_text">Check out this browser with premium YouTube features! Download here: %1$s</string>
-    <string name="youtube_premium_referred">%1$d referred</string>
     <string name="youtube_premium_timer_day">day</string>
     <string name="youtube_premium_timer_hour">hour</string>
     <string name="youtube_premium_timer_min">min</string>
     <string name="youtube_premium_timer_sec">sec</string>
+    <string name="youtube_premium_colon">:</string>
+    <string name="youtube_premium_timer_zero">00</string>
 </resources>
