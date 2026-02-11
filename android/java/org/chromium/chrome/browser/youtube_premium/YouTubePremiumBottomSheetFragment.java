@@ -94,13 +94,13 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
      * Show the bottomsheet if cooldown has passed.
      */
     public static void showIfNeeded(FragmentManager fragmentManager) {
-        if (shouldShowBottomSheet()) {
+        if (shouldShowBottomSheet() && !fragmentManager.isStateSaved()) {
             YouTubePremiumBottomSheetFragment fragment = newInstance(false);
-            fragment.show(fragmentManager, TAG);
-            
+            showSafely(fragment, fragmentManager);
+
             // Update last shown timestamp
             ChromeSharedPreferences.getInstance()
-                    .writeLong(BravePreferenceKeys.YOUTUBE_PREMIUM_BOTTOMSHEET_LAST_SHOWN, 
+                    .writeLong(BravePreferenceKeys.YOUTUBE_PREMIUM_BOTTOMSHEET_LAST_SHOWN,
                                System.currentTimeMillis());
         }
     }
@@ -110,8 +110,24 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
      * Bypasses cooldown check.
      */
     public static void showPermanent(FragmentManager fragmentManager) {
+        if (fragmentManager.isStateSaved()) return;
         YouTubePremiumBottomSheetFragment fragment = newInstance(true);
-        fragment.show(fragmentManager, TAG);
+        showSafely(fragment, fragmentManager);
+    }
+
+    /**
+     * Show the dialog fragment using commitAllowingStateLoss to avoid
+     * IllegalStateException when called after onSaveInstanceState.
+     */
+    private static void showSafely(YouTubePremiumBottomSheetFragment fragment, FragmentManager fragmentManager) {
+        try {
+            if (fragmentManager.findFragmentByTag(TAG) != null) return;
+            fragmentManager.beginTransaction()
+                    .add(fragment, TAG)
+                    .commitAllowingStateLoss();
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to show bottom sheet: " + e.getMessage());
+        }
     }
 
     @Override

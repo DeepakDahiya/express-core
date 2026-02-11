@@ -45,75 +45,76 @@ public class BrowserExpressAddCommentUtil {
 
     public static class AddCommentWorkerTask extends AsyncTask<Void> {
         private final AddCommentCallback mCallback;
-        // !!! WARNING: Static fields below are problematic for concurrent operations !!!
-        private static Boolean addCommentStatus;
-        private static String mErrorMessage;
-        private static String mContent;
-        private static String mParentType;
-        private static String mParentId;
-        private static String mPageUrl; // Renamed from mUrl
-        private static String mAccessToken;
-        private static Comment mComment;
-        private static Uri mMediaUri;
-        private static String mMediaType;
-        private static String mNewAccessToken = "";
-        private static String mNewRefreshToken = "";
+        private Boolean addCommentStatus;
+        private String mErrorMessage;
+        private String mContent;
+        private String mParentType;
+        private String mParentId;
+        private String mPageUrl;
+        private String mAccessToken;
+        private Comment mComment;
+        private Uri mMediaUri;
+        private String mMediaType;
+        private String mNewAccessToken = "";
+        private String mNewRefreshToken = "";
 
         public AddCommentWorkerTask(String content, String parentType, String pageUrl, String parentId,
                                     Uri mediaUri, String mediaType, String accessToken,
                                     AddCommentCallback callback) {
-            // Assign to static fields - this is the problematic pattern
-            mCallback = callback; // mCallback should ideally be an instance field too if AsyncTask isn't static
-            AddCommentWorkerTask.addCommentStatus = false;
-            AddCommentWorkerTask.mErrorMessage = "";
-            AddCommentWorkerTask.mContent = content;
-            AddCommentWorkerTask.mParentType = parentType;
-            AddCommentWorkerTask.mParentId = parentId;
-            AddCommentWorkerTask.mPageUrl = pageUrl;
-            AddCommentWorkerTask.mAccessToken = accessToken;
-            AddCommentWorkerTask.mMediaUri = mediaUri;
-            AddCommentWorkerTask.mMediaType = mediaType;
-            AddCommentWorkerTask.mNewAccessToken = ""; // Reset for each task
-            AddCommentWorkerTask.mNewRefreshToken = ""; // Reset for each task
+            mCallback = callback;
+            addCommentStatus = false;
+            mErrorMessage = "";
+            mContent = content;
+            mParentType = parentType;
+            mParentId = parentId;
+            mPageUrl = pageUrl;
+            mAccessToken = accessToken;
+            mMediaUri = mediaUri;
+            mMediaType = mediaType;
+            mNewAccessToken = "";
+            mNewRefreshToken = "";
         }
 
-        // Static setters remain as per your existing structure
-        public static void setComment(Comment comment) {
-            AddCommentWorkerTask.mComment = comment;
+        public void setComment(Comment comment) {
+            mComment = comment;
         }
 
-        public static void setAddCommentSuccessStatus(Boolean status) {
-            AddCommentWorkerTask.addCommentStatus = status;
+        public void setAddCommentSuccessStatus(Boolean status) {
+            addCommentStatus = status;
         }
 
-        public static void setNewTokens(String accessToken, String refreshToken) {
-            AddCommentWorkerTask.mNewAccessToken = accessToken;
-            AddCommentWorkerTask.mNewRefreshToken = refreshToken;
+        public void setNewTokens(String accessToken, String refreshToken) {
+            mNewAccessToken = accessToken;
+            mNewRefreshToken = refreshToken;
         }
 
-        public static void setErrorMessage(String error) {
-            AddCommentWorkerTask.mErrorMessage = error;
+        public void setErrorMessage(String error) {
+            mErrorMessage = error;
         }
+
+        public Boolean getAddCommentStatus() { return addCommentStatus; }
+        public Comment getComment() { return mComment; }
+        public String getNewAccessToken() { return mNewAccessToken; }
+        public String getNewRefreshToken() { return mNewRefreshToken; }
+        public String getErrorMessage() { return mErrorMessage; }
 
         @Override
         protected Void doInBackground() {
-            // Pass the static fields to the send method
-            sendAddCommentRequest(mContent, mParentType, mParentId, mPageUrl, mMediaUri, mMediaType, mAccessToken);
+            sendAddCommentRequest(this, mContent, mParentType, mParentId, mPageUrl, mMediaUri, mMediaType, mAccessToken);
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
-            assert ThreadUtils.runningOnUiThread(); // This is fine if using org.chromium.base.task.AsyncTask
-            if (isCancelled()) { // isCancelled() is part of org.chromium.base.task.AsyncTask
+            assert ThreadUtils.runningOnUiThread();
+            if (isCancelled()) {
                 if (mCallback != null) mCallback.addCommentFailed("Operation cancelled.");
                 return;
             }
-            // Access static fields for result
-            if (AddCommentWorkerTask.addCommentStatus != null && AddCommentWorkerTask.addCommentStatus) {
-                if (mCallback != null) mCallback.addCommentSuccessful(AddCommentWorkerTask.mComment, AddCommentWorkerTask.mNewAccessToken, AddCommentWorkerTask.mNewRefreshToken);
+            if (addCommentStatus != null && addCommentStatus) {
+                if (mCallback != null) mCallback.addCommentSuccessful(mComment, mNewAccessToken, mNewRefreshToken);
             } else {
-                if (mCallback != null) mCallback.addCommentFailed(AddCommentWorkerTask.mErrorMessage);
+                if (mCallback != null) mCallback.addCommentFailed(mErrorMessage);
             }
         }
     }
@@ -145,8 +146,8 @@ public class BrowserExpressAddCommentUtil {
         outputStream.write(LINE_FEED.getBytes(StandardCharsets.UTF_8));
     }
 
-    private static void sendAddCommentRequest(String content, String parentType, String parentId, String pageUrl,
-                                               Uri mediaUri, String mediaType, String accessToken) { // callback is passed to use static setters
+    private static void sendAddCommentRequest(AddCommentWorkerTask task, String content, String parentType, String parentId, String pageUrl,
+                                               Uri mediaUri, String mediaType, String accessToken) {
         Log.e(TAG, "Content: " + content);
         Log.e(TAG, "Parent Type: " + parentType);
         Log.e(TAG, "Parent ID: " + parentId);   
@@ -161,8 +162,8 @@ public class BrowserExpressAddCommentUtil {
         Context context = ContextUtils.getApplicationContext();
 
         // Initialize status for this specific call via the static setters (as per existing pattern)
-        AddCommentWorkerTask.setAddCommentSuccessStatus(false);
-        AddCommentWorkerTask.setErrorMessage("Unknown error.");
+        task.setAddCommentSuccessStatus(false);
+        task.setErrorMessage("Unknown error.");
 
 
         try {
@@ -232,7 +233,7 @@ public class BrowserExpressAddCommentUtil {
                     fileInputStream = context.getContentResolver().openInputStream(mediaUri);
                     if (fileInputStream == null) {
                         Log.e(TAG, "Failed to open InputStream for media URI: " + mediaUri);
-                        AddCommentWorkerTask.setErrorMessage("Failed to open media file.");
+                        task.setErrorMessage("Failed to open media file.");
                         // No explicit callback.addCommentFailed here, relies on onPostExecute
                         return; // Exit if file stream fails
                     }
@@ -284,7 +285,7 @@ public class BrowserExpressAddCommentUtil {
             } else {
                 responseString = "No response body from server. HTTP Code: " + HttpResult;
                 if (HttpResult < HttpURLConnection.HTTP_OK || HttpResult >= HttpURLConnection.HTTP_MULT_CHOICE) {
-                     AddCommentWorkerTask.setErrorMessage(responseString);
+                     task.setErrorMessage(responseString);
                      Log.e(TAG, responseString);
                      return;
                 }
@@ -296,7 +297,7 @@ public class BrowserExpressAddCommentUtil {
             if (HttpResult >= HttpURLConnection.HTTP_OK && HttpResult < HttpURLConnection.HTTP_MULT_CHOICE) {
                 JSONObject responseObject = new JSONObject(responseString);
                 if(responseObject.getBoolean("success")){
-                    AddCommentWorkerTask.setAddCommentSuccessStatus(true);
+                    task.setAddCommentSuccessStatus(true);
 
                     JSONObject comment = responseObject.getJSONObject("comment");
                     JSONObject user = comment.getJSONObject("user");
@@ -335,34 +336,34 @@ public class BrowserExpressAddCommentUtil {
                         null
                     );
                     newComment.setTrendingScore(comment.getInt("trendingScore"));
-                    AddCommentWorkerTask.setComment(newComment);
+                    task.setComment(newComment);
 
-                    AddCommentWorkerTask.setNewTokens(responseObject.getString("accessToken"), responseObject.getString("refreshToken"));
+                    task.setNewTokens(responseObject.getString("accessToken"), responseObject.getString("refreshToken"));
                 }else{
-                    AddCommentWorkerTask.setAddCommentSuccessStatus(false);
-                    AddCommentWorkerTask.setErrorMessage(responseObject.getString("error"));
+                    task.setAddCommentSuccessStatus(false);
+                    task.setErrorMessage(responseObject.getString("error"));
                 }
             } else {
                 Log.e(TAG, "HTTP Error: " + HttpResult + " Response: " + responseString);
                 try {
                     JSONObject errorJson = new JSONObject(responseString);
-                    AddCommentWorkerTask.setErrorMessage(errorJson.optString("error", "Server error: " + HttpResult));
+                    task.setErrorMessage(errorJson.optString("error", "Server error: " + HttpResult));
                 } catch (JSONException jsonEx) {
-                    AddCommentWorkerTask.setErrorMessage("Server error: " + HttpResult + " (Could not parse error body)");
+                    task.setErrorMessage("Server error: " + HttpResult + " (Could not parse error body)");
                 }
             }
         } catch (MalformedURLException e) {
             Log.e(TAG, "MalformedURLException", e);
-            AddCommentWorkerTask.setErrorMessage("Error: Invalid URL format.");
+            task.setErrorMessage("Error: Invalid URL format.");
         } catch (IOException e) {
             Log.e(TAG, "IOException (Network I/O or Timeout)", e);
-            AddCommentWorkerTask.setErrorMessage("Error: Network problem or request timed out.");
+            task.setErrorMessage("Error: Network problem or request timed out.");
         } catch (JSONException e) {
             Log.e(TAG, "JSONException while parsing response", e);
-            AddCommentWorkerTask.setErrorMessage("Error: Could not understand server's response.");
+            task.setErrorMessage("Error: Could not understand server's response.");
         } catch (Exception e) {
             Log.e(TAG, "Unexpected Exception in sendAddCommentRequest", e);
-            AddCommentWorkerTask.setErrorMessage("Error: An unexpected error occurred.");
+            task.setErrorMessage("Error: An unexpected error occurred.");
         } finally {
             if (urlConnection != null) {
                 urlConnection.disconnect();
@@ -371,18 +372,17 @@ public class BrowserExpressAddCommentUtil {
     }
 
     public static CommentResult uploadSynchronously(String content, String pType, String url, String pId, Uri mediaUri, String mediaType, String accessToken) throws Exception {
-        sendAddCommentRequest(content, pType, pId, url, mediaUri, mediaType, accessToken);
+        AddCommentWorkerTask task = new AddCommentWorkerTask(content, pType, url, pId, mediaUri, mediaType, accessToken, null);
+        sendAddCommentRequest(task, content, pType, pId, url, mediaUri, mediaType, accessToken);
 
-        if (AddCommentWorkerTask.addCommentStatus != null && AddCommentWorkerTask.addCommentStatus) {
-            // Success case
+        if (task.getAddCommentStatus() != null && task.getAddCommentStatus()) {
             return new CommentResult(
-                AddCommentWorkerTask.mComment,
-                AddCommentWorkerTask.mNewAccessToken,
-                AddCommentWorkerTask.mNewRefreshToken
+                task.getComment(),
+                task.getNewAccessToken(),
+                task.getNewRefreshToken()
             );
         } else {
-            // Failure case
-            String errorMessage = AddCommentWorkerTask.mErrorMessage;
+            String errorMessage = task.getErrorMessage();
             if (errorMessage == null || errorMessage.isEmpty()) {
                 errorMessage = "An unknown error occurred during upload.";
             }

@@ -49,10 +49,10 @@ public class BrowserExpressCommentsUtil {
 
     public static class ClaimUsernameWorkerTask extends AsyncTask<Void> {
         private ClaimUsernameCallback mCallback;
-        private static Boolean claimUsernameStatus;
-        private static String mErrorMessage;
-        private static String mAccessToken;
-        private static String mRefreshToken;
+        private Boolean claimUsernameStatus;
+        private String mErrorMessage;
+        private String mAccessToken;
+        private String mRefreshToken;
 
         public ClaimUsernameWorkerTask(ClaimUsernameCallback callback) {
             mCallback = callback;
@@ -62,22 +62,22 @@ public class BrowserExpressCommentsUtil {
             mRefreshToken = null;
         }
 
-        public static void setAuthTokens(String accessToken, String refreshToken){
+        public void setAuthTokens(String accessToken, String refreshToken){
             mAccessToken = accessToken;
             mRefreshToken = refreshToken;
         }
 
-        public static void setClaimUsernameSuccessStatus(Boolean status){
+        public void setClaimUsernameSuccessStatus(Boolean status){
             claimUsernameStatus = status;
         }
 
-        public static void setErrorMessage(String error){
+        public void setErrorMessage(String error){
             mErrorMessage = error;
         }
 
         @Override
         protected Void doInBackground() {
-            sendClaimUsernameRequest();
+            sendClaimUsernameRequest(this);
             return null;
         }
 
@@ -115,7 +115,7 @@ public class BrowserExpressCommentsUtil {
         }
     }
 
-    private static void sendClaimUsernameRequest() {
+    private static void sendClaimUsernameRequest(ClaimUsernameWorkerTask task) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
@@ -139,13 +139,13 @@ public class BrowserExpressCommentsUtil {
                 }
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
-                    ClaimUsernameWorkerTask.setClaimUsernameSuccessStatus(true);
+                    task.setClaimUsernameSuccessStatus(true);
                     String accessToken = responseObject.getString("accessToken");
                     String refreshToken = responseObject.getString("refreshToken");
-                    ClaimUsernameWorkerTask.setAuthTokens(accessToken, refreshToken);
+                    task.setAuthTokens(accessToken, refreshToken);
                 }else{
-                    ClaimUsernameWorkerTask.setClaimUsernameSuccessStatus(false);
-                    ClaimUsernameWorkerTask.setErrorMessage(responseObject.getString("error"));
+                    task.setClaimUsernameSuccessStatus(false);
+                    task.setErrorMessage(responseObject.getString("error"));
                 }
                 br.close();
             } else {

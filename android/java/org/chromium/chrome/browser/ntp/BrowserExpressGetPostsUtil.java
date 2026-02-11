@@ -52,12 +52,12 @@ public class BrowserExpressGetPostsUtil {
 
     public static class GetPostsWorkerTask extends AsyncTask<Void> {
         private final GetPostsCallback mCallback;
-        private static Boolean getPostsStatus;
-        private static String mErrorMessage;
-        private static int mPage;
-        private static int mPerPage;
-        private static List<Post> mPosts;
-        private static String mAccessToken;
+        private Boolean getPostsStatus;
+        private String mErrorMessage;
+        private int mPage;
+        private int mPerPage;
+        private List<Post> mPosts;
+        private String mAccessToken;
 
         public GetPostsWorkerTask(int page, int perPage, String accessToken, GetPostsCallback callback) {
             mCallback = callback;
@@ -69,21 +69,21 @@ public class BrowserExpressGetPostsUtil {
             mAccessToken = accessToken;
         }
 
-        public static void setPosts(List<Post> posts){
+        public void setPosts(List<Post> posts){
             mPosts = posts;
         }
 
-        public static void setGetPostsSuccessStatus(Boolean status){
+        public void setGetPostsSuccessStatus(Boolean status){
             getPostsStatus = status;
         }
 
-        public static void setErrorMessage(String error){
+        public void setErrorMessage(String error){
             mErrorMessage = error;
         }
 
         @Override
         protected Void doInBackground() {
-            sendGetPostsRequest(mPage, mPerPage, mAccessToken);
+            sendGetPostsRequest(this, mPage, mPerPage, mAccessToken);
             return null;
         }
 
@@ -99,7 +99,7 @@ public class BrowserExpressGetPostsUtil {
         }
     }
 
-    private static void sendGetPostsRequest(int page, int perPage, String accessToken) {
+    private static void sendGetPostsRequest(GetPostsWorkerTask task, int page, int perPage, String accessToken) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
@@ -127,7 +127,7 @@ public class BrowserExpressGetPostsUtil {
                 JSONObject responseObject = new JSONObject(sb.toString());
                 Log.e("BE_GET_POST", "1");
                 if(responseObject.getBoolean("success")){
-                    GetPostsWorkerTask.setGetPostsSuccessStatus(true);
+                    task.setGetPostsSuccessStatus(true);
                     JSONArray postsArray = responseObject.getJSONArray("posts");
                     List<Post> posts = new ArrayList<Post>();
                     Log.e("BE_GET_POST", "2");
@@ -246,10 +246,10 @@ public class BrowserExpressGetPostsUtil {
                         posts.add(tempPost);
                     }
                     Log.e("BE_GET_POST", "8"); 
-                    GetPostsWorkerTask.setPosts(posts);
+                    task.setPosts(posts);
                 }else{
-                    GetPostsWorkerTask.setGetPostsSuccessStatus(false);
-                    GetPostsWorkerTask.setErrorMessage(responseObject.getString("error"));
+                    task.setGetPostsSuccessStatus(false);
+                    task.setErrorMessage(responseObject.getString("error"));
                 }
                 br.close();
             } else {

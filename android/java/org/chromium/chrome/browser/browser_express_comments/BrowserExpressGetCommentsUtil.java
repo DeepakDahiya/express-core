@@ -54,17 +54,17 @@ public class BrowserExpressGetCommentsUtil {
 
     public static class GetCommentsWorkerTask extends AsyncTask<Void> {
         private GetCommentsCallback mCallback;
-        private static Boolean getCommentsStatus;
-        private static String mErrorMessage;
-        private static String mUrl;
-        private static String mCommentId;
-        private static String mPostId;
-        private static int mPage;
-        private static int mPerPage;
-        private static List<Comment> mComments;
-        private static String mAccessToken;
-        private static Comment mParentComment;
-        private static Comment mGrandParentComment;
+        private Boolean getCommentsStatus;
+        private String mErrorMessage;
+        private String mUrl;
+        private String mCommentId;
+        private String mPostId;
+        private int mPage;
+        private int mPerPage;
+        private List<Comment> mComments;
+        private String mAccessToken;
+        private Comment mParentComment;
+        private Comment mGrandParentComment;
 
         public GetCommentsWorkerTask(String url, String commentId, String postId, int page, int perPage, String accessToken, GetCommentsCallback callback) {
             mCallback = callback;
@@ -81,29 +81,29 @@ public class BrowserExpressGetCommentsUtil {
             mGrandParentComment = null;
         }
 
-        public static void setComments(List<Comment> comments){
+        public void setComments(List<Comment> comments){
             mComments = comments;
         }
 
-        public static void setParentComment(Comment comment){
+        public void setParentComment(Comment comment){
             mParentComment = comment;
         }
 
-        public static void setGrandParentComment(Comment comment){
+        public void setGrandParentComment(Comment comment){
             mGrandParentComment = comment;
         }
 
-        public static void setGetCommentsSuccessStatus(Boolean status){
+        public void setGetCommentsSuccessStatus(Boolean status){
             getCommentsStatus = status;
         }
 
-        public static void setErrorMessage(String error){
+        public void setErrorMessage(String error){
             mErrorMessage = error;
         }
 
         @Override
         protected Void doInBackground() {
-            sendGetCommentsRequest(mUrl, mCommentId, mPostId, mPage, mPerPage, mAccessToken);
+            sendGetCommentsRequest(this, mUrl, mCommentId, mPostId, mPage, mPerPage, mAccessToken);
             return null;
         }
 
@@ -119,7 +119,7 @@ public class BrowserExpressGetCommentsUtil {
         }
     }
 
-    private static void sendGetCommentsRequest(String pageUrl, String commentId, String postId, int page, int perPage, String accessToken) {
+    private static void sendGetCommentsRequest(GetCommentsWorkerTask task, String pageUrl, String commentId, String postId, int page, int perPage, String accessToken) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
@@ -159,7 +159,7 @@ public class BrowserExpressGetCommentsUtil {
                 }
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
-                    GetCommentsWorkerTask.setGetCommentsSuccessStatus(true);
+                    task.setGetCommentsSuccessStatus(true);
                     JSONArray commentsArray = responseObject.getJSONArray("comments");
                     if (!responseObject.isNull("grandParentComment")) {
                         JSONObject parentComment = responseObject.getJSONObject("grandParentComment");
@@ -203,7 +203,7 @@ public class BrowserExpressGetCommentsUtil {
                                 null
                             );
                             newComment.setTrendingScore(parentComment.getInt("trendingScore"));
-                            GetCommentsWorkerTask.setGrandParentComment(newComment);    
+                            task.setGrandParentComment(newComment);    
                         }
                     }
 
@@ -249,7 +249,7 @@ public class BrowserExpressGetCommentsUtil {
                                 null
                             );
                             newComment.setTrendingScore(parentComment.getInt("trendingScore"));
-                            GetCommentsWorkerTask.setParentComment(newComment);
+                            task.setParentComment(newComment);
                         }
                     }
                     List<Comment> comments = new ArrayList<Comment>();
@@ -299,10 +299,10 @@ public class BrowserExpressGetCommentsUtil {
 
                     }
 
-                    GetCommentsWorkerTask.setComments(comments);
+                    task.setComments(comments);
                 }else{
-                    GetCommentsWorkerTask.setGetCommentsSuccessStatus(false);
-                    GetCommentsWorkerTask.setErrorMessage(responseObject.getString("error"));
+                    task.setGetCommentsSuccessStatus(false);
+                    task.setErrorMessage(responseObject.getString("error"));
                 }
                 br.close();
             } else {

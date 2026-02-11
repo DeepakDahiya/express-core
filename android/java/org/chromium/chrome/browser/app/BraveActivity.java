@@ -48,6 +48,7 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLDecoder;
 
+import android.util.Base64;
 import org.json.JSONObject;
 
 import androidx.annotation.MainThread;
@@ -2903,7 +2904,31 @@ public abstract class BraveActivity extends ChromeActivity
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 BravePreferenceKeys.BROWSER_EXPRESS_ACCESS_TOKEN, 0);
         String accessToken = sharedPref.getString(ACCESS_TOKEN_KEY, null);
+        if (accessToken != null && isTokenExpired(accessToken)) {
+            // Token expired — clear it so auto-login can re-generate
+            logout();
+            return null;
+        }
         return accessToken;
+    }
+
+    private boolean isTokenExpired(String token) {
+        try {
+            String[] parts = token.split("\\.");
+            if (parts.length < 2) return true;
+            byte[] data = Base64.decode(parts[1], Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
+            JSONObject payload = new JSONObject(new String(data, "UTF-8"));
+            if (payload.has("exp")) {
+                long expSeconds = payload.getLong("exp");
+                long nowSeconds = System.currentTimeMillis() / 1000;
+                return nowSeconds >= expSeconds;
+            }
+            // No exp claim — treat as valid (long-lived token)
+            return false;
+        } catch (Exception e) {
+            // If we can't parse, assume expired to be safe
+            return true;
+        }
     }
 
     public void setBrowserExpressEmail(String email) {

@@ -50,10 +50,10 @@ public class TwitterGetOEmbedDataUtil {
 
     public static class GetTwitterOEmbedDataWorkerTask extends AsyncTask<Void> {
         private final GetTwitterOEmbedDataCallback mCallback;
-        private static Boolean getTwitterOEmbedDataStatus;
-        private static String mErrorMessage;
-        private static String mTweetUrl;
-        private static String mTweetHtml;
+        private Boolean getTwitterOEmbedDataStatus;
+        private String mErrorMessage;
+        private String mTweetUrl;
+        private String mTweetHtml;
 
         public GetTwitterOEmbedDataWorkerTask(String tweetUrl,  GetTwitterOEmbedDataCallback callback) {
             mCallback = callback;
@@ -63,21 +63,21 @@ public class TwitterGetOEmbedDataUtil {
             mTweetHtml = "";
         }
 
-        public static void setHtml(String html){
+        public void setHtml(String html){
             mTweetHtml = html;
         }
 
-        public static void setGetTwitterOEmbedDataSuccessStatus(Boolean status){
+        public void setGetTwitterOEmbedDataSuccessStatus(Boolean status){
             getTwitterOEmbedDataStatus = status;
         }
 
-        public static void setErrorMessage(String error){
+        public void setErrorMessage(String error){
             mErrorMessage = error;
         }
 
         @Override
         protected Void doInBackground() {
-            sendGetTwitterOEmbedDataRequest(mTweetUrl);
+            sendGetTwitterOEmbedDataRequest(this, mTweetUrl);
             return null;
         }
 
@@ -93,7 +93,7 @@ public class TwitterGetOEmbedDataUtil {
         }
     }
 
-    private static void sendGetTwitterOEmbedDataRequest(String tweetUrl) {
+    private static void sendGetTwitterOEmbedDataRequest(GetTwitterOEmbedDataWorkerTask task, String tweetUrl) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
@@ -117,15 +117,15 @@ public class TwitterGetOEmbedDataUtil {
                 JSONObject responseObject = new JSONObject(sb.toString());
                 String htmlString = responseObject.getString("html");
                 if(htmlString.length() > 0){
-                    GetTwitterOEmbedDataWorkerTask.setGetTwitterOEmbedDataSuccessStatus(true);
+                    task.setGetTwitterOEmbedDataSuccessStatus(true);
                     try {
-                        GetTwitterOEmbedDataWorkerTask.setHtml(URLDecoder.decode(responseObject.getString("html"), "UTF-8"));
+                        task.setHtml(URLDecoder.decode(responseObject.getString("html"), "UTF-8"));
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
                 }else{
-                    GetTwitterOEmbedDataWorkerTask.setGetTwitterOEmbedDataSuccessStatus(false);
-                    GetTwitterOEmbedDataWorkerTask.setErrorMessage(responseObject.getString("error"));
+                    task.setGetTwitterOEmbedDataSuccessStatus(false);
+                    task.setErrorMessage(responseObject.getString("error"));
                 }
                 br.close();
             } else {

@@ -367,17 +367,15 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
 
             String accessToken = ((BraveActivity)mActivity).getAccessToken();
             if(accessToken == null){
+                // Token doesn't exist — claim a username first, then load posts/profile in the callback
                 BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask workerTask =
                         new BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask(
                                 claimUsernameCallback);
                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            } else {
+                // Token exists — load posts and profile immediately
+                loadPostsAndProfile(accessToken);
             }
-            
-            BrowserExpressGetPostsUtil.GetPostsWorkerTask workerTask =
-                new BrowserExpressGetPostsUtil.GetPostsWorkerTask(1, 20, accessToken, getPostsCallback);
-            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-            fetchAndUpdateProfileImage();
             
             // Show YouTube premium bottomsheet on NTP
             if (mActivity instanceof BraveActivity) {
@@ -389,6 +387,14 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
         } catch (Exception e) {
             throw e; // Re-throw to see the original crash
         }
+    }
+
+    private void loadPostsAndProfile(String accessToken) {
+        BrowserExpressGetPostsUtil.GetPostsWorkerTask workerTask =
+            new BrowserExpressGetPostsUtil.GetPostsWorkerTask(1, 20, accessToken, getPostsCallback);
+        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+        fetchAndUpdateProfileImage();
     }
 
     // private void setNtpRecyclerView(LinearLayoutManager linearLayoutManager) {
@@ -1756,10 +1762,14 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                 }
             };
 
+    private static final int MAX_CLAIM_RETRIES = 3;
+    private int mClaimRetryCount = 0;
+
     private final BrowserExpressClaimUsernameUtil.ClaimUsernameCallback claimUsernameCallback=
             new BrowserExpressClaimUsernameUtil.ClaimUsernameCallback() {
                 @Override
                 public void claimUsernameSuccessful(String accessToken, String refreshToken) {
+                    mClaimRetryCount = 0;
                     try {
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         activity.setAccessToken(accessToken);
@@ -1768,13 +1778,31 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                         BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask1 =
                             new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
                         workerTask1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+                        // Now that we have the token, load posts and profile
+                        loadPostsAndProfile(accessToken);
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                     }
                 }
 
                 @Override
                 public void claimUsernameFailed(String error) {
-                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
+                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED: " + error);
+                    // Retry with backoff
+                    if (mClaimRetryCount < MAX_CLAIM_RETRIES) {
+                        mClaimRetryCount++;
+                        long delayMs = (long) (1000 * Math.pow(2, mClaimRetryCount - 1));
+                        new android.os.Handler(android.os.Looper.getMainLooper()).postDelayed(() -> {
+                            BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask retryTask =
+                                    new BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask(
+                                            claimUsernameCallback);
+                            retryTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        }, delayMs);
+                    } else {
+                        Log.e("Express Browser LOGIN", "Claim username failed after " + MAX_CLAIM_RETRIES + " retries");
+                        // Load posts without token as fallback so NTP isn't blank
+                        loadPostsAndProfile(null);
+                    }
                 }
             };
 

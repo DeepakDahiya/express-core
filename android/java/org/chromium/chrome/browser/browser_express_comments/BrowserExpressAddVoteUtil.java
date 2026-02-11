@@ -47,14 +47,14 @@ public class BrowserExpressAddVoteUtil {
 
     public static class AddVoteWorkerTask extends AsyncTask<Void> {
         private final AddVoteCallback mCallback;
-        private static Boolean addVoteStatus;
-        private static String mErrorMessage;
-        private static String mCommentId;
-        private static String mType;
-        private static String mAccessToken;
+        private Boolean addVoteStatus;
+        private String mErrorMessage;
+        private String mCommentId;
+        private String mType;
+        private String mAccessToken;
 
-        private static String mNewAccessToken = "";
-        private static String mNewRefreshToken = "";
+        private String mNewAccessToken = "";
+        private String mNewRefreshToken = "";
 
         public AddVoteWorkerTask(String commentId, String type, String resourceType, String accessToken, AddVoteCallback callback) {
             mCallback = callback;
@@ -65,22 +65,22 @@ public class BrowserExpressAddVoteUtil {
             mAccessToken = accessToken;
         }
 
-        public static void setAddVoteSuccessStatus(Boolean status){
+        public void setAddVoteSuccessStatus(Boolean status){
             addVoteStatus = status;
         }
 
-        public static void setNewTokens(String accessToken, String refreshToken){
+        public void setNewTokens(String accessToken, String refreshToken){
             mNewAccessToken = accessToken;
             mNewRefreshToken = refreshToken;
         }
 
-        public static void setErrorMessage(String error){
+        public void setErrorMessage(String error){
             mErrorMessage = error;
         }
 
         @Override
         protected Void doInBackground() {
-            sendAddVoteRequest(mCommentId, mType, mAccessToken);
+            sendAddVoteRequest(this, mCommentId, mType, mAccessToken);
             return null;
         }
 
@@ -96,7 +96,7 @@ public class BrowserExpressAddVoteUtil {
         }
     }
 
-    private static void sendAddVoteRequest(String commentId, String type, String accessToken) {
+    private static void sendAddVoteRequest(AddVoteWorkerTask task, String commentId, String type, String accessToken) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
@@ -133,12 +133,12 @@ public class BrowserExpressAddVoteUtil {
                 }
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
-                    AddVoteWorkerTask.setAddVoteSuccessStatus(true);
+                    task.setAddVoteSuccessStatus(true);
                     Log.e(TAG, responseObject.getString("accessToken"));
-                    AddVoteWorkerTask.setNewTokens(responseObject.getString("accessToken"), responseObject.getString("refreshToken"));
+                    task.setNewTokens(responseObject.getString("accessToken"), responseObject.getString("refreshToken"));
                 }else{
-                    AddVoteWorkerTask.setAddVoteSuccessStatus(false);
-                    AddVoteWorkerTask.setErrorMessage(responseObject.getString("error"));
+                    task.setAddVoteSuccessStatus(false);
+                    task.setErrorMessage(responseObject.getString("error"));
                 }
                 br.close();
             } else {
