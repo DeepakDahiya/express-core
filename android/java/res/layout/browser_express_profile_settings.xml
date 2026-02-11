@@ -285,7 +285,7 @@
             android:layout_marginBottom="4dp">
 
             <ImageView
-                android:background="@drawable/ic_share"
+                android:background="@drawable/celebration"
                 android:layout_height="24sp"
                 android:layout_width="24sp"
                 android:layout_gravity="center"
