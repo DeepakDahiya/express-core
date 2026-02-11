@@ -603,7 +603,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                             public void addVoteSuccessful(String newAccessToken, String newRefreshToken) {
                                 mUpvoteButton.setClickable(true);
                                 mDownvoteButton.setClickable(true);
-                                if (activity != null) {
+                                if (newAccessToken != null && !newAccessToken.isEmpty() && activity != null) {
                                    handleNewToken(newAccessToken);
                                 }
                             }

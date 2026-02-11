@@ -127,9 +127,9 @@ public class BrowserExpressLoginPreferencesUtil {
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
                     LoginWorkerTask.setLoginSuccessStatus(true);
-                    String accessToken = responseObject.getString("accessToken");
-                    String refreshToken = responseObject.getString("refreshToken");
-                    if(accessToken != null && refreshToken != null && accessToken.length() > 0 && refreshToken.length() > 0){
+                    String accessToken = responseObject.optString("accessToken", "");
+                    String refreshToken = responseObject.optString("refreshToken", "");
+                    if(!accessToken.isEmpty() && !refreshToken.isEmpty()){
                         LoginWorkerTask.setAuthTokens(accessToken, refreshToken);
                     }
                 }else{

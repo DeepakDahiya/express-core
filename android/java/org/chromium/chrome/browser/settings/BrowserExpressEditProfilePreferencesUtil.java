@@ -134,10 +134,10 @@ public class BrowserExpressEditProfilePreferencesUtil {
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
                     EditProfileWorkerTask.setEditProfileSuccessStatus(true);
-                    String accessToken1 = responseObject.getString("accessToken");
-                    String refreshToken = responseObject.getString("refreshToken");
-                    if(accessToken1 != null && refreshToken != null && accessToken1.length() > 0 && refreshToken.length() > 0){
-                        EditProfileWorkerTask.setAuthTokens(accessToken1, refreshToken);
+                    String accessToken1 = responseObject.optString("accessToken", "");
+                    String refreshToken1 = responseObject.optString("refreshToken", "");
+                    if(!accessToken1.isEmpty() && !refreshToken1.isEmpty()){
+                        EditProfileWorkerTask.setAuthTokens(accessToken1, refreshToken1);
                     }
                 }else{
                     EditProfileWorkerTask.setEditProfileSuccessStatus(false);

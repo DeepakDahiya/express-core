@@ -127,10 +127,10 @@ public class BrowserExpressCommentsPreferencesUtil {
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
                     LoginWorkerTask.setLoginSuccessStatus(true);
-                    String accessToken = responseObject.getString("accessToken");
-                    String refreshToken = responseObject.getString("refreshToken");
-                    if(accessToken != null && refreshToken != null && accessToken.length() > 0 && refreshToken.length() > 0){
-                        LoginWorkerTask.setAuthTokens(accessToken, refreshToken);
+                    String accessToken1 = responseObject.optString("accessToken", "");
+                    String refreshToken1 = responseObject.optString("refreshToken", "");
+                    if(!accessToken1.isEmpty() && !refreshToken1.isEmpty()){
+                        LoginWorkerTask.setAuthTokens(accessToken1, refreshToken1);
                     }
                 }else{
                     LoginWorkerTask.setLoginSuccessStatus(false);

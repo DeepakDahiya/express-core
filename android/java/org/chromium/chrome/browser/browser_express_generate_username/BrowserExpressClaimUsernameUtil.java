@@ -136,10 +136,10 @@ public class BrowserExpressClaimUsernameUtil {
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
                     task.setClaimUsernameSuccessStatus(true);
-                    String accessToken = responseObject.getString("accessToken");
-                    String refreshToken = responseObject.getString("refreshToken");
-                    if(accessToken != null && refreshToken != null && accessToken.length() > 0 && refreshToken.length() > 0){
-                        task.setAuthTokens(accessToken, refreshToken);
+                    String accessToken1 = responseObject.optString("accessToken", "");
+                    String refreshToken1 = responseObject.optString("refreshToken", "");
+                    if(!accessToken1.isEmpty() && !refreshToken1.isEmpty()){
+                        task.setAuthTokens(accessToken1, refreshToken1);
                     }
                 }else{
                     task.setClaimUsernameSuccessStatus(false);

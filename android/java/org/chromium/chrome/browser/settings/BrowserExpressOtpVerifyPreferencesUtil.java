@@ -129,9 +129,9 @@ public class BrowserExpressOtpVerifyPreferencesUtil {
                 Log.e(TAG, "Success: "+ responseObject.getBoolean("success"));
                 if(responseObject.getBoolean("success")){
                     OtpVerifyWorkerTask.setOtpVerifySuccessStatus(true);
-                    String accessToken = responseObject.getString("accessToken");
-                    String refreshToken = responseObject.getString("refreshToken");
-                    if(accessToken != null && refreshToken != null && accessToken.length() > 0 && refreshToken.length() > 0){
+                    String accessToken = responseObject.optString("accessToken", "");
+                    String refreshToken = responseObject.optString("refreshToken", "");
+                    if(!accessToken.isEmpty() && !refreshToken.isEmpty()){
                         OtpVerifyWorkerTask.setAuthTokens(accessToken, refreshToken);
                     }
                     Log.e(TAG, "INSIDE SUCCESS TRUE");

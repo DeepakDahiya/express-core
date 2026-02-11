@@ -338,9 +338,9 @@ public class BrowserExpressAddCommentUtil {
                     newComment.setTrendingScore(comment.getInt("trendingScore"));
                     task.setComment(newComment);
 
-                    String accessToken1 = responseObject.getString("accessToken");
-                    String refreshToken1 = responseObject.getString("refreshToken");
-                    if(accessToken1 != null && refreshToken1 != null && accessToken1.length() > 0 && refreshToken1.length() > 0){
+                    String accessToken1 = responseObject.optString("accessToken", "");
+                    String refreshToken1 = responseObject.optString("refreshToken", "");
+                    if(!accessToken1.isEmpty() && !refreshToken1.isEmpty()){
                         task.setNewTokens(accessToken1, refreshToken1);
                     }
                 }else{
