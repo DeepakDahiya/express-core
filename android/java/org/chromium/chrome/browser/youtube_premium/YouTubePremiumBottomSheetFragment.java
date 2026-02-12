@@ -93,6 +93,13 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         return (now - lastShown) > COOLDOWN_MS;
     }
 
+    public static boolean shouldShowBottomSheetInNTP() {
+        long lastShown = ChromeSharedPreferences.getInstance()
+                .readLong(BravePreferenceKeys.YOUTUBE_PREMIUM_BOTTOMSHEET_LAST_SHOWN_IN_NTP, 0);
+        long now = System.currentTimeMillis();
+        return (now - lastShown) > COOLDOWN_MS;
+    }   
+
     /**
      * Show the bottomsheet if cooldown has passed.
      */
@@ -118,11 +125,15 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
      * Bypasses cooldown check.
      */
     public static void showPermanent(FragmentManager fragmentManager) {
+        if (!shouldShowBottomSheetInNTP()) return;
         try {
             if (fragmentManager.isStateSaved()) return;
             if (fragmentManager.findFragmentByTag(TAG) != null) return;
             YouTubePremiumBottomSheetFragment fragment = newInstance(true);
             fragment.show(fragmentManager, TAG);
+            ChromeSharedPreferences.getInstance()
+                    .writeLong(BravePreferenceKeys.YOUTUBE_PREMIUM_BOTTOMSHEET_LAST_SHOWN_IN_NTP,
+                               System.currentTimeMillis());
         } catch (IllegalStateException e) {
             Log.e(TAG, "Cannot show bottom sheet after onSaveInstanceState: " + e.getMessage());
         }
