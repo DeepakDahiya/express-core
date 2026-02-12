@@ -299,10 +299,10 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
             @Override
             public void onFinish() {
                 if (getActivity() == null || !isAdded()) return;
-                mTimerDays.setText("00");
-                mTimerHours.setText("00");
-                mTimerMinutes.setText("00");
-                mTimerSeconds.setText("00");
+                mTimerDays.setText(R.string.youtube_premium_timer_zero);
+                mTimerHours.setText(R.string.youtube_premium_timer_zero);
+                mTimerMinutes.setText(R.string.youtube_premium_timer_zero);
+                mTimerSeconds.setText(R.string.youtube_premium_timer_zero);
             }
         }.start();
     }
