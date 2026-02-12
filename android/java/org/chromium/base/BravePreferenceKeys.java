@@ -120,6 +120,8 @@ public final class BravePreferenceKeys {
             "youtube_premium_bottomsheet_last_shown";
     public static final String YOUTUBE_PREMIUM_ACCESS_DAYS =
             "youtube_premium_access_days";
+    public static final String YOUTUBE_PREMIUM_ACCESS_SECONDS =
+            "youtube_premium_access_seconds";
     public static final String YOUTUBE_PREMIUM_USER_BLOCKED =
             "youtube_premium_user_blocked";
 

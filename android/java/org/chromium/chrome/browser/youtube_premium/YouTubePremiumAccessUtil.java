@@ -37,15 +37,15 @@ public class YouTubePremiumAccessUtil {
      */
     public static class PremiumAccessData {
         public final int referralCount;
-        public final int accessDaysRemaining;
+        public final long accessRemainingInSeconds;
         public final String message;
         public final boolean isBlocked;
         public final String referralCode;
 
-        public PremiumAccessData(int referralCount, int accessDaysRemaining,
+        public PremiumAccessData(int referralCount, long accessRemainingInSeconds,
                                  String message, boolean isBlocked, String referralCode) {
             this.referralCount = referralCount;
-            this.accessDaysRemaining = accessDaysRemaining;
+            this.accessRemainingInSeconds = accessRemainingInSeconds;
             this.message = message;
             this.isBlocked = isBlocked;
             this.referralCode = referralCode;
@@ -94,13 +94,19 @@ public class YouTubePremiumAccessUtil {
                     JSONObject jsonResponse = new JSONObject(response.toString());
                     
                     int referralCount = jsonResponse.optInt("referralCount", 0);
-                    int accessDaysRemaining = jsonResponse.optInt("accessDaysRemaining", 0);
+                    // Default to 0 if not present
+                    long accessRemainingInSeconds = jsonResponse.optLong("accessRemainingInSeconds", 0);
+                    // Fallback to days if seconds not present (transition period)
+                    if (accessRemainingInSeconds == 0 && jsonResponse.has("accessDaysRemaining")) {
+                         accessRemainingInSeconds = jsonResponse.optInt("accessDaysRemaining", 0) * 86400L;
+                    }
+                    
                     String message = jsonResponse.optString("message",
                             "Share the app with friends to extend your premium access!");
                     boolean isBlocked = jsonResponse.optBoolean("isBlocked", false);
                     String referralCode = jsonResponse.optString("referralCode", null);
 
-                    return new PremiumAccessData(referralCount, accessDaysRemaining,
+                    return new PremiumAccessData(referralCount, accessRemainingInSeconds,
                                                  message, isBlocked, referralCode);
                 } else {
                     mErrorMessage = "Server returned error: " + responseCode;

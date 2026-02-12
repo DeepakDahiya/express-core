@@ -213,8 +213,8 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
 
                         // Cache data
                         ChromeSharedPreferences.getInstance()
-                                .writeInt(BravePreferenceKeys.YOUTUBE_PREMIUM_ACCESS_DAYS,
-                                          data.accessDaysRemaining);
+                                .writeLong(BravePreferenceKeys.YOUTUBE_PREMIUM_ACCESS_SECONDS,
+                                          data.accessRemainingInSeconds);
                         ChromeSharedPreferences.getInstance()
                                 .writeBoolean(BravePreferenceKeys.YOUTUBE_PREMIUM_USER_BLOCKED,
                                               data.isBlocked);
@@ -239,13 +239,21 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                         mLoadingIndicator.setVisibility(View.GONE);
 
                         // Use cached data or defaults
-                        int cachedDays = ChromeSharedPreferences.getInstance()
+                        long cachedSeconds = ChromeSharedPreferences.getInstance()
+                                .readLong(BravePreferenceKeys.YOUTUBE_PREMIUM_ACCESS_SECONDS, 0);
+                        
+                        // Fallback to days if seconds not cached
+                        if (cachedSeconds == 0) {
+                             int cachedDays = ChromeSharedPreferences.getInstance()
                                 .readInt(BravePreferenceKeys.YOUTUBE_PREMIUM_ACCESS_DAYS, 7);
+                             cachedSeconds = cachedDays * 86400L;
+                        }
+
                         boolean cachedBlocked = ChromeSharedPreferences.getInstance()
                                 .readBoolean(BravePreferenceKeys.YOUTUBE_PREMIUM_USER_BLOCKED, false);
 
                         PremiumAccessData fallbackData = new PremiumAccessData(
-                                0, cachedDays,
+                                0, cachedSeconds,
                                 getString(R.string.youtube_premium_message_default),
                                 cachedBlocked, null);
                         updateUI(fallbackData);
@@ -274,11 +282,9 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         // Referral count: "{N} referred"
         mReferralCount.setText(getResources().getQuantityString(R.plurals.youtube_premium_referred, data.referralCount, data.referralCount));
 
-        // Start countdown based on days remaining
-        // We simulate the time by using the days remaining.
-        // Since we don't have exact expiration, we'll assume it expires in exactly X days from now
-        // to show the countdown effect.
-        long millisInFuture = (long) data.accessDaysRemaining * 24 * 60 * 60 * 1000;
+        // Start countdown based on seconds remaining
+        // We simulate the time by using the seconds remaining.
+        long millisInFuture = data.accessRemainingInSeconds * 1000;
 
         mPremiumCountdownTimer = new CountDownTimer(millisInFuture, 1000) {
             @Override
