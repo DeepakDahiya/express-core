@@ -66,6 +66,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
     private Button mReferButton;
     private View mCloseButton;
     private ProgressBar mLoadingIndicator;
+    private LinearLayout mTimeLayout;
 
     private boolean mIsBlocked = false;
     private boolean mIsPermanent = false;
@@ -87,6 +88,11 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
      * Check if the bottomsheet should be shown based on cooldown period.
      */
     public static boolean shouldShowBottomSheet() {
+        // Always show if user is blocked
+        boolean isBlocked = ChromeSharedPreferences.getInstance()
+                .readBoolean(BravePreferenceKeys.YOUTUBE_PREMIUM_USER_BLOCKED, false);
+        if (isBlocked) return true;
+
         long lastShown = ChromeSharedPreferences.getInstance()
                 .readLong(BravePreferenceKeys.YOUTUBE_PREMIUM_BOTTOMSHEET_LAST_SHOWN, 0);
         long now = System.currentTimeMillis();
@@ -94,6 +100,11 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
     }
 
     public static boolean shouldShowBottomSheetInNTP() {
+        // Always show if user is blocked
+        boolean isBlocked = ChromeSharedPreferences.getInstance()
+                .readBoolean(BravePreferenceKeys.YOUTUBE_PREMIUM_USER_BLOCKED, false);
+        if (isBlocked) return true;
+
         long lastShown = ChromeSharedPreferences.getInstance()
                 .readLong(BravePreferenceKeys.YOUTUBE_PREMIUM_BOTTOMSHEET_LAST_SHOWN_IN_NTP, 0);
         long now = System.currentTimeMillis();
@@ -177,6 +188,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         mReferButton = view.findViewById(R.id.btn_refer);
         mCloseButton = view.findViewById(R.id.close_button);
         mLoadingIndicator = view.findViewById(R.id.loading_indicator);
+        mTimeLayout = view.findViewById(R.id.time_layout);
 
         // Configure UI based on mode
         if (mIsPermanent) {
@@ -195,6 +207,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
 
     private void fetchPremiumAccessData() {
         mLoadingIndicator.setVisibility(View.VISIBLE);
+        mTimeLayout.setVisibility(View.GONE);
 
         String accessToken = null;
         try {
@@ -214,6 +227,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                         if (getActivity() == null || !isAdded()) return;
 
                         mLoadingIndicator.setVisibility(View.GONE);
+                        mTimeLayout.setVisibility(View.VISIBLE);
                         updateUI(data);
                         mIsBlocked = data.isBlocked;
 
@@ -250,6 +264,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
 
                         Log.e(TAG, "Failed to fetch premium data: " + error);
                         mLoadingIndicator.setVisibility(View.GONE);
+                        mTimeLayout.setVisibility(View.VISIBLE);
 
                         // Use cached data or defaults
                         long cachedSeconds = ChromeSharedPreferences.getInstance()

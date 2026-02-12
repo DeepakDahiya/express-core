@@ -103,7 +103,16 @@
         </LinearLayout>
 
         <!-- Row 2: DD:HH:MM:SS Timer -->
+        <ProgressBar
+            android:id="@+id/loading_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:visibility="gone" />
+
         <LinearLayout
+            android:id="@+id/time_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
@@ -277,15 +286,6 @@
             android:textSize="16sp"
             android:textStyle="bold"
             style="?android:attr/borderlessButtonStyle" />
-
-        <!-- Loading indicator (hidden by default) -->
-        <ProgressBar
-            android:id="@+id/loading_indicator"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="16dp"
-            android:visibility="gone" />
 
     </LinearLayout>
 </FrameLayout>
