@@ -225,6 +225,8 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                             if (getDialog() != null) {
                                 getDialog().setCanceledOnTouchOutside(false);
                             }
+                            mTimerContainer.setVisibility(View.GONE);
+                            cancelAutoDismiss();
                         } else {
                             // Auto-dismiss after 10 seconds for youtube.com visits
                             startAutoDismiss();
@@ -260,6 +262,8 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
 
                         if (cachedBlocked || mIsPermanent) {
                             setCancelable(false);
+                            mTimerContainer.setVisibility(View.GONE);
+                            cancelAutoDismiss();
                         } else {
                             startAutoDismiss();
                         }
@@ -282,8 +286,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         // Referral count: "{N} referred"
         mReferralCount.setText(getResources().getQuantityString(R.plurals.youtube_premium_referred, data.referralCount, data.referralCount));
 
-        // Start countdown based on seconds remaining
-        // We simulate the time by using the seconds remaining.
+        // Start countdown based on milliseconds remaining
         long millisInFuture = data.accessRemainingInSeconds * 1000;
 
         mPremiumCountdownTimer = new CountDownTimer(millisInFuture, 1000) {

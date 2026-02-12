@@ -470,7 +470,7 @@ public abstract class BraveActivity extends ChromeActivity
                             .readLong(BravePreferenceKeys.BRAVE_APP_BACKGROUND_TIMESTAMP, 0);
             if (backgroundTimestamp > 0) {
                 long elapsedMs = System.currentTimeMillis() - backgroundTimestamp;
-                if (elapsedMs > 10_000) {
+                if (elapsedMs > 30_000) {
                     Tab activeTab = getActivityTab();
                     boolean isAlreadyOnNtp =
                             activeTab != null
@@ -516,7 +516,6 @@ public abstract class BraveActivity extends ChromeActivity
         }
 
         checkReferral();
-        openNewOrSelectExistingTab(UrlConstants.NTP_URL, false);
         // Executes Leo voice prompt if it was triggered from quick search app widget
         // maybeExecuteLeoVoicePrompt();
     }
@@ -550,6 +549,7 @@ public abstract class BraveActivity extends ChromeActivity
 
         // Safe update with null check
         updateBackCallbackState();
+        openNewOrSelectExistingTab(UrlConstants.NTP_URL, false);
     }
 
     private void setupYouTubeBackButtonHandler() {
@@ -1799,61 +1799,6 @@ public abstract class BraveActivity extends ChromeActivity
         }
     }
 
-    // private void applyChangesForYahooJp() {
-    //     boolean isDefaultSearchEngineChanged =
-    //             ChromeSharedPreferences.getInstance()
-    //                     .readBoolean(BravePreferenceKeys.DEFAULT_SEARCH_ENGINE_CHANGED, false);
-    //     TemplateUrlService templateUrlService =
-    //             TemplateUrlServiceFactory.getForProfile(getCurrentProfile());
-    //     Runnable onTemplateUrlServiceReady =
-    //             () -> {
-    //                 if (isActivityFinishingOrDestroyed()) return;
-    //                 TemplateUrl yahooJpTemplateUrl =
-    //                         BraveSearchEngineUtils.getTemplateUrlByShortName(
-    //                                 getCurrentProfile(), OnboardingPrefManager.YAHOO_JP);
-    //                 if (yahooJpTemplateUrl != null
-    //                         && !isDefaultSearchEngineChanged
-    //                         && templateUrlService.isDefaultSearchEngineGoogle()) {
-    //                     BraveSearchEngineUtils.setDSEPrefs(yahooJpTemplateUrl, getCurrentProfile());
-    //                     ChromeSharedPreferences.getInstance()
-    //                             .writeBoolean(
-    //                                     BravePreferenceKeys.BRAVE_DEFAULT_SEARCH_ENGINE_MIGRATED_JP,
-    //                                     true);
-    //                 }
-    //             };
-    //     templateUrlService.runWhenLoaded(onTemplateUrlServiceReady);
-    // }
-
-    // private void setBraveAsDefaultPrivateMode() {
-    //     Runnable onTemplateUrlServiceReady =
-    //             () -> {
-    //                 if (isActivityFinishingOrDestroyed()) return;
-    //                 TemplateUrl braveTemplateUrl =
-    //                         BraveSearchEngineUtils.getTemplateUrlByShortName(
-    //                                 getCurrentProfile(), OnboardingPrefManager.BRAVE);
-    //                 if (braveTemplateUrl != null) {
-    //                     BraveSearchEngineUtils.setDSEPrefs(
-    //                             braveTemplateUrl,
-    //                             getCurrentProfile()
-    //                                     .getPrimaryOtrProfile(/* createIfNeeded= */ true));
-    //                 }
-    //             };
-    //     TemplateUrlServiceFactory.getForProfile(getCurrentProfile())
-    //             .runWhenLoaded(onTemplateUrlServiceReady);
-    // }
-
-    // private void enableSearchSuggestions() {
-    //     TemplateUrl defaultSearchEngineTemplateUrl =
-    //             BraveSearchEngineUtils.getTemplateUrlByShortName(
-    //                     getCurrentProfile(),
-    //                     BraveSearchEngineUtils.getDSEShortName(getCurrentProfile(), false));
-    //     if (defaultSearchEngineTemplateUrl != null
-    //             && BRAVE_SEARCH_ENGINE_KEYWORD.equals(
-    //                     defaultSearchEngineTemplateUrl.getKeyword())) {
-    //         UserPrefs.get(getCurrentProfile()).setBoolean(Pref.SEARCH_SUGGEST_ENABLED, true);
-    //     }
-    // }
-
     private void setInAppUpdateTiming() {
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(new Date());
@@ -1941,21 +1886,6 @@ public abstract class BraveActivity extends ChromeActivity
         mIsDeepLink = true;
         BraveVpnUtils.openBraveVpnPlansActivity(this);
     }
-
-    // private void checkForVpnCallout() {
-    //     // String countryCode = Locale.getDefault().getCountry();
-
-    //     // if (!countryCode.equals(BraveConstants.INDIA_COUNTRY_CODE)
-    //     //         && BraveVpnUtils.isVpnFeatureSupported(BraveActivity.this)) {
-    //     //     if (!TextUtils.isEmpty(BraveVpnPrefUtils.getPurchaseToken())
-    //     //             && !TextUtils.isEmpty(BraveVpnPrefUtils.getProductId())) {
-    //     //         mIsVerification = true;
-    //     //         BraveVpnNativeWorker.getInstance().verifyPurchaseToken(
-    //     //                 BraveVpnPrefUtils.getPurchaseToken(), BraveVpnPrefUtils.getProductId(),
-    //     //                 BraveVpnUtils.SUBSCRIPTION_PARAM_TEXT, getPackageName());
-    //     //     }
-    //     // }
-    // }
 
     private void initBraveNews() {
         ThreadUtils.assertOnUiThread();
