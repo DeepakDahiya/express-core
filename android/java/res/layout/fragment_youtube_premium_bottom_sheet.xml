@@ -246,7 +246,8 @@
             android:gravity="center"
             tools:text="3 referred"
             android:textColor="@color/set_default_text_color"
-            android:textSize="14sp" />
+            android:textSize="24sp"
+            android:textStyle="bold" />
 
         <!-- Row 4: Backend message -->
         <TextView

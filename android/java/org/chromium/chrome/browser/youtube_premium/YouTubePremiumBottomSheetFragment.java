@@ -260,19 +260,51 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
+    private CountDownTimer mPremiumCountdownTimer;
+
     private void updateUI(PremiumAccessData data) {
-        // Timer: display DD:00:00:00 (only days from backend, rest are 00)
-        int days = data.accessDaysRemaining;
-        mTimerDays.setText(String.format(Locale.US, "%02d", days));
-        mTimerHours.setText(R.string.youtube_premium_timer_zero);
-        mTimerMinutes.setText(R.string.youtube_premium_timer_zero);
-        mTimerSeconds.setText(R.string.youtube_premium_timer_zero);
+        // Stop existing timer if any
+        if (mPremiumCountdownTimer != null) {
+            mPremiumCountdownTimer.cancel();
+        }
+
+        // Backend message
+        mPremiumMessage.setText(data.message);
 
         // Referral count: "{N} referred"
         mReferralCount.setText(getResources().getQuantityString(R.plurals.youtube_premium_referred, data.referralCount, data.referralCount));
 
-        // Backend message
-        mPremiumMessage.setText(data.message);
+        // Start countdown based on days remaining
+        // We simulate the time by using the days remaining.
+        // Since we don't have exact expiration, we'll assume it expires in exactly X days from now
+        // to show the countdown effect.
+        long millisInFuture = (long) data.accessDaysRemaining * 24 * 60 * 60 * 1000;
+
+        mPremiumCountdownTimer = new CountDownTimer(millisInFuture, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                if (getActivity() == null || !isAdded()) return;
+
+                long days = millisUntilFinished / (24 * 60 * 60 * 1000);
+                long hours = (millisUntilFinished / (60 * 60 * 1000)) % 24;
+                long minutes = (millisUntilFinished / (60 * 1000)) % 60;
+                long seconds = (millisUntilFinished / 1000) % 60;
+
+                mTimerDays.setText(String.format(Locale.US, "%02d", days));
+                mTimerHours.setText(String.format(Locale.US, "%02d", hours));
+                mTimerMinutes.setText(String.format(Locale.US, "%02d", minutes));
+                mTimerSeconds.setText(String.format(Locale.US, "%02d", seconds));
+            }
+
+            @Override
+            public void onFinish() {
+                if (getActivity() == null || !isAdded()) return;
+                mTimerDays.setText("00");
+                mTimerHours.setText("00");
+                mTimerMinutes.setText("00");
+                mTimerSeconds.setText("00");
+            }
+        }.start();
     }
 
     private void startAutoDismiss() {
@@ -368,8 +400,17 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
     }
 
     @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        cancelAutoDismiss();
+        if (mPremiumCountdownTimer != null) {
+            mPremiumCountdownTimer.cancel();
+            mPremiumCountdownTimer = null;
+        }
+    }
+
+    @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
-        cancelAutoDismiss();
     }
 }
