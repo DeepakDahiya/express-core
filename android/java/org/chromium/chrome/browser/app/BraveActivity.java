@@ -549,7 +549,6 @@ public abstract class BraveActivity extends ChromeActivity
 
         // Safe update with null check
         updateBackCallbackState();
-        openNewOrSelectExistingTab(UrlConstants.NTP_URL, false);
     }
 
     private void setupYouTubeBackButtonHandler() {
@@ -1780,6 +1779,8 @@ public abstract class BraveActivity extends ChromeActivity
         }
 
         ContextUtils.getAppSharedPreferences().registerOnSharedPreferenceChangeListener(this);
+
+        openNewOrSelectExistingTab(UrlConstants.NTP_URL, false);
     }
 
     private void checkForCustomUpdates() {
