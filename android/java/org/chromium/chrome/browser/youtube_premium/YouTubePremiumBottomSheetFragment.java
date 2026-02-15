@@ -106,6 +106,11 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                 .readBoolean(BravePreferenceKeys.YOUTUBE_PREMIUM_USER_BLOCKED, false);
         if (isBlocked) return true;
 
+        // Don't show on NTP if user has visited YouTube more than 2 times
+        int visitCount = ChromeSharedPreferences.getInstance()
+                .readInt(BravePreferenceKeys.BRAVE_YOUTUBE_VISIT_COUNT, 0);
+        if (visitCount > 2) return false;
+
         long lastShown = ChromeSharedPreferences.getInstance()
                 .readLong(BravePreferenceKeys.YOUTUBE_PREMIUM_BOTTOMSHEET_LAST_SHOWN_IN_NTP, 0);
         long now = System.currentTimeMillis();
@@ -228,7 +233,16 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                         if (getActivity() == null || !isAdded()) return;
 
                         mLoadingIndicator.setVisibility(View.GONE);
-                        mTimeLayout.setVisibility(View.VISIBLE);
+                        
+                        // Only show timer if user has visited YouTube at least once (or if they are already Premium/blocked? The requirement says "if user visited 0 times... should not show the timer").
+                        int visitCount = ChromeSharedPreferences.getInstance()
+                                .readInt(BravePreferenceKeys.BRAVE_YOUTUBE_VISIT_COUNT, 0);
+                        if (visitCount > 0) {
+                            mTimeLayout.setVisibility(View.VISIBLE);
+                        } else {
+                            mTimeLayout.setVisibility(View.GONE);
+                        }
+
                         updateUI(data);
                         mIsBlocked = data.isBlocked;
 
@@ -265,7 +279,14 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
 
                         Log.e(TAG, "Failed to fetch premium data: " + error);
                         mLoadingIndicator.setVisibility(View.GONE);
-                        mTimeLayout.setVisibility(View.VISIBLE);
+                        
+                        int visitCount = ChromeSharedPreferences.getInstance()
+                                .readInt(BravePreferenceKeys.BRAVE_YOUTUBE_VISIT_COUNT, 0);
+                        if (visitCount > 0) {
+                             mTimeLayout.setVisibility(View.VISIBLE);
+                        } else {
+                             mTimeLayout.setVisibility(View.GONE);
+                        }
 
                         // Use cached data or defaults
                         long cachedSeconds = ChromeSharedPreferences.getInstance()

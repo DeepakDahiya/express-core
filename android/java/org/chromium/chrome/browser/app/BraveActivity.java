@@ -605,6 +605,16 @@ public abstract class BraveActivity extends ChromeActivity
                 @Override
                 public void didFinishNavigationInPrimaryMainFrame(NavigationHandle navigationHandle) {
                     Log.e("Browser Express", "Navigation finished: " + navigationHandle.getUrl());
+                    
+                    // Track YouTube visits
+                    String url = navigationHandle.getUrl().getSpec();
+                    if (url != null && (url.contains("youtube.com") || url.contains("youtu.be"))) {
+                         int count = ChromeSharedPreferences.getInstance()
+                                 .readInt(BravePreferenceKeys.BRAVE_YOUTUBE_VISIT_COUNT, 0);
+                         ChromeSharedPreferences.getInstance()
+                                 .writeInt(BravePreferenceKeys.BRAVE_YOUTUBE_VISIT_COUNT, count + 1);
+                    }
+
                     // Small delay to ensure URL is updated in the tab
                     new Handler(Looper.getMainLooper()).postDelayed(() -> {
                         updateBackCallbackState();

@@ -126,6 +126,7 @@ public final class BravePreferenceKeys {
             "youtube_premium_user_blocked";
     public static final String YOUTUBE_PREMIUM_BOTTOMSHEET_LAST_SHOWN_IN_NTP =
             "youtube_premium_bottomsheet_last_shown_in_ntp";
+    public static final String BRAVE_YOUTUBE_VISIT_COUNT = "brave_youtube_visit_count";
 
     public static final String BRAVE_APP_BACKGROUND_TIMESTAMP =
             "brave_app_background_timestamp";
