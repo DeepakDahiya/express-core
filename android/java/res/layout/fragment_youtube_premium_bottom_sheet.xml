@@ -288,4 +288,10 @@
             style="?android:attr/borderlessButtonStyle" />
 
     </LinearLayout>
+    </LinearLayout>
+
+    <org.chromium.chrome.browser.youtube_premium.ConfettiView
+        android:id="@+id/confetti_view"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 </FrameLayout>

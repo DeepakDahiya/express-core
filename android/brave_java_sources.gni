@@ -553,6 +553,7 @@ brave_java_sources = [
   "../../brave/android/java/org/chromium/chrome/browser/widget/quickactionsearchandbookmark/utils/BraveSearchWidgetUtils.java",
   "../../brave/android/java/org/chromium/chrome/browser/youtube_premium/YouTubePremiumAccessUtil.java",
   "../../brave/android/java/org/chromium/chrome/browser/youtube_premium/YouTubePremiumBottomSheetFragment.java",
+  "../../brave/android/java/org/chromium/chrome/browser/youtube_premium/ConfettiView.java",
 ]
 
 brave_java_sources += brave_ads_java_sources

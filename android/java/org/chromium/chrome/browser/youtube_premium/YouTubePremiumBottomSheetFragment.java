@@ -68,6 +68,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
     private View mCloseButton;
     private ProgressBar mLoadingIndicator;
     private LinearLayout mTimeLayout;
+    private ConfettiView mConfettiView;
 
     private boolean mIsBlocked = false;
     private boolean mIsPermanent = false;
@@ -202,6 +203,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         mCloseButton = view.findViewById(R.id.close_button);
         mLoadingIndicator = view.findViewById(R.id.loading_indicator);
         mTimeLayout = view.findViewById(R.id.time_layout);
+        mConfettiView = view.findViewById(R.id.confetti_view);
 
         // Configure UI based on mode
         if (mIsPermanent) {
@@ -341,10 +343,23 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         mPremiumMessage.setText(data.message);
 
         // Referral count: "{N} referred"
-        mReferralCount.setText(getResources().getQuantityString(R.plurals.youtube_premium_referred, data.referralCount, data.referralCount));
+        // Animate count up
+        android.animation.ValueAnimator countAnimator = android.animation.ValueAnimator.ofInt(0, data.referralCount);
+        countAnimator.setDuration(1500);
+        countAnimator.addUpdateListener(animation -> {
+            int val = (int) animation.getAnimatedValue();
+            mReferralCount.setText(getResources().getQuantityString(R.plurals.youtube_premium_referred, val, val));
+        });
+        countAnimator.start();
 
         // Start countdown based on milliseconds remaining
         long millisInFuture = data.accessRemainingInSeconds * 1000;
+
+        // Initial set with slide animation for timer fields
+        animateTimerField(mTimerDays, millisInFuture / (24 * 60 * 60 * 1000));
+        animateTimerField(mTimerHours, (millisInFuture / (60 * 60 * 1000)) % 24);
+        animateTimerField(mTimerMinutes, (millisInFuture / (60 * 1000)) % 60);
+        animateTimerField(mTimerSeconds, (millisInFuture / 1000) % 60);
 
         mPremiumCountdownTimer = new CountDownTimer(millisInFuture, 1000) {
             @Override
@@ -356,10 +371,12 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                 long minutes = (millisUntilFinished / (60 * 1000)) % 60;
                 long seconds = (millisUntilFinished / 1000) % 60;
 
-                mTimerDays.setText(String.format(Locale.US, "%02d", days));
-                mTimerHours.setText(String.format(Locale.US, "%02d", hours));
-                mTimerMinutes.setText(String.format(Locale.US, "%02d", minutes));
-                mTimerSeconds.setText(String.format(Locale.US, "%02d", seconds));
+                // For periodic updates, we can just set text or do a subtle transition
+                // Doing full animation on every tick might be too much, but let's try a small wheel effect if value changes
+                updateTimerField(mTimerDays, days);
+                updateTimerField(mTimerHours, hours);
+                updateTimerField(mTimerMinutes, minutes);
+                updateTimerField(mTimerSeconds, seconds);
             }
 
             @Override
@@ -371,6 +388,31 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                 mTimerSeconds.setText(R.string.youtube_premium_timer_zero);
             }
         }.start();
+
+        // Start Confetti!
+        mConfettiView.post(() -> mConfettiView.startConfetti());
+    }
+
+    private void animateTimerField(TextView view, long targetValue) {
+        view.setText(String.format(Locale.US, "%02d", targetValue));
+        view.setTranslationY(50f);
+        view.setAlpha(0f);
+        view.animate().translationY(0f).alpha(1f).setDuration(500).setInterpolator(new android.view.animation.OvershootInterpolator()).start();
+    }
+    
+    // updates text only if changed, optionally could add small slide effect here too
+    private void updateTimerField(TextView view, long newValue) {
+        String newStr = String.format(Locale.US, "%02d", newValue);
+        if (!view.getText().toString().equals(newStr)) {
+             // Optional: Add a "tick" animation
+             view.animate().translationY(-10f).alpha(0.5f).setDuration(150).withEndAction(() -> {
+                 view.setText(newStr);
+                 view.setTranslationY(10f);
+                 view.animate().translationY(0f).alpha(1f).setDuration(150).start();
+             }).start();
+        } else {
+             view.setText(newStr); // Ensure set
+        }
     }
 
     private void startAutoDismiss() {
