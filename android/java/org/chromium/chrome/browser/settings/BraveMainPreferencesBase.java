@@ -358,8 +358,8 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
 
         int passwordsAndAutofillSectionOrder = displaySectionOrder;
         setPreferenceOrder(MainSettings.PREF_AUTOFILL_SECTION, ++passwordsAndAutofillSectionOrder);
-        setPreferenceOrder(PREF_PASSWORDS, ++passwordsAndAutofillSectionOrder);
-        setPreferenceOrder(MainSettings.PREF_AUTOFILL_OPTIONS, ++passwordsAndAutofillSectionOrder);
+        // setPreferenceOrder(PREF_PASSWORDS, ++passwordsAndAutofillSectionOrder);
+        // setPreferenceOrder(MainSettings.PREF_AUTOFILL_OPTIONS, ++passwordsAndAutofillSectionOrder);
         setPreferenceOrder(PREF_PAYMENT_METHODS, ++passwordsAndAutofillSectionOrder);
         setPreferenceOrder(PREF_ADDRESSES, ++passwordsAndAutofillSectionOrder);
         setPreferenceOrder(PREF_AUTOFILL_PRIVATE_WINDOW, ++passwordsAndAutofillSectionOrder);
