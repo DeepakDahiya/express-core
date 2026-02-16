@@ -164,6 +164,24 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         }
     }
 
+    /**
+     * Show the bottomsheet triggered by explicit user action (e.g. Profile Preference).
+     * Bypasses all suppressed conditions (cooldowns, NTP checks, etc).
+     */
+    public static void showByUserAction(FragmentManager fragmentManager) {
+        try {
+            if (fragmentManager.isStateSaved()) return;
+            // Allow showing even if tag exists? Usually better to just focus existing one, but for now safety check info
+            if (fragmentManager.findFragmentByTag(TAG) != null) return;
+            
+            // show as permanent (close button visible)
+            YouTubePremiumBottomSheetFragment fragment = newInstance(true);
+            fragment.show(fragmentManager, TAG);
+        } catch (IllegalStateException e) {
+            Log.e(TAG, "Cannot show bottom sheet after onSaveInstanceState: " + e.getMessage());
+        }
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -315,7 +333,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                         PremiumAccessData fallbackData = new PremiumAccessData(
                                 0, cachedSeconds,
                                 getString(R.string.youtube_premium_message_default),
-                                cachedBlocked, null);
+                                cachedBlocked, null, false);
                         updateUI(fallbackData);
 
                         if (cachedBlocked || mIsPermanent) {
@@ -343,14 +361,22 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         mPremiumMessage.setText(data.message);
 
         // Referral count: "{N} referred"
-        // Animate count up
-        android.animation.ValueAnimator countAnimator = android.animation.ValueAnimator.ofInt(0, data.referralCount);
-        countAnimator.setDuration(1500);
-        countAnimator.addUpdateListener(animation -> {
-            int val = (int) animation.getAnimatedValue();
-            mReferralCount.setText(getResources().getQuantityString(R.plurals.youtube_premium_referred, val, val));
-        });
-        countAnimator.start();
+        if (data.newReferrals) {
+            // Animate count up if new referrals
+            android.animation.ValueAnimator countAnimator = android.animation.ValueAnimator.ofInt(0, data.referralCount);
+            countAnimator.setDuration(1500);
+            countAnimator.addUpdateListener(animation -> {
+                int val = (int) animation.getAnimatedValue();
+                mReferralCount.setText(getResources().getQuantityString(R.plurals.youtube_premium_referred, val, val));
+            });
+            countAnimator.start();
+
+            // Start Confetti!
+            mConfettiView.post(() -> mConfettiView.startConfetti());
+        } else {
+            // Set directly without animation
+            mReferralCount.setText(getResources().getQuantityString(R.plurals.youtube_premium_referred, data.referralCount, data.referralCount));
+        }
 
         // Start countdown based on milliseconds remaining
         long millisInFuture = data.accessRemainingInSeconds * 1000;
@@ -388,9 +414,6 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                 mTimerSeconds.setText(R.string.youtube_premium_timer_zero);
             }
         }.start();
-
-        // Start Confetti!
-        mConfettiView.post(() -> mConfettiView.startConfetti());
     }
 
     private void animateTimerField(TextView view, long targetValue) {

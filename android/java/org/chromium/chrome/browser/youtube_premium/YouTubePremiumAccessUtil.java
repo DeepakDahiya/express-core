@@ -41,14 +41,16 @@ public class YouTubePremiumAccessUtil {
         public final String message;
         public final boolean isBlocked;
         public final String referralCode;
+        public final boolean newReferrals;
 
         public PremiumAccessData(int referralCount, long accessRemainingInSeconds,
-                                 String message, boolean isBlocked, String referralCode) {
+                                 String message, boolean isBlocked, String referralCode, boolean newReferrals) {
             this.referralCount = referralCount;
             this.accessRemainingInSeconds = accessRemainingInSeconds;
             this.message = message;
             this.isBlocked = isBlocked;
             this.referralCode = referralCode;
+            this.newReferrals = newReferrals;
         }
     }
 
@@ -105,9 +107,10 @@ public class YouTubePremiumAccessUtil {
                             "Share the app with friends to extend your premium access!");
                     boolean isBlocked = jsonResponse.optBoolean("isBlocked", false);
                     String referralCode = jsonResponse.optString("referralCode", null);
+                    boolean newReferrals = jsonResponse.optBoolean("newReferrals", false);
 
                     return new PremiumAccessData(referralCount, accessRemainingInSeconds,
-                                                 message, isBlocked, referralCode);
+                                                 message, isBlocked, referralCode, newReferrals);
                 } else {
                     mErrorMessage = "Server returned error: " + responseCode;
                     return null;
