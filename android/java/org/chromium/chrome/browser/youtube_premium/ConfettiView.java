@@ -84,7 +84,7 @@ public class ConfettiView extends View {
                 p.x += p.velocityX;
                 p.y += p.velocityY;
                 p.rotation += p.rotationSpeed;
-                p.velocityY += 0.5f; // Gravity
+                p.velocityY += 0.25f; // Gravity
 
                 paint.setColor(p.color);
                 canvas.save();

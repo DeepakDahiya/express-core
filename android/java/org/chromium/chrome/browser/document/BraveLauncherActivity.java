@@ -32,7 +32,7 @@ public class BraveLauncherActivity extends Activity {
         handleReferralDeepLink(getIntent());
 
         // Check for referral early in app launch (Play Store Install Referrer)
-        Log.d(TAG, "Checking referral in BraveLauncherActivity");
+        Log.i(TAG, "Checking referral in BraveLauncherActivity");
         ReferralHelper.checkAndProcessReferral(this);
     }
 
@@ -54,7 +54,7 @@ public class BraveLauncherActivity extends Activity {
         if ("browser.express".equals(host) && path != null && path.startsWith("/refer")) {
             String referralCode = uri.getQueryParameter("code");
             if (referralCode != null && !referralCode.isEmpty()) {
-                Log.d(TAG, "Received referral deep link with code: " + referralCode);
+                Log.i(TAG, "Received referral deep link with code: " + referralCode);
                 ReferralHelper.processDeepLinkReferral(this, referralCode);
             }
         }

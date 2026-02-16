@@ -39,7 +39,7 @@ public class DebugReferralReceiver extends BroadcastReceiver {
             return;
         }
 
-        Log.d(TAG, "Received debug referrer: " + referrer);
+        Log.i(TAG, "Received debug referrer: " + referrer);
 
         // Reset the processed flag so it will be processed on next app start
         ChromeSharedPreferences.getInstance()
@@ -49,6 +49,6 @@ public class DebugReferralReceiver extends BroadcastReceiver {
         ChromeSharedPreferences.getInstance()
                 .writeString(BravePreferenceKeys.DEBUG_TEST_REFERRAL, referrer);
 
-        Log.d(TAG, "Debug referral saved. Restart the app to process it.");
+        Log.i(TAG, "Debug referral saved. Restart the app to process it.");
     }
 }

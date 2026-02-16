@@ -3488,7 +3488,7 @@ public abstract class BraveActivity extends ChromeActivity
     private void checkReferral() {
         // Referral is now checked early in BraveLauncherActivity via ReferralHelper.
         // This is kept as a fallback in case the launcher activity path is skipped.
-        Log.d("REFERRAL", "checkReferral called in BraveActivity (fallback)");
+        Log.i("REFERRAL", "checkReferral called in BraveActivity (fallback)");
         org.chromium.chrome.browser.referral.ReferralHelper.checkAndProcessReferral(this);
     }
 

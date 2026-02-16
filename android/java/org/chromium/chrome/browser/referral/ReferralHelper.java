@@ -39,14 +39,14 @@ public class ReferralHelper {
     private static Context sAppContext;
 
     public static void checkAndProcessReferral(Context context) {
-        Log.d(TAG, "checkAndProcessReferral called");
+        Log.i(TAG, "checkAndProcessReferral called");
         sAppContext = context.getApplicationContext();
 
         // Only process referral once (on first install)
         boolean alreadyProcessed = ChromeSharedPreferences.getInstance()
                 .readBoolean(BravePreferenceKeys.EXPRESS_REFERRAL_PROCESSED, false);
         if (alreadyProcessed) {
-            Log.d(TAG, "Referral already processed, skipping");
+            Log.i(TAG, "Referral already processed, skipping");
             return;
         }
 
@@ -54,7 +54,7 @@ public class ReferralHelper {
         String debugReferral = ChromeSharedPreferences.getInstance()
                 .readString(BravePreferenceKeys.DEBUG_TEST_REFERRAL, null);
         if (debugReferral != null && !debugReferral.isEmpty()) {
-            Log.d(TAG, "Processing debug test referral: " + debugReferral);
+            Log.i(TAG, "Processing debug test referral: " + debugReferral);
             // Clear it so it only processes once
             ChromeSharedPreferences.getInstance().removeKey(BravePreferenceKeys.DEBUG_TEST_REFERRAL);
             processReferrerString(debugReferral);
@@ -76,7 +76,7 @@ public class ReferralHelper {
                                 try {
                                     ReferrerDetails response = referrerClient.getInstallReferrer();
                                     String referrerUrl = response.getInstallReferrer();
-                                    Log.d(TAG, "Raw referrer URL: " + referrerUrl);
+                                    Log.i(TAG, "Raw referrer URL: " + referrerUrl);
 
                                     if (referrerUrl == null || referrerUrl.isEmpty()) {
                                         markReferralProcessed();
@@ -104,7 +104,7 @@ public class ReferralHelper {
 
                     @Override
                     public void onInstallReferrerServiceDisconnected() {
-                        Log.d(TAG, "Install referrer service disconnected");
+                        Log.i(TAG, "Install referrer service disconnected");
                     }
                 });
     }
@@ -116,13 +116,13 @@ public class ReferralHelper {
     public static void processDeepLinkReferral(Context context, String referralCode) {
         if (referralCode == null || referralCode.isEmpty()) return;
 
-        Log.d(TAG, "Processing deep link referral code: " + referralCode);
+        Log.i(TAG, "Processing deep link referral code: " + referralCode);
 
         // Check if this referral code was already tracked
         String lastTracked = ChromeSharedPreferences.getInstance()
                 .readString(BravePreferenceKeys.EXPRESS_REFERRAL_CODE, null);
         if (referralCode.equals(lastTracked)) {
-            Log.d(TAG, "Referral code already tracked, skipping");
+            Log.i(TAG, "Referral code already tracked, skipping");
             return;
         }
 
@@ -138,7 +138,7 @@ public class ReferralHelper {
         String referralCode = getReferrerParameter(referrerUrl, "referral_code");
 
         if (referralCode != null && !referralCode.isEmpty()) {
-            Log.d(TAG, "Found referral code: " + referralCode);
+            Log.i(TAG, "Found referral code: " + referralCode);
 
             // Save referral code locally
             ChromeSharedPreferences.getInstance()
@@ -171,7 +171,7 @@ public class ReferralHelper {
     private static void markReferralProcessed() {
         ChromeSharedPreferences.getInstance()
                 .writeBoolean(BravePreferenceKeys.EXPRESS_REFERRAL_PROCESSED, true);
-        Log.d(TAG, "Marked referral as processed");
+        Log.i(TAG, "Marked referral as processed");
     }
 
     @SuppressLint("HardwareIds")
@@ -208,7 +208,7 @@ public class ReferralHelper {
                 }
 
                 int responseCode = conn.getResponseCode();
-                Log.d(TAG, "Backend response code: " + responseCode);
+                Log.i(TAG, "Backend response code: " + responseCode);
 
             } catch (Exception e) {
                 Log.e(TAG, "Failed to send referral to backend: " + e.getMessage());

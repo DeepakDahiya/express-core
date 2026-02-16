@@ -54,7 +54,7 @@ public class ReferralCodeUtil {
                 conn.setReadTimeout(10000);
 
                 int responseCode = conn.getResponseCode();
-                Log.d(TAG, "API response code: " + responseCode);
+                Log.i(TAG, "API response code: " + responseCode);
 
                 if (responseCode == HttpURLConnection.HTTP_OK) {
                     BufferedReader reader = new BufferedReader(
