@@ -195,8 +195,30 @@ public class BraveSetDefaultBrowserUtils {
      * @param activity The activity context needed to start the settings activity
      */
     public static void openDefaultAppsSettings(Activity activity) {
-        Intent intent = new Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS);
-        activity.startActivity(intent);
+        try {
+            // Android Q+ (10+) supports a direct intent to manage default apps, but not specifically browser without RoleManager.
+            // However, on some devices (Samsung, etc.), standard intent ACTION_MANAGE_DEFAULT_APPS_SETTINGS goes to the list.
+            // We can try to be more specific if possible, but standard Android intent is limited here.
+            
+            // Try to open specific app details "Default Browser" screen if possible via MANAGE_DEFAULT_APPS_SETTINGS
+            Intent intent = new Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS);
+            intent.putExtra(":settings:fragment_args_key", "default_browser");
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                // For Android N+, this is the standard intent.
+                // Some manufacturers might support an extra to highlight browser, but it's not standard API.
+            }
+            activity.startActivity(intent);
+        } catch (Exception e) {
+            // Fallback to generic settings if the specific intent fails
+            try {
+                Intent intent = new Intent(Settings.ACTION_SETTINGS);
+                activity.startActivity(intent);
+            } catch (Exception e2) {
+                Log.e(TAG, "Could not open settings: " + e2.getMessage());
+            }
+        }
     }
 
     /**
@@ -261,6 +283,9 @@ public class BraveSetDefaultBrowserUtils {
      *     The configured wait time has elapsed since the last prompt
      */
     public static boolean shouldShowDefaultBrowserDialog(Activity activity) {
+        if (!org.chromium.chrome.browser.browser_express_config.BrowserExpressConfigUtil.isDefaultBrowserPromptEnabled()) {
+            return false;
+        }
         return !isBraveSetAsDefaultBrowser(activity)
                 && getBraveDefaultAppOpenCounter() >= 5
                 && System.currentTimeMillis() > getBraveDefaultShowTime();

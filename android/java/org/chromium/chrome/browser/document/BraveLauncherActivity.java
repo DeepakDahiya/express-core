@@ -34,6 +34,9 @@ public class BraveLauncherActivity extends Activity {
         // Check for referral early in app launch (Play Store Install Referrer)
         Log.i(TAG, "Checking referral in BraveLauncherActivity");
         ReferralHelper.checkAndProcessReferral(this);
+
+        // Fetch remote configuration (feature flags)
+        org.chromium.chrome.browser.browser_express_config.BrowserExpressConfigUtil.fetchConfigIfNeeded();
     }
 
     @Override

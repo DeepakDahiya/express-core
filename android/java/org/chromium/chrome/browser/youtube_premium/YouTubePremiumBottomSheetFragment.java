@@ -109,6 +109,10 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         if (org.chromium.chrome.browser.set_default_browser.BraveSetDefaultBrowserUtils.shouldShowDefaultBrowserDialog(activity)) {
             return false;
         }
+
+        if (!org.chromium.chrome.browser.browser_express_config.BrowserExpressConfigUtil.isYouTubePremiumEnabled()) {
+            return false;
+        }
         // Always show if user is blocked
         boolean isBlocked = ChromeSharedPreferences.getInstance()
                 .readBoolean(BravePreferenceKeys.YOUTUBE_PREMIUM_USER_BLOCKED, false);
@@ -154,6 +158,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         try {
             if (fragmentManager.isStateSaved()) return;
             if (fragmentManager.findFragmentByTag(TAG) != null) return;
+            mReferButton.setText(R.string.youtube_premium_refer_button_ntp);
             YouTubePremiumBottomSheetFragment fragment = newInstance(true);
             fragment.show(fragmentManager, TAG);
             ChromeSharedPreferences.getInstance()
@@ -380,12 +385,30 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
 
         // Start countdown based on milliseconds remaining
         long millisInFuture = data.accessRemainingInSeconds * 1000;
+        long targetDays = millisInFuture / (24 * 60 * 60 * 1000);
 
-        // Initial set with slide animation for timer fields
-        animateTimerField(mTimerDays, millisInFuture / (24 * 60 * 60 * 1000));
-        animateTimerField(mTimerHours, (millisInFuture / (60 * 60 * 1000)) % 24);
-        animateTimerField(mTimerMinutes, (millisInFuture / (60 * 1000)) % 60);
-        animateTimerField(mTimerSeconds, (millisInFuture / 1000) % 60);
+        if (data.newReferrals) {
+            // Animate Days count up
+            android.animation.ValueAnimator daysAnimator = android.animation.ValueAnimator.ofInt(0, (int) targetDays);
+            daysAnimator.setDuration(1500);
+            daysAnimator.addUpdateListener(animation -> {
+                int val = (int) animation.getAnimatedValue();
+                mTimerDays.setText(String.format(Locale.US, "%02d", val));
+            });
+            daysAnimator.start();
+
+            // Set other fields directly or with slide animation
+            animateTimerField(mTimerHours, (millisInFuture / (60 * 60 * 1000)) % 24);
+            animateTimerField(mTimerMinutes, (millisInFuture / (60 * 1000)) % 60);
+            animateTimerField(mTimerSeconds, (millisInFuture / 1000) % 60);
+
+        } else {
+            // Initial set with slide animation for timer fields
+            animateTimerField(mTimerDays, targetDays);
+            animateTimerField(mTimerHours, (millisInFuture / (60 * 60 * 1000)) % 24);
+            animateTimerField(mTimerMinutes, (millisInFuture / (60 * 1000)) % 60);
+            animateTimerField(mTimerSeconds, (millisInFuture / 1000) % 60);
+        }
 
         mPremiumCountdownTimer = new CountDownTimer(millisInFuture, 1000) {
             @Override
@@ -399,7 +422,13 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
 
                 // For periodic updates, we can just set text or do a subtle transition
                 // Doing full animation on every tick might be too much, but let's try a small wheel effect if value changes
-                updateTimerField(mTimerDays, days);
+                
+                // Skip updating days if the count-up animation (1.5s) is still running
+                boolean isAnimatingDays = data.newReferrals && (millisInFuture - millisUntilFinished < 1600);
+                
+                if (!isAnimatingDays) {
+                     updateTimerField(mTimerDays, days);
+                }
                 updateTimerField(mTimerHours, hours);
                 updateTimerField(mTimerMinutes, minutes);
                 updateTimerField(mTimerSeconds, seconds);
