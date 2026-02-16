@@ -88,6 +88,11 @@ public class BrowserExpressConfigUtil {
             }
             return null;
         }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            // No-op
+        }
     }
 
     public static boolean isDefaultBrowserPromptEnabled() {
