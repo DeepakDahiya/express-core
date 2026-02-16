@@ -24,12 +24,14 @@ import java.nio.charset.StandardCharsets;
 public class BrowserExpressConfigUtil {
     private static final String TAG = "BrowserExpressConfig";
     private static final String API_URL = "https://api.browser.express/v1/public/config";
-    private static final long COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24 hours
+    private static final long COOLDOWN_MS = 6 * 60 * 60 * 1000; // 24 hours
 
     // Preference keys for feature flags (should likely be in BravePreferenceKeys, but defining here for now or assuming existence)
     // We will use string literals for keys if not present in BravePreferenceKeys to avoid modifying that giant file right now unless necessary.
     public static final String PREF_ENABLE_DEFAULT_BROWSER = "browser_express_enable_default_browser";
     public static final String PREF_ENABLE_YOUTUBE_PREMIUM = "browser_express_enable_youtube_premium";
+    public static final String PREF_NTP_LAUNCH_DELAY = "browser_express_ntp_launch_delay";
+    public static final String PREF_YOUTUBE_PREMIUM_COOLDOWN = "browser_express_youtube_premium_cooldown";
     public static final String PREF_LAST_CONFIG_CHECK = "browser_express_last_config_check";
 
     public static void fetchConfigIfNeeded() {
@@ -68,9 +70,13 @@ public class BrowserExpressConfigUtil {
                     JSONObject json = new JSONObject(response.toString());
                     boolean enableDefaultBrowser = json.optBoolean("enableDefaultBrowser", true);
                     boolean enableYouTubePremium = json.optBoolean("enableYouTubePremium", true);
+                    long ntpLaunchDelay = json.optLong("ntpLaunchDelay", 30000);
+                    long youtubePremiumCooldown = json.optLong("youtubePremiumCooldown", 30000);
 
                     ChromeSharedPreferences.getInstance().writeBoolean(PREF_ENABLE_DEFAULT_BROWSER, enableDefaultBrowser);
                     ChromeSharedPreferences.getInstance().writeBoolean(PREF_ENABLE_YOUTUBE_PREMIUM, enableYouTubePremium);
+                    ChromeSharedPreferences.getInstance().writeLong(PREF_NTP_LAUNCH_DELAY, ntpLaunchDelay);
+                    ChromeSharedPreferences.getInstance().writeLong(PREF_YOUTUBE_PREMIUM_COOLDOWN, youtubePremiumCooldown);
                     ChromeSharedPreferences.getInstance().writeLong(PREF_LAST_CONFIG_CHECK, System.currentTimeMillis());
 
                     Log.i(TAG, "Config updated: defaultBrowser=" + enableDefaultBrowser + ", ytPremium=" + enableYouTubePremium);
@@ -90,5 +96,13 @@ public class BrowserExpressConfigUtil {
 
     public static boolean isYouTubePremiumEnabled() {
         return ChromeSharedPreferences.getInstance().readBoolean(PREF_ENABLE_YOUTUBE_PREMIUM, true);
+    }
+
+    public static long getNtpLaunchDelay() {
+        return ChromeSharedPreferences.getInstance().readLong(PREF_NTP_LAUNCH_DELAY, 30000);
+    }
+
+    public static long getYouTubePremiumCooldown() {
+        return ChromeSharedPreferences.getInstance().readLong(PREF_YOUTUBE_PREMIUM_COOLDOWN, 30000);
     }
 }

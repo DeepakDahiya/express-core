@@ -49,8 +49,8 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
     private static final int AUTO_DISMISS_DURATION_MS = 10000;
     private static final int COUNTDOWN_INTERVAL_MS = 100;
 
-    // Cooldown period - show bottomsheet once per 30 seconds (for testing, change to 60*60*1000 for 1 hour in production)
-    private static final long COOLDOWN_MS = 30 * 1000; // 30 seconds for testing
+    // Cooldown period - show bottomsheet once per configured time
+    // private static final long COOLDOWN_MS = 30 * 1000; // Deprecated, use ConfigUtil
 
     private CountDownTimer mAutoDismissTimer;
     private ObjectAnimator mProgressAnimator;
@@ -98,7 +98,8 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         long lastShown = ChromeSharedPreferences.getInstance()
                 .readLong(BravePreferenceKeys.YOUTUBE_PREMIUM_BOTTOMSHEET_LAST_SHOWN, 0);
         long now = System.currentTimeMillis();
-        return (now - lastShown) > COOLDOWN_MS;
+        long cooldownMs = org.chromium.chrome.browser.browser_express_config.BrowserExpressConfigUtil.getYouTubePremiumCooldown();
+        return (now - lastShown) > cooldownMs;
     }
 
     public static boolean shouldShowBottomSheetInNTP(android.app.Activity activity) {
@@ -126,7 +127,8 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         long lastShown = ChromeSharedPreferences.getInstance()
                 .readLong(BravePreferenceKeys.YOUTUBE_PREMIUM_BOTTOMSHEET_LAST_SHOWN_IN_NTP, 0);
         long now = System.currentTimeMillis();
-        return (now - lastShown) > COOLDOWN_MS;
+        long cooldownMs = org.chromium.chrome.browser.browser_express_config.BrowserExpressConfigUtil.getYouTubePremiumCooldown();
+        return (now - lastShown) > cooldownMs;
     }   
 
     /**

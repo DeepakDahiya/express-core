@@ -470,7 +470,7 @@ public abstract class BraveActivity extends ChromeActivity
                             .readLong(BravePreferenceKeys.BRAVE_APP_BACKGROUND_TIMESTAMP, 0);
             if (backgroundTimestamp > 0) {
                 long elapsedMs = System.currentTimeMillis() - backgroundTimestamp;
-                if (elapsedMs > 30_000) {
+                if (elapsedMs > org.chromium.chrome.browser.browser_express_config.BrowserExpressConfigUtil.getNtpLaunchDelay()) {
                     Tab activeTab = getActivityTab();
                     boolean isAlreadyOnNtp =
                             activeTab != null

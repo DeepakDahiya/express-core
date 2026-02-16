@@ -482,15 +482,19 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
     private void overrideChromiumPreferences() {
         // Replace fragment.
         Preference shieldsAndPrivacyPreference = findPreference(PREF_SHIELDS_AND_PRIVACY);
-        assumeNonNull(shieldsAndPrivacyPreference);
-        shieldsAndPrivacyPreference.setFragment(BravePrivacySettings.class.getName());
+        if (shieldsAndPrivacyPreference != null) {
+            shieldsAndPrivacyPreference.setFragment(BravePrivacySettings.class.getName());
+        }
+
         Preference homePagePreference = findPreference(MainSettings.PREF_HOMEPAGE);
         if (homePagePreference != null) {
             homePagePreference.setFragment(BraveHomepageSettings.class.getName());
         }
+
         Preference accessabilityPreference = findPreference(PREF_ACCESSIBILITY);
-        assumeNonNull(accessabilityPreference);
-        accessabilityPreference.setFragment(BraveAccessibilitySettings.class.getName());
+        if (accessabilityPreference != null) {
+            accessabilityPreference.setFragment(BraveAccessibilitySettings.class.getName());
+        }
     }
 
     private void setPreferenceListeners() {
