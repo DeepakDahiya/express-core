@@ -160,7 +160,6 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         try {
             if (fragmentManager.isStateSaved()) return;
             if (fragmentManager.findFragmentByTag(TAG) != null) return;
-            mReferButton.setText(R.string.youtube_premium_refer_button_ntp);
             YouTubePremiumBottomSheetFragment fragment = newInstance(true);
             fragment.show(fragmentManager, TAG);
             ChromeSharedPreferences.getInstance()
@@ -234,6 +233,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         if (mIsPermanent) {
             mCloseButton.setVisibility(View.VISIBLE);
             mCloseButton.setOnClickListener(v -> dismiss());
+            mReferButton.setText(R.string.youtube_premium_refer_button_ntp);
         } else {
             mCloseButton.setVisibility(View.GONE);
         }
