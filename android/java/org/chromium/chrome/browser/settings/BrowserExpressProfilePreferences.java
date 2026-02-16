@@ -204,7 +204,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                         }
 
                         // Open permanent bottom sheet
-                        YouTubePremiumBottomSheetFragment.showPermanent(getParentFragmentManager());
+                        YouTubePremiumBottomSheetFragment.showPermanent(getParentFragmentManager(), mActivity != null ? mActivity : getActivity());
                     }
                 });
 
