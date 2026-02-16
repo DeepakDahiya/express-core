@@ -100,7 +100,14 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         return (now - lastShown) > COOLDOWN_MS;
     }
 
-    public static boolean shouldShowBottomSheetInNTP() {
+    public static boolean shouldShowBottomSheetInNTP(android.app.Activity activity) {
+        // If the "Set Default Browser" bottom sheet is visible or about to be shown, don't show this one.
+        if (org.chromium.chrome.browser.set_default_browser.BraveSetDefaultBrowserUtils.isBottomSheetVisible) {
+            return false;
+        }
+        if (org.chromium.chrome.browser.set_default_browser.BraveSetDefaultBrowserUtils.shouldShowDefaultBrowserDialog(activity)) {
+            return false;
+        }
         // Always show if user is blocked
         boolean isBlocked = ChromeSharedPreferences.getInstance()
                 .readBoolean(BravePreferenceKeys.YOUTUBE_PREMIUM_USER_BLOCKED, false);
@@ -141,8 +148,8 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
      * Show the bottomsheet permanently (until closed by user).
      * Bypasses cooldown check.
      */
-    public static void showPermanent(FragmentManager fragmentManager) {
-        if (!shouldShowBottomSheetInNTP()) return;
+    public static void showPermanent(FragmentManager fragmentManager, android.app.Activity activity) {
+        if (!shouldShowBottomSheetInNTP(activity)) return;
         try {
             if (fragmentManager.isStateSaved()) return;
             if (fragmentManager.findFragmentByTag(TAG) != null) return;
@@ -266,6 +273,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                                 getDialog().setCanceledOnTouchOutside(false);
                             }
                             mTimerContainer.setVisibility(View.GONE);
+                            mReferralCount.setVisibility(View.GONE);
                             cancelAutoDismiss();
                         } else {
                             // Auto-dismiss after 10 seconds for youtube.com visits
@@ -311,6 +319,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                         if (cachedBlocked || mIsPermanent) {
                             setCancelable(false);
                             mTimerContainer.setVisibility(View.GONE);
+                            mReferralCount.setVisibility(View.GONE);
                             cancelAutoDismiss();
                         } else {
                             startAutoDismiss();

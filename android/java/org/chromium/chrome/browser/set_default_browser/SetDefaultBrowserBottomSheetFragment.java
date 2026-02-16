@@ -28,6 +28,7 @@ public class SetDefaultBrowserBottomSheetFragment extends BottomSheetDialogFragm
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setStyle(STYLE_NORMAL, R.style.AppSetDefaultBottomSheetDialogTheme);
+        setCancelable(false);
     }
 
     @Override
@@ -53,6 +54,8 @@ public class SetDefaultBrowserBottomSheetFragment extends BottomSheetDialogFragm
                 });
 
         Button cancelButton = view.findViewById(R.id.btn_cancel);
+        cancelButton.setVisibility(View.GONE);
+        /*
         cancelButton.setOnClickListener(
                 new View.OnClickListener() {
                     @Override
@@ -60,6 +63,7 @@ public class SetDefaultBrowserBottomSheetFragment extends BottomSheetDialogFragm
                         dismiss();
                     }
                 });
+         */
     }
 
     @Override

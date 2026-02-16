@@ -260,7 +260,7 @@ public class BraveSetDefaultBrowserUtils {
      *     the default browser - The app has been opened at least 5 times since the last prompt -
      *     The configured wait time has elapsed since the last prompt
      */
-    private static boolean shouldShowDefaultBrowserDialog(Activity activity) {
+    public static boolean shouldShowDefaultBrowserDialog(Activity activity) {
         return !isBraveSetAsDefaultBrowser(activity)
                 && getBraveDefaultAppOpenCounter() >= 5
                 && System.currentTimeMillis() > getBraveDefaultShowTime();
