@@ -1196,6 +1196,8 @@ const char16_t kYoutubePipButton[] =
                 bottom: 20px; right: 20px;
                 z-index: 2147483647 !important;
                 pointer-events: auto !important;
+                touch-action: manipulation;
+                isolation: isolate;
                 width: 60px; height: 60px; border-radius: 50%;
                 background: #D4AF37;
                 border: none; cursor: pointer; overflow: hidden;
@@ -1293,12 +1295,20 @@ const char16_t kYoutubePipButton[] =
             });
         }
 
-        const observer = new MutationObserver(() => {
-            const buttonContainerElement = document.querySelector('.page-container');
-            if (window.location.pathname !== '/watch' || !buttonContainerElement || buttonContainerElement.contains(buttonElement)) return;
-            buttonContainerElement.prepend(buttonElement);
-        });
+        function updateButtonVisibility() {
+            if (window.location.pathname === '/watch') {
+                if (!document.body.contains(buttonElement)) {
+                    document.body.appendChild(buttonElement);
+                }
+                buttonElement.style.display = '';
+            } else {
+                buttonElement.style.display = 'none';
+            }
+        }
+
+        const observer = new MutationObserver(updateButtonVisibility);
         observer.observe(document.documentElement, { subtree: true, childList: true });
+        updateButtonVisibility();
 
         // Additional visibility override for problematic devices
         const originalAddEventListener = document.addEventListener;
