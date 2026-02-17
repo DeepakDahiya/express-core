@@ -196,7 +196,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         removePreferenceIfPresent(MainSettings.PREF_HOME_MODULES_CONFIG);
         removePreferenceIfPresent(PREF_LANGUAGES);
         removePreferenceIfPresent(PREF_BASICS_SECTION);
-        // removePreferenceIfPresent(MainSettings.PREF_HOMEPAGE);
+        removePreferenceIfPresent(MainSettings.PREF_HOMEPAGE);
 
         // removePreferenceIfPresent(PREF_USE_CUSTOM_TABS);
         removePreferenceIfPresent(PREF_ADVANCED_SECTION);
@@ -320,10 +320,10 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         setPreferenceOrder(PREF_GENERAL_SECTION, ++generalOrder);
 
         // setPreferenceOrder(PREF_BRAVE_SEARCH_ENGINES, ++generalOrder);
-        Preference preference = findPreference(MainSettings.PREF_HOMEPAGE);
-        if (preference != null) {
-            preference.setOrder(++generalOrder);
-        }
+        // Preference preference = findPreference(MainSettings.PREF_HOMEPAGE);
+        // if (preference != null) {
+        //     preference.setOrder(++generalOrder);
+        // }
 
         // if (BraveSearchWidgetUtils.isRequestPinAppWidgetSupported()) {
         //     setPreferenceOrder(PREF_HOME_SCREEN_WIDGET, ++generalOrder);
@@ -337,7 +337,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         // if (findPreference(PREF_NOTIFICATIONS) != null) {
         //     findPreference(PREF_NOTIFICATIONS).setOrder(++generalOrder);
         // }
-        setPreferenceOrder(PREF_CONTENT_SETTINGS, ++generalOrder);
+        // setPreferenceOrder(PREF_CONTENT_SETTINGS, ++generalOrder);
         setPreferenceOrder(PREF_DOWNLOADS, ++generalOrder);
         setPreferenceOrder(PREF_CLOSING_ALL_TABS_CLOSES_BRAVE, ++generalOrder);
         // if (DeviceFormFactor.isTablet()) {

@@ -24,7 +24,7 @@ import java.nio.charset.StandardCharsets;
 public class BrowserExpressConfigUtil {
     private static final String TAG = "BrowserExpressConfig";
     private static final String API_URL = "https://api.browser.express/v1/public/config";
-    private static final long COOLDOWN_MS = 6 * 60 * 60 * 1000; // 24 hours
+    private static final long COOLDOWN_MS = 6 * 60 * 60 * 1000; // 6 hours
 
     // Preference keys for feature flags (should likely be in BravePreferenceKeys, but defining here for now or assuming existence)
     // We will use string literals for keys if not present in BravePreferenceKeys to avoid modifying that giant file right now unless necessary.
