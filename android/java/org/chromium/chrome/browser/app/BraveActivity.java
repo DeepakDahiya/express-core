@@ -416,6 +416,7 @@ public abstract class BraveActivity extends ChromeActivity
     private AppUpdateManager mAppUpdateManager;
     private boolean mWalletBadgeVisible;
     private boolean mSpoofCustomTab;
+    private boolean mIsLaunchedFromExternalIntent;
 
     private View mQuickSearchEnginesView;
 
@@ -464,12 +465,11 @@ public abstract class BraveActivity extends ChromeActivity
             FullScreenCustomTabActivity.sIsFullScreenCustomTabActivityClosed = false;
 
             // Navigate to NTP if the app was dormant for more than the cooldown
-            // period, but skip if the app is being opened via an external link
-            // (e.g. ACTION_VIEW intent with a URL).
-            Intent currentIntent = getIntent();
-            boolean isExternalLink = currentIntent != null
-                    && Intent.ACTION_VIEW.equals(currentIntent.getAction())
-                    && currentIntent.getData() != null;
+            // period, but skip if the app is being opened via an external link.
+            // The flag is set early in finishNativeInitialization (cold start)
+            // or onNewIntent (warm start) before the intent gets consumed.
+            boolean isExternalLink = mIsLaunchedFromExternalIntent;
+            mIsLaunchedFromExternalIntent = false;
 
             if (!isExternalLink) {
                 long backgroundTimestamp =
@@ -1518,6 +1518,14 @@ public abstract class BraveActivity extends ChromeActivity
     @Override
     public void finishNativeInitialization() {
         super.finishNativeInitialization();
+
+        // Check if the app was launched from an external link (cold start).
+        Intent launchIntent = getIntent();
+        if (launchIntent != null
+                && Intent.ACTION_VIEW.equals(launchIntent.getAction())
+                && launchIntent.getData() != null) {
+            mIsLaunchedFromExternalIntent = true;
+        }
 
         BraveMenuButtonCoordinator.setMenuFromBottom(false);
 
@@ -2711,6 +2719,12 @@ public abstract class BraveActivity extends ChromeActivity
     @Override
     public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
+        // Check if the app is being resumed via an external link (warm start).
+        if (intent != null
+                && Intent.ACTION_VIEW.equals(intent.getAction())
+                && intent.getData() != null) {
+            mIsLaunchedFromExternalIntent = true;
+        }
         if (intent != null) {
             String openUrl = intent.getStringExtra(BraveActivity.OPEN_URL);
             if (!TextUtils.isEmpty(openUrl)) {
