@@ -463,20 +463,34 @@ public abstract class BraveActivity extends ChromeActivity
             // Reset the flag tracking whether a full screen custom tab was closed
             FullScreenCustomTabActivity.sIsFullScreenCustomTabActivityClosed = false;
 
-            // Navigate to NTP if the app was dormant for more than 1 hour
-            // TODO: Change back to 3_600_000 (1 hour) after testing
-            long backgroundTimestamp =
-                    ChromeSharedPreferences.getInstance()
-                            .readLong(BravePreferenceKeys.BRAVE_APP_BACKGROUND_TIMESTAMP, 0);
-            if (backgroundTimestamp > 0) {
-                long elapsedMs = System.currentTimeMillis() - backgroundTimestamp;
-                if (elapsedMs > org.chromium.chrome.browser.browser_express_config.BrowserExpressConfigUtil.getNtpLaunchDelay()) {
-                    Tab activeTab = getActivityTab();
-                    boolean isAlreadyOnNtp =
-                            activeTab != null
-                                    && UrlUtilities.isNtpUrl(activeTab.getUrl().getSpec());
-                    if (!isAlreadyOnNtp) {
-                        openNewOrSelectExistingTab(UrlConstants.NTP_URL, false);
+            // Navigate to NTP if the app was dormant for more than the cooldown
+            // period, but skip if the app is being opened via an external link
+            // (e.g. ACTION_VIEW intent with a URL).
+            Intent currentIntent = getIntent();
+            boolean isExternalLink = currentIntent != null
+                    && Intent.ACTION_VIEW.equals(currentIntent.getAction())
+                    && currentIntent.getData() != null;
+
+            if (!isExternalLink) {
+                long backgroundTimestamp =
+                        ChromeSharedPreferences.getInstance()
+                                .readLong(
+                                        BravePreferenceKeys
+                                                .BRAVE_APP_BACKGROUND_TIMESTAMP,
+                                        0);
+                if (backgroundTimestamp > 0) {
+                    long elapsedMs = System.currentTimeMillis() - backgroundTimestamp;
+                    if (elapsedMs
+                            > org.chromium.chrome.browser.browser_express_config
+                                      .BrowserExpressConfigUtil.getNtpLaunchDelay()) {
+                        Tab activeTab = getActivityTab();
+                        boolean isAlreadyOnNtp =
+                                activeTab != null
+                                        && UrlUtilities.isNtpUrl(
+                                                activeTab.getUrl().getSpec());
+                        if (!isAlreadyOnNtp) {
+                            openNewOrSelectExistingTab(UrlConstants.NTP_URL, false);
+                        }
                     }
                 }
             }
