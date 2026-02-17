@@ -319,9 +319,9 @@ public class BraveTabbedAppMenuPropertiesDelegate extends TabbedAppMenuPropertie
         //                 modelList, buildBraveSpeedreaderItem(), Arrays.asList(R.id.page_zoom_id));
         //     }
         // }
-        if (!BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(mContext)) {
-            modelList.add(buildSetDefaultBrowserItem());
-        }
+        // if (!BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(mContext)) {
+        //     modelList.add(buildSetDefaultBrowserItem());
+        // }
         // if (!mJunitIsTesting) {
         //     if (BraveVpnUtils.isVpnFeatureSupported(mContext)) {
         //         modelList.add(buildBraveVpnItem());
