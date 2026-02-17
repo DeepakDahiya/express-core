@@ -467,8 +467,11 @@ public abstract class BraveActivity extends ChromeActivity
             // Navigate to NTP if the app was dormant for more than the cooldown
             // period, but skip if the app is being opened via an external link.
             // The flag is set early in finishNativeInitialization (cold start)
-            // or onNewIntent (warm start) before the intent gets consumed.
-            boolean isExternalLink = mIsLaunchedFromExternalIntent;
+            // or onNewIntent (warm start). Also check getIntent() as a
+            // fallback since super.onNewIntent() calls setIntent().
+            Intent currentIntent = getIntent();
+            boolean isExternalLink = mIsLaunchedFromExternalIntent
+                    || (currentIntent != null && hasExternalUrl(currentIntent));
             mIsLaunchedFromExternalIntent = false;
 
             if (!isExternalLink) {
@@ -1415,6 +1418,22 @@ public abstract class BraveActivity extends ChromeActivity
         return mComesFromNewTab;
     }
 
+    /**
+     * Checks whether the given intent carries an external URL, regardless of
+     * how it was packaged (ACTION_VIEW with data, OPEN_URL extra, or any
+     * format that {@link IntentHandler#getUrlFromIntent} can parse).
+     */
+    private boolean hasExternalUrl(Intent intent) {
+        if (Intent.ACTION_VIEW.equals(intent.getAction()) && intent.getData() != null) {
+            return true;
+        }
+        if (!TextUtils.isEmpty(intent.getStringExtra(BraveActivity.OPEN_URL))) {
+            return true;
+        }
+        String url = IntentHandler.getUrlFromIntent(intent);
+        return !TextUtils.isEmpty(url);
+    }
+
     @Override
     public void onBrowsingDataCleared() {}
 
@@ -1521,9 +1540,7 @@ public abstract class BraveActivity extends ChromeActivity
 
         // Check if the app was launched from an external link (cold start).
         Intent launchIntent = getIntent();
-        if (launchIntent != null
-                && Intent.ACTION_VIEW.equals(launchIntent.getAction())
-                && launchIntent.getData() != null) {
+        if (launchIntent != null && hasExternalUrl(launchIntent)) {
             mIsLaunchedFromExternalIntent = true;
         }
 
@@ -2720,9 +2737,7 @@ public abstract class BraveActivity extends ChromeActivity
     public void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         // Check if the app is being resumed via an external link (warm start).
-        if (intent != null
-                && Intent.ACTION_VIEW.equals(intent.getAction())
-                && intent.getData() != null) {
+        if (intent != null && hasExternalUrl(intent)) {
             mIsLaunchedFromExternalIntent = true;
         }
         if (intent != null) {
