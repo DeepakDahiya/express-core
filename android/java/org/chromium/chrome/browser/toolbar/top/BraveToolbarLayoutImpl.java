@@ -730,7 +730,9 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                             //     mBeHomeButton.setVisibility(View.VISIBLE);
                             // }
 
-                            mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                            if (mCommentsText != null) {
+                                mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                            }
                             
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                             Log.e(TAG, "BookmarkButton click " + e);
@@ -754,7 +756,9 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
                             int commentCount = 0;
                             mCommentsText = activity.getCommentCountText();
-                            mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                            if (mCommentsText != null) {
+                                mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                            }
 
                             if (accessToken != null) {
                                 Context context = ContextUtils.getApplicationContext();
@@ -2178,7 +2182,9 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                     BraveActivity activity = BraveActivity.getBraveActivity();
 
                     mCommentsText = activity.getCommentCountText();
-                    mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                    if (mCommentsText != null) {
+                        mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                    }
 
                     activity.setFirstComments(comments.toString());
                 } catch (BraveActivity.BraveActivityNotFoundException e) {

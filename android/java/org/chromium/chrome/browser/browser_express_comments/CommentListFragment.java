@@ -537,20 +537,22 @@ public class CommentListFragment extends Fragment {
                         InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
 
-                        String currentText = mCommentsText.getText().toString();
-                        int commentCount = 0;
-                        try {
-                            String[] parts = currentText.split(" ");
-                            if (parts.length > 0) {
-                                commentCount = Integer.parseInt(parts[0]);
+                        if (mCommentsText != null) {
+                            String currentText = mCommentsText.getText().toString();
+                            int commentCount = 0;
+                            try {
+                                String[] parts = currentText.split(" ");
+                                if (parts.length > 0) {
+                                    commentCount = Integer.parseInt(parts[0]);
+                                }
+                            } catch (NumberFormatException e) {
                             }
-                        } catch (NumberFormatException e) {
+
+                            // Increment the comment count
+                            commentCount++;
+
+                            mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
                         }
-
-                        // Increment the comment count
-                        commentCount++;
-
-                        mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
                         if(newRefreshToken != null && !newRefreshToken.isEmpty()){
                             activity.setAccessToken(newAccessToken);
                             JSONObject decodedAccessTokenObj = getDecodedToken(newAccessToken);
@@ -617,20 +619,22 @@ public class CommentListFragment extends Fragment {
             InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
 
-            String currentText = mCommentsText.getText().toString();
-            int commentCount = 0;
-            try {
-                String[] parts = currentText.split(" ");
-                if (parts.length > 0) {
-                    commentCount = Integer.parseInt(parts[0]);
+            if (mCommentsText != null) {
+                String currentText = mCommentsText.getText().toString();
+                int commentCount = 0;
+                try {
+                    String[] parts = currentText.split(" ");
+                    if (parts.length > 0) {
+                        commentCount = Integer.parseInt(parts[0]);
+                    }
+                } catch (NumberFormatException e) {
                 }
-            } catch (NumberFormatException e) {
+
+                // Increment the comment count
+                commentCount++;
+
+                mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
             }
-
-            // Increment the comment count
-            commentCount++;
-
-            mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             // Log.e("Express Browser Access Token", e.getMessage());
         }

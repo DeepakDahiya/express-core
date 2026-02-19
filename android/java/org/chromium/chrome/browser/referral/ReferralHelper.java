@@ -39,14 +39,14 @@ public class ReferralHelper {
     private static Context sAppContext;
 
     public static void checkAndProcessReferral(Context context) {
-        Log.i(TAG, "checkAndProcessReferral called");
+        Log.w(TAG, "checkAndProcessReferral called");
         sAppContext = context.getApplicationContext();
 
         // Only process referral once (on first install)
         boolean alreadyProcessed = ChromeSharedPreferences.getInstance()
                 .readBoolean(BravePreferenceKeys.EXPRESS_REFERRAL_PROCESSED, false);
         if (alreadyProcessed) {
-            Log.i(TAG, "Referral already processed, skipping");
+            Log.w(TAG, "Referral already processed, skipping");
             return;
         }
 
@@ -54,7 +54,7 @@ public class ReferralHelper {
         String debugReferral = ChromeSharedPreferences.getInstance()
                 .readString(BravePreferenceKeys.DEBUG_TEST_REFERRAL, null);
         if (debugReferral != null && !debugReferral.isEmpty()) {
-            Log.i(TAG, "Processing debug test referral: " + debugReferral);
+            Log.w(TAG, "Processing debug test referral: " + debugReferral);
             // Clear it so it only processes once
             ChromeSharedPreferences.getInstance().removeKey(BravePreferenceKeys.DEBUG_TEST_REFERRAL);
             processReferrerString(debugReferral);
@@ -62,23 +62,28 @@ public class ReferralHelper {
         }
 
         // Check Install Referrer API (for real Play Store installs)
-        checkInstallReferrer(context);
+        // Use application context since the calling Activity (BraveLauncherActivity)
+        // gets destroyed immediately after onCreate() returns.
+        checkInstallReferrer(sAppContext);
     }
 
     private static void checkInstallReferrer(Context context) {
+        Log.w(TAG, "Starting InstallReferrerClient connection");
         InstallReferrerClient referrerClient = InstallReferrerClient.newBuilder(context).build();
         referrerClient.startConnection(
                 new InstallReferrerStateListener() {
                     @Override
                     public void onInstallReferrerSetupFinished(int responseCode) {
+                        Log.w(TAG, "onInstallReferrerSetupFinished, responseCode=" + responseCode);
                         switch (responseCode) {
                             case InstallReferrerResponse.OK:
                                 try {
                                     ReferrerDetails response = referrerClient.getInstallReferrer();
                                     String referrerUrl = response.getInstallReferrer();
-                                    Log.i(TAG, "Raw referrer URL: " + referrerUrl);
+                                    Log.w(TAG, "Raw referrer URL: " + referrerUrl);
 
                                     if (referrerUrl == null || referrerUrl.isEmpty()) {
+                                        Log.w(TAG, "Referrer URL is empty");
                                         markReferralProcessed();
                                         return;
                                     }
@@ -104,7 +109,7 @@ public class ReferralHelper {
 
                     @Override
                     public void onInstallReferrerServiceDisconnected() {
-                        Log.i(TAG, "Install referrer service disconnected");
+                        Log.w(TAG, "Install referrer service disconnected");
                     }
                 });
     }
@@ -116,29 +121,30 @@ public class ReferralHelper {
     public static void processDeepLinkReferral(Context context, String referralCode) {
         if (referralCode == null || referralCode.isEmpty()) return;
 
-        Log.i(TAG, "Processing deep link referral code: " + referralCode);
+        Log.w(TAG, "Processing deep link referral code: " + referralCode);
 
         // Check if this referral code was already tracked
         String lastTracked = ChromeSharedPreferences.getInstance()
                 .readString(BravePreferenceKeys.EXPRESS_REFERRAL_CODE, null);
         if (referralCode.equals(lastTracked)) {
-            Log.i(TAG, "Referral code already tracked, skipping");
+            Log.w(TAG, "Referral code already tracked, skipping");
             return;
         }
 
         ChromeSharedPreferences.getInstance()
                 .writeString(BravePreferenceKeys.EXPRESS_REFERRAL_CODE, referralCode);
 
-        String deviceId = getDeviceId(context);
+        String deviceId = getDeviceId(context.getApplicationContext());
         sendReferralToBackend(referralCode, deviceId);
     }
 
     private static void processReferrerString(String referrerUrl) {
+        Log.w(TAG, "processReferrerString: " + referrerUrl);
         // Parse referral code from URL parameters
         String referralCode = getReferrerParameter(referrerUrl, "referral_code");
 
         if (referralCode != null && !referralCode.isEmpty()) {
-            Log.i(TAG, "Found referral code: " + referralCode);
+            Log.w(TAG, "Found referral code: " + referralCode);
 
             // Save referral code locally
             ChromeSharedPreferences.getInstance()
@@ -147,6 +153,8 @@ public class ReferralHelper {
             // Send to backend
             String deviceId = getDeviceId(sAppContext);
             sendReferralToBackend(referralCode, deviceId);
+        } else {
+            Log.w(TAG, "No referral_code found in referrer string");
         }
 
         markReferralProcessed();
@@ -155,6 +163,7 @@ public class ReferralHelper {
     private static String getReferrerParameter(String referrer, String paramName) {
         try {
             String decoded = URLDecoder.decode(referrer, StandardCharsets.UTF_8.name());
+            Log.w(TAG, "Decoded referrer: " + decoded);
             String[] pairs = decoded.split("&");
             for (String pair : pairs) {
                 String[] keyValue = pair.split("=");
@@ -171,7 +180,7 @@ public class ReferralHelper {
     private static void markReferralProcessed() {
         ChromeSharedPreferences.getInstance()
                 .writeBoolean(BravePreferenceKeys.EXPRESS_REFERRAL_PROCESSED, true);
-        Log.i(TAG, "Marked referral as processed");
+        Log.w(TAG, "Marked referral as processed");
     }
 
     @SuppressLint("HardwareIds")
@@ -188,6 +197,7 @@ public class ReferralHelper {
     }
 
     private static void sendReferralToBackend(String referralCode, String deviceId) {
+        Log.w(TAG, "Sending referral to backend: code=" + referralCode);
         new Thread(() -> {
             try {
                 URL url = new URL("https://api.browser.express/v1/referral/track");
@@ -208,7 +218,7 @@ public class ReferralHelper {
                 }
 
                 int responseCode = conn.getResponseCode();
-                Log.i(TAG, "Backend response code: " + responseCode);
+                Log.w(TAG, "Backend response code: " + responseCode);
 
             } catch (Exception e) {
                 Log.e(TAG, "Failed to send referral to backend: " + e.getMessage());

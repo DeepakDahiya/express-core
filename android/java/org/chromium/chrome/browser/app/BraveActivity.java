@@ -466,12 +466,10 @@ public abstract class BraveActivity extends ChromeActivity
 
             // Navigate to NTP if the app was dormant for more than the cooldown
             // period, but skip if the app is being opened via an external link.
-            // The flag is set early in finishNativeInitialization (cold start)
-            // or onNewIntent (warm start). Also check getIntent() as a
-            // fallback since super.onNewIntent() calls setIntent().
-            Intent currentIntent = getIntent();
-            boolean isExternalLink = mIsLaunchedFromExternalIntent
-                    || (currentIntent != null && hasExternalUrl(currentIntent));
+            // The flag is set before super in finishNativeInitialization (cold
+            // start) or onNewIntent (warm start), so it is always available by
+            // the time this method runs.
+            boolean isExternalLink = mIsLaunchedFromExternalIntent;
             mIsLaunchedFromExternalIntent = false;
 
             if (!isExternalLink) {
@@ -1536,13 +1534,15 @@ public abstract class BraveActivity extends ChromeActivity
 
     @Override
     public void finishNativeInitialization() {
-        super.finishNativeInitialization();
-
         // Check if the app was launched from an external link (cold start).
+        // Must run before super, which sets mNativeInitialized = true and
+        // can trigger onResumeWithNative() before we return.
         Intent launchIntent = getIntent();
         if (launchIntent != null && hasExternalUrl(launchIntent)) {
             mIsLaunchedFromExternalIntent = true;
         }
+
+        super.finishNativeInitialization();
 
         BraveMenuButtonCoordinator.setMenuFromBottom(false);
 
@@ -2735,11 +2735,12 @@ public abstract class BraveActivity extends ChromeActivity
 
     @Override
     public void onNewIntent(Intent intent) {
-        super.onNewIntent(intent);
         // Check if the app is being resumed via an external link (warm start).
+        // Must run before super, which may process and consume the intent.
         if (intent != null && hasExternalUrl(intent)) {
             mIsLaunchedFromExternalIntent = true;
         }
+        super.onNewIntent(intent);
         if (intent != null) {
             String openUrl = intent.getStringExtra(BraveActivity.OPEN_URL);
             if (!TextUtils.isEmpty(openUrl)) {
