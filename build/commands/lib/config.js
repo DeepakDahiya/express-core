@@ -187,9 +187,9 @@ const Config = function () {
   this.targetEnvironment = getEnvConfig(['target_environment'])
   this.gypTargetArch = 'x64'
   this.targetAndroidBase = 'mono'
-  this.ignorePatchVersionNumber =
-    !this.isBraveReleaseBuild()
-    && getEnvConfig(['ignore_patch_version_number'], !this.isCI)
+  this.ignorePatchVersionNumber = false
+    // !this.isBraveReleaseBuild()
+    // && getEnvConfig(['ignore_patch_version_number'], !this.isCI)
   this.braveVersion = getBraveVersion(this.ignorePatchVersionNumber)
   this.braveIOSMarketingPatchVersion =
     getEnvConfig(['brave_ios_marketing_version_patch']) || ''
