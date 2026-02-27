@@ -51,7 +51,6 @@ import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.app.BraveActivity;
-import android.content.Intent;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -76,6 +75,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 
 import android.view.HapticFeedbackConstants;
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 
 public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends DialogFragment implements MediaViewerFragment.OnViewerDismissedListener {
@@ -116,7 +116,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
 
     // private boolean isFromMenu;
 
-    private ActivityResultLauncher<String[]> mMediaPickerLauncher;
+    private ActivityResultLauncher<PickVisualMediaRequest> mMediaPickerLauncher;
 
     public static BrowserExpressReplyWithAttachmentBottomSheetFragment newInstance(boolean isFromMenu) {
         final BrowserExpressReplyWithAttachmentBottomSheetFragment fragment =
@@ -170,20 +170,9 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
             mTempSelectedMediaUri = getArguments().getParcelable(ATTACHMENT_URI);
 
             mMediaPickerLauncher = registerForActivityResult(
-                new ActivityResultContracts.OpenDocument(),
+                new ActivityResultContracts.PickVisualMedia(),
                 uri -> {
                     if (uri != null) {
-                        // Grant persistent read permissions for the service if needed.
-                        try {
-                            final int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
-                            if (getContext() != null) {
-                                getContext().getContentResolver().takePersistableUriPermission(uri, takeFlags);
-                            }
-                        } catch (SecurityException e) {
-                            Log.e("ReplySheet", "Failed to take persistent URI permission", e);
-                        }
-                        
-                        // The logic from your old onActivityResult goes here.
                         processSelectedMedia(uri);
                         showKeyboardWithFocus();
                     }
@@ -399,7 +388,10 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
     }
 
     private void openMediaPicker() {
-        mMediaPickerLauncher.launch(new String[]{"image/*", "video/*"});
+        mMediaPickerLauncher.launch(
+                new PickVisualMediaRequest.Builder()
+                        .setMediaType(ActivityResultContracts.PickVisualMedia.ImageAndVideo.INSTANCE)
+                        .build());
     }
 
     private void removeAttachment() {
