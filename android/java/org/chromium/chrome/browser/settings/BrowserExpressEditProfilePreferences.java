@@ -19,9 +19,11 @@ import java.io.UnsupportedEncodingException;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.util.Base64;
 import android.net.Uri;
-import android.app.Activity;
-import android.provider.MediaStore;
 import java.io.FileNotFoundException;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
@@ -70,7 +72,7 @@ import java.util.List;
 
 public class BrowserExpressEditProfilePreferences extends BravePreferenceFragment
         implements Preference.OnPreferenceChangeListener {
-    private static final int REQUEST_IMAGE_PICK = 1;
+    private ActivityResultLauncher<PickVisualMediaRequest> mPickMediaLauncher;
 
     private LinearLayout mParentLayout;
     private ImageView mAvatarImage;
@@ -86,6 +88,18 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
     @Override
     public ObservableSupplier<String> getPageTitle() {
         return mPageTitle;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        mPickMediaLauncher = registerForActivityResult(
+                new ActivityResultContracts.PickVisualMedia(),
+                uri -> {
+                    if (uri != null) {
+                        handleSelectedImage(uri);
+                    }
+                });
     }
 
     @Override
@@ -206,40 +220,30 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
     }
 
     private void openImagePicker() {
-        Intent intent = new Intent(Intent.ACTION_PICK);
-        intent.setDataAndType(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, "image/*");
-        startActivityForResult(intent, REQUEST_IMAGE_PICK);
+        mPickMediaLauncher.launch(
+                new PickVisualMediaRequest.Builder()
+                        .setMediaType(ActivityResultContracts.PickVisualMedia.ImageOnly.INSTANCE)
+                        .build());
     }
 
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    private void handleSelectedImage(Uri selectedImage) {
+        try {
+            BraveActivity activity = BraveActivity.getBraveActivity();
+            Glide.with(getActivity())
+                    .load(selectedImage)
+                    .circleCrop()
+                    .into(mAvatarImage);
 
-        if (requestCode == REQUEST_IMAGE_PICK && resultCode == Activity.RESULT_OK && data != null) {
-            Uri selectedImage = data.getData();
-            Log.e("ImagePicker", "Selected image URI: " + selectedImage.toString());
-            if (selectedImage != null) {
-                try {
-                    Log.e("ImagePicker", "Selected image URI 2: " + selectedImage.toString());
-                    BraveActivity activity = BraveActivity.getBraveActivity();
-                    Glide.with(getActivity())
-                        .load(selectedImage)
-                        .circleCrop()
-                        .into(mAvatarImage);
-                    
-                    Log.e("ImagePicker", "Sending image to backend");
-                    String accessToken = activity.getAccessToken();
+            String accessToken = activity.getAccessToken();
+            InputStream imageStream =
+                    getActivity().getContentResolver().openInputStream(selectedImage);
 
-                    InputStream imageStream = getActivity().getContentResolver().openInputStream(selectedImage);
-
-                    BrowserExpressEditAvatarPreferencesUtil.EditAvatarWorkerTask workerTask =
-                            new BrowserExpressEditAvatarPreferencesUtil.EditAvatarWorkerTask(imageStream, accessToken, editAvatarCallback);
-                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                    
-                } catch (BraveActivity.BraveActivityNotFoundException e) {
-                } catch(FileNotFoundException ex){}
-                
-            }
+            BrowserExpressEditAvatarPreferencesUtil.EditAvatarWorkerTask workerTask =
+                    new BrowserExpressEditAvatarPreferencesUtil.EditAvatarWorkerTask(
+                            imageStream, accessToken, editAvatarCallback);
+            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+        } catch (FileNotFoundException ex) {
         }
     }
 

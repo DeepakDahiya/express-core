@@ -70,6 +70,7 @@ import com.bumptech.glide.request.transition.Transition;
 import android.view.HapticFeedbackConstants;
 
 import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 
 public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialogFragment implements BottomSheetInputCallback, BrowserExpressReplyWithAttachmentBottomSheetFragment.OnCommentPostedListener {
@@ -125,7 +126,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private String mLastOpenedRepliesForCommentId;
     private String mLastOpenedRepliesToRepliesForCommentId;
 
-    private ActivityResultLauncher<String[]> mMediaPickerLauncher;
+    private ActivityResultLauncher<PickVisualMediaRequest> mMediaPickerLauncher;
 
     private android.content.BroadcastReceiver mUploadReceiver;
 
@@ -171,17 +172,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             }
 
             mMediaPickerLauncher = registerForActivityResult(
-                new ActivityResultContracts.OpenDocument(),
+                new ActivityResultContracts.PickVisualMedia(),
                 uri -> {
                     if (uri != null) {
-                        // This is the new callback, containing the logic from your old onActivityResult
                         try {
-                            // Grant persistent read permissions for the service. This is a robust way to handle it.
-                            final int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
-                            if (getContext() != null) {
-                                getContext().getContentResolver().takePersistableUriPermission(uri, takeFlags);
-                            }
-
                             if (mMessageEditText != null) {
                                 mMessageEditText.clearFocus();
                             }
@@ -191,9 +185,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                             activity.showReplyWithAttachmentBottomSheet(this, mTempPostId, mTempPostUsernameString, mTempPostContentString, mTempPostAvatarString, mTempType, uri);
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                             Log.e("CommentsSheet", "Failed to get BraveActivity to show reply sheet", e);
-                        } catch (SecurityException e) {
-                            Log.e("CommentsSheet", "Failed to take persistent URI permission", e);
-                            Toast.makeText(getContext(), "Could not get access to the selected file.", Toast.LENGTH_SHORT).show();
                         }
                     }
                 }
@@ -497,7 +488,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     private void openMediaPicker() {
-        mMediaPickerLauncher.launch(new String[]{"image/*", "video/*"});
+        mMediaPickerLauncher.launch(
+                new PickVisualMediaRequest.Builder()
+                        .setMediaType(ActivityResultContracts.PickVisualMedia.ImageAndVideo.INSTANCE)
+                        .build());
     }
 
     private void removeAttachment() {
