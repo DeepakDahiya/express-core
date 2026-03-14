@@ -465,11 +465,16 @@ public class CommentListFragment extends Fragment {
     }
 
     public static CommentListFragment newInstance(String postId, String commentsFor, Boolean openKeyboard) {
+        return newInstance(postId, commentsFor, openKeyboard, null);
+    }
+
+    public static CommentListFragment newInstance(String postId, String commentsFor, Boolean openKeyboard, String videoId) {
         CommentListFragment fragment = new CommentListFragment();
         Bundle args = new Bundle();
         args.putString(COMMENTS_FOR, commentsFor);
         args.putString(POST_ID, postId);
         args.putBoolean(OPEN_KEYBOARD, openKeyboard);
+        if (videoId != null) args.putString(VIDEO_ID, videoId);
         fragment.setArguments(args);
         return fragment;
     }

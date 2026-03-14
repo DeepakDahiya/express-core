@@ -76,73 +76,75 @@ public class YouTubeCommentsUtil {
         }
 
         // -----------------------------------------------------------------------------------------
-        // Step 1: fetch the comments continuation token from /next with the video ID.
-        // Path: engagementPanels → comment-item-section → itemSectionRenderer →
-        //        continuationItemRenderer → continuationEndpoint.continuationCommand.token
+        // Step 1: fetch the comments continuation token by loading the YouTube watch page HTML.
+        //
+        // The InnerTube /next API is unreliable for returning engagementPanels with
+        // comment-item-section (depends on A/B tests, client, region). The page HTML always
+        // embeds ytInitialData which contains the same engagement panels. We find the
+        // comment-item-section marker in the raw HTML and extract the nearby token string —
+        // no full JSON parse needed.
         // -----------------------------------------------------------------------------------------
         private String fetchContinuationToken() throws Exception {
-            JSONObject body = new JSONObject()
-                    .put("context", buildClientContext())
-                    .put("videoId", mVideoId);
+            String pageUrl = "https://www.youtube.com/watch?v=" + mVideoId + "&hl=en";
+            Log.e(TAG, "[Step 1] Fetching YouTube page HTML: " + pageUrl);
 
-            Log.e(TAG, "[Step 1] POST /next with videoId=" + mVideoId);
-            JSONObject response = postToInnertube("next", body);
-            if (response == null) {
-                Log.e(TAG, "[Step 1] /next returned null response");
-                return null;
-            }
-
-            JSONArray panels = response.optJSONArray("engagementPanels");
-            if (panels == null) {
-                Log.e(TAG, "[Step 1] No engagementPanels in response");
-                return null;
-            }
-            Log.e(TAG, "[Step 1] Found " + panels.length() + " engagementPanels");
-
-            for (int i = 0; i < panels.length(); i++) {
-                JSONObject panel = panels.getJSONObject(i)
-                        .optJSONObject("engagementPanelSectionListRenderer");
-                if (panel == null) continue;
-                String panelId = panel.optString("panelIdentifier", "(none)");
-                Log.e(TAG, "[Step 1] Panel[" + i + "] panelIdentifier=" + panelId);
-                if (!"comment-item-section".equals(panelId)) continue;
-
-                Log.e(TAG, "[Step 1] Found comment-item-section panel, extracting token...");
-                String token = extractTokenFromPanel(panel);
-                if (token != null) {
-                    Log.e(TAG, "[Step 1] Token extracted successfully");
-                    return token;
-                }
-                Log.e(TAG, "[Step 1] Token extraction returned null from comment-item-section");
-            }
-            Log.e(TAG, "[Step 1] comment-item-section panel not found among " + panels.length() + " panels");
-            return null;
-        }
-
-        private String extractTokenFromPanel(JSONObject panel) {
+            HttpURLConnection conn = null;
+            String html;
             try {
-                JSONObject content = panel.optJSONObject("content");
-                if (content == null) { Log.e(TAG, "[Step 1] panel has no 'content'"); return null; }
-                JSONObject sectionList = content.optJSONObject("sectionListRenderer");
-                if (sectionList == null) { Log.e(TAG, "[Step 1] no sectionListRenderer"); return null; }
-                JSONArray contents = sectionList.optJSONArray("contents");
-                if (contents == null) { Log.e(TAG, "[Step 1] sectionListRenderer has no contents"); return null; }
+                URL url = new URL(pageUrl);
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
+                // Desktop UA — avoids YouTube redirecting to a stripped mobile page
+                conn.setRequestProperty("User-Agent",
+                        "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 "
+                        + "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36");
+                conn.setRequestProperty("Accept-Language", "en-US,en;q=0.9");
+                conn.setConnectTimeout(10_000);
+                conn.setReadTimeout(20_000);
 
-                for (int j = 0; j < contents.length(); j++) {
-                    JSONObject section = contents.getJSONObject(j)
-                            .optJSONObject("itemSectionRenderer");
-                    if (section == null) continue;
-                    JSONArray items = section.optJSONArray("contents");
-                    if (items == null) continue;
-                    for (int k = 0; k < items.length(); k++) {
-                        String token = extractTokenFromItem(items.getJSONObject(k));
-                        if (token != null) return token;
-                    }
+                int code = conn.getResponseCode();
+                Log.e(TAG, "[Step 1] Page HTTP response code: " + code);
+                if (code != HttpURLConnection.HTTP_OK) return null;
+
+                StringBuilder sb = new StringBuilder();
+                try (BufferedReader br = new BufferedReader(
+                        new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                    String line;
+                    while ((line = br.readLine()) != null) sb.append(line);
                 }
-            } catch (JSONException e) {
-                Log.e(TAG, "[Step 1] extractTokenFromPanel JSONException: " + e.getMessage());
+                html = sb.toString();
+                Log.e(TAG, "[Step 1] Page HTML length: " + html.length() + " chars");
+            } finally {
+                if (conn != null) conn.disconnect();
             }
-            return null;
+
+            // Find the comment-item-section marker in ytInitialData (embedded in the HTML).
+            // From that anchor, scan forward for the first "token":"..." — that is the
+            // comments continuation token used in step 2.
+            String sectionMarker = "\"comment-item-section\"";
+            int sectionIdx = html.indexOf(sectionMarker);
+            if (sectionIdx == -1) {
+                Log.e(TAG, "[Step 1] \"comment-item-section\" not found in page HTML — comments may be disabled for this video");
+                return null;
+            }
+            Log.e(TAG, "[Step 1] Found comment-item-section at index " + sectionIdx);
+
+            String tokenMarker = "\"token\":\"";
+            int tokenStart = html.indexOf(tokenMarker, sectionIdx);
+            if (tokenStart == -1) {
+                Log.e(TAG, "[Step 1] No \"token\":\" found after comment-item-section");
+                return null;
+            }
+            tokenStart += tokenMarker.length();
+            int tokenEnd = html.indexOf("\"", tokenStart);
+            if (tokenEnd == -1) {
+                Log.e(TAG, "[Step 1] Could not find closing quote for token value");
+                return null;
+            }
+
+            String token = html.substring(tokenStart, tokenEnd);
+            Log.e(TAG, "[Step 1] Extracted continuation token (length=" + token.length() + ")");
+            return token;
         }
 
         // -----------------------------------------------------------------------------------------
@@ -354,21 +356,6 @@ public class YouTubeCommentsUtil {
                     : null;
             if (url == null) return null;
             return url.startsWith("//") ? "https:" + url : url;
-        }
-
-        /**
-         * Extracts the continuation token from a single item object.
-         * Handles the continuationItemRenderer shape used in both step 1 and step 2.
-         */
-        private String extractTokenFromItem(JSONObject item) {
-            JSONObject continuationItem = item.optJSONObject("continuationItemRenderer");
-            if (continuationItem == null) return null;
-            JSONObject endpoint = continuationItem.optJSONObject("continuationEndpoint");
-            if (endpoint == null) return null;
-            JSONObject cmd = endpoint.optJSONObject("continuationCommand");
-            if (cmd == null) return null;
-            String token = cmd.optString("token", null);
-            return (token != null && !token.isEmpty()) ? token : null;
         }
 
         /**
