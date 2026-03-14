@@ -2657,17 +2657,37 @@ public abstract class BraveActivity extends ChromeActivity
     public void showCommentsBottomSheet() {
         try {
             Bundle fragmentBundle = new Bundle();
-            fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.COMMENTS_FOR, "page");
-            if(mBottomSheetCommentsDialog == null){
+
+            String currentUrl = getActivityTab() != null
+                    ? getActivityTab().getUrl().getSpec() : null;
+            Uri uri = currentUrl != null ? Uri.parse(currentUrl) : null;
+            String host = uri != null ? uri.getHost() : null;
+            String videoId = uri != null ? uri.getQueryParameter("v") : null;
+
+            if (host != null && host.contains("youtube.com")
+                    && videoId != null && !videoId.isEmpty()) {
+                fragmentBundle.putString(
+                        BrowserExpressCommentsBottomSheetFragment.COMMENTS_FOR, "youtube");
+                fragmentBundle.putString(
+                        org.chromium.chrome.browser.browser_express_comments
+                                .CommentListFragment.VIDEO_ID,
+                        videoId);
+            } else {
+                fragmentBundle.putString(
+                        BrowserExpressCommentsBottomSheetFragment.COMMENTS_FOR, "page");
+            }
+
+            if (mBottomSheetCommentsDialog == null) {
                 BrowserExpressCommentsBottomSheetFragment bottomSheetDialog =
                         BrowserExpressCommentsBottomSheetFragment.newInstance(true);
-                
                 bottomSheetDialog.setArguments(fragmentBundle);
-                bottomSheetDialog.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressCommentsBottomSheetFragment");
+                bottomSheetDialog.show(getBraveActivity().getSupportFragmentManager(),
+                        "BrowserExpressCommentsBottomSheetFragment");
                 mBottomSheetCommentsDialog = bottomSheetDialog;
-            }else{
+            } else {
                 mBottomSheetCommentsDialog.setArguments(fragmentBundle);
-                mBottomSheetCommentsDialog.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressCommentsBottomSheetFragment");
+                mBottomSheetCommentsDialog.show(getBraveActivity().getSupportFragmentManager(),
+                        "BrowserExpressCommentsBottomSheetFragment");
             }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
         }

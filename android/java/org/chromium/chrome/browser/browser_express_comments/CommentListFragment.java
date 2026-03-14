@@ -69,6 +69,7 @@ public class CommentListFragment extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";
     public static final String COMMENTS_FOR = "comments_for";
     public static final String POST_ID = "post_id";
+    public static final String VIDEO_ID = "video_id";
     public static final String OPEN_KEYBOARD = "open_keyboard";
     private static final String BE_PROFILE_PREF = "BE_PROFILE_PREFS";
     private RecyclerView mCommentRecycler;
@@ -79,6 +80,7 @@ public class CommentListFragment extends Fragment {
     private String mUrl;
     private String mCommentsFor;
     private String mPostId;
+    private String mVideoId;
     private Boolean mOpenKeyboard = false;
 
     private LinearLayoutManager mLayoutManager;
@@ -202,6 +204,7 @@ public class CommentListFragment extends Fragment {
         if (getArguments() != null) {
             mCommentsFor = getArguments().getString(COMMENTS_FOR);
             mPostId = getArguments().getString(POST_ID);
+            mVideoId = getArguments().getString(VIDEO_ID);
             mOpenKeyboard = getArguments().getBoolean(OPEN_KEYBOARD);
         }
 
@@ -275,12 +278,15 @@ public class CommentListFragment extends Fragment {
                 imm.showSoftInput(mMessageEditText, InputMethodManager.SHOW_IMPLICIT);
             }
 
-            if(mCommentsFor.equals("post")){
+            if (mCommentsFor.equals("post")) {
                 BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
                     new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
                             null, null, mPostId, mPage, mPerPage, accessToken, getCommentsCallback);
                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            }else{
+            } else if (mCommentsFor.equals("youtube")) {
+                new YouTubeCommentsUtil.GetYouTubeCommentsTask(mVideoId, getCommentsCallback)
+                        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            } else {
                 mUrl = activity.getActivityTab().getUrl().getSpec();
                 BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
                     new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
