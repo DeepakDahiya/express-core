@@ -2665,8 +2665,10 @@ public abstract class BraveActivity extends ChromeActivity
             String host = uri != null ? uri.getHost() : null;
             String videoId = uri != null ? uri.getQueryParameter("v") : null;
 
-            if (host != null && host.contains("youtube.com")
-                    && videoId != null && !videoId.isEmpty()) {
+            boolean isYouTube = host != null && host.contains("youtube.com")
+                    && videoId != null && !videoId.isEmpty();
+
+            if (isYouTube) {
                 Log.e("YouTubeComments", "[BraveActivity] YouTube watch page detected — videoId=" + videoId + ", routing to youtube mode");
                 fragmentBundle.putString(
                         BrowserExpressCommentsBottomSheetFragment.COMMENTS_FOR, "youtube");
@@ -2674,6 +2676,9 @@ public abstract class BraveActivity extends ChromeActivity
                         org.chromium.chrome.browser.browser_express_comments
                                 .CommentListFragment.VIDEO_ID,
                         videoId);
+                // Always create a fresh dialog for YouTube — reusing a cached dialog
+                // won't re-run onCreate so mCommentsFor/mVideoId would stay stale.
+                mBottomSheetCommentsDialog = null;
             } else {
                 Log.e("YouTubeComments", "[BraveActivity] Non-YouTube page — host=" + host + ", routing to page mode");
                 fragmentBundle.putString(

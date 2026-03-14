@@ -84,6 +84,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
     private String mCommentsFor;
     private String mPostId;
+    private String mVideoId;
     private String mPostAvatarString;
     private String mPostUsernameString;
     private String mPostContentString;
@@ -154,6 +155,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         if (getArguments() != null) {
             mCommentsFor = getArguments().getString(COMMENTS_FOR);
             mPostId = getArguments().getString(POST_ID);
+            mVideoId = getArguments().getString(CommentListFragment.VIDEO_ID);
             mPostUsernameString = getArguments().getString(POST_USERNAME);
             mPostContentString = getArguments().getString(POST_CONTENT);
             mPostAvatarString = getArguments().getString(POST_AVATAR_URL);
@@ -206,7 +208,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(
                 R.layout.fragment_browser_express_comments_bottom_sheet, container, false);
-        loadFragment(CommentListFragment.newInstance(mPostId, mCommentsFor, mOpenKeyboard));
+        Log.e("YouTubeComments", "[BottomSheet] onCreateView mCommentsFor=" + mCommentsFor + " mVideoId=" + mVideoId);
+        loadFragment(CommentListFragment.newInstance(mPostId, mCommentsFor, mOpenKeyboard, mVideoId));
 
         mMessageEditText = view.findViewById(R.id.comment_content_input);
         mSendButton = view.findViewById(R.id.button_send);
