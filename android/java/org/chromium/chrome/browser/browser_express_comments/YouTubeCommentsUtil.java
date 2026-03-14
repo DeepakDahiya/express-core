@@ -188,6 +188,15 @@ public class YouTubeCommentsUtil {
                 int threadCount = 0;
                 for (int j = 0; j < items.length(); j++) {
                     JSONObject item = items.getJSONObject(j);
+
+                    // Log keys of first 3 items to diagnose actual response structure
+                    if (j < 3) {
+                        StringBuilder keys = new StringBuilder();
+                        java.util.Iterator<String> keyIt = item.keys();
+                        while (keyIt.hasNext()) keys.append(keyIt.next()).append(", ");
+                        Log.e(TAG, "[Step 2] item[" + j + "] keys: " + keys);
+                    }
+
                     JSONObject thread = item.optJSONObject("commentThreadRenderer");
                     if (thread == null) continue;
                     threadCount++;
