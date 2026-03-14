@@ -118,59 +118,56 @@ public class YouTubeCommentsUtil {
                 if (conn != null) conn.disconnect();
             }
 
-            // The page HTML contains multiple inline scripts with JSON data.
-            // Critically, ytInitialData (page content/engagement panels) is followed by
-            // ytInitialPlayerResponse (player config) and other scripts, all of which contain
-            // their own continuationCommand tokens. Searching the whole HTML blindly finds the
-            // first token AFTER comment-item-section — which can be in a different script (e.g.
-            // the "Up Next" / related-videos shelf). We must restrict the search to the
-            // ytInitialData object only.
+            // Extract and parse ytInitialData as a proper JSON object so we can navigate
+            // directly to the comment engagement panel token rather than text-searching.
+            // Text-searching finds the first continuationCommand after comment-item-section,
+            // which is the related-videos shelf — not the comments.
             int ytDataStart = locateYtInitialData(html);
             if (ytDataStart == -1) {
                 Log.e(TAG, "[Step 1] ytInitialData not found in page HTML");
                 return null;
             }
             int ytDataEnd = findMatchingBrace(html, ytDataStart);
-            // If brace matching fails (shouldn't happen), fall back to end-of-file
-            String ytData = ytDataEnd != -1
-                    ? html.substring(ytDataStart, ytDataEnd + 1)
-                    : html.substring(ytDataStart);
+            if (ytDataEnd == -1) {
+                Log.e(TAG, "[Step 1] Could not find end of ytInitialData JSON");
+                return null;
+            }
             Log.e(TAG, "[Step 1] ytInitialData: start=" + ytDataStart
-                    + " end=" + ytDataEnd + " length=" + ytData.length());
+                    + " end=" + ytDataEnd + " length=" + (ytDataEnd - ytDataStart + 1));
 
-            // Use "sectionIdentifier":"comment-item-section" — this key appears directly
-            // inside the itemSectionRenderer that owns the continuation token, so it is
-            // always within a few thousand characters of the token.
-            String sectionIdMarker = "\"sectionIdentifier\":\"comment-item-section\"";
-            int sectionIdx = ytData.indexOf(sectionIdMarker);
-            if (sectionIdx == -1) {
-                // Older page shape: fall back to any occurrence of the identifier string
-                sectionIdx = ytData.indexOf("\"comment-item-section\"");
-            }
-            if (sectionIdx == -1) {
-                Log.e(TAG, "[Step 1] comment-item-section not found in ytInitialData — comments may be disabled");
+            JSONObject ytData = new JSONObject(html.substring(ytDataStart, ytDataEnd + 1));
+
+            // Navigate: engagementPanels → panel with panelIdentifier=="comment-item-section"
+            //           → content.sectionListRenderer.contents[0].itemSectionRenderer
+            //           → contents[0].continuationItemRenderer
+            //           → continuationEndpoint.continuationCommand.token
+            JSONArray panels = ytData.optJSONArray("engagementPanels");
+            if (panels == null) {
+                Log.e(TAG, "[Step 1] No engagementPanels in ytInitialData");
                 return null;
             }
-            Log.e(TAG, "[Step 1] Found comment-item-section at ytData offset " + sectionIdx);
+            Log.e(TAG, "[Step 1] Scanning " + panels.length() + " engagementPanels");
 
-            String contCmdMarker = "\"continuationCommand\":{\"token\":\"";
-            int cmdIdx = ytData.indexOf(contCmdMarker, sectionIdx);
-            if (cmdIdx == -1) {
-                Log.e(TAG, "[Step 1] No continuationCommand found after comment-item-section in ytInitialData");
-                return null;
-            }
-            int tokenStart = cmdIdx + contCmdMarker.length();
-            int tokenEnd = ytData.indexOf("\"", tokenStart);
-            if (tokenEnd == -1) {
-                Log.e(TAG, "[Step 1] Could not find closing quote for token value");
-                return null;
+            for (int i = 0; i < panels.length(); i++) {
+                JSONObject panelRenderer = panels.getJSONObject(i)
+                        .optJSONObject("engagementPanelSectionListRenderer");
+                if (panelRenderer == null) continue;
+
+                String panelId = panelRenderer.optString("panelIdentifier", "");
+                if (!"comment-item-section".equals(panelId)) continue;
+                Log.e(TAG, "[Step 1] Found comment engagement panel at index " + i);
+
+                // Navigate into the panel content to find the continuationItemRenderer
+                String token = extractTokenFromCommentPanel(panelRenderer);
+                if (token != null) {
+                    Log.e(TAG, "[Step 1] Extracted continuation token (length=" + token.length() + ")");
+                    return token;
+                }
+                Log.e(TAG, "[Step 1] Comment panel found but no continuation token inside");
             }
 
-            Log.e(TAG, "[Step 1] Found continuation token at ytData offset " + cmdIdx
-                    + " (+" + (cmdIdx - sectionIdx) + " chars from section)");
-            String token = ytData.substring(tokenStart, tokenEnd);
-            Log.e(TAG, "[Step 1] Extracted continuation token (length=" + token.length() + ")");
-            return token;
+            Log.e(TAG, "[Step 1] comment-item-section engagement panel not found — comments may be disabled");
+            return null;
         }
 
         // -----------------------------------------------------------------------------------------
@@ -274,6 +271,85 @@ public class YouTubeCommentsUtil {
         // -----------------------------------------------------------------------------------------
         // ytInitialData extraction helpers
         // -----------------------------------------------------------------------------------------
+
+        /**
+         * Walks a comment engagementPanelSectionListRenderer and returns the continuation
+         * token for the first continuationItemRenderer found anywhere inside it.
+         *
+         * Tries the canonical path first:
+         *   content → sectionListRenderer → contents[n] → itemSectionRenderer
+         *           → contents[m] → continuationItemRenderer → continuationEndpoint
+         *           → continuationCommand → token
+         *
+         * Falls back to a recursive search so future YouTube restructuring is handled
+         * without code changes.
+         */
+        private String extractTokenFromCommentPanel(JSONObject panelRenderer) {
+            try {
+                JSONObject content = panelRenderer.optJSONObject("content");
+                if (content == null) return null;
+
+                JSONObject sectionList = content.optJSONObject("sectionListRenderer");
+                if (sectionList == null) return null;
+
+                JSONArray contents = sectionList.optJSONArray("contents");
+                if (contents == null) return null;
+
+                for (int i = 0; i < contents.length(); i++) {
+                    JSONObject entry = contents.getJSONObject(i);
+
+                    // Path A: itemSectionRenderer wraps the continuation items
+                    JSONObject isr = entry.optJSONObject("itemSectionRenderer");
+                    if (isr != null) {
+                        JSONArray isrContents = isr.optJSONArray("contents");
+                        if (isrContents != null) {
+                            for (int j = 0; j < isrContents.length(); j++) {
+                                String token = tokenFromContinuationItem(
+                                        isrContents.getJSONObject(j));
+                                if (token != null) return token;
+                            }
+                        }
+                    }
+
+                    // Path B: continuationItemRenderer directly in sectionListRenderer.contents
+                    String token = tokenFromContinuationItem(entry);
+                    if (token != null) return token;
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "[Step 1] extractTokenFromCommentPanel error: " + e.getMessage());
+            }
+            return null;
+        }
+
+        /** Extracts token from a continuationItemRenderer node, or returns null. */
+        private String tokenFromContinuationItem(JSONObject item) {
+            try {
+                JSONObject cir = item.optJSONObject("continuationItemRenderer");
+                if (cir == null) return null;
+
+                // continuationEndpoint (standard path)
+                JSONObject endpoint = cir.optJSONObject("continuationEndpoint");
+                if (endpoint != null) {
+                    JSONObject cmd = endpoint.optJSONObject("continuationCommand");
+                    if (cmd != null) {
+                        String token = cmd.optString("token", null);
+                        if (token != null && !token.isEmpty()) return token;
+                    }
+                }
+                // button.buttonRenderer.command.continuationCommand (alternative path)
+                try {
+                    String token = cir.getJSONObject("button")
+                            .getJSONObject("buttonRenderer")
+                            .getJSONObject("command")
+                            .getJSONObject("continuationCommand")
+                            .getString("token");
+                    if (!token.isEmpty()) return token;
+                } catch (Exception ignored) {}
+            } catch (Exception e) {
+                Log.e(TAG, "[Step 1] tokenFromContinuationItem error: " + e.getMessage());
+            }
+            return null;
+        }
 
         /** Returns the index of the opening '{' of the ytInitialData JSON in the page HTML. */
         private int locateYtInitialData(String html) {
