@@ -129,25 +129,35 @@ public class YouTubeCommentsUtil {
             }
             Log.e(TAG, "[Step 1] Found comment-item-section at index " + sectionIdx);
 
-            // Prefer the more-specific "continuationCommand":{"token":"..." pattern which is
-            // only present on browse/comment continuations — avoids accidentally grabbing a
-            // token from an adjacent video-shelf or Shorts section that may appear nearby.
+            // Search for the continuation token within a tight window (8000 chars) after the
+            // comment-item-section marker. The comment section's own continuation token always
+            // appears inside the same JSON object as the section identifier, so it is never
+            // more than a few hundred characters away. Searching beyond this window risks
+            // grabbing a token from an unrelated shelf or Shorts section in the same page.
+            final int SEARCH_WINDOW = 8000;
+            int searchEnd = Math.min(sectionIdx + SEARCH_WINDOW, html.length());
+
+            // Prefer "continuationCommand":{"token":"..." — specific to browse continuations.
             String contCmdMarker = "\"continuationCommand\":{\"token\":\"";
             int tokenStart;
             int tokenEnd;
             int cmdIdx = html.indexOf(contCmdMarker, sectionIdx);
-            if (cmdIdx != -1) {
+            if (cmdIdx != -1 && cmdIdx < searchEnd) {
                 tokenStart = cmdIdx + contCmdMarker.length();
-                Log.e(TAG, "[Step 1] Found continuationCommand token at index " + cmdIdx);
+                Log.e(TAG, "[Step 1] Found continuationCommand token at index " + cmdIdx
+                        + " (+" + (cmdIdx - sectionIdx) + " from section)");
             } else {
-                // Fallback: plain "token":"..." (older page format)
-                Log.e(TAG, "[Step 1] continuationCommand pattern not found, falling back to \"token\":\"");
+                // Fallback: plain "token":"..." within the same window
                 String tokenMarker = "\"token\":\"";
                 int idx = html.indexOf(tokenMarker, sectionIdx);
-                if (idx == -1) {
-                    Log.e(TAG, "[Step 1] No token found after comment-item-section");
+                if (idx == -1 || idx >= searchEnd) {
+                    Log.e(TAG, "[Step 1] No token found within " + SEARCH_WINDOW
+                            + " chars of comment-item-section"
+                            + (idx != -1 ? " (nearest=" + (idx - sectionIdx) + " chars away)" : ""));
                     return null;
                 }
+                Log.e(TAG, "[Step 1] Found plain token at index " + idx
+                        + " (+" + (idx - sectionIdx) + " from section)");
                 tokenStart = idx + tokenMarker.length();
             }
             tokenEnd = html.indexOf("\"", tokenStart);
@@ -203,12 +213,15 @@ public class YouTubeCommentsUtil {
                 for (int j = 0; j < items.length(); j++) {
                     JSONObject item = items.getJSONObject(j);
 
-                    // Log keys of first 5 items to diagnose actual response structure
-                    if (j < 5) {
+                    // Log keys + first 600 chars of first item to diagnose response structure
+                    if (j == 0) {
                         StringBuilder keys = new StringBuilder();
                         java.util.Iterator<String> keyIt = item.keys();
                         while (keyIt.hasNext()) keys.append(keyIt.next()).append(", ");
-                        Log.e(TAG, "[Step 2] item[" + j + "] keys: " + keys);
+                        Log.e(TAG, "[Step 2] item[0] keys: " + keys);
+                        String itemJson = item.toString();
+                        Log.e(TAG, "[Step 2] item[0] json(600): "
+                                + itemJson.substring(0, Math.min(600, itemJson.length())));
                     }
 
                     // Classic format: commentThreadRenderer > comment > commentRenderer
@@ -225,6 +238,15 @@ public class YouTubeCommentsUtil {
                     if (cvm != null) {
                         threadCount++;
                         Comment comment = parseCommentViewModel(cvm);
+                        if (comment != null) comments.add(comment);
+                        continue;
+                    }
+
+                    // Newer format: lockupViewModel wrapping a comment
+                    JSONObject lvm = item.optJSONObject("lockupViewModel");
+                    if (lvm != null) {
+                        threadCount++;
+                        Comment comment = parseLockupViewModel(lvm);
                         if (comment != null) comments.add(comment);
                         continue;
                     }
@@ -354,6 +376,84 @@ public class YouTubeCommentsUtil {
                         null, null, null, user, null, null, null, null, null, null);
             } catch (Exception e) {
                 Log.e(TAG, "[Parse] parseCommentViewModel error: " + e.getMessage());
+                return null;
+            }
+        }
+
+        /**
+         * Parses a YouTube lockupViewModel item that wraps a comment.
+         * The exact structure varies — we log it fully for the first item so the developer
+         * can refine the field paths below once the actual shape is known.
+         *
+         * Known candidate shapes (update as confirmed by logs):
+         *   lockupViewModel.contentId           → comment id
+         *   lockupViewModel.metadata.lockupMetadataViewModel.title.content → comment text
+         *   lockupViewModel.contentImage.collectionThumbnailViewModel
+         *       .primaryThumbnail.thumbnailViewModel.image.sources[last].url → avatar
+         */
+        private Comment parseLockupViewModel(JSONObject lvm) {
+            try {
+                // Log the full structure on first call so we can refine the field paths
+                String lvmJson = lvm.toString();
+                Log.e(TAG, "[Parse/LVM] lockupViewModel json(800): "
+                        + lvmJson.substring(0, Math.min(800, lvmJson.length())));
+
+                // Content ID (comment id)
+                String id = lvm.optString("contentId", null);
+                if (id == null || id.isEmpty()) {
+                    Log.e(TAG, "[Parse/LVM] lockupViewModel missing contentId, skipping");
+                    return null;
+                }
+
+                // Comment text — title inside nested lockupMetadataViewModel
+                String content = "";
+                JSONObject metadata = lvm.optJSONObject("metadata");
+                if (metadata != null) {
+                    JSONObject metaVM = metadata.optJSONObject("lockupMetadataViewModel");
+                    if (metaVM != null) {
+                        JSONObject titleObj = metaVM.optJSONObject("title");
+                        if (titleObj != null) {
+                            content = titleObj.optString("content", "");
+                            if (content.isEmpty()) content = extractRuns(titleObj);
+                        }
+                    }
+                }
+
+                // Avatar URL — inside contentImage.collectionThumbnailViewModel
+                String avatarUrl = null;
+                JSONObject contentImage = lvm.optJSONObject("contentImage");
+                if (contentImage != null) {
+                    JSONObject collThumb = contentImage.optJSONObject("collectionThumbnailViewModel");
+                    if (collThumb != null) {
+                        JSONObject primary = collThumb.optJSONObject("primaryThumbnail");
+                        if (primary != null) {
+                            JSONObject thumbVM = primary.optJSONObject("thumbnailViewModel");
+                            if (thumbVM != null) {
+                                JSONObject image = thumbVM.optJSONObject("image");
+                                if (image != null) {
+                                    JSONArray sources = image.optJSONArray("sources");
+                                    if (sources != null && sources.length() > 0) {
+                                        String url = sources.optJSONObject(sources.length() - 1)
+                                                .optString("url", null);
+                                        if (url != null) {
+                                            avatarUrl = url.startsWith("//") ? "https:" + url : url;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                Log.e(TAG, "[Parse/LVM] id=" + id
+                        + " | text='" + (content.length() > 80 ? content.substring(0, 80) + "…" : content) + "'"
+                        + " | avatar=" + (avatarUrl != null ? "present" : "null"));
+
+                User user = new User(id, null, avatarUrl);
+                return new Comment(id, content, 0, 0, 0,
+                        null, null, null, user, null, null, null, null, null, null);
+            } catch (Exception e) {
+                Log.e(TAG, "[Parse] parseLockupViewModel error: " + e.getMessage());
                 return null;
             }
         }
