@@ -129,35 +129,28 @@ public class YouTubeCommentsUtil {
             }
             Log.e(TAG, "[Step 1] Found comment-item-section at index " + sectionIdx);
 
-            // Search for the continuation token within a tight window (8000 chars) after the
-            // comment-item-section marker. The comment section's own continuation token always
-            // appears inside the same JSON object as the section identifier, so it is never
-            // more than a few hundred characters away. Searching beyond this window risks
-            // grabbing a token from an unrelated shelf or Shorts section in the same page.
-            final int SEARCH_WINDOW = 8000;
-            int searchEnd = Math.min(sectionIdx + SEARCH_WINDOW, html.length());
-
             // Prefer "continuationCommand":{"token":"..." — specific to browse continuations.
+            // In modern YouTube page HTML the comment continuation token can appear hundreds of
+            // kilobytes after the comment-item-section identifier (ytInitialData is large), so
+            // we search the remainder of the document without a size limit.
             String contCmdMarker = "\"continuationCommand\":{\"token\":\"";
             int tokenStart;
             int tokenEnd;
             int cmdIdx = html.indexOf(contCmdMarker, sectionIdx);
-            if (cmdIdx != -1 && cmdIdx < searchEnd) {
+            if (cmdIdx != -1) {
                 tokenStart = cmdIdx + contCmdMarker.length();
                 Log.e(TAG, "[Step 1] Found continuationCommand token at index " + cmdIdx
-                        + " (+" + (cmdIdx - sectionIdx) + " from section)");
+                        + " (+" + (cmdIdx - sectionIdx) + " chars from section)");
             } else {
-                // Fallback: plain "token":"..." within the same window
+                // Fallback: plain "token":"..."
                 String tokenMarker = "\"token\":\"";
                 int idx = html.indexOf(tokenMarker, sectionIdx);
-                if (idx == -1 || idx >= searchEnd) {
-                    Log.e(TAG, "[Step 1] No token found within " + SEARCH_WINDOW
-                            + " chars of comment-item-section"
-                            + (idx != -1 ? " (nearest=" + (idx - sectionIdx) + " chars away)" : ""));
+                if (idx == -1) {
+                    Log.e(TAG, "[Step 1] No token found after comment-item-section");
                     return null;
                 }
                 Log.e(TAG, "[Step 1] Found plain token at index " + idx
-                        + " (+" + (idx - sectionIdx) + " from section)");
+                        + " (+" + (idx - sectionIdx) + " chars from section)");
                 tokenStart = idx + tokenMarker.length();
             }
             tokenEnd = html.indexOf("\"", tokenStart);
