@@ -129,14 +129,28 @@ public class YouTubeCommentsUtil {
             }
             Log.e(TAG, "[Step 1] Found comment-item-section at index " + sectionIdx);
 
-            String tokenMarker = "\"token\":\"";
-            int tokenStart = html.indexOf(tokenMarker, sectionIdx);
-            if (tokenStart == -1) {
-                Log.e(TAG, "[Step 1] No \"token\":\" found after comment-item-section");
-                return null;
+            // Prefer the more-specific "continuationCommand":{"token":"..." pattern which is
+            // only present on browse/comment continuations — avoids accidentally grabbing a
+            // token from an adjacent video-shelf or Shorts section that may appear nearby.
+            String contCmdMarker = "\"continuationCommand\":{\"token\":\"";
+            int tokenStart;
+            int tokenEnd;
+            int cmdIdx = html.indexOf(contCmdMarker, sectionIdx);
+            if (cmdIdx != -1) {
+                tokenStart = cmdIdx + contCmdMarker.length();
+                Log.e(TAG, "[Step 1] Found continuationCommand token at index " + cmdIdx);
+            } else {
+                // Fallback: plain "token":"..." (older page format)
+                Log.e(TAG, "[Step 1] continuationCommand pattern not found, falling back to \"token\":\"");
+                String tokenMarker = "\"token\":\"";
+                int idx = html.indexOf(tokenMarker, sectionIdx);
+                if (idx == -1) {
+                    Log.e(TAG, "[Step 1] No token found after comment-item-section");
+                    return null;
+                }
+                tokenStart = idx + tokenMarker.length();
             }
-            tokenStart += tokenMarker.length();
-            int tokenEnd = html.indexOf("\"", tokenStart);
+            tokenEnd = html.indexOf("\"", tokenStart);
             if (tokenEnd == -1) {
                 Log.e(TAG, "[Step 1] Could not find closing quote for token value");
                 return null;
@@ -189,19 +203,31 @@ public class YouTubeCommentsUtil {
                 for (int j = 0; j < items.length(); j++) {
                     JSONObject item = items.getJSONObject(j);
 
-                    // Log keys of first 3 items to diagnose actual response structure
-                    if (j < 3) {
+                    // Log keys of first 5 items to diagnose actual response structure
+                    if (j < 5) {
                         StringBuilder keys = new StringBuilder();
                         java.util.Iterator<String> keyIt = item.keys();
                         while (keyIt.hasNext()) keys.append(keyIt.next()).append(", ");
                         Log.e(TAG, "[Step 2] item[" + j + "] keys: " + keys);
                     }
 
+                    // Classic format: commentThreadRenderer > comment > commentRenderer
                     JSONObject thread = item.optJSONObject("commentThreadRenderer");
-                    if (thread == null) continue;
-                    threadCount++;
-                    Comment comment = parseCommentThread(thread);
-                    if (comment != null) comments.add(comment);
+                    if (thread != null) {
+                        threadCount++;
+                        Comment comment = parseCommentThread(thread);
+                        if (comment != null) comments.add(comment);
+                        continue;
+                    }
+
+                    // Newer format: commentViewModel at the item level
+                    JSONObject cvm = item.optJSONObject("commentViewModel");
+                    if (cvm != null) {
+                        threadCount++;
+                        Comment comment = parseCommentViewModel(cvm);
+                        if (comment != null) comments.add(comment);
+                        continue;
+                    }
                 }
                 Log.e(TAG, "[Step 2] endpoint[" + i + "] — parsed " + threadCount + " commentThreadRenderers, "
                         + comments.size() + " valid Comment objects so far");
@@ -236,14 +262,98 @@ public class YouTubeCommentsUtil {
                     Log.e(TAG, "[Parse] commentThreadRenderer missing 'comment' key");
                     return null;
                 }
+                // Classic inner shape: commentRenderer
                 JSONObject cr = commentObj.optJSONObject("commentRenderer");
-                if (cr == null) {
-                    Log.e(TAG, "[Parse] comment missing 'commentRenderer' key");
-                    return null;
-                }
-                return parseCommentRenderer(cr, null);
+                if (cr != null) return parseCommentRenderer(cr, null);
+
+                // Newer inner shape: commentViewModel
+                JSONObject cvm = commentObj.optJSONObject("commentViewModel");
+                if (cvm != null) return parseCommentViewModel(cvm);
+
+                Log.e(TAG, "[Parse] comment missing both 'commentRenderer' and 'commentViewModel'");
+                return null;
             } catch (Exception e) {
                 Log.e(TAG, "[Parse] parseCommentThread error: " + e.getMessage());
+                return null;
+            }
+        }
+
+        /**
+         * Parses a YouTube commentViewModel (newer InnerTube format introduced ~2024-2025).
+         * Shape (may vary by region/A/B test):
+         * {
+         *   "commentId": "...",
+         *   "properties": {
+         *     "commentId": "...",
+         *     "authorChannelId": "...",
+         *     "authorDisplayName": "...",
+         *     "authorThumbnail": { "thumbnails": [...] },
+         *     "content": { "runs": [...] } | { "content": "..." },
+         *     "likeCountNotliked": "123",
+         *     "replyCount": 5,
+         *     "publishedTime": "..."
+         *   }
+         * }
+         */
+        private Comment parseCommentViewModel(JSONObject cvm) {
+            try {
+                // commentId may be at the top level or inside "properties"
+                String id = cvm.optString("commentId", null);
+                JSONObject props = cvm.optJSONObject("properties");
+                if ((id == null || id.isEmpty()) && props != null) {
+                    id = props.optString("commentId", null);
+                }
+                if (id == null || id.isEmpty()) {
+                    Log.e(TAG, "[Parse] commentViewModel missing commentId, skipping");
+                    return null;
+                }
+
+                // Author name
+                String authorName = null;
+                if (props != null) authorName = props.optString("authorDisplayName", null);
+
+                // Author channel id
+                String authorChannelId = null;
+                if (props != null) authorChannelId = props.optString("authorChannelId", id);
+                if (authorChannelId == null || authorChannelId.isEmpty()) authorChannelId = id;
+
+                // Avatar
+                String avatarUrl = null;
+                if (props != null) avatarUrl = extractBestThumbnailUrl(props.optJSONObject("authorThumbnail"));
+
+                // Text: "content" can be a runs object or have a plain "content" string
+                String content = "";
+                if (props != null) {
+                    JSONObject contentObj = props.optJSONObject("content");
+                    if (contentObj != null) {
+                        content = extractRuns(contentObj);
+                        if (content.isEmpty()) content = contentObj.optString("content", "");
+                    }
+                }
+
+                // Likes
+                int likes = 0;
+                if (props != null) {
+                    String rawLikes = props.optString("likeCountNotliked", "0");
+                    if (rawLikes.isEmpty()) rawLikes = "0";
+                    likes = parseYouTubeCount(rawLikes);
+                }
+
+                // Reply count
+                int replyCount = 0;
+                if (props != null) replyCount = props.optInt("replyCount", 0);
+
+                Log.e(TAG, "[Parse/VM] Comment id=" + id
+                        + " | author='" + authorName + "'"
+                        + " | likes=" + likes
+                        + " | replies=" + replyCount
+                        + " | text='" + (content.length() > 80 ? content.substring(0, 80) + "…" : content) + "'");
+
+                User user = new User(authorChannelId, authorName, avatarUrl);
+                return new Comment(id, content, likes, 0, replyCount,
+                        null, null, null, user, null, null, null, null, null, null);
+            } catch (Exception e) {
+                Log.e(TAG, "[Parse] parseCommentViewModel error: " + e.getMessage());
                 return null;
             }
         }
