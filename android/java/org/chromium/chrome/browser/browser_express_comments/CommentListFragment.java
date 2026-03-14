@@ -284,6 +284,7 @@ public class CommentListFragment extends Fragment {
                             null, null, mPostId, mPage, mPerPage, accessToken, getCommentsCallback);
                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             } else if (mCommentsFor.equals("youtube")) {
+                Log.e("YouTubeComments", "[CommentListFragment] Starting YouTubeCommentsUtil for videoId=" + mVideoId);
                 new YouTubeCommentsUtil.GetYouTubeCommentsTask(mVideoId, getCommentsCallback)
                         .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             } else {
@@ -493,6 +494,7 @@ public class CommentListFragment extends Fragment {
             new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
                 @Override
                 public void getCommentsSuccessful(List<Comment> comments, Comment parentComment, Comment grandParentComment) {
+                    Log.e("YouTubeComments", "[CommentListFragment] getCommentsSuccessful — received " + comments.size() + " comments for mode=" + mCommentsFor);
                     int len = mComments.size();
                     mComments.addAll(comments);
                     mCommentAdapter.notifyItemRangeInserted(len, comments.size());
