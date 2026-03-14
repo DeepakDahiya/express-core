@@ -118,48 +118,57 @@ public class YouTubeCommentsUtil {
                 if (conn != null) conn.disconnect();
             }
 
-            // Find the comment-item-section marker in ytInitialData (embedded in the HTML).
-            // From that anchor, scan forward for the first "token":"..." — that is the
-            // comments continuation token used in step 2.
-            String sectionMarker = "\"comment-item-section\"";
-            int sectionIdx = html.indexOf(sectionMarker);
-            if (sectionIdx == -1) {
-                Log.e(TAG, "[Step 1] \"comment-item-section\" not found in page HTML — comments may be disabled for this video");
+            // The page HTML contains multiple inline scripts with JSON data.
+            // Critically, ytInitialData (page content/engagement panels) is followed by
+            // ytInitialPlayerResponse (player config) and other scripts, all of which contain
+            // their own continuationCommand tokens. Searching the whole HTML blindly finds the
+            // first token AFTER comment-item-section — which can be in a different script (e.g.
+            // the "Up Next" / related-videos shelf). We must restrict the search to the
+            // ytInitialData object only.
+            int ytDataStart = locateYtInitialData(html);
+            if (ytDataStart == -1) {
+                Log.e(TAG, "[Step 1] ytInitialData not found in page HTML");
                 return null;
             }
-            Log.e(TAG, "[Step 1] Found comment-item-section at index " + sectionIdx);
+            int ytDataEnd = findMatchingBrace(html, ytDataStart);
+            // If brace matching fails (shouldn't happen), fall back to end-of-file
+            String ytData = ytDataEnd != -1
+                    ? html.substring(ytDataStart, ytDataEnd + 1)
+                    : html.substring(ytDataStart);
+            Log.e(TAG, "[Step 1] ytInitialData: start=" + ytDataStart
+                    + " end=" + ytDataEnd + " length=" + ytData.length());
 
-            // Prefer "continuationCommand":{"token":"..." — specific to browse continuations.
-            // In modern YouTube page HTML the comment continuation token can appear hundreds of
-            // kilobytes after the comment-item-section identifier (ytInitialData is large), so
-            // we search the remainder of the document without a size limit.
-            String contCmdMarker = "\"continuationCommand\":{\"token\":\"";
-            int tokenStart;
-            int tokenEnd;
-            int cmdIdx = html.indexOf(contCmdMarker, sectionIdx);
-            if (cmdIdx != -1) {
-                tokenStart = cmdIdx + contCmdMarker.length();
-                Log.e(TAG, "[Step 1] Found continuationCommand token at index " + cmdIdx
-                        + " (+" + (cmdIdx - sectionIdx) + " chars from section)");
-            } else {
-                // Fallback: plain "token":"..."
-                String tokenMarker = "\"token\":\"";
-                int idx = html.indexOf(tokenMarker, sectionIdx);
-                if (idx == -1) {
-                    Log.e(TAG, "[Step 1] No token found after comment-item-section");
-                    return null;
-                }
-                Log.e(TAG, "[Step 1] Found plain token at index " + idx
-                        + " (+" + (idx - sectionIdx) + " chars from section)");
-                tokenStart = idx + tokenMarker.length();
+            // Use "sectionIdentifier":"comment-item-section" — this key appears directly
+            // inside the itemSectionRenderer that owns the continuation token, so it is
+            // always within a few thousand characters of the token.
+            String sectionIdMarker = "\"sectionIdentifier\":\"comment-item-section\"";
+            int sectionIdx = ytData.indexOf(sectionIdMarker);
+            if (sectionIdx == -1) {
+                // Older page shape: fall back to any occurrence of the identifier string
+                sectionIdx = ytData.indexOf("\"comment-item-section\"");
             }
-            tokenEnd = html.indexOf("\"", tokenStart);
+            if (sectionIdx == -1) {
+                Log.e(TAG, "[Step 1] comment-item-section not found in ytInitialData — comments may be disabled");
+                return null;
+            }
+            Log.e(TAG, "[Step 1] Found comment-item-section at ytData offset " + sectionIdx);
+
+            String contCmdMarker = "\"continuationCommand\":{\"token\":\"";
+            int cmdIdx = ytData.indexOf(contCmdMarker, sectionIdx);
+            if (cmdIdx == -1) {
+                Log.e(TAG, "[Step 1] No continuationCommand found after comment-item-section in ytInitialData");
+                return null;
+            }
+            int tokenStart = cmdIdx + contCmdMarker.length();
+            int tokenEnd = ytData.indexOf("\"", tokenStart);
             if (tokenEnd == -1) {
                 Log.e(TAG, "[Step 1] Could not find closing quote for token value");
                 return null;
             }
 
-            String token = html.substring(tokenStart, tokenEnd);
+            Log.e(TAG, "[Step 1] Found continuation token at ytData offset " + cmdIdx
+                    + " (+" + (cmdIdx - sectionIdx) + " chars from section)");
+            String token = ytData.substring(tokenStart, tokenEnd);
             Log.e(TAG, "[Step 1] Extracted continuation token (length=" + token.length() + ")");
             return token;
         }
@@ -206,15 +215,12 @@ public class YouTubeCommentsUtil {
                 for (int j = 0; j < items.length(); j++) {
                     JSONObject item = items.getJSONObject(j);
 
-                    // Log keys + first 600 chars of first item to diagnose response structure
+                    // Log first item's top-level keys to confirm format
                     if (j == 0) {
                         StringBuilder keys = new StringBuilder();
                         java.util.Iterator<String> keyIt = item.keys();
                         while (keyIt.hasNext()) keys.append(keyIt.next()).append(", ");
                         Log.e(TAG, "[Step 2] item[0] keys: " + keys);
-                        String itemJson = item.toString();
-                        Log.e(TAG, "[Step 2] item[0] json(600): "
-                                + itemJson.substring(0, Math.min(600, itemJson.length())));
                     }
 
                     // Classic format: commentThreadRenderer > comment > commentRenderer
@@ -235,13 +241,11 @@ public class YouTubeCommentsUtil {
                         continue;
                     }
 
-                    // Newer format: lockupViewModel wrapping a comment
-                    JSONObject lvm = item.optJSONObject("lockupViewModel");
-                    if (lvm != null) {
-                        threadCount++;
-                        Comment comment = parseLockupViewModel(lvm);
-                        if (comment != null) comments.add(comment);
-                        continue;
+                    // Unexpected format: log the top-level keys so we can investigate
+                    if (j == 0) {
+                        String itemJson = item.toString();
+                        Log.e(TAG, "[Step 2] item[0] unexpected format, json(400): "
+                                + itemJson.substring(0, Math.min(400, itemJson.length())));
                     }
                 }
                 Log.e(TAG, "[Step 2] endpoint[" + i + "] — parsed " + threadCount + " commentThreadRenderers, "
@@ -265,6 +269,52 @@ public class YouTubeCommentsUtil {
                 if (items != null) return items;
             }
             return null;
+        }
+
+        // -----------------------------------------------------------------------------------------
+        // ytInitialData extraction helpers
+        // -----------------------------------------------------------------------------------------
+
+        /** Returns the index of the opening '{' of the ytInitialData JSON in the page HTML. */
+        private int locateYtInitialData(String html) {
+            // YouTube embeds ytInitialData as: var ytInitialData = {...};
+            // Try the most common forms in order.
+            String[] markers = {
+                "var ytInitialData = {",
+                "var ytInitialData={",
+                "ytInitialData = {",
+                "ytInitialData={"
+            };
+            for (String m : markers) {
+                int idx = html.indexOf(m);
+                if (idx != -1) return idx + m.length() - 1; // position of '{'
+            }
+            return -1;
+        }
+
+        /**
+         * Walks the string starting at openIdx (which must point to '{'), counting balanced
+         * braces while skipping string literals, and returns the index of the matching '}'.
+         * Returns -1 if the end is not found (malformed input).
+         */
+        private int findMatchingBrace(String s, int openIdx) {
+            if (openIdx < 0 || openIdx >= s.length() || s.charAt(openIdx) != '{') return -1;
+            int depth = 0;
+            boolean inString = false;
+            boolean escaped = false;
+            for (int i = openIdx; i < s.length(); i++) {
+                char c = s.charAt(i);
+                if (escaped) { escaped = false; continue; }
+                if (inString) {
+                    if (c == '\\') escaped = true;
+                    else if (c == '"') inString = false;
+                } else {
+                    if (c == '"') inString = true;
+                    else if (c == '{') depth++;
+                    else if (c == '}') { if (--depth == 0) return i; }
+                }
+            }
+            return -1;
         }
 
         // -----------------------------------------------------------------------------------------
@@ -373,83 +423,6 @@ public class YouTubeCommentsUtil {
             }
         }
 
-        /**
-         * Parses a YouTube lockupViewModel item that wraps a comment.
-         * The exact structure varies — we log it fully for the first item so the developer
-         * can refine the field paths below once the actual shape is known.
-         *
-         * Known candidate shapes (update as confirmed by logs):
-         *   lockupViewModel.contentId           → comment id
-         *   lockupViewModel.metadata.lockupMetadataViewModel.title.content → comment text
-         *   lockupViewModel.contentImage.collectionThumbnailViewModel
-         *       .primaryThumbnail.thumbnailViewModel.image.sources[last].url → avatar
-         */
-        private Comment parseLockupViewModel(JSONObject lvm) {
-            try {
-                // Log the full structure on first call so we can refine the field paths
-                String lvmJson = lvm.toString();
-                Log.e(TAG, "[Parse/LVM] lockupViewModel json(800): "
-                        + lvmJson.substring(0, Math.min(800, lvmJson.length())));
-
-                // Content ID (comment id)
-                String id = lvm.optString("contentId", null);
-                if (id == null || id.isEmpty()) {
-                    Log.e(TAG, "[Parse/LVM] lockupViewModel missing contentId, skipping");
-                    return null;
-                }
-
-                // Comment text — title inside nested lockupMetadataViewModel
-                String content = "";
-                JSONObject metadata = lvm.optJSONObject("metadata");
-                if (metadata != null) {
-                    JSONObject metaVM = metadata.optJSONObject("lockupMetadataViewModel");
-                    if (metaVM != null) {
-                        JSONObject titleObj = metaVM.optJSONObject("title");
-                        if (titleObj != null) {
-                            content = titleObj.optString("content", "");
-                            if (content.isEmpty()) content = extractRuns(titleObj);
-                        }
-                    }
-                }
-
-                // Avatar URL — inside contentImage.collectionThumbnailViewModel
-                String avatarUrl = null;
-                JSONObject contentImage = lvm.optJSONObject("contentImage");
-                if (contentImage != null) {
-                    JSONObject collThumb = contentImage.optJSONObject("collectionThumbnailViewModel");
-                    if (collThumb != null) {
-                        JSONObject primary = collThumb.optJSONObject("primaryThumbnail");
-                        if (primary != null) {
-                            JSONObject thumbVM = primary.optJSONObject("thumbnailViewModel");
-                            if (thumbVM != null) {
-                                JSONObject image = thumbVM.optJSONObject("image");
-                                if (image != null) {
-                                    JSONArray sources = image.optJSONArray("sources");
-                                    if (sources != null && sources.length() > 0) {
-                                        String url = sources.optJSONObject(sources.length() - 1)
-                                                .optString("url", null);
-                                        if (url != null) {
-                                            avatarUrl = url.startsWith("//") ? "https:" + url : url;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-
-                Log.e(TAG, "[Parse/LVM] id=" + id
-                        + " | text='" + (content.length() > 80 ? content.substring(0, 80) + "…" : content) + "'"
-                        + " | avatar=" + (avatarUrl != null ? "present" : "null"));
-
-                User user = new User(id, null, avatarUrl);
-                return new Comment(id, content, 0, 0, 0,
-                        null, null, null, user, null, null, null, null, null, null);
-            } catch (Exception e) {
-                Log.e(TAG, "[Parse] parseLockupViewModel error: " + e.getMessage());
-                return null;
-            }
-        }
 
         private Comment parseCommentRenderer(JSONObject cr, String parentCommentId) {
             String id = cr.optString("commentId", null);
