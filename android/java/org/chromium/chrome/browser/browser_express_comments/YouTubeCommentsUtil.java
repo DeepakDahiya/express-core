@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class YouTubeCommentsUtil {
-    private static final String TAG = "YouTubeCommentsUtil";
+    private static final String TAG = "YouTubeComments";
 
     // Well-known public InnerTube WEB client key — stable across years.
     private static final String INNERTUBE_API_KEY = "AIzaSyAO_FJ2SlqU8Q4STEHLGCilw_Y9_11qcW8";
@@ -45,16 +45,20 @@ public class YouTubeCommentsUtil {
 
         @Override
         protected Void doInBackground() {
+            Log.e(TAG, "[Step 1] Starting YouTube comments fetch for videoId=" + mVideoId);
             try {
                 String token = fetchContinuationToken();
                 if (token == null) {
                     mError = "Could not locate comment section token";
+                    Log.e(TAG, "[Step 1] FAILED — no continuation token found for videoId=" + mVideoId);
                     return null;
                 }
+                Log.e(TAG, "[Step 1] Got continuation token (length=" + token.length() + ")");
                 mComments = fetchComments(token);
+                Log.e(TAG, "[Step 2] Fetch complete — total comments parsed: " + mComments.size());
             } catch (Exception e) {
                 mError = e.getMessage();
-                Log.e(TAG, "Error fetching YouTube comments: " + e.getMessage());
+                Log.e(TAG, "[ERROR] Exception during YouTube comments fetch: " + e.getMessage());
             }
             return null;
         }
@@ -63,8 +67,10 @@ public class YouTubeCommentsUtil {
         protected void onPostExecute(Void result) {
             assert ThreadUtils.runningOnUiThread();
             if (mComments != null) {
+                Log.e(TAG, "[UI] Delivering " + mComments.size() + " YouTube comments to adapter");
                 mCallback.getCommentsSuccessful(mComments, null, null);
             } else {
+                Log.e(TAG, "[UI] Delivering failure: " + mError);
                 mCallback.getCommentsFailed(mError != null ? mError : "Unknown error");
             }
         }
@@ -79,32 +85,48 @@ public class YouTubeCommentsUtil {
                     .put("context", buildClientContext())
                     .put("videoId", mVideoId);
 
+            Log.e(TAG, "[Step 1] POST /next with videoId=" + mVideoId);
             JSONObject response = postToInnertube("next", body);
-            if (response == null) return null;
+            if (response == null) {
+                Log.e(TAG, "[Step 1] /next returned null response");
+                return null;
+            }
 
             JSONArray panels = response.optJSONArray("engagementPanels");
-            if (panels == null) return null;
+            if (panels == null) {
+                Log.e(TAG, "[Step 1] No engagementPanels in response");
+                return null;
+            }
+            Log.e(TAG, "[Step 1] Found " + panels.length() + " engagementPanels");
 
             for (int i = 0; i < panels.length(); i++) {
                 JSONObject panel = panels.getJSONObject(i)
                         .optJSONObject("engagementPanelSectionListRenderer");
                 if (panel == null) continue;
-                if (!"comment-item-section".equals(panel.optString("panelIdentifier"))) continue;
+                String panelId = panel.optString("panelIdentifier", "(none)");
+                Log.e(TAG, "[Step 1] Panel[" + i + "] panelIdentifier=" + panelId);
+                if (!"comment-item-section".equals(panelId)) continue;
 
+                Log.e(TAG, "[Step 1] Found comment-item-section panel, extracting token...");
                 String token = extractTokenFromPanel(panel);
-                if (token != null) return token;
+                if (token != null) {
+                    Log.e(TAG, "[Step 1] Token extracted successfully");
+                    return token;
+                }
+                Log.e(TAG, "[Step 1] Token extraction returned null from comment-item-section");
             }
+            Log.e(TAG, "[Step 1] comment-item-section panel not found among " + panels.length() + " panels");
             return null;
         }
 
         private String extractTokenFromPanel(JSONObject panel) {
             try {
                 JSONObject content = panel.optJSONObject("content");
-                if (content == null) return null;
+                if (content == null) { Log.e(TAG, "[Step 1] panel has no 'content'"); return null; }
                 JSONObject sectionList = content.optJSONObject("sectionListRenderer");
-                if (sectionList == null) return null;
+                if (sectionList == null) { Log.e(TAG, "[Step 1] no sectionListRenderer"); return null; }
                 JSONArray contents = sectionList.optJSONArray("contents");
-                if (contents == null) return null;
+                if (contents == null) { Log.e(TAG, "[Step 1] sectionListRenderer has no contents"); return null; }
 
                 for (int j = 0; j < contents.length(); j++) {
                     JSONObject section = contents.getJSONObject(j)
@@ -118,7 +140,7 @@ public class YouTubeCommentsUtil {
                     }
                 }
             } catch (JSONException e) {
-                Log.e(TAG, "extractTokenFromPanel error: " + e.getMessage());
+                Log.e(TAG, "[Step 1] extractTokenFromPanel JSONException: " + e.getMessage());
             }
             return null;
         }
@@ -133,25 +155,45 @@ public class YouTubeCommentsUtil {
                     .put("context", buildClientContext())
                     .put("continuation", token);
 
+            Log.e(TAG, "[Step 2] POST /next with continuation token to fetch comments");
             JSONObject response = postToInnertube("next", body);
             List<Comment> comments = new ArrayList<>();
-            if (response == null) return comments;
+            if (response == null) {
+                Log.e(TAG, "[Step 2] /next returned null response");
+                return comments;
+            }
 
             JSONArray endpoints = response.optJSONArray("onResponseReceivedEndpoints");
-            if (endpoints == null) return comments;
+            if (endpoints == null) {
+                Log.e(TAG, "[Step 2] No onResponseReceivedEndpoints in response");
+                return comments;
+            }
+            Log.e(TAG, "[Step 2] Found " + endpoints.length() + " onResponseReceivedEndpoints");
 
             for (int i = 0; i < endpoints.length(); i++) {
                 JSONObject endpoint = endpoints.getJSONObject(i);
+                String endpointShape = endpoint.has("reloadContinuationItemsCommand")
+                        ? "reloadContinuationItemsCommand"
+                        : endpoint.has("appendContinuationItemsAction")
+                                ? "appendContinuationItemsAction" : "unknown";
                 JSONArray items = getContinuationItems(endpoint);
-                if (items == null) continue;
+                if (items == null) {
+                    Log.e(TAG, "[Step 2] endpoint[" + i + "] (" + endpointShape + ") — no continuationItems, skipping");
+                    continue;
+                }
+                Log.e(TAG, "[Step 2] endpoint[" + i + "] (" + endpointShape + ") — " + items.length() + " items");
 
+                int threadCount = 0;
                 for (int j = 0; j < items.length(); j++) {
                     JSONObject item = items.getJSONObject(j);
                     JSONObject thread = item.optJSONObject("commentThreadRenderer");
                     if (thread == null) continue;
+                    threadCount++;
                     Comment comment = parseCommentThread(thread);
                     if (comment != null) comments.add(comment);
                 }
+                Log.e(TAG, "[Step 2] endpoint[" + i + "] — parsed " + threadCount + " commentThreadRenderers, "
+                        + comments.size() + " valid Comment objects so far");
             }
             return comments;
         }
@@ -179,19 +221,28 @@ public class YouTubeCommentsUtil {
         private Comment parseCommentThread(JSONObject threadRenderer) {
             try {
                 JSONObject commentObj = threadRenderer.optJSONObject("comment");
-                if (commentObj == null) return null;
+                if (commentObj == null) {
+                    Log.e(TAG, "[Parse] commentThreadRenderer missing 'comment' key");
+                    return null;
+                }
                 JSONObject cr = commentObj.optJSONObject("commentRenderer");
-                if (cr == null) return null;
+                if (cr == null) {
+                    Log.e(TAG, "[Parse] comment missing 'commentRenderer' key");
+                    return null;
+                }
                 return parseCommentRenderer(cr, null);
             } catch (Exception e) {
-                Log.e(TAG, "parseCommentThread error: " + e.getMessage());
+                Log.e(TAG, "[Parse] parseCommentThread error: " + e.getMessage());
                 return null;
             }
         }
 
         private Comment parseCommentRenderer(JSONObject cr, String parentCommentId) {
             String id = cr.optString("commentId", null);
-            if (id == null || id.isEmpty()) return null;
+            if (id == null || id.isEmpty()) {
+                Log.e(TAG, "[Parse] commentRenderer missing commentId, skipping");
+                return null;
+            }
 
             // Text: join all runs (handles formatted text, links, emoji text)
             String content = extractRuns(cr.optJSONObject("contentText"));
@@ -200,7 +251,9 @@ public class YouTubeCommentsUtil {
             int likes = 0;
             JSONObject voteCount = cr.optJSONObject("voteCount");
             if (voteCount != null) {
-                likes = parseYouTubeCount(voteCount.optString("simpleText", "0"));
+                String rawLikes = voteCount.optString("simpleText", "0");
+                likes = parseYouTubeCount(rawLikes);
+                Log.e(TAG, "[Parse] id=" + id + " rawLikes='" + rawLikes + "' parsed=" + likes);
             }
 
             // Reply count: integer field, absent means 0
@@ -215,24 +268,31 @@ public class YouTubeCommentsUtil {
             // Avatar: last thumbnail = highest resolution; fix scheme-relative URLs
             String avatarUrl = extractBestThumbnailUrl(cr.optJSONObject("authorThumbnail"));
 
+            Log.e(TAG, "[Parse] Comment id=" + id
+                    + " | author='" + authorName + "'"
+                    + " | likes=" + likes
+                    + " | replies=" + replyCount
+                    + " | avatar=" + (avatarUrl != null ? "present" : "null")
+                    + " | text='" + (content.length() > 80 ? content.substring(0, 80) + "…" : content) + "'");
+
             User user = new User(authorChannelId, authorName, avatarUrl);
 
             return new Comment(
                     id,
                     content,
                     likes,
-                    0,              // downvoteCount — YouTube does not expose this
-                    replyCount,     // commentCount used for reply count
-                    null,           // pageParent
-                    null,           // postParent
+                    0,               // downvoteCount — YouTube does not expose this
+                    replyCount,      // commentCount used for reply count
+                    null,            // pageParent
+                    null,            // postParent
                     parentCommentId, // commentParent — null for top-level
                     user,
-                    null,           // didVote — not applicable for YouTube
-                    null,           // mediaImageUrl
-                    null,           // mediaVideoUrl
-                    null,           // postContent
-                    null,           // postUsername
-                    null            // postAvatarUrl
+                    null,            // didVote — not applicable for YouTube
+                    null,            // mediaImageUrl
+                    null,            // mediaVideoUrl
+                    null,            // postContent
+                    null,            // postUsername
+                    null             // postAvatarUrl
             );
         }
 
@@ -328,6 +388,7 @@ public class YouTubeCommentsUtil {
             HttpURLConnection conn = null;
             try {
                 URL url = new URL(INNERTUBE_BASE_URL + endpoint + "?key=" + INNERTUBE_API_KEY);
+                Log.e(TAG, "[HTTP] POST " + url);
                 conn = (HttpURLConnection) url.openConnection();
                 conn.setRequestMethod("POST");
                 conn.setRequestProperty("Content-Type", "application/json; charset=UTF-8");
@@ -342,8 +403,9 @@ public class YouTubeCommentsUtil {
                 }
 
                 int code = conn.getResponseCode();
+                Log.e(TAG, "[HTTP] Response code: " + code + " for " + endpoint);
                 if (code != HttpURLConnection.HTTP_OK) {
-                    Log.e(TAG, "InnerTube HTTP " + code + " for " + endpoint);
+                    Log.e(TAG, "[HTTP] Non-200 response from InnerTube: " + code);
                     return null;
                 }
 
@@ -353,9 +415,10 @@ public class YouTubeCommentsUtil {
                     String line;
                     while ((line = br.readLine()) != null) sb.append(line);
                 }
+                Log.e(TAG, "[HTTP] Response body length: " + sb.length() + " chars");
                 return new JSONObject(sb.toString());
             } catch (Exception e) {
-                Log.e(TAG, "postToInnertube failed (" + endpoint + "): " + e.getMessage());
+                Log.e(TAG, "[HTTP] postToInnertube failed (" + endpoint + "): " + e.getMessage());
                 return null;
             } finally {
                 if (conn != null) conn.disconnect();

@@ -2660,12 +2660,14 @@ public abstract class BraveActivity extends ChromeActivity
 
             String currentUrl = getActivityTab() != null
                     ? getActivityTab().getUrl().getSpec() : null;
+            Log.e("YouTubeComments", "[BraveActivity] showCommentsBottomSheet — url=" + currentUrl);
             Uri uri = currentUrl != null ? Uri.parse(currentUrl) : null;
             String host = uri != null ? uri.getHost() : null;
             String videoId = uri != null ? uri.getQueryParameter("v") : null;
 
             if (host != null && host.contains("youtube.com")
                     && videoId != null && !videoId.isEmpty()) {
+                Log.e("YouTubeComments", "[BraveActivity] YouTube watch page detected — videoId=" + videoId + ", routing to youtube mode");
                 fragmentBundle.putString(
                         BrowserExpressCommentsBottomSheetFragment.COMMENTS_FOR, "youtube");
                 fragmentBundle.putString(
@@ -2673,6 +2675,7 @@ public abstract class BraveActivity extends ChromeActivity
                                 .CommentListFragment.VIDEO_ID,
                         videoId);
             } else {
+                Log.e("YouTubeComments", "[BraveActivity] Non-YouTube page — host=" + host + ", routing to page mode");
                 fragmentBundle.putString(
                         BrowserExpressCommentsBottomSheetFragment.COMMENTS_FOR, "page");
             }

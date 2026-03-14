@@ -661,26 +661,6 @@ public class BraveToolbarManager extends ToolbarManager
     private void setBraveBottomControlsVisible(boolean visible) {
         mIsBraveBottomControlsVisible = visible;
 
-        Tab currentTab = mLocationBarModel.getTab();
-        if (currentTab != null) {
-            Log.d(TAG, "BraveToolbarManager: currentTab URL = " + currentTab.getUrl());
-            if (currentTab == null) {
-                mIsCurrentPageNtpOrHome = false;
-                setBraveBottomControlsVisible(true);
-                return;
-            }
-            GURL currentGurl = currentTab.getUrl();
-            boolean isNtp = UrlUtilities.isNtpUrl(currentGurl.getSpec());
-            Log.d(TAG, "BraveToolbarManager: isNtp = " + isNtp);
-
-            mIsCurrentPageNtpOrHome = isNtp;
-            mIsBraveBottomControlsVisible = !isNtp;
-            visible = !isNtp;
-        }else{
-            mIsBraveBottomControlsVisible = false;
-            visible = false;
-        }
-
         if (visible) {
             if (mBottomControlsCoordinatorSupplier != null
                     && mBottomControlsCoordinatorSupplier.get()
