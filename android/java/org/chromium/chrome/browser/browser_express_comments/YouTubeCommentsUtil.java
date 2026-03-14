@@ -151,9 +151,17 @@ public class YouTubeCommentsUtil {
             for (int i = 0; i < panels.length(); i++) {
                 JSONObject panelRenderer = panels.getJSONObject(i)
                         .optJSONObject("engagementPanelSectionListRenderer");
-                if (panelRenderer == null) continue;
+                if (panelRenderer == null) {
+                    // Log the actual top-level keys so we can see the panel shape
+                    StringBuilder k = new StringBuilder();
+                    java.util.Iterator<String> ki = panels.getJSONObject(i).keys();
+                    while (ki.hasNext()) k.append(ki.next()).append(", ");
+                    Log.e(TAG, "[Step 1] panel[" + i + "] keys: " + k);
+                    continue;
+                }
 
                 String panelId = panelRenderer.optString("panelIdentifier", "");
+                Log.e(TAG, "[Step 1] panel[" + i + "] panelIdentifier='" + panelId + "'");
                 if (!"comment-item-section".equals(panelId)) continue;
                 Log.e(TAG, "[Step 1] Found comment engagement panel at index " + i);
 
