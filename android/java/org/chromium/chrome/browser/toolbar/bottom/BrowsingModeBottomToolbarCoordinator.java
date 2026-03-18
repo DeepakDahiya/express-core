@@ -75,6 +75,7 @@ public class BrowsingModeBottomToolbarCoordinator {
 
     private ImageButton mYouTubePipButton;
     private View mYouTubePipContainer;
+    private View mYouTubePipSpace;
     private Tab mCurrentObservedTab;
     private TabObserver mPipTabObserver;
     private Callback<Tab> mTabProviderObserver;
@@ -140,7 +141,9 @@ public class BrowsingModeBottomToolbarCoordinator {
         int commentCount = 0;
         mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
         mCommentsText.setTextSize(10);
+        mCommentsText.setTextColor(android.graphics.Color.WHITE);
         mBraveHomeText.setTextSize(10);
+        mBraveHomeText.setTextColor(android.graphics.Color.WHITE);
         mBraveHomeButton.setOnClickListener(homeButtonListener);
         mBraveHomeText.setOnClickListener(homeButtonListener);
         mBeHomeButton.setOnClickListener(homeButtonListener);
@@ -266,6 +269,7 @@ public class BrowsingModeBottomToolbarCoordinator {
 
         mYouTubePipButton = mToolbarRoot.findViewById(R.id.bottom_youtube_pip_button);
         mYouTubePipContainer = mToolbarRoot.findViewById(R.id.youtube_pip_button_container);
+        mYouTubePipSpace = mToolbarRoot.findViewById(R.id.youtube_pip_space);
 
         if (mYouTubePipButton != null) {
             OnClickListener pipClickHandler = v -> {
@@ -281,9 +285,8 @@ public class BrowsingModeBottomToolbarCoordinator {
         mPipTabObserver = new EmptyTabObserver() {
             @Override
             public void onPageLoadStarted(Tab tab, GURL url) {
-                if (mYouTubePipContainer != null) {
-                    mYouTubePipContainer.setVisibility(View.GONE);
-                }
+                if (mYouTubePipContainer != null) mYouTubePipContainer.setVisibility(View.GONE);
+                if (mYouTubePipSpace != null) mYouTubePipSpace.setVisibility(View.GONE);
             }
 
             @Override
@@ -305,8 +308,9 @@ public class BrowsingModeBottomToolbarCoordinator {
             if (tab != null) {
                 tab.addObserver(mPipTabObserver);
                 updateYouTubePipButtonVisibility(tab);
-            } else if (mYouTubePipContainer != null) {
-                mYouTubePipContainer.setVisibility(View.GONE);
+            } else {
+                if (mYouTubePipContainer != null) mYouTubePipContainer.setVisibility(View.GONE);
+                if (mYouTubePipSpace != null) mYouTubePipSpace.setVisibility(View.GONE);
             }
         };
         mTabProvider.addObserver(mTabProviderObserver);
@@ -323,13 +327,16 @@ public class BrowsingModeBottomToolbarCoordinator {
         if (mYouTubePipContainer == null) return;
         if (tab == null || tab.getWebContents() == null) {
             mYouTubePipContainer.setVisibility(View.GONE);
+            if (mYouTubePipSpace != null) mYouTubePipSpace.setVisibility(View.GONE);
             return;
         }
         boolean available =
                 PictureInPicture.isEnabled(mYouTubePipContainer.getContext())
                 && BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
                         tab.getWebContents());
-        mYouTubePipContainer.setVisibility(available ? View.VISIBLE : View.GONE);
+        int visibility = available ? View.VISIBLE : View.GONE;
+        mYouTubePipContainer.setVisibility(visibility);
+        if (mYouTubePipSpace != null) mYouTubePipSpace.setVisibility(visibility);
     }
 
     /**

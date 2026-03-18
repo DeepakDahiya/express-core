@@ -97,6 +97,12 @@
             android:textSize="11sp" />
     </LinearLayout>
 
+    <Space
+        android:id="@+id/youtube_pip_space"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_weight="1"
+        android:visibility="gone" />
 
     <LinearLayout
         android:id="@+id/youtube_pip_button_container"
@@ -113,6 +119,7 @@
             android:layout_height="20sp"
             android:layout_width="20sp"
             android:layout_gravity="center"
+            android:tint="#D4AF37"
             android:contentDescription="@string/bottom_toolbar_pip_button_label" />
 
         <TextView
@@ -121,7 +128,7 @@
             android:layout_height="wrap_content"
             android:text="@string/bottom_toolbar_pip_button_label"
             android:gravity="center"
-            android:textColor="@color/content_color"
+            android:textColor="#D4AF37"
             android:clickable="true"
             android:focusable="true"
             android:textSize="11sp" />
