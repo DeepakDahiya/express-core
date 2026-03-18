@@ -41,12 +41,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.util.BraveTouchUtils;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
-import android.animation.AnimatorSet;
-import android.animation.ObjectAnimator;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.graphics.drawable.GradientDrawable;
-import android.view.animation.AccelerateInterpolator;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.view.HapticFeedbackConstants;
@@ -79,12 +74,11 @@ public class BrowsingModeBottomToolbarCoordinator {
     private int w;
     private int h;
 
-    private static final String PREF_PIP_SPOTLIGHT_SHOWN = "pip_button_spotlight_shown";
+    private static final String PREF_PIP_COACH_MARK_SHOWN = "pip_coach_mark_shown";
 
     private ImageButton mYouTubePipButton;
     private View mYouTubePipContainer;
     private View mYouTubePipSpace;
-    private View mYouTubePipSpotlightRing;
     private Tab mCurrentObservedTab;
     private TabObserver mPipTabObserver;
     private Callback<Tab> mTabProviderObserver;
@@ -279,7 +273,6 @@ public class BrowsingModeBottomToolbarCoordinator {
         mYouTubePipButton = mToolbarRoot.findViewById(R.id.bottom_youtube_pip_button);
         mYouTubePipContainer = mToolbarRoot.findViewById(R.id.youtube_pip_button_container);
         mYouTubePipSpace = mToolbarRoot.findViewById(R.id.youtube_pip_space);
-        mYouTubePipSpotlightRing = mToolbarRoot.findViewById(R.id.youtube_pip_spotlight_ring);
 
         if (mYouTubePipButton != null) {
             OnClickListener pipClickHandler = v -> {
@@ -347,62 +340,21 @@ public class BrowsingModeBottomToolbarCoordinator {
         int visibility = available ? View.VISIBLE : View.GONE;
         mYouTubePipContainer.setVisibility(visibility);
         if (mYouTubePipSpace != null) mYouTubePipSpace.setVisibility(visibility);
-        if (available) maybeShowPipSpotlight();
+        if (available) maybeShowPipCoachMark();
     }
 
-    private void maybeShowPipSpotlight() {
-        if (mYouTubePipSpotlightRing == null) return;
+    private void maybeShowPipCoachMark() {
+        if (mYouTubePipButton == null) return;
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        if (prefs.getBoolean(PREF_PIP_SPOTLIGHT_SHOWN, false)) return;
-        prefs.edit().putBoolean(PREF_PIP_SPOTLIGHT_SHOWN, true).apply();
-        // Small delay so the container has finished its layout pass before animating.
-        mYouTubePipSpotlightRing.postDelayed(this::startPipSpotlightAnimation, 400);
-    }
+        if (prefs.getBoolean(PREF_PIP_COACH_MARK_SHOWN, false)) return;
+        prefs.edit().putBoolean(PREF_PIP_COACH_MARK_SHOWN, true).apply();
 
-    private void startPipSpotlightAnimation() {
-        if (mYouTubePipSpotlightRing == null) return;
-
-        // Gold ring drawable
-        GradientDrawable ring = new GradientDrawable();
-        ring.setShape(GradientDrawable.OVAL);
-        ring.setColor(Color.TRANSPARENT);
-        ring.setStroke(6, Color.parseColor("#D4AF37"));
-        mYouTubePipSpotlightRing.setBackground(ring);
-        mYouTubePipSpotlightRing.setVisibility(View.VISIBLE);
-        mYouTubePipSpotlightRing.setAlpha(0f);
-        mYouTubePipSpotlightRing.setScaleX(1f);
-        mYouTubePipSpotlightRing.setScaleY(1f);
-
-        // One pulse: fade in while small, then scale out while fading away.
-        final int PULSE_COUNT = 3;
-        final long PULSE_DURATION = 900;
-        final long PULSE_OFFSET = 600; // stagger between pulses
-
-        for (int i = 0; i < PULSE_COUNT; i++) {
-            final long startDelay = i * PULSE_OFFSET;
-
-            ObjectAnimator scaleX = ObjectAnimator.ofFloat(mYouTubePipSpotlightRing, "scaleX", 1f, 2.8f);
-            ObjectAnimator scaleY = ObjectAnimator.ofFloat(mYouTubePipSpotlightRing, "scaleY", 1f, 2.8f);
-            ObjectAnimator alpha  = ObjectAnimator.ofFloat(mYouTubePipSpotlightRing, "alpha",  0.9f, 0f);
-
-            AnimatorSet pulse = new AnimatorSet();
-            pulse.playTogether(scaleX, scaleY, alpha);
-            pulse.setDuration(PULSE_DURATION);
-            pulse.setStartDelay(startDelay);
-            pulse.setInterpolator(new AccelerateInterpolator());
-
-            if (i == PULSE_COUNT - 1) {
-                pulse.addListener(new android.animation.AnimatorListenerAdapter() {
-                    @Override
-                    public void onAnimationEnd(android.animation.Animator animation) {
-                        if (mYouTubePipSpotlightRing != null) {
-                            mYouTubePipSpotlightRing.setVisibility(View.GONE);
-                        }
-                    }
-                });
-            }
-            pulse.start();
-        }
+        // Wait for the button to be laid out before reading its screen coordinates.
+        mYouTubePipButton.post(() -> {
+            if (mYouTubePipButton == null || mYouTubePipButton.getWidth() == 0) return;
+            PipCoachMarkView coachMark = new PipCoachMarkView(mYouTubePipButton.getContext());
+            coachMark.show(mYouTubePipButton, null);
+        });
     }
 
     /**
