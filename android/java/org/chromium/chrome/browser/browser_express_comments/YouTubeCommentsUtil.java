@@ -464,8 +464,8 @@ public class YouTubeCommentsUtil {
             int likes = 0;
             JSONObject voteCount = cr.optJSONObject("voteCount");
             if (voteCount != null) {
-                String rawLikes = extractRuns(voteCount);
-                if (rawLikes.isEmpty()) rawLikes = voteCount.optString("simpleText", "0");
+                String rawLikes = extractRuns(voteCount); // reads from runs[].text
+                if (rawLikes.isEmpty()) rawLikes = voteCount.optString("simpleText", "0"); // WEB client fallback
                 likes = parseYouTubeCount(rawLikes);
                 Log.e(TAG, "[Parse] id=" + id + " rawLikes='" + rawLikes + "' parsed=" + likes);
             }
@@ -473,6 +473,19 @@ public class YouTubeCommentsUtil {
             int replyCount = cr.optInt("replyCount", 0);
 
             String authorName = extractRuns(cr.optJSONObject("authorText"));
+            if (authorName.isEmpty()) {
+                JSONObject authorEndpoint = cr.optJSONObject("authorEndpoint");
+                if (authorEndpoint != null) {
+                    JSONObject browseEndpoint = authorEndpoint.optJSONObject("browseEndpoint");
+                    if (browseEndpoint != null) {
+                        String canonicalUrl = browseEndpoint.optString("canonicalBaseUrl", "");
+                        // canonicalBaseUrl is "/@mehulmpt" — strip leading slash
+                        if (!canonicalUrl.isEmpty()) {
+                            authorName = canonicalUrl.startsWith("/") ? canonicalUrl.substring(1) : canonicalUrl;
+                        }
+                    }
+                }
+            }
 
             // FIX 2: channel ID is nested under authorEndpoint → browseEndpoint → browseId
             String authorChannelId = cr.optString("authorExternalChannelId", null);
