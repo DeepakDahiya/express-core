@@ -118,6 +118,8 @@ public class YouTubeCommentsUtil {
                 if (conn != null) conn.disconnect();
             }
 
+            Log.e(TAG, html);
+
             // Find the comment-item-section marker in ytInitialData (embedded in the HTML).
             // From that anchor, scan forward for the first "token":"..." — that is the
             // comments continuation token used in step 2.
