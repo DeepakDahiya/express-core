@@ -22,4 +22,5 @@
     <string name="youtube_premium_timer_sec">sec</string>
     <string name="youtube_premium_colon">:</string>
     <string name="youtube_premium_timer_zero">00</string>
+    <string name="bottom_toolbar_pip_button_label">PiP</string>
 </resources>

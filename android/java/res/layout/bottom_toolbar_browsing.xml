@@ -98,6 +98,36 @@
     </LinearLayout>
 
 
+    <LinearLayout
+        android:id="@+id/youtube_pip_button_container"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:orientation="vertical"
+        android:padding="2dp"
+        android:visibility="gone">
+
+        <ImageButton android:id="@+id/bottom_youtube_pip_button"
+            android:src="@drawable/ic_picture_in_picture"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:layout_height="20sp"
+            android:layout_width="20sp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/bottom_toolbar_pip_button_label" />
+
+        <TextView
+            android:id="@+id/bottom_youtube_pip_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/bottom_toolbar_pip_button_label"
+            android:gravity="center"
+            android:textColor="@color/content_color"
+            android:clickable="true"
+            android:focusable="true"
+            android:textSize="11sp" />
+
+    </LinearLayout>
+
     <include layout="@layout/brave_bookmark_toolbar" />
     <!-- <include layout="@layout/toolbar_space" /> -->
 

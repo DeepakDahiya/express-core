@@ -1322,6 +1322,20 @@ const char16_t kYoutubePipButton[] =
     })();
 )";
 
+// Triggers Web PiP directly on the video element — same logic as the
+// kYoutubePipButton click handler, executed with user activation so that
+// requestPictureInPicture() is allowed by the browser.
+const char16_t kYoutubePipTrigger[] =
+    uR"(
+    (function() {
+        var video = document.querySelector('video');
+        if (video) {
+            video.removeAttribute('disablePictureInPicture');
+            video.requestPictureInPicture().catch(console.error);
+        }
+    })();
+)";
+
 constexpr char16_t kYoutubeBackgroundPlayback[] =
     uR"(
 (function() {
@@ -1664,6 +1678,18 @@ void YouTubeScriptInjectorTabHelper::MaybeSetFullscreen() {
       base::BindOnce(
           &YouTubeScriptInjectorTabHelper::OnFullscreenScriptComplete,
           weak_factory_.GetWeakPtr(), rfh->GetGlobalFrameToken()));
+}
+
+void YouTubeScriptInjectorTabHelper::TriggerYouTubePiP() {
+  content::RenderFrameHost* rfh = web_contents()->GetPrimaryMainFrame();
+  if (!rfh || !rfh->IsRenderFrameLive()) {
+    return;
+  }
+  EnsureBound(rfh);
+  script_injector_remote_->RequestAsyncExecuteScript(
+      ISOLATED_WORLD_ID_BRAVE_INTERNAL, kYoutubePipTrigger,
+      blink::mojom::UserActivationOption::kActivate,
+      blink::mojom::PromiseResultOption::kAwait, base::DoNothing());
 }
 
 bool YouTubeScriptInjectorTabHelper::IsYouTubeVideo(bool mobileOnly) const {
