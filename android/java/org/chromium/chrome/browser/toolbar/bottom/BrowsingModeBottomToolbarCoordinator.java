@@ -44,7 +44,12 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.view.HapticFeedbackConstants;
+import org.chromium.chrome.browser.BraveYouTubeScriptInjectorNativeHelper;
+import org.chromium.chrome.browser.media.PictureInPicture;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.chrome.browser.util.TabUtils;
+import org.chromium.url.GURL;
 import org.chromium.chrome.browser.settings.PostHogEventKeys;
 import org.chromium.chrome.browser.settings.PostHogUtil;
 import android.content.pm.PackageInfo;
@@ -67,6 +72,12 @@ public class BrowsingModeBottomToolbarCoordinator {
     private TextView mCommentsText;
     private int w;
     private int h;
+
+    private ImageButton mYouTubePipButton;
+    private View mYouTubePipContainer;
+    private Tab mCurrentObservedTab;
+    private TabObserver mPipTabObserver;
+    private Callback<Tab> mTabProviderObserver;
 
     /** The mediator that handles events from outside the browsing mode bottom toolbar. */
     private final BrowsingModeBottomToolbarMediator mMediator;
@@ -252,6 +263,73 @@ public class BrowsingModeBottomToolbarCoordinator {
         }
 
         mMenuButton = mToolbarRoot.findViewById(R.id.menu_button_wrapper);
+
+        mYouTubePipButton = mToolbarRoot.findViewById(R.id.bottom_youtube_pip_button);
+        mYouTubePipContainer = mToolbarRoot.findViewById(R.id.youtube_pip_button_container);
+
+        if (mYouTubePipButton != null) {
+            OnClickListener pipClickHandler = v -> {
+                Tab tab = mTabProvider.get();
+                if (tab == null || tab.getWebContents() == null) return;
+                BraveYouTubeScriptInjectorNativeHelper.triggerYouTubePiP(tab.getWebContents());
+            };
+            mYouTubePipButton.setOnClickListener(pipClickHandler);
+            mToolbarRoot.findViewById(R.id.bottom_youtube_pip_text).setOnClickListener(
+                    pipClickHandler);
+        }
+
+        mPipTabObserver = new EmptyTabObserver() {
+            @Override
+            public void onPageLoadStarted(Tab tab, GURL url) {
+                if (mYouTubePipContainer != null) {
+                    mYouTubePipContainer.setVisibility(View.GONE);
+                }
+            }
+
+            @Override
+            public void onPageLoadFinished(Tab tab, GURL url) {
+                updateYouTubePipButtonVisibility(tab);
+            }
+
+            @Override
+            public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
+                updateYouTubePipButtonVisibility(tab);
+            }
+        };
+
+        mTabProviderObserver = tab -> {
+            if (mCurrentObservedTab != null) {
+                mCurrentObservedTab.removeObserver(mPipTabObserver);
+            }
+            mCurrentObservedTab = tab;
+            if (tab != null) {
+                tab.addObserver(mPipTabObserver);
+                updateYouTubePipButtonVisibility(tab);
+            } else if (mYouTubePipContainer != null) {
+                mYouTubePipContainer.setVisibility(View.GONE);
+            }
+        };
+        mTabProvider.addObserver(mTabProviderObserver);
+
+        Tab initialTab = mTabProvider.get();
+        if (initialTab != null) {
+            mCurrentObservedTab = initialTab;
+            initialTab.addObserver(mPipTabObserver);
+            updateYouTubePipButtonVisibility(initialTab);
+        }
+    }
+
+    private void updateYouTubePipButtonVisibility(Tab tab) {
+        if (mYouTubePipContainer == null) return;
+        if (tab == null || tab.getWebContents() == null) {
+            mYouTubePipContainer.setVisibility(View.GONE);
+            return;
+        }
+        boolean available =
+                PictureInPicture.isEnabled(mYouTubePipContainer.getContext())
+                && BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
+                        tab.getWebContents());
+        mYouTubePipContainer.setVisibility(available ? View.VISIBLE : View.GONE);
     }
 
     /**
@@ -393,6 +471,12 @@ public class BrowsingModeBottomToolbarCoordinator {
     public void destroy() {
         if (mShareButtonListenerSupplier != null) {
             mShareButtonListenerSupplier.removeObserver(mShareButtonListenerSupplierCallback);
+        }
+        if (mCurrentObservedTab != null && mPipTabObserver != null) {
+            mCurrentObservedTab.removeObserver(mPipTabObserver);
+        }
+        if (mTabProviderObserver != null) {
+            mTabProvider.removeObserver(mTabProviderObserver);
         }
         mMediator.destroy();
         mBraveHomeButton.destroy();
