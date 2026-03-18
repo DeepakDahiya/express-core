@@ -104,36 +104,55 @@
         android:layout_weight="1"
         android:visibility="gone" />
 
-    <LinearLayout
+    <!-- FrameLayout allows the spotlight ring to overflow beyond the icon bounds -->
+    <FrameLayout
         android:id="@+id/youtube_pip_button_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
-        android:orientation="vertical"
-        android:padding="2dp"
+        android:padding="8dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:visibility="gone">
 
-        <ImageButton android:id="@+id/bottom_youtube_pip_button"
-            android:src="@drawable/ic_picture_in_picture"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:layout_height="20sp"
-            android:layout_width="20sp"
-            android:layout_gravity="center"
-            android:tint="#D4AF37"
-            android:contentDescription="@string/bottom_toolbar_pip_button_label" />
+        <!-- Spotlight ring: animated circle that expands outward on first visit -->
+        <View
+            android:id="@+id/youtube_pip_spotlight_ring"
+            android:layout_width="36sp"
+            android:layout_height="36sp"
+            android:layout_gravity="top|center_horizontal"
+            android:visibility="gone" />
 
-        <TextView
-            android:id="@+id/bottom_youtube_pip_text"
+        <!-- Icon + label stacked vertically -->
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/bottom_toolbar_pip_button_label"
-            android:gravity="center"
-            android:textColor="#D4AF37"
-            android:clickable="true"
-            android:focusable="true"
-            android:textSize="11sp" />
+            android:orientation="vertical"
+            android:layout_gravity="center">
 
-    </LinearLayout>
+            <ImageButton android:id="@+id/bottom_youtube_pip_button"
+                android:src="@drawable/ic_picture_in_picture"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_height="20sp"
+                android:layout_width="20sp"
+                android:layout_gravity="center"
+                android:tint="#D4AF37"
+                android:contentDescription="@string/bottom_toolbar_pip_button_label" />
+
+            <TextView
+                android:id="@+id/bottom_youtube_pip_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/bottom_toolbar_pip_button_label"
+                android:gravity="center"
+                android:textColor="#D4AF37"
+                android:clickable="true"
+                android:focusable="true"
+                android:textSize="11sp" />
+
+        </LinearLayout>
+
+    </FrameLayout>
 
     <include layout="@layout/brave_bookmark_toolbar" />
     <!-- <include layout="@layout/toolbar_space" /> -->
