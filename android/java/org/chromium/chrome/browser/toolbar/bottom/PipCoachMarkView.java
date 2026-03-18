@@ -128,7 +128,7 @@ public class PipCoachMarkView extends FrameLayout {
     /** Adds the explanatory label positioned above or below the spotlight circle. */
     private void addLabel(ViewGroup root) {
         TextView label = new TextView(getContext());
-        label.setText("Tap here to watch in Picture-in-Picture");
+        label.setText(getContext().getString(org.chromium.chrome.R.string.pip_coach_mark_label));
         label.setTextColor(Color.WHITE);
         label.setTextSize(14f);
         label.setTypeface(null, Typeface.BOLD);
