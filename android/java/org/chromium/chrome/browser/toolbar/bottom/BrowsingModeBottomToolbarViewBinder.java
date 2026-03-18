@@ -31,7 +31,7 @@ public class BrowsingModeBottomToolbarViewBinder
     public final void bind(
             BrowsingModeBottomToolbarModel model, View view, PropertyKey propertyKey) {
         if (BrowsingModeBottomToolbarModel.PRIMARY_COLOR == propertyKey) {
-            view.setBackgroundColor(model.get(BrowsingModeBottomToolbarModel.PRIMARY_COLOR));
+            // Background is always kept dark (set in XML), so text is always white.
             TextView homeText = view.findViewById(R.id.bottom_home_text);
             TextView commentsText = view.findViewById(R.id.comments_button1);
             if (homeText != null) homeText.setTextColor(Color.WHITE);
