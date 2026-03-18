@@ -461,23 +461,32 @@ public class YouTubeCommentsUtil {
             // Text: join all runs (handles formatted text, links, emoji text)
             String content = extractRuns(cr.optJSONObject("contentText"));
 
-            // Like count: YouTube shows "1.2K", "500", or omits the field for 0
             int likes = 0;
             JSONObject voteCount = cr.optJSONObject("voteCount");
             if (voteCount != null) {
-                String rawLikes = voteCount.optString("simpleText", "0");
+                String rawLikes = extractRuns(voteCount);
+                if (rawLikes.isEmpty()) rawLikes = voteCount.optString("simpleText", "0");
                 likes = parseYouTubeCount(rawLikes);
                 Log.e(TAG, "[Parse] id=" + id + " rawLikes='" + rawLikes + "' parsed=" + likes);
             }
 
-            // Reply count: integer field, absent means 0
             int replyCount = cr.optInt("replyCount", 0);
 
-            // Author name
             String authorName = extractRuns(cr.optJSONObject("authorText"));
 
-            // Channel ID as stable user ID
-            String authorChannelId = cr.optString("authorExternalChannelId", id);
+            // FIX 2: channel ID is nested under authorEndpoint → browseEndpoint → browseId
+            String authorChannelId = cr.optString("authorExternalChannelId", null);
+            if (authorChannelId == null || authorChannelId.isEmpty()) {
+                JSONObject authorEndpoint = cr.optJSONObject("authorEndpoint");
+                if (authorEndpoint != null) {
+                    JSONObject browseEndpoint = authorEndpoint.optJSONObject("browseEndpoint");
+                    if (browseEndpoint != null) {
+                        authorChannelId = browseEndpoint.optString("browseId", id);
+                    }
+                }
+            }
+
+            if (authorChannelId == null || authorChannelId.isEmpty()) authorChannelId = id;
 
             // Avatar: last thumbnail = highest resolution; fix scheme-relative URLs
             String avatarUrl = extractBestThumbnailUrl(cr.optJSONObject("authorThumbnail"));
