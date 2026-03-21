@@ -166,6 +166,13 @@ public class YouTubeCommentsUtil {
             return token;
         }
 
+        private void logLongString(String tag, String message) {
+            int maxLength = 4000;
+            for (int i = 0; i < message.length(); i += maxLength) {
+                Log.e(tag, message.substring(i, Math.min(message.length(), i + maxLength)));
+            }
+        }
+
         // -----------------------------------------------------------------------------------------
         // Step 2: POST /next with the continuation token to get the actual comment list.
         // Handles both reloadContinuationItemsCommand and appendContinuationItemsAction shapes
@@ -178,7 +185,7 @@ public class YouTubeCommentsUtil {
 
             Log.e(TAG, "[Step 2] POST /next with continuation token to fetch comments");
             JSONObject response = postToInnertube("next", body);
-            Log.e(TAG, "[Step 2] body: " + response);
+            logLongString(TAG, response.toString());
             List<Comment> comments = new ArrayList<>();
             if (response == null) {
                 Log.e(TAG, "[Step 2] /next returned null response");
