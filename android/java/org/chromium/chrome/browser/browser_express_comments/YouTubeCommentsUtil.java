@@ -219,6 +219,8 @@ public class YouTubeCommentsUtil {
                                 + itemJson.substring(0, Math.min(600, itemJson.length())));
                     }
 
+                    Log.e(TAG, "[Step 2] item: " + item);
+
                     // Classic format: commentThreadRenderer > comment > commentRenderer
                     JSONObject thread = item.optJSONObject("commentThreadRenderer");
                     // log thread
