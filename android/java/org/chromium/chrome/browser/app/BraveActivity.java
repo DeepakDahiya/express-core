@@ -747,14 +747,11 @@ public abstract class BraveActivity extends ChromeActivity
                 Log.e("Browser Express", "PIP script result: " + result);
                 
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    Log.e("Browser Express", "Opening new tab with URL: " + previousUrl);
-                    
-                    // Create tab and track it
-                    TabUtils.openUrlInNewTab(false, previousUrl);
-                    Tab newTab = getActivityTab();
-                    if (newTab != null) {
-                        mOurCreatedTabs.add(newTab.getId());
-                        Log.e("Browser Express", "Tracking our created tab: " + newTab.getId());
+                    Log.e("Browser Express", "Opening/selecting tab with URL: " + previousUrl);
+                    Tab targetTab = openNewOrSelectExistingTab(previousUrl);
+                    if (targetTab != null) {
+                        mOurCreatedTabs.add(targetTab.getId());
+                        Log.e("Browser Express", "Tracking tab: " + targetTab.getId());
                     }
                 }, 300);
             }
