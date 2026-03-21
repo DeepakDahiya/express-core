@@ -46,6 +46,7 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.view.HapticFeedbackConstants;
 import org.chromium.chrome.browser.BraveYouTubeScriptInjectorNativeHelper;
+import org.chromium.chrome.browser.browser_express_comments.YouTubeCommentsUtil;
 import org.chromium.chrome.browser.media.PictureInPicture;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -154,11 +155,7 @@ public class BrowsingModeBottomToolbarCoordinator {
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
             String mUrl = activity.getActivityTab().getUrl().getSpec();
-
-            BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
-                new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
-                        mUrl, getFirstCommentsCallback);
-            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            updateCommentCountForUrl(mUrl);
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e("Express Browser Access Token", e.getMessage());
         }
@@ -295,6 +292,7 @@ public class BrowsingModeBottomToolbarCoordinator {
             @Override
             public void onPageLoadFinished(Tab tab, GURL url) {
                 updateYouTubePipButtonVisibility(tab);
+                updateCommentCountForUrl(url.getSpec());
             }
 
             @Override
@@ -545,4 +543,45 @@ public class BrowsingModeBottomToolbarCoordinator {
                     Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
                 }
             };
+
+    /**
+     * Updates the comment count text in the bottom toolbar for the given URL.
+     * For YouTube watch pages, fetches live statistics via the YouTube Data API v3.
+     * For all other pages, falls back to the browser.express first-comments API.
+     */
+    private void updateCommentCountForUrl(String url) {
+        if (url == null || url.isEmpty()) return;
+        try {
+            Uri uri = Uri.parse(url);
+            String host = uri.getHost();
+            String videoId = uri.getQueryParameter("v");
+            boolean isYouTube = host != null && host.contains("youtube.com")
+                    && videoId != null && !videoId.isEmpty();
+
+            if (isYouTube) {
+                final String finalVideoId = videoId;
+                new YouTubeCommentsUtil.GetYouTubeVideoStatsTask(
+                        finalVideoId,
+                        new YouTubeCommentsUtil.VideoStatsCallback() {
+                            @Override
+                            public void onSuccess(long commentCount, long viewCount, long likeCount) {
+                                mCommentsText.setText(String.format(
+                                        Locale.getDefault(), "%d comments", commentCount));
+                            }
+
+                            @Override
+                            public void onFailure(String error) {
+                                Log.e(TAG, "[Stats] Failed to load YouTube stats: " + error);
+                            }
+                        }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            } else {
+                BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
+                        new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
+                                url, getFirstCommentsCallback);
+                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "[updateCommentCount] Error: " + e.getMessage());
+        }
+    }
 }

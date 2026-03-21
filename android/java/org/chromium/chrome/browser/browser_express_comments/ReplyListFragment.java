@@ -70,6 +70,7 @@ public class ReplyListFragment extends Fragment {
     public static final String COMMENTS_FOR = "comments_for";
     public static final String POST_ID = "post_id";
     public static final String COMMENT_ID = "comment_id";
+    public static final String VIDEO_ID = "video_id";
     private RecyclerView mCommentRecycler;
     private CommentListAdapter mCommentAdapter;
     private List<Comment> mCombinedList;
@@ -78,6 +79,8 @@ public class ReplyListFragment extends Fragment {
     private String mUrl;
 
     private String mCommentId;
+    private String mCommentsFor;
+    private String mVideoId;
 
     private ShimmerFrameLayout mShimmerLoading;
     private ViewGroup mShimmerItems;
@@ -195,6 +198,8 @@ public class ReplyListFragment extends Fragment {
 
         if (getArguments() != null) {
             mCommentId = getArguments().getString(COMMENT_ID);
+            mCommentsFor = getArguments().getString(COMMENTS_FOR);
+            mVideoId = getArguments().getString(VIDEO_ID);
         }
 
         mMessageEditText = inputCallback.getInputEditText();
@@ -307,10 +312,15 @@ public class ReplyListFragment extends Fragment {
             });
 
             // Getting replies
-            BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
-                new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
-                        null, mCommentId, null, mPage, mPerPage, accessToken, getCommentsCallback);
-            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            if ("youtube".equals(mCommentsFor)) {
+                new YouTubeCommentsUtil.GetYouTubeRepliesTask(mCommentId, getCommentsCallback)
+                        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            } else {
+                BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
+                    new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
+                            null, mCommentId, null, mPage, mPerPage, accessToken, getCommentsCallback);
+                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e("Express Browser Access Token", e.getMessage());
         }catch(Exception ex){
