@@ -24,4 +24,7 @@
     <string name="youtube_premium_timer_zero">00</string>
     <string name="bottom_toolbar_pip_button_label">PP</string>
     <string name="pip_coach_mark_label">Tap here to watch in Picture-in-Picture</string>
+    <string name="youtube_stats_views_label">Views</string>
+    <string name="youtube_stats_likes_label">Likes</string>
+    <string name="youtube_stats_comments_label">Comments</string>
 </resources>
