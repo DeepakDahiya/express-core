@@ -47,6 +47,13 @@ import android.widget.ImageButton;
 import android.view.HapticFeedbackConstants;
 import org.chromium.chrome.browser.BraveYouTubeScriptInjectorNativeHelper;
 import org.chromium.chrome.browser.browser_express_comments.YouTubeCommentsUtil;
+import android.util.DisplayMetrics;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.animation.AccelerateInterpolator;
+import android.view.animation.DecelerateInterpolator;
+import android.widget.FrameLayout;
+import android.widget.TextView;
 import org.chromium.chrome.browser.media.PictureInPicture;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -80,6 +87,7 @@ public class BrowsingModeBottomToolbarCoordinator {
     private ImageButton mYouTubePipButton;
     private View mYouTubePipContainer;
     private View mYouTubePipSpace;
+    private View mStatsOverlay;
     private Tab mCurrentObservedTab;
     private TabObserver mPipTabObserver;
     private Callback<Tab> mTabProviderObserver;
@@ -308,7 +316,9 @@ public class BrowsingModeBottomToolbarCoordinator {
             if (tab != null) {
                 tab.addObserver(mPipTabObserver);
                 updateYouTubePipButtonVisibility(tab);
-                if (tab.getUrl() != null && !tab.getUrl().isEmpty()) {
+                // Only fetch when the tab is already done loading; if it's still loading,
+                // onPageLoadFinished will fire with the correct final URL.
+                if (!tab.isLoading() && tab.getUrl() != null && !tab.getUrl().isEmpty()) {
                     updateCommentCountForUrl(tab.getUrl().getSpec());
                 }
             } else {
@@ -323,7 +333,8 @@ public class BrowsingModeBottomToolbarCoordinator {
             mCurrentObservedTab = initialTab;
             initialTab.addObserver(mPipTabObserver);
             updateYouTubePipButtonVisibility(initialTab);
-            if (initialTab.getUrl() != null && !initialTab.getUrl().isEmpty()) {
+            if (!initialTab.isLoading() && initialTab.getUrl() != null
+                    && !initialTab.getUrl().isEmpty()) {
                 updateCommentCountForUrl(initialTab.getUrl().getSpec());
             }
         }
@@ -550,12 +561,88 @@ public class BrowsingModeBottomToolbarCoordinator {
             };
 
     /**
-     * Updates the comment count text in the bottom toolbar for the given URL.
-     * For YouTube watch pages, fetches live statistics via the YouTube Data API v3.
-     * For all other pages, falls back to the browser.express first-comments API.
+     * Shows a floating stats card (views, likes, comments) that rises from just above the bottom
+     * toolbar and travels upward ~20 % of the screen height, then auto-dismisses.
      */
+    private void showYouTubeStatsOverlay(long commentCount, long viewCount, long likeCount) {
+        // Cancel and remove any existing overlay first
+        if (mStatsOverlay != null) {
+            mStatsOverlay.animate().cancel();
+            ViewGroup parent = (ViewGroup) mStatsOverlay.getParent();
+            if (parent != null) parent.removeView(mStatsOverlay);
+            mStatsOverlay = null;
+        }
+
+        ViewGroup contentView;
+        try {
+            contentView = BraveActivity.getBraveActivity().findViewById(android.R.id.content);
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+            return;
+        }
+
+        mStatsOverlay = LayoutInflater.from(mToolbarRoot.getContext())
+                .inflate(R.layout.youtube_stats_overlay, contentView, false);
+
+        ((TextView) mStatsOverlay.findViewById(R.id.stat_view_count))
+                .setText(formatStatCount(viewCount));
+        ((TextView) mStatsOverlay.findViewById(R.id.stat_like_count))
+                .setText(formatStatCount(likeCount));
+        ((TextView) mStatsOverlay.findViewById(R.id.stat_comment_count))
+                .setText(formatStatCount(commentCount));
+
+        // Position the card just above the bottom toolbar
+        int bottomToolbarHeight = mToolbarRoot.getContext().getResources()
+                .getDimensionPixelSize(R.dimen.bottom_controls_height);
+        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+        params.gravity = Gravity.BOTTOM;
+        params.bottomMargin = bottomToolbarHeight;
+        mStatsOverlay.setLayoutParams(params);
+
+        // The card starts translated down by 20 % of the screen height (off-screen direction)
+        // and rises to its natural resting position (translationY = 0).
+        DisplayMetrics metrics = mToolbarRoot.getContext().getResources().getDisplayMetrics();
+        float travelDistance = metrics.heightPixels * 0.20f;
+
+        mStatsOverlay.setAlpha(0f);
+        mStatsOverlay.setTranslationY(travelDistance);
+        contentView.addView(mStatsOverlay);
+
+        final View overlay = mStatsOverlay;
+        overlay.animate()
+                .translationY(0f)
+                .alpha(1f)
+                .setDuration(500)
+                .setInterpolator(new DecelerateInterpolator())
+                .withEndAction(() -> overlay.postDelayed(() -> overlay.animate()
+                        .translationY(travelDistance)
+                        .alpha(0f)
+                        .setDuration(400)
+                        .setInterpolator(new AccelerateInterpolator())
+                        .withEndAction(() -> {
+                            ViewGroup p = (ViewGroup) overlay.getParent();
+                            if (p != null) p.removeView(overlay);
+                            if (mStatsOverlay == overlay) mStatsOverlay = null;
+                        })
+                        .start(), 2500))
+                .start();
+    }
+
+    /** Formats a large number as a compact string, e.g. 185149 → "185.1K". */
+    private String formatStatCount(long count) {
+        if (count >= 1_000_000_000L) {
+            return String.format(Locale.getDefault(), "%.1fB", count / 1_000_000_000.0);
+        } else if (count >= 1_000_000L) {
+            return String.format(Locale.getDefault(), "%.1fM", count / 1_000_000.0);
+        } else if (count >= 1_000L) {
+            return String.format(Locale.getDefault(), "%.1fK", count / 1_000.0);
+        }
+        return String.valueOf(count);
+    }
+
     private void updateCommentCountForUrl(String url) {
         if (url == null || url.isEmpty()) return;
+        if (!url.startsWith("http://") && !url.startsWith("https://")) return;
         try {
             Uri uri = Uri.parse(url);
             String host = uri.getHost();
@@ -572,6 +659,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                             public void onSuccess(long commentCount, long viewCount, long likeCount) {
                                 mCommentsText.setText(String.format(
                                         Locale.getDefault(), "%d comments", commentCount));
+                                showYouTubeStatsOverlay(commentCount, viewCount, likeCount);
                             }
 
                             @Override
