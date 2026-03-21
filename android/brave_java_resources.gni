@@ -762,6 +762,7 @@ brave_java_resources = [
   "java/res/layout/auto_reconnect_vpn_tutorial_item_layout.xml",
   "java/res/layout/bottom_toolbar.xml",
   "java/res/layout/bottom_toolbar_browsing.xml",
+  "java/res/layout/youtube_stats_overlay.xml",
   "java/res/layout/bottom_toolbar_menu_button.xml",
   "java/res/layout/bottom_toolbar_tab_switcher.xml",
   "java/res/layout/brave_ads_custom_notification.xml",
