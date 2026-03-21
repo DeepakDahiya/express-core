@@ -400,6 +400,11 @@ public class YouTubeCommentsUtil {
          */
         private Comment parseLockupViewModel(JSONObject lvm) {
             try {
+                String contentType = lvm.optString("contentType", "");
+                if (contentType.equals("LOCKUP_CONTENT_TYPE_VIDEO")
+                        || contentType.equals("LOCKUP_CONTENT_TYPE_PLAYLIST")) {
+                    return null;
+                }
                 // Log the full structure on first call so we can refine the field paths
                 String lvmJson = lvm.toString();
                 Log.e(TAG, "[Parse/LVM] lockupViewModel json(800): "
