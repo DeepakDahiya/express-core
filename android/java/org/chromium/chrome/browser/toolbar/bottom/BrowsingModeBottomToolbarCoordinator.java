@@ -152,13 +152,6 @@ public class BrowsingModeBottomToolbarCoordinator {
         mBraveHomeText.setOnClickListener(homeButtonListener);
         mBeHomeButton.setOnClickListener(homeButtonListener);
 
-        try {
-            BraveActivity activity = BraveActivity.getBraveActivity();
-            String mUrl = activity.getActivityTab().getUrl().getSpec();
-            updateCommentCountForUrl(mUrl);
-        } catch (BraveActivity.BraveActivityNotFoundException e) {
-            Log.e("Express Browser Access Token", e.getMessage());
-        }
 
         if (mCommentsButton != null) {
             mCommentsButton.setClickable(true);
@@ -276,6 +269,12 @@ public class BrowsingModeBottomToolbarCoordinator {
                 Tab tab = mTabProvider.get();
                 if (tab == null || tab.getWebContents() == null) return;
                 BraveYouTubeScriptInjectorNativeHelper.triggerYouTubePiP(tab.getWebContents());
+                try {
+                    BraveActivity.getBraveActivity()
+                            .openNewOrSelectExistingTab("https://m.youtube.com/");
+                } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    Log.e(TAG, "openYouTubeHome: " + e.getMessage());
+                }
             };
             mYouTubePipButton.setOnClickListener(pipClickHandler);
             mToolbarRoot.findViewById(R.id.bottom_youtube_pip_text).setOnClickListener(
@@ -309,6 +308,9 @@ public class BrowsingModeBottomToolbarCoordinator {
             if (tab != null) {
                 tab.addObserver(mPipTabObserver);
                 updateYouTubePipButtonVisibility(tab);
+                if (tab.getUrl() != null && !tab.getUrl().isEmpty()) {
+                    updateCommentCountForUrl(tab.getUrl().getSpec());
+                }
             } else {
                 if (mYouTubePipContainer != null) mYouTubePipContainer.setVisibility(View.GONE);
                 if (mYouTubePipSpace != null) mYouTubePipSpace.setVisibility(View.GONE);
@@ -321,6 +323,9 @@ public class BrowsingModeBottomToolbarCoordinator {
             mCurrentObservedTab = initialTab;
             initialTab.addObserver(mPipTabObserver);
             updateYouTubePipButtonVisibility(initialTab);
+            if (initialTab.getUrl() != null && !initialTab.getUrl().isEmpty()) {
+                updateCommentCountForUrl(initialTab.getUrl().getSpec());
+            }
         }
     }
 
