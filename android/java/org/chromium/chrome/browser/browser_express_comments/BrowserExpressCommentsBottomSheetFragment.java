@@ -391,6 +391,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         ReplyListFragment replyFragment = new ReplyListFragment();
         Bundle args = new Bundle();
         args.putString("comment_id", commentId);
+        if (mCommentsFor != null) args.putString(ReplyListFragment.COMMENTS_FOR, mCommentsFor);
+        if (mVideoId != null) args.putString(CommentListFragment.VIDEO_ID, mVideoId);
         replyFragment.setArguments(args);
         loadFragment(replyFragment);
     }
