@@ -221,6 +221,8 @@ public class YouTubeCommentsUtil {
 
                     // Classic format: commentThreadRenderer > comment > commentRenderer
                     JSONObject thread = item.optJSONObject("commentThreadRenderer");
+                    // log thread
+                    Log.e(TAG, "[Step 2] thread: " + thread);
                     if (thread != null) {
                         threadCount++;
                         Comment comment = parseCommentThread(thread);
