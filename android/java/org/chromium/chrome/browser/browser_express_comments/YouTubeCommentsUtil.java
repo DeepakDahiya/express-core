@@ -178,7 +178,7 @@ public class YouTubeCommentsUtil {
 
             Log.e(TAG, "[Step 2] POST /next with continuation token to fetch comments");
             JSONObject response = postToInnertube("next", body);
-            Log.e(TAG, "[Step 2] body: " + body);
+            Log.e(TAG, "[Step 2] body: " + response);
             List<Comment> comments = new ArrayList<>();
             if (response == null) {
                 Log.e(TAG, "[Step 2] /next returned null response");
