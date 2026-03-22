@@ -317,9 +317,7 @@ public class BrowsingModeBottomToolbarCoordinator {
             if (tab != null) {
                 tab.addObserver(mPipTabObserver);
                 updateYouTubePipButtonVisibility(tab);
-                // Only fetch when the tab is already done loading; if it's still loading,
-                // onPageLoadFinished will fire with the correct final URL.
-                if (!tab.isLoading() && tab.getUrl() != null && !tab.getUrl().isEmpty()) {
+                if (tab.getUrl() != null && !tab.getUrl().isEmpty()) {
                     updateCommentCountForUrl(tab.getUrl().getSpec());
                 }
             } else {
@@ -334,8 +332,7 @@ public class BrowsingModeBottomToolbarCoordinator {
             mCurrentObservedTab = initialTab;
             initialTab.addObserver(mPipTabObserver);
             updateYouTubePipButtonVisibility(initialTab);
-            if (!initialTab.isLoading() && initialTab.getUrl() != null
-                    && !initialTab.getUrl().isEmpty()) {
+            if (initialTab.getUrl() != null && !initialTab.getUrl().isEmpty()) {
                 updateCommentCountForUrl(initialTab.getUrl().getSpec());
             }
         }
@@ -600,23 +597,23 @@ public class BrowsingModeBottomToolbarCoordinator {
         params.bottomMargin = bottomToolbarHeight;
         mStatsOverlay.setLayoutParams(params);
 
-        // The card starts translated down by 20 % of the screen height (off-screen direction)
-        // and rises to its natural resting position (translationY = 0).
+        // Card starts at its natural position (just above the toolbar), invisible.
+        // It floats UP by 35 % of screen height, then slides back down on dismiss.
         DisplayMetrics metrics = mToolbarRoot.getContext().getResources().getDisplayMetrics();
-        float travelDistance = metrics.heightPixels * 0.20f;
+        float riseAmount = metrics.heightPixels * 0.35f;
 
         mStatsOverlay.setAlpha(0f);
-        mStatsOverlay.setTranslationY(travelDistance);
+        mStatsOverlay.setTranslationY(0f);
         contentView.addView(mStatsOverlay);
 
         final View overlay = mStatsOverlay;
         overlay.animate()
-                .translationY(0f)
+                .translationY(-riseAmount)
                 .alpha(1f)
-                .setDuration(500)
+                .setDuration(600)
                 .setInterpolator(new DecelerateInterpolator())
                 .withEndAction(() -> overlay.postDelayed(() -> overlay.animate()
-                        .translationY(travelDistance)
+                        .translationY(0f)
                         .alpha(0f)
                         .setDuration(400)
                         .setInterpolator(new AccelerateInterpolator())
