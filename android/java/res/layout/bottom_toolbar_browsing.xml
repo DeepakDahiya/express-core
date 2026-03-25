@@ -97,13 +97,10 @@
             android:textSize="11sp" />
     </LinearLayout>
 
-    <Space
-        android:id="@+id/youtube_pip_space"
-        android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:layout_weight="1"
-        android:visibility="gone" />
+    <!-- Permanent trailing space — always visible after comments -->
+    <include layout="@layout/toolbar_space" />
 
+    <!-- PIP section: only shown on YouTube video pages -->
     <LinearLayout
         android:id="@+id/youtube_pip_button_container"
         android:layout_width="wrap_content"
@@ -134,6 +131,14 @@
             android:textSize="11sp" />
 
     </LinearLayout>
+
+    <!-- Trailing space after PIP — only shown when PIP is visible -->
+    <Space
+        android:id="@+id/youtube_pip_space"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_weight="1"
+        android:visibility="gone" />
 
     <include layout="@layout/brave_bookmark_toolbar" />
     <!-- <include layout="@layout/toolbar_space" /> -->

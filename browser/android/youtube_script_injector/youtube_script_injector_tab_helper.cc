@@ -1296,14 +1296,15 @@ const char16_t kYoutubePipButton[] =
         }
 
         function updateButtonVisibility() {
-            if (window.location.pathname === '/watch') {
-                if (!document.body.contains(buttonElement)) {
-                    document.body.appendChild(buttonElement);
-                }
-                buttonElement.style.display = '';
-            } else {
-                buttonElement.style.display = 'none';
-            }
+            buttonElement.style.display = 'none';
+            // if (window.location.pathname === '/watch') {
+            //     if (!document.body.contains(buttonElement)) {
+            //         document.body.appendChild(buttonElement);
+            //     }
+            //     buttonElement.style.display = '';
+            // } else {
+            //     buttonElement.style.display = 'none';
+            // }
         }
 
         const observer = new MutationObserver(updateButtonVisibility);
