@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.util.BraveTouchUtils;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import android.content.SharedPreferences;
+import com.google.android.material.snackbar.Snackbar;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.view.HapticFeedbackConstants;
@@ -85,6 +86,8 @@ public class BrowsingModeBottomToolbarCoordinator {
     private int h;
 
     private static final String PREF_PIP_COACH_MARK_SHOWN = "pip_coach_mark_shown";
+    private static final String PREF_PIP_BG_PLAY_NUDGE_COUNT = "pip_bg_play_nudge_count";
+    private static final int MAX_BG_PLAY_NUDGE_COUNT = 3;
 
     private ImageButton mYouTubePipButton;
     private View mYouTubePipContainer;
@@ -285,6 +288,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
                     Log.e(TAG, "openYouTubeHome: " + e.getMessage());
                 }
+                maybeShowBgPlayNudge();
             };
             mYouTubePipButton.setOnClickListener(pipClickHandler);
             mToolbarRoot.findViewById(R.id.bottom_youtube_pip_text).setOnClickListener(
@@ -379,6 +383,29 @@ public class BrowsingModeBottomToolbarCoordinator {
             PipCoachMarkView coachMark = new PipCoachMarkView(mYouTubePipButton.getContext());
             coachMark.show(mYouTubePipButton, null);
         });
+    }
+
+    /**
+     * Shows a snackbar nudging the user to minimize the app for background playback.
+     * Only shown the first {@link #MAX_BG_PLAY_NUDGE_COUNT} times PIP is triggered.
+     */
+    private void maybeShowBgPlayNudge() {
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        int count = prefs.getInt(PREF_PIP_BG_PLAY_NUDGE_COUNT, 0);
+        if (count >= MAX_BG_PLAY_NUDGE_COUNT) return;
+        prefs.edit().putInt(PREF_PIP_BG_PLAY_NUDGE_COUNT, count + 1).apply();
+
+        mToolbarRoot.postDelayed(() -> {
+            try {
+                View rootView = BraveActivity.getBraveActivity()
+                        .findViewById(android.R.id.content);
+                Snackbar.make(rootView,
+                        "Minimize app to watch in background \uD83D\uDE0A",
+                        Snackbar.LENGTH_LONG).show();
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
+                // Ignore
+            }
+        }, 1500);
     }
 
     /**
@@ -600,7 +627,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                 R.string.youtube_stats_views_label,
                 R.string.youtube_stats_likes_label,
                 R.string.youtube_stats_comments_label};
-        int[] delays = {0, 200, 400};
+        int[] delays = {0, 600, 1200};
 
         int bottomToolbarHeight = mToolbarRoot.getContext().getResources()
                 .getDimensionPixelSize(R.dimen.bottom_controls_height);
@@ -643,12 +670,12 @@ public class BrowsingModeBottomToolbarCoordinator {
                         .translationY(-riseAmount - (idx * 15 * density))
                         .translationX(drift)
                         .alpha(1f)
-                        .setDuration(800)
+                        .setDuration(1800)
                         .setInterpolator(new DecelerateInterpolator(1.5f))
                         .withEndAction(() -> b.postDelayed(() -> b.animate()
                                 .translationY(-riseAmount - (idx * 15 * density) - (40 * density))
                                 .alpha(0f)
-                                .setDuration(500)
+                                .setDuration(900)
                                 .setInterpolator(new AccelerateInterpolator())
                                 .withEndAction(() -> {
                                     ViewGroup p = (ViewGroup) b.getParent();
