@@ -48,4 +48,16 @@ public final class PostHogEventKeys {
         public static final String DOWNVOTE_GIVEN = "Downvote Given"; // DONE
         public static final String YOUTUBE_VISITED = "YouTube Visited"; // DONE
         public static final String REFERRAL_CLICKED_IN_PROFILE = "Referral Clicked in Profile"; // DONE
+
+        // YouTube feature events
+        public static final String YT_SIGN_IN_COMPLETE = "YT Sign-In Complete";
+        public static final String YT_FEATURE_EXPLORED_PIP = "YT Feature Explored (PIP)";
+        public static final String YT_FEATURE_EXPLORED_PIP_BG_PLAY = "YT Feature Explored (PIP + Background Play)";
+        public static final String YT_FEATURE_EXPLORED_BG_PLAY = "YT Feature Explored (Background Play)";
+
+        // Referral events
+        public static final String REFERRAL_INITIATED = "Referral Initiated";
+        public static final String REFERRAL_SOURCE = "Referral Source";
+        public static final String REFERRAL_MODE_CHOSEN = "Mode of Referral Chosen";
+        public static final String REFERRAL_SUCCESSFUL_COUNT = "Count of Successful Referrals";
 }

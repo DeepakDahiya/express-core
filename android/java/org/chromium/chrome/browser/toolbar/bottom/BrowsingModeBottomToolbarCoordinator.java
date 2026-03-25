@@ -49,7 +49,11 @@ import android.view.HapticFeedbackConstants;
 import org.chromium.chrome.browser.BraveYouTubeScriptInjectorNativeHelper;
 import org.chromium.chrome.browser.browser_express_comments.YouTubeCommentsUtil;
 import android.util.DisplayMetrics;
+import android.util.Base64;
 import java.util.Random;
+import org.json.JSONObject;
+import org.chromium.chrome.browser.settings.PostHogEventKeys;
+import org.chromium.chrome.browser.settings.PostHogUtil;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.animation.AccelerateInterpolator;
@@ -283,8 +287,11 @@ public class BrowsingModeBottomToolbarCoordinator {
                 if (tab == null || tab.getWebContents() == null) return;
                 BraveYouTubeScriptInjectorNativeHelper.triggerYouTubePiP(tab.getWebContents());
                 try {
-                    BraveActivity.getBraveActivity()
-                            .openNewOrSelectExistingTab("https://m.youtube.com/");
+                    BraveActivity activity = BraveActivity.getBraveActivity();
+                    activity.openNewOrSelectExistingTab("https://m.youtube.com/");
+
+                    // Track PIP feature explored
+                    firePostHogEvent(PostHogEventKeys.YT_FEATURE_EXPLORED_PIP, null);
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
                     Log.e(TAG, "openYouTubeHome: " + e.getMessage());
                 }
@@ -746,6 +753,34 @@ public class BrowsingModeBottomToolbarCoordinator {
             }
         } catch (Exception e) {
             Log.e(TAG, "[updateCommentCount] Error: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Fires a PostHog analytics event, extracting the userId from the JWT access token.
+     * @param eventKey Event name constant from {@link PostHogEventKeys}.
+     * @param extraProps Optional extra properties to include (may be null).
+     */
+    private void firePostHogEvent(String eventKey, JSONObject extraProps) {
+        try {
+            BraveActivity activity = BraveActivity.getBraveActivity();
+            String accessToken = activity.getAccessToken();
+            if (accessToken == null || accessToken.isEmpty()) return;
+
+            String[] parts = accessToken.split("\\.");
+            if (parts.length < 2) return;
+            byte[] decoded = Base64.decode(parts[1], Base64.DEFAULT);
+            JSONObject jwt = new JSONObject(new String(decoded, "UTF-8"));
+            String userId = jwt.getString("_id");
+
+            JSONObject payload = extraProps != null ? extraProps : new JSONObject();
+            payload.put("app_version", activity.getCurrentAppVersion());
+
+            PostHogUtil.PostHogWorkerTask task =
+                    new PostHogUtil.PostHogWorkerTask(eventKey, userId, payload);
+            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } catch (Exception e) {
+            Log.e(TAG, "firePostHogEvent error: " + e.getMessage());
         }
     }
 }

@@ -40,6 +40,13 @@ import org.chromium.chrome.browser.youtube_premium.YouTubePremiumAccessUtil.Prem
 
 import java.util.Locale;
 
+import android.util.Base64;
+import org.json.JSONObject;
+import org.json.JSONException;
+import org.chromium.base.task.AsyncTask;
+import org.chromium.chrome.browser.settings.PostHogEventKeys;
+import org.chromium.chrome.browser.settings.PostHogUtil;
+
 /**
  * Bottomsheet dialog that shows YouTube premium access status and referral information.
  */
@@ -73,6 +80,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
     private boolean mIsBlocked = false;
     private boolean mIsPermanent = false;
     private String mReferralCode = null;
+    private String mReferralSource = "unknown";
 
     public static YouTubePremiumBottomSheetFragment newInstance() {
         return new YouTubePremiumBottomSheetFragment();
@@ -140,6 +148,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
             if (fragmentManager.isStateSaved()) return;
             if (fragmentManager.findFragmentByTag(TAG) != null) return;
             YouTubePremiumBottomSheetFragment fragment = newInstance(false);
+            fragment.setReferralSource("popup_on_yt");
             fragment.show(fragmentManager, TAG);
 
             // Update last shown timestamp
@@ -149,6 +158,11 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         } catch (IllegalStateException e) {
             Log.e(TAG, "Cannot show bottom sheet after onSaveInstanceState: " + e.getMessage());
         }
+    }
+
+    /** Set the referral source for analytics tracking. */
+    public void setReferralSource(String source) {
+        mReferralSource = source;
     }
 
     /**
@@ -161,6 +175,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
             if (fragmentManager.isStateSaved()) return;
             if (fragmentManager.findFragmentByTag(TAG) != null) return;
             YouTubePremiumBottomSheetFragment fragment = newInstance(true);
+            fragment.setReferralSource("home_popup");
             fragment.show(fragmentManager, TAG);
             ChromeSharedPreferences.getInstance()
                     .writeLong(BravePreferenceKeys.YOUTUBE_PREMIUM_BOTTOMSHEET_LAST_SHOWN_IN_NTP,
@@ -180,8 +195,8 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
             // Allow showing even if tag exists? Usually better to just focus existing one, but for now safety check info
             if (fragmentManager.findFragmentByTag(TAG) != null) return;
             
-            // show as permanent (close button visible)
             YouTubePremiumBottomSheetFragment fragment = newInstance(true);
+            fragment.setReferralSource("profile_referral_button");
             fragment.show(fragmentManager, TAG);
         } catch (IllegalStateException e) {
             Log.e(TAG, "Cannot show bottom sheet after onSaveInstanceState: " + e.getMessage());
@@ -280,9 +295,19 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                         updateUI(data);
                         mIsBlocked = data.isBlocked;
 
-                        // Use referralCode from access response if not in JWT
                         if (mReferralCode == null && data.referralCode != null) {
                             mReferralCode = data.referralCode;
+                        }
+
+                        // Track successful referral count
+                        if (data.referralCount > 0) {
+                            try {
+                                JSONObject props = new JSONObject();
+                                props.put("count", data.referralCount);
+                                firePostHogEvent(PostHogEventKeys.REFERRAL_SUCCESSFUL_COUNT, props);
+                            } catch (JSONException e) {
+                                Log.e(TAG, "PostHog error: " + e.getMessage());
+                            }
                         }
 
                         // Cache data
@@ -510,6 +535,16 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
     }
 
     private void shareReferralLink() {
+        // Track referral initiated and source
+        try {
+            JSONObject sourceProps = new JSONObject();
+            sourceProps.put("source", mReferralSource);
+            firePostHogEvent(PostHogEventKeys.REFERRAL_INITIATED, null);
+            firePostHogEvent(PostHogEventKeys.REFERRAL_SOURCE, sourceProps);
+        } catch (JSONException e) {
+            Log.e(TAG, "PostHog referral tracking error: " + e.getMessage());
+        }
+
         if (mReferralCode != null) {
             doShareReferralLink(mReferralCode);
             return;
@@ -594,6 +629,32 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
     private boolean canResolveIntent(Intent intent) {
         return !requireActivity().getPackageManager()
                 .queryIntentActivities(intent, 0).isEmpty();
+    }
+
+    /**
+     * Fires a PostHog analytics event, extracting userId from the JWT access token.
+     */
+    private void firePostHogEvent(String eventKey, JSONObject extraProps) {
+        try {
+            BraveActivity activity = BraveActivity.getBraveActivity();
+            String accessToken = activity.getAccessToken();
+            if (accessToken == null || accessToken.isEmpty()) return;
+
+            String[] parts = accessToken.split("\\.");
+            if (parts.length < 2) return;
+            byte[] decoded = Base64.decode(parts[1], Base64.DEFAULT);
+            JSONObject jwt = new JSONObject(new String(decoded, "UTF-8"));
+            String userId = jwt.getString("_id");
+
+            JSONObject payload = extraProps != null ? extraProps : new JSONObject();
+            payload.put("app_version", activity.getCurrentAppVersion());
+
+            PostHogUtil.PostHogWorkerTask task =
+                    new PostHogUtil.PostHogWorkerTask(eventKey, userId, payload);
+            task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } catch (Exception e) {
+            Log.e(TAG, "firePostHogEvent error: " + e.getMessage());
+        }
     }
 
     @Override

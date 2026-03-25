@@ -171,9 +171,26 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
                         intent.setAction(Intent.ACTION_VIEW);
                         Toast.makeText(activity, "Login Successful", Toast.LENGTH_SHORT).show();
                         startActivity(intent);
-                        // if (getFragmentManager() != null) {
-                        //     getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                        // }
+
+                        // Track YT sign-in complete
+                        try {
+                            String[] parts = accessToken.split("\\.");
+                            if (parts.length >= 2) {
+                                byte[] decoded = android.util.Base64.decode(parts[1],
+                                        android.util.Base64.DEFAULT);
+                                JSONObject jwt = new JSONObject(new String(decoded, "UTF-8"));
+                                String userId = jwt.getString("_id");
+                                JSONObject payload = new JSONObject();
+                                payload.put("app_version", activity.getCurrentAppVersion());
+                                PostHogUtil.PostHogWorkerTask task =
+                                        new PostHogUtil.PostHogWorkerTask(
+                                                PostHogEventKeys.YT_SIGN_IN_COMPLETE,
+                                                userId, payload);
+                                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                            }
+                        } catch (Exception ex) {
+                            Log.e("LoginPrefs", "PostHog YT sign-in error: " + ex.getMessage());
+                        }
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                     }
                 }
