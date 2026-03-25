@@ -313,6 +313,10 @@ public class BrowsingModeBottomToolbarCoordinator {
             public void onPageLoadFinished(Tab tab, GURL url) {
                 updateYouTubePipButtonVisibility(tab);
                 updateCommentCountForUrl(url.getSpec());
+                // Force-show the bottom toolbar on YouTube pages so no scroll is needed
+                if (url.getSpec().contains("youtube.com")) {
+                    forceShowBottomToolbar();
+                }
             }
 
             @Override
@@ -421,6 +425,28 @@ public class BrowsingModeBottomToolbarCoordinator {
                 // Ignore
             }
         }, 1500);
+    }
+
+    /**
+     * Forces the bottom toolbar to be visible by resetting the translationY of the
+     * ScrollingBottomViewResourceFrameLayout ancestor. This bypasses
+     * Chromium's scroll-to-hide behavior for YouTube pages.
+     */
+    private void forceShowBottomToolbar() {
+        // Walk up the view hierarchy from mToolbarRoot to find the scrolling container
+        android.view.View view = mToolbarRoot;
+        while (view != null) {
+            if (view instanceof ScrollingBottomViewResourceFrameLayout) {
+                view.animate().translationY(0).setDuration(250).start();
+                return;
+            }
+            android.view.ViewParent parent = view.getParent();
+            if (parent instanceof android.view.View) {
+                view = (android.view.View) parent;
+            } else {
+                break;
+            }
+        }
     }
 
     /**
