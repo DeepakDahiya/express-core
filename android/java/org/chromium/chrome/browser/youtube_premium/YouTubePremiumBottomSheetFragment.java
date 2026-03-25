@@ -553,12 +553,47 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
 
         String shareText = getString(R.string.youtube_premium_share_text, referralLink);
 
+        // Base share intent for the normal chooser list
         Intent shareIntent = new Intent(Intent.ACTION_SEND);
         shareIntent.setType("text/plain");
         shareIntent.putExtra(Intent.EXTRA_TEXT, shareText);
 
-        startActivity(Intent.createChooser(shareIntent,
-                getString(R.string.youtube_premium_share_title)));
+        // Build pinned intents for Instagram Story and WhatsApp Story
+        java.util.List<Intent> pinnedIntents = new java.util.ArrayList<>();
+
+        // 1. Instagram Story — share via Instagram's story composer
+        Intent instaStory = new Intent(Intent.ACTION_SEND);
+        instaStory.setType("text/plain");
+        instaStory.putExtra(Intent.EXTRA_TEXT, shareText);
+        instaStory.setPackage("com.instagram.android");
+        if (canResolveIntent(instaStory)) {
+            pinnedIntents.add(instaStory);
+        }
+
+        // 2. WhatsApp Status (Story) — package: com.whatsapp
+        Intent whatsAppStatus = new Intent(Intent.ACTION_SEND);
+        whatsAppStatus.setType("text/plain");
+        whatsAppStatus.putExtra(Intent.EXTRA_TEXT, shareText);
+        whatsAppStatus.setPackage("com.whatsapp");
+        if (canResolveIntent(whatsAppStatus)) {
+            pinnedIntents.add(whatsAppStatus);
+        }
+
+        Intent chooser = Intent.createChooser(shareIntent,
+                getString(R.string.youtube_premium_share_title));
+
+        if (!pinnedIntents.isEmpty()) {
+            chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS,
+                    pinnedIntents.toArray(new Intent[0]));
+        }
+
+        startActivity(chooser);
+    }
+
+    /** Returns true if there is at least one activity that can handle the given intent. */
+    private boolean canResolveIntent(Intent intent) {
+        return !requireActivity().getPackageManager()
+                .queryIntentActivities(intent, 0).isEmpty();
     }
 
     @Override
