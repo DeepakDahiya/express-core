@@ -48,6 +48,7 @@ import android.view.HapticFeedbackConstants;
 import org.chromium.chrome.browser.BraveYouTubeScriptInjectorNativeHelper;
 import org.chromium.chrome.browser.browser_express_comments.YouTubeCommentsUtil;
 import android.util.DisplayMetrics;
+import java.util.Random;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.animation.AccelerateInterpolator;
@@ -88,7 +89,7 @@ public class BrowsingModeBottomToolbarCoordinator {
     private ImageButton mYouTubePipButton;
     private View mYouTubePipContainer;
     private View mYouTubePipSpace;
-    private View mStatsOverlay;
+    private View[] mStatsOverlays;
     private Tab mCurrentObservedTab;
     private TabObserver mPipTabObserver;
     private Callback<Tab> mTabProviderObserver;
@@ -306,6 +307,17 @@ public class BrowsingModeBottomToolbarCoordinator {
             @Override
             public void onLoadStopped(Tab tab, boolean toDifferentDocument) {
                 updateYouTubePipButtonVisibility(tab);
+                if (tab.getUrl() != null && !tab.getUrl().isEmpty()) {
+                    updateCommentCountForUrl(tab.getUrl().getSpec());
+                }
+            }
+
+            @Override
+            public void onUrlUpdated(Tab tab) {
+                updateYouTubePipButtonVisibility(tab);
+                if (tab.getUrl() != null && !tab.getUrl().isEmpty()) {
+                    updateCommentCountForUrl(tab.getUrl().getSpec());
+                }
             }
         };
 
@@ -559,16 +571,20 @@ public class BrowsingModeBottomToolbarCoordinator {
             };
 
     /**
-     * Shows a floating stats card (views, likes, comments) that rises from just above the bottom
-     * toolbar and travels upward ~20 % of the screen height, then auto-dismisses.
+     * Shows three separate floating stat blobs (Views, Likes, Comments) that rise from the
+     * bottom-right of the screen with a staggered smoke-like animation, then auto-dismiss.
      */
     private void showYouTubeStatsOverlay(long commentCount, long viewCount, long likeCount) {
-        // Cancel and remove any existing overlay first
-        if (mStatsOverlay != null) {
-            mStatsOverlay.animate().cancel();
-            ViewGroup parent = (ViewGroup) mStatsOverlay.getParent();
-            if (parent != null) parent.removeView(mStatsOverlay);
-            mStatsOverlay = null;
+        // Cancel and remove any existing overlays first
+        if (mStatsOverlays != null) {
+            for (View old : mStatsOverlays) {
+                if (old != null) {
+                    old.animate().cancel();
+                    ViewGroup parent = (ViewGroup) old.getParent();
+                    if (parent != null) parent.removeView(old);
+                }
+            }
+            mStatsOverlays = null;
         }
 
         ViewGroup contentView;
@@ -578,52 +594,74 @@ public class BrowsingModeBottomToolbarCoordinator {
             return;
         }
 
-        mStatsOverlay = LayoutInflater.from(mToolbarRoot.getContext())
-                .inflate(R.layout.youtube_stats_overlay, contentView, false);
+        // Data for the three blobs: value, label-string-res, stagger delay (ms)
+        long[] values = {viewCount, likeCount, commentCount};
+        int[] labels = {
+                R.string.youtube_stats_views_label,
+                R.string.youtube_stats_likes_label,
+                R.string.youtube_stats_comments_label};
+        int[] delays = {0, 200, 400};
 
-        ((TextView) mStatsOverlay.findViewById(R.id.stat_view_count))
-                .setText(formatStatCount(viewCount));
-        ((TextView) mStatsOverlay.findViewById(R.id.stat_like_count))
-                .setText(formatStatCount(likeCount));
-        ((TextView) mStatsOverlay.findViewById(R.id.stat_comment_count))
-                .setText(formatStatCount(commentCount));
-
-        // Position the card just above the bottom toolbar
         int bottomToolbarHeight = mToolbarRoot.getContext().getResources()
                 .getDimensionPixelSize(R.dimen.bottom_controls_height);
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-        params.gravity = Gravity.BOTTOM;
-        params.bottomMargin = bottomToolbarHeight;
-        mStatsOverlay.setLayoutParams(params);
-
-        // Card starts at its natural position (just above the toolbar), invisible.
-        // It floats UP by 35 % of screen height, then slides back down on dismiss.
         DisplayMetrics metrics = mToolbarRoot.getContext().getResources().getDisplayMetrics();
         float riseAmount = metrics.heightPixels * 0.35f;
+        float density = metrics.density;
+        Random random = new Random();
 
-        mStatsOverlay.setAlpha(0f);
-        mStatsOverlay.setTranslationY(0f);
-        contentView.addView(mStatsOverlay);
+        mStatsOverlays = new View[3];
+        final View[] overlaysCopy = mStatsOverlays;
 
-        final View overlay = mStatsOverlay;
-        overlay.animate()
-                .translationY(-riseAmount)
-                .alpha(1f)
-                .setDuration(600)
-                .setInterpolator(new DecelerateInterpolator())
-                .withEndAction(() -> overlay.postDelayed(() -> overlay.animate()
-                        .translationY(0f)
-                        .alpha(0f)
-                        .setDuration(400)
-                        .setInterpolator(new AccelerateInterpolator())
-                        .withEndAction(() -> {
-                            ViewGroup p = (ViewGroup) overlay.getParent();
-                            if (p != null) p.removeView(overlay);
-                            if (mStatsOverlay == overlay) mStatsOverlay = null;
-                        })
-                        .start(), 2500))
-                .start();
+        for (int i = 0; i < 3; i++) {
+            View blob = LayoutInflater.from(mToolbarRoot.getContext())
+                    .inflate(R.layout.youtube_stat_blob, contentView, false);
+
+            ((TextView) blob.findViewById(R.id.stat_value)).setText(formatStatCount(values[i]));
+            ((TextView) blob.findViewById(R.id.stat_label)).setText(labels[i]);
+
+            // Position on the right side, stacked vertically with spacing
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.WRAP_CONTENT,
+                    FrameLayout.LayoutParams.WRAP_CONTENT);
+            params.gravity = Gravity.BOTTOM | Gravity.END;
+            params.bottomMargin = bottomToolbarHeight + (int) (8 * density);
+            params.setMarginEnd((int) (12 * density));
+            blob.setLayoutParams(params);
+
+            blob.setAlpha(0f);
+            blob.setTranslationY(0f);
+            contentView.addView(blob);
+            mStatsOverlays[i] = blob;
+
+            // Smoke-like animation: rise UP with slight random horizontal drift
+            final View b = blob;
+            final int idx = i;
+            float drift = (random.nextFloat() - 0.5f) * 30 * density; // random X wiggle
+
+            b.postDelayed(() -> {
+                b.animate()
+                        .translationY(-riseAmount - (idx * 15 * density))
+                        .translationX(drift)
+                        .alpha(1f)
+                        .setDuration(800)
+                        .setInterpolator(new DecelerateInterpolator(1.5f))
+                        .withEndAction(() -> b.postDelayed(() -> b.animate()
+                                .translationY(-riseAmount - (idx * 15 * density) - (40 * density))
+                                .alpha(0f)
+                                .setDuration(500)
+                                .setInterpolator(new AccelerateInterpolator())
+                                .withEndAction(() -> {
+                                    ViewGroup p = (ViewGroup) b.getParent();
+                                    if (p != null) p.removeView(b);
+                                    // Clear array ref when last blob is removed
+                                    if (mStatsOverlays == overlaysCopy && idx == 2) {
+                                        mStatsOverlays = null;
+                                    }
+                                })
+                                .start(), 2500))
+                        .start();
+            }, delays[idx]);
+        }
     }
 
     /** Formats a large number as a compact string, e.g. 185149 → "185.1K". */
