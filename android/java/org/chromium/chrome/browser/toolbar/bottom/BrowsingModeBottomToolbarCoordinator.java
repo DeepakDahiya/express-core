@@ -91,7 +91,7 @@ public class BrowsingModeBottomToolbarCoordinator {
 
     private ImageButton mYouTubePipButton;
     private View mYouTubePipContainer;
-    private View mYouTubePipSpace;
+
     private View[] mStatsOverlays;
     private Tab mCurrentObservedTab;
     private TabObserver mPipTabObserver;
@@ -275,7 +275,7 @@ public class BrowsingModeBottomToolbarCoordinator {
 
         mYouTubePipButton = mToolbarRoot.findViewById(R.id.bottom_youtube_pip_button);
         mYouTubePipContainer = mToolbarRoot.findViewById(R.id.youtube_pip_button_container);
-        mYouTubePipSpace = mToolbarRoot.findViewById(R.id.youtube_pip_space);
+
 
         if (mYouTubePipButton != null) {
             OnClickListener pipClickHandler = v -> {
@@ -299,7 +299,7 @@ public class BrowsingModeBottomToolbarCoordinator {
             @Override
             public void onPageLoadStarted(Tab tab, GURL url) {
                 if (mYouTubePipContainer != null) mYouTubePipContainer.setVisibility(View.GONE);
-                if (mYouTubePipSpace != null) mYouTubePipSpace.setVisibility(View.GONE);
+
             }
 
             @Override
@@ -338,7 +338,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                 }
             } else {
                 if (mYouTubePipContainer != null) mYouTubePipContainer.setVisibility(View.GONE);
-                if (mYouTubePipSpace != null) mYouTubePipSpace.setVisibility(View.GONE);
+
             }
         };
         mTabProvider.addObserver(mTabProviderObserver);
@@ -358,7 +358,7 @@ public class BrowsingModeBottomToolbarCoordinator {
         if (mYouTubePipContainer == null) return;
         if (tab == null || tab.getWebContents() == null) {
             mYouTubePipContainer.setVisibility(View.GONE);
-            if (mYouTubePipSpace != null) mYouTubePipSpace.setVisibility(View.GONE);
+
             return;
         }
         boolean available =
@@ -367,7 +367,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                         tab.getWebContents());
         int visibility = available ? View.VISIBLE : View.GONE;
         mYouTubePipContainer.setVisibility(visibility);
-        if (mYouTubePipSpace != null) mYouTubePipSpace.setVisibility(visibility);
+
         if (available) maybeShowPipCoachMark();
     }
 
@@ -399,9 +399,17 @@ public class BrowsingModeBottomToolbarCoordinator {
             try {
                 View rootView = BraveActivity.getBraveActivity()
                         .findViewById(android.R.id.content);
-                Snackbar.make(rootView,
+                Snackbar snackbar = Snackbar.make(rootView,
                         "Minimize app to watch in background \uD83D\uDE0A",
-                        Snackbar.LENGTH_LONG).show();
+                        Snackbar.LENGTH_LONG);
+                // Move snackbar to the top so it doesn't hide behind PIP window
+                View snackView = snackbar.getView();
+                FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) snackView.getLayoutParams();
+                lp.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
+                lp.topMargin = (int) (48 * rootView.getResources()
+                        .getDisplayMetrics().density);
+                snackView.setLayoutParams(lp);
+                snackbar.show();
             } catch (BraveActivity.BraveActivityNotFoundException e) {
                 // Ignore
             }
