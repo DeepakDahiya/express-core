@@ -132,14 +132,6 @@
 
     </LinearLayout>
 
-    <!-- Trailing space after PIP — only shown when PIP is visible -->
-    <Space
-        android:id="@+id/youtube_pip_space"
-        android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:layout_weight="1"
-        android:visibility="gone" />
-
     <include layout="@layout/brave_bookmark_toolbar" />
     <!-- <include layout="@layout/toolbar_space" /> -->
 
