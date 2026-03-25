@@ -95,6 +95,75 @@ namespace {
         })();
     )";
 
+constexpr char16_t kYoutubeDisableHomeAutoplay[] =
+    uR"(
+    (function() {
+        'use strict';
+
+        function isWatchPage() {
+            return window.location.pathname === '/watch';
+        }
+
+        // On non-watch pages (home feed, search, etc.), prevent inline video autoplay
+        if (!isWatchPage()) {
+            // Override play() to block autoplay on feed pages
+            const originalPlay = HTMLMediaElement.prototype.play;
+            HTMLMediaElement.prototype.play = function() {
+                if (!isWatchPage()) {
+                    this.pause();
+                    return Promise.resolve();
+                }
+                return originalPlay.call(this);
+            };
+
+            // Observe for dynamically added video elements and pause them
+            const observer = new MutationObserver((mutations) => {
+                if (isWatchPage()) return;
+                mutations.forEach(mutation => {
+                    mutation.addedNodes.forEach(node => {
+                        if (node.nodeType === 1) {
+                            const videos = node.tagName === 'VIDEO'
+                                ? [node]
+                                : (node.querySelectorAll ? node.querySelectorAll('video') : []);
+                            videos.forEach(v => {
+                                v.autoplay = false;
+                                v.preload = 'none';
+                                if (!v.paused) v.pause();
+                            });
+                        }
+                    });
+                });
+            });
+
+            if (document.body) {
+                observer.observe(document.body, { childList: true, subtree: true });
+            } else {
+                document.addEventListener('DOMContentLoaded', () => {
+                    observer.observe(document.body, { childList: true, subtree: true });
+                });
+            }
+
+            // Also catch any existing videos on the page
+            document.querySelectorAll('video').forEach(v => {
+                v.autoplay = false;
+                v.preload = 'none';
+                if (!v.paused) v.pause();
+            });
+        }
+
+        // Re-check on YouTube SPA navigation
+        window.addEventListener('yt-navigate-finish', () => {
+            if (!isWatchPage()) {
+                document.querySelectorAll('video').forEach(v => {
+                    v.autoplay = false;
+                    v.preload = 'none';
+                    if (!v.paused) v.pause();
+                });
+            }
+        });
+    })();
+    )";
+
 constexpr char16_t kYoutubeInAppPIP[] =
     uR"(
     (function() {
@@ -1613,6 +1682,8 @@ void YouTubeScriptInjectorTabHelper::PrimaryMainDocumentElementAvailable() {
   content::RenderFrameHost::AllowInjectingJavaScript();
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
       kYoutubeBackgroundPlayback2, base::NullCallback());
+  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+      kYoutubeDisableHomeAutoplay, base::NullCallback());
   
   base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
