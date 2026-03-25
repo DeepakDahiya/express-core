@@ -196,22 +196,27 @@ public class BraveSetDefaultBrowserUtils {
      */
     public static void openDefaultAppsSettings(Activity activity) {
         try {
-            // Android Q+ (10+) supports a direct intent to manage default apps, but not specifically browser without RoleManager.
-            // However, on some devices (Samsung, etc.), standard intent ACTION_MANAGE_DEFAULT_APPS_SETTINGS goes to the list.
-            // We can try to be more specific if possible, but standard Android intent is limited here.
-            
-            // Try to open specific app details "Default Browser" screen if possible via MANAGE_DEFAULT_APPS_SETTINGS
-            Intent intent = new Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS);
-            intent.putExtra(":settings:fragment_args_key", "default_browser");
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-                // For Android N+, this is the standard intent.
-                // Some manufacturers might support an extra to highlight browser, but it's not standard API.
+            // Android 10+: use RoleManager to directly show the "Set default browser" picker
+            if (supportsDefaultRoleManager()) {
+                RoleManager roleManager = activity.getSystemService(RoleManager.class);
+                if (roleManager != null
+                        && roleManager.isRoleAvailable(RoleManager.ROLE_BROWSER)
+                        && !roleManager.isRoleHeld(RoleManager.ROLE_BROWSER)) {
+                    Intent roleIntent =
+                            roleManager.createRequestRoleIntent(RoleManager.ROLE_BROWSER);
+                    activity.startActivityForResult(
+                            roleIntent,
+                            BraveConstants.DEFAULT_BROWSER_ROLE_REQUEST_CODE);
+                    return;
+                }
             }
+
+            // Fallback for older devices: open the default apps settings page
+            Intent intent = new Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             activity.startActivity(intent);
         } catch (Exception e) {
-            // Fallback to generic settings if the specific intent fails
+            // Final fallback to generic settings
             try {
                 Intent intent = new Intent(Settings.ACTION_SETTINGS);
                 activity.startActivity(intent);
