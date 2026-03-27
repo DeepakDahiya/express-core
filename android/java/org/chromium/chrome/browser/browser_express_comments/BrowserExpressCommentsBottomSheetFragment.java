@@ -385,7 +385,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         transaction.replace(R.id.bottom_sheet_container, fragment).addToBackStack(null).commit();
     }
 
-    public void openReplies(String commentId) {
+    public void openReplies(String commentId, String parentCommentJson) {
         mLastOpenedRepliesForCommentId = commentId;
         mLastOpenedRepliesToRepliesForCommentId = null;
         ReplyListFragment replyFragment = new ReplyListFragment();
@@ -393,6 +393,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         args.putString("comment_id", commentId);
         if (mCommentsFor != null) args.putString(ReplyListFragment.COMMENTS_FOR, mCommentsFor);
         if (mVideoId != null) args.putString(CommentListFragment.VIDEO_ID, mVideoId);
+        if (parentCommentJson != null) args.putString(ReplyListFragment.PARENT_COMMENT_JSON, parentCommentJson);
         replyFragment.setArguments(args);
         loadFragment(replyFragment);
     }

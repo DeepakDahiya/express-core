@@ -1244,6 +1244,16 @@ const char16_t kYoutubePIP[] =
         }());
     )";
 
+const char16_t kRemoveYoutubeComment[] = 
+    uR"(
+    (function() {
+        const el = document.querySelector('ytm-item-section-renderer.scwnr-content.single-column-watch-next-modern-panels');
+        if (el) {
+            el.remove();
+        }
+    })();
+    )";
+
 const char16_t kYoutubePipButton[] = 
     uR"(
     (function() {
@@ -1711,6 +1721,14 @@ void YouTubeScriptInjectorTabHelper::PrimaryMainDocumentElementAvailable() {
             kYoutubePipNavigationFix, base::NullCallback());
       }, contents),
       base::Milliseconds(500));
+
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce([](content::WebContents* contents) {
+        contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+            kRemoveYoutubeComment, base::NullCallback());
+      }, contents),
+      base::Milliseconds(100));
 
   if (IsBackgroundVideoPlaybackEnabled(contents)) {
     contents->GetPrimaryMainFrame()->ExecuteJavaScript(

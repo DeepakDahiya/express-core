@@ -48,8 +48,10 @@ import android.widget.ImageButton;
 import android.view.HapticFeedbackConstants;
 import org.chromium.chrome.browser.BraveYouTubeScriptInjectorNativeHelper;
 import org.chromium.chrome.browser.browser_express_comments.YouTubeCommentsUtil;
+import org.chromium.chrome.browser.browser_express_comments.Comment;
 import android.util.DisplayMetrics;
 import android.util.Base64;
+import java.util.List;
 import java.util.Random;
 import org.json.JSONObject;
 import org.chromium.chrome.browser.settings.PostHogEventKeys;
@@ -58,9 +60,13 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.OvershootInterpolator;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.view.ViewGroup;
+import com.bumptech.glide.Glide;
 import org.chromium.chrome.browser.media.PictureInPicture;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -639,10 +645,10 @@ public class BrowsingModeBottomToolbarCoordinator {
             };
 
     /**
-     * Shows three separate floating stat blobs (Views, Likes, Comments) that rise from the
-     * bottom-right of the screen with a staggered smoke-like animation, then auto-dismiss.
+     * Shows up to 3 real comment preview cards that slide up from the bottom of the screen
+     * with a spring animation, then auto-dismiss. Cards match the exact comment UI.
      */
-    private void showYouTubeStatsOverlay(long commentCount, long viewCount, long likeCount) {
+    private void showYouTubeCommentsPreview(List<Comment> comments) {
         // Cancel and remove any existing overlays first
         if (mStatsOverlays != null) {
             for (View old : mStatsOverlays) {
@@ -655,6 +661,8 @@ public class BrowsingModeBottomToolbarCoordinator {
             mStatsOverlays = null;
         }
 
+        if (comments == null || comments.isEmpty()) return;
+
         ViewGroup contentView;
         try {
             contentView = BraveActivity.getBraveActivity().findViewById(android.R.id.content);
@@ -662,74 +670,85 @@ public class BrowsingModeBottomToolbarCoordinator {
             return;
         }
 
-        // Data for the three blobs: value, label-string-res, stagger delay (ms)
-        long[] values = {viewCount, likeCount, commentCount};
-        int[] labels = {
-                R.string.youtube_stats_views_label,
-                R.string.youtube_stats_likes_label,
-                R.string.youtube_stats_comments_label};
-        int[] delays = {0, 600, 1200};
-
+        DisplayMetrics metrics = mToolbarRoot.getContext().getResources().getDisplayMetrics();
+        float density = metrics.density;
         int bottomToolbarHeight = mToolbarRoot.getContext().getResources()
                 .getDimensionPixelSize(R.dimen.bottom_controls_height);
-        DisplayMetrics metrics = mToolbarRoot.getContext().getResources().getDisplayMetrics();
-        float riseAmount = metrics.heightPixels * 0.35f;
-        float density = metrics.density;
-        Random random = new Random();
 
-        mStatsOverlays = new View[3];
-        final View[] overlaysCopy = mStatsOverlays;
+        // Container holds all comment cards stacked vertically
+        LinearLayout container = new LinearLayout(mToolbarRoot.getContext());
+        container.setOrientation(LinearLayout.VERTICAL);
 
-        for (int i = 0; i < 3; i++) {
-            View blob = LayoutInflater.from(mToolbarRoot.getContext())
-                    .inflate(R.layout.youtube_stat_blob, contentView, false);
+        FrameLayout.LayoutParams containerParams = new FrameLayout.LayoutParams(
+                FrameLayout.LayoutParams.MATCH_PARENT,
+                FrameLayout.LayoutParams.WRAP_CONTENT);
+        containerParams.gravity = Gravity.BOTTOM;
+        containerParams.bottomMargin = bottomToolbarHeight + (int) (8 * density);
+        containerParams.setMarginStart((int) (12 * density));
+        containerParams.setMarginEnd((int) (12 * density));
+        container.setLayoutParams(containerParams);
 
-            ((TextView) blob.findViewById(R.id.stat_value)).setText(formatStatCount(values[i]));
-            ((TextView) blob.findViewById(R.id.stat_label)).setText(labels[i]);
+        LayoutInflater inflater = LayoutInflater.from(mToolbarRoot.getContext());
+        int limit = Math.min(comments.size(), 3);
+        for (int i = 0; i < limit; i++) {
+            Comment comment = comments.get(i);
+            View card = inflater.inflate(R.layout.youtube_comment_preview, container, false);
 
-            // Position on the right side, stacked vertically with spacing
-            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                    FrameLayout.LayoutParams.WRAP_CONTENT,
-                    FrameLayout.LayoutParams.WRAP_CONTENT);
-            params.gravity = Gravity.BOTTOM | Gravity.END;
-            params.bottomMargin = bottomToolbarHeight + (int) (8 * density);
-            params.setMarginEnd((int) (12 * density));
-            blob.setLayoutParams(params);
+            if (comment.getUser() != null) {
+                ((TextView) card.findViewById(R.id.preview_username))
+                        .setText(comment.getUser().getUsername());
+                String avatarUrl = comment.getUser().getAvatar();
+                if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                    try {
+                        Glide.with(mToolbarRoot.getContext())
+                                .load(avatarUrl)
+                                .circleCrop()
+                                .placeholder(R.drawable.btn_toolbar_profile)
+                                .into((ImageView) card.findViewById(R.id.preview_avatar));
+                    } catch (Exception ignored) {}
+                }
+            }
+            ((TextView) card.findViewById(R.id.preview_content)).setText(comment.getContent());
 
-            blob.setAlpha(0f);
-            blob.setTranslationY(0f);
-            contentView.addView(blob);
-            mStatsOverlays[i] = blob;
-
-            // Smoke-like animation: rise UP with slight random horizontal drift
-            final View b = blob;
-            final int idx = i;
-            float drift = (random.nextFloat() - 0.5f) * 30 * density; // random X wiggle
-
-            b.postDelayed(() -> {
-                b.animate()
-                        .translationY(-riseAmount - (idx * 15 * density))
-                        .translationX(drift)
-                        .alpha(1f)
-                        .setDuration(1800)
-                        .setInterpolator(new DecelerateInterpolator(1.5f))
-                        .withEndAction(() -> b.postDelayed(() -> b.animate()
-                                .translationY(-riseAmount - (idx * 15 * density) - (40 * density))
-                                .alpha(0f)
-                                .setDuration(900)
-                                .setInterpolator(new AccelerateInterpolator())
-                                .withEndAction(() -> {
-                                    ViewGroup p = (ViewGroup) b.getParent();
-                                    if (p != null) p.removeView(b);
-                                    // Clear array ref when last blob is removed
-                                    if (mStatsOverlays == overlaysCopy && idx == 2) {
-                                        mStatsOverlays = null;
-                                    }
-                                })
-                                .start(), 2500))
-                        .start();
-            }, delays[idx]);
+            // Each card starts invisible; they pop in one by one after the container rises
+            card.setAlpha(0f);
+            container.addView(card);
         }
+
+        // Start off-screen below, then spring up
+        container.setTranslationY(metrics.heightPixels * 0.6f);
+        container.setAlpha(0f);
+        contentView.addView(container);
+        mStatsOverlays = new View[]{container};
+
+        container.animate()
+                .translationY(0f)
+                .alpha(1f)
+                .setDuration(500)
+                .setInterpolator(new OvershootInterpolator(0.8f))
+                .withEndAction(() -> {
+                    // Stagger each card's fade-in after the container has settled
+                    for (int i = 0; i < container.getChildCount(); i++) {
+                        final View card = container.getChildAt(i);
+                        card.postDelayed(() -> card.animate()
+                                .alpha(1f)
+                                .setDuration(200)
+                                .start(), i * 150L);
+                    }
+                    // Auto-dismiss: slide back down after 3.5 s
+                    container.postDelayed(() -> container.animate()
+                            .translationY(metrics.heightPixels * 0.6f)
+                            .alpha(0f)
+                            .setDuration(350)
+                            .setInterpolator(new AccelerateInterpolator())
+                            .withEndAction(() -> {
+                                ViewGroup p = (ViewGroup) container.getParent();
+                                if (p != null) p.removeView(container);
+                                mStatsOverlays = null;
+                            })
+                            .start(), 3500);
+                })
+                .start();
     }
 
     /** Formats a large number as a compact string, e.g. 185149 → "185.1K". */
@@ -756,19 +775,19 @@ public class BrowsingModeBottomToolbarCoordinator {
 
             if (isYouTube) {
                 final String finalVideoId = videoId;
-                new YouTubeCommentsUtil.GetYouTubeVideoStatsTask(
+                new YouTubeCommentsUtil.GetYouTubeFirstCommentsTask(
                         finalVideoId,
-                        new YouTubeCommentsUtil.VideoStatsCallback() {
+                        new YouTubeCommentsUtil.GetYouTubeFirstCommentsCallback() {
                             @Override
-                            public void onSuccess(long commentCount, long viewCount, long likeCount) {
+                            public void onSuccess(List<Comment> comments, long totalCommentCount) {
                                 mCommentsText.setText(String.format(
-                                        Locale.getDefault(), "%d comments", commentCount));
-                                showYouTubeStatsOverlay(commentCount, viewCount, likeCount);
+                                        Locale.getDefault(), "%d comments", totalCommentCount));
+                                showYouTubeCommentsPreview(comments);
                             }
 
                             @Override
                             public void onFailure(String error) {
-                                Log.e(TAG, "[Stats] Failed to load YouTube stats: " + error);
+                                Log.e(TAG, "[FirstComments] Failed to load YouTube comments: " + error);
                             }
                         }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             } else {
