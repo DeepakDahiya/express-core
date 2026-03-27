@@ -1035,6 +1035,8 @@ brave_java_resources = [
   "java/res/drawable/circular_timer_progress.xml",
   "java/res/values/youtube_premium_strings.xml",
   "java/res/drawable/stat_blob_bg.xml",
+  "java/res/layout/youtube_comment_preview.xml",
+  "java/res/drawable/comment_preview_bg.xml",
 ]
 
 brave_base_module_resources =
