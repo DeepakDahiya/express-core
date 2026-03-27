@@ -71,6 +71,7 @@ public class ReplyListFragment extends Fragment {
     public static final String POST_ID = "post_id";
     public static final String COMMENT_ID = "comment_id";
     public static final String VIDEO_ID = "video_id";
+    public static final String PARENT_COMMENT_JSON = "parent_comment_json";
     private RecyclerView mCommentRecycler;
     private CommentListAdapter mCommentAdapter;
     private List<Comment> mCombinedList;
@@ -81,6 +82,7 @@ public class ReplyListFragment extends Fragment {
     private String mCommentId;
     private String mCommentsFor;
     private String mVideoId;
+    private Comment mParentYouTubeComment;
 
     private ShimmerFrameLayout mShimmerLoading;
     private ViewGroup mShimmerItems;
@@ -200,6 +202,10 @@ public class ReplyListFragment extends Fragment {
             mCommentId = getArguments().getString(COMMENT_ID);
             mCommentsFor = getArguments().getString(COMMENTS_FOR);
             mVideoId = getArguments().getString(VIDEO_ID);
+            String parentCommentJson = getArguments().getString(PARENT_COMMENT_JSON);
+            if (parentCommentJson != null && "youtube".equals(mCommentsFor)) {
+                mParentYouTubeComment = new com.google.gson.Gson().fromJson(parentCommentJson, Comment.class);
+            }
         }
 
         mMessageEditText = inputCallback.getInputEditText();
@@ -425,9 +431,10 @@ public class ReplyListFragment extends Fragment {
                 @Override
                 public void getCommentsSuccessful(List<Comment> comments, Comment parentComment, Comment grandParentComment) {
                     mCombinedList.clear();
-                    if (parentComment != null) {
-                        mCombinedList.add(parentComment);
-                        inputCallback.setPostStuff(parentComment.getId(), parentComment.getUser().getUsername(), parentComment.getContent(), parentComment.getUser().getAvatar(), "comment");
+                    Comment effectiveParent = parentComment != null ? parentComment : mParentYouTubeComment;
+                    if (effectiveParent != null) {
+                        mCombinedList.add(effectiveParent);
+                        inputCallback.setPostStuff(effectiveParent.getId(), effectiveParent.getUser().getUsername(), effectiveParent.getContent(), effectiveParent.getUser().getAvatar(), "comment");
                     }
                     mCombinedList.addAll(comments); // Add all replies
 

@@ -473,7 +473,8 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                         mParentFragment.openRepliesToReply(comment.getId());
                     } else if (!mIsReplyToReplyAdapter){
                         sendEventToPostHog(PostHogEventKeys.CLICKED_TO_VIEW_REPLIES, accessToken, activity.getCurrentAppVersion(), payload);
-                        mParentFragment.openReplies(comment.getId());
+                        String parentCommentJson = new com.google.gson.Gson().toJson(comment);
+                        mParentFragment.openReplies(comment.getId(), parentCommentJson);
                     }
                 });
             }

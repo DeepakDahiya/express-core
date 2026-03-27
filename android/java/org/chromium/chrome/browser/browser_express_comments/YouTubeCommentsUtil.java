@@ -134,52 +134,7 @@ public class YouTubeCommentsUtil {
          * }
          */
         private Comment parseCommentThread(JSONObject item) {
-            if (item == null) return null;
-            try {
-                JSONObject threadSnippet = item.optJSONObject("snippet");
-                if (threadSnippet == null) return null;
-
-                int totalReplyCount = threadSnippet.optInt("totalReplyCount", 0);
-
-                JSONObject topLevel = threadSnippet.optJSONObject("topLevelComment");
-                if (topLevel == null) return null;
-
-                String id = topLevel.optString("id", null);
-                if (id == null || id.isEmpty()) {
-                    Log.e(TAG, "[Parse] topLevelComment missing id, skipping");
-                    return null;
-                }
-
-                JSONObject snippet = topLevel.optJSONObject("snippet");
-                if (snippet == null) return null;
-
-                String text = snippet.optString("textDisplay", "");
-                String authorName = snippet.optString("authorDisplayName", null);
-                String avatarUrl = snippet.optString("authorProfileImageUrl", null);
-                int likeCount = snippet.optInt("likeCount", 0);
-
-                String authorChannelId = id;
-                JSONObject channelIdObj = snippet.optJSONObject("authorChannelId");
-                if (channelIdObj != null) {
-                    String val = channelIdObj.optString("value", null);
-                    if (val != null && !val.isEmpty()) authorChannelId = val;
-                }
-
-                Log.e(TAG, "[Parse] id=" + id
-                        + " | author='" + authorName + "'"
-                        + " | likes=" + likeCount
-                        + " | replies=" + totalReplyCount
-                        + " | text='" + (text.length() > 80 ? text.substring(0, 80) + "…" : text) + "'");
-
-                User user = new User(authorChannelId, authorName, avatarUrl);
-                Comment comment = new Comment(id, text, likeCount, 0, totalReplyCount,
-                        null, null, null, user, null, null, null, null, null, null);
-                comment.setTrendingScore(likeCount);
-                return comment;
-            } catch (Exception e) {
-                Log.e(TAG, "[Parse] parseCommentThread error: " + e.getMessage());
-                return null;
-            }
+            return YouTubeCommentsUtil.parseCommentThread(item);
         }
 
         /** Issues a GET request and returns the parsed JSON response. */
@@ -388,6 +343,125 @@ public class YouTubeCommentsUtil {
             } catch (NumberFormatException e) {
                 return 0;
             }
+        }
+    }
+
+    // -----------------------------------------------------------------------------------------
+    // Callback + Task for fetching the first 3 comments (used for the preview animation).
+    // -----------------------------------------------------------------------------------------
+    public interface GetYouTubeFirstCommentsCallback {
+        void onSuccess(List<Comment> comments, long totalCommentCount);
+        void onFailure(String error);
+    }
+
+    public static class GetYouTubeFirstCommentsTask extends AsyncTask<Void> {
+        private final String mVideoId;
+        private final GetYouTubeFirstCommentsCallback mCallback;
+        private List<Comment> mComments;
+        private long mTotalCount;
+        private String mError;
+
+        public GetYouTubeFirstCommentsTask(
+                String videoId, GetYouTubeFirstCommentsCallback callback) {
+            mVideoId = videoId;
+            mCallback = callback;
+        }
+
+        @Override
+        protected Void doInBackground() {
+            Log.e(TAG, "[FirstComments] Fetching first 3 comments for videoId=" + mVideoId);
+            try {
+                String url = COMMENT_THREADS_URL
+                        + "?key=" + YT_API_KEY
+                        + "&textFormat=plainText"
+                        + "&part=snippet"
+                        + "&videoId=" + mVideoId
+                        + "&maxResults=3"
+                        + "&order=relevance";
+
+                JSONObject response = getJson(url);
+                if (response == null) {
+                    mError = "Null response";
+                    return null;
+                }
+
+                JSONObject pageInfo = response.optJSONObject("pageInfo");
+                mTotalCount = pageInfo != null ? pageInfo.optLong("totalResults", 0) : 0;
+
+                JSONArray items = response.optJSONArray("items");
+                mComments = new ArrayList<>();
+                if (items != null) {
+                    for (int i = 0; i < items.length(); i++) {
+                        Comment comment = parseCommentThread(items.optJSONObject(i));
+                        if (comment != null) mComments.add(comment);
+                    }
+                }
+                Log.e(TAG, "[FirstComments] Got " + mComments.size() + " comments, total=" + mTotalCount);
+            } catch (Exception e) {
+                mError = e.getMessage();
+                Log.e(TAG, "[FirstComments] Error: " + e.getMessage());
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            assert org.chromium.base.ThreadUtils.runningOnUiThread();
+            if (mComments != null) {
+                mCallback.onSuccess(mComments, mTotalCount);
+            } else {
+                mCallback.onFailure(mError != null ? mError : "Unknown error");
+            }
+        }
+    }
+
+    /** Parses a single YouTube v3 commentThread item into our Comment model. */
+    static Comment parseCommentThread(JSONObject item) {
+        if (item == null) return null;
+        try {
+            JSONObject threadSnippet = item.optJSONObject("snippet");
+            if (threadSnippet == null) return null;
+
+            int totalReplyCount = threadSnippet.optInt("totalReplyCount", 0);
+
+            JSONObject topLevel = threadSnippet.optJSONObject("topLevelComment");
+            if (topLevel == null) return null;
+
+            String id = topLevel.optString("id", null);
+            if (id == null || id.isEmpty()) {
+                Log.e(TAG, "[Parse] topLevelComment missing id, skipping");
+                return null;
+            }
+
+            JSONObject snippet = topLevel.optJSONObject("snippet");
+            if (snippet == null) return null;
+
+            String text = snippet.optString("textDisplay", "");
+            String authorName = snippet.optString("authorDisplayName", null);
+            String avatarUrl = snippet.optString("authorProfileImageUrl", null);
+            int likeCount = snippet.optInt("likeCount", 0);
+
+            String authorChannelId = id;
+            JSONObject channelIdObj = snippet.optJSONObject("authorChannelId");
+            if (channelIdObj != null) {
+                String val = channelIdObj.optString("value", null);
+                if (val != null && !val.isEmpty()) authorChannelId = val;
+            }
+
+            Log.e(TAG, "[Parse] id=" + id
+                    + " | author='" + authorName + "'"
+                    + " | likes=" + likeCount
+                    + " | replies=" + totalReplyCount
+                    + " | text='" + (text.length() > 80 ? text.substring(0, 80) + "…" : text) + "'");
+
+            User user = new User(authorChannelId, authorName, avatarUrl);
+            Comment comment = new Comment(id, text, likeCount, 0, totalReplyCount,
+                    null, null, null, user, null, null, null, null, null, null);
+            comment.setTrendingScore(likeCount);
+            return comment;
+        } catch (Exception e) {
+            Log.e(TAG, "[Parse] parseCommentThread error: " + e.getMessage());
+            return null;
         }
     }
 
