@@ -60,6 +60,7 @@ import android.view.LayoutInflater;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
+import android.animation.ValueAnimator;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -644,8 +645,9 @@ public class BrowsingModeBottomToolbarCoordinator {
             };
 
     /**
-     * Shows up to 3 real comment preview cards that slide up from the bottom of the screen
-     * with a spring animation, then auto-dismiss. Cards match the exact comment UI.
+     * Shows up to 3 comment preview cards that cycle up from the bottom one at a time,
+     * each rising with a spring animation, staying for 3 seconds, then sliding back down
+     * before the next one appears.
      */
     private void showYouTubeCommentsPreview(List<Comment> comments) {
         // Cancel and remove any existing overlays first
@@ -673,25 +675,16 @@ public class BrowsingModeBottomToolbarCoordinator {
         float density = metrics.density;
         int bottomToolbarHeight = mToolbarRoot.getContext().getResources()
                 .getDimensionPixelSize(R.dimen.bottom_controls_height);
+        float offScreen = metrics.heightPixels * 0.6f;
 
-        // Container holds all comment cards stacked vertically
-        LinearLayout container = new LinearLayout(mToolbarRoot.getContext());
-        container.setOrientation(LinearLayout.VERTICAL);
-
-        FrameLayout.LayoutParams containerParams = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT);
-        containerParams.gravity = Gravity.BOTTOM;
-        containerParams.bottomMargin = bottomToolbarHeight + (int) (8 * density);
-        containerParams.setMarginStart((int) (12 * density));
-        containerParams.setMarginEnd((int) (12 * density));
-        container.setLayoutParams(containerParams);
-
+        // Build all card views up front so Glide can start loading avatars immediately
         LayoutInflater inflater = LayoutInflater.from(mToolbarRoot.getContext());
         int limit = Math.min(comments.size(), 3);
+        List<View> cards = new ArrayList<>();
+
         for (int i = 0; i < limit; i++) {
             Comment comment = comments.get(i);
-            View card = inflater.inflate(R.layout.youtube_comment_preview, container, false);
+            View card = inflater.inflate(R.layout.youtube_comment_preview, contentView, false);
 
             if (comment.getUser() != null) {
                 ((TextView) card.findViewById(R.id.preview_username))
@@ -709,47 +702,76 @@ public class BrowsingModeBottomToolbarCoordinator {
             }
             ((TextView) card.findViewById(R.id.preview_content)).setText(comment.getContent());
 
-            // Each card starts invisible; they pop in one by one after the container rises
+            // Position each card just above the bottom toolbar, off-screen below to start
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.MATCH_PARENT,
+                    FrameLayout.LayoutParams.WRAP_CONTENT);
+            params.gravity = Gravity.BOTTOM;
+            params.bottomMargin = bottomToolbarHeight + (int) (8 * density);
+            params.setMarginStart((int) (12 * density));
+            params.setMarginEnd((int) (12 * density));
+            card.setLayoutParams(params);
+            card.setTranslationY(offScreen);
             card.setAlpha(0f);
-            container.addView(card);
+
+            cards.add(card);
         }
 
-        // Start off-screen below, then spring up
-        container.setTranslationY(metrics.heightPixels * 0.6f);
-        container.setAlpha(0f);
-        contentView.addView(container);
-        mStatsOverlays = new View[]{container};
+        mStatsOverlays = new View[limit];
+        cycleCommentCard(cards, 0, contentView, offScreen, mStatsOverlays);
+    }
 
-        container.animate()
+    /**
+     * Recursively cycles through comment cards: slides the card at {@code index} up from
+     * the bottom, waits 3 seconds, slides it back down, then starts the next card.
+     * The {@code overlayRef} identity check ensures a stale cycle stops if a new preview
+     * call has already reset {@code mStatsOverlays}.
+     */
+    private void cycleCommentCard(
+            List<View> cards, int index, ViewGroup contentView, float offScreen, View[] overlayRef) {
+        if (index >= cards.size() || mStatsOverlays != overlayRef) return;
+
+        View card = cards.get(index);
+        mStatsOverlays[index] = card;
+        contentView.addView(card);
+
+        // Slide up from below with a slight spring overshoot
+        card.animate()
                 .translationY(0f)
                 .alpha(1f)
                 .setDuration(500)
                 .setInterpolator(new OvershootInterpolator(0.8f))
-                .withEndAction(() -> {
-                    // Stagger each card's fade-in after the container has settled
-                    for (int i = 0; i < container.getChildCount(); i++) {
-                        final View card = container.getChildAt(i);
-                        card.postDelayed(() -> card.animate()
-                                .alpha(1f)
-                                .setDuration(200)
-                                .start(), i * 150L);
-                    }
-                    // Auto-dismiss: slide back down after 3.5 s
-                    container.postDelayed(() -> container.animate()
-                            .translationY(metrics.heightPixels * 0.6f)
+                .withEndAction(() -> card.postDelayed(() -> {
+                    // Slide current card back down
+                    card.animate()
+                            .translationY(offScreen)
                             .alpha(0f)
                             .setDuration(350)
                             .setInterpolator(new AccelerateInterpolator())
                             .withEndAction(() -> {
-                                ViewGroup p = (ViewGroup) container.getParent();
-                                if (p != null) p.removeView(container);
-                                mStatsOverlays = null;
+                                ViewGroup p = (ViewGroup) card.getParent();
+                                if (p != null) p.removeView(card);
+                                if (index == cards.size() - 1 && mStatsOverlays == overlayRef) {
+                                    mStatsOverlays = null;
+                                }
                             })
-                            .start(), 3500);
-                })
+                            .start();
+                    // Start next card as this one exits
+                    cycleCommentCard(cards, index + 1, contentView, offScreen, overlayRef);
+                }, 3000))
                 .start();
     }
 
+
+    /** Animates mCommentsText counting up from 0 to {@code targetCount} over ~1.5 seconds. */
+    private void animateCommentCount(long targetCount) {
+        ValueAnimator animator = ValueAnimator.ofInt(0, (int) Math.min(targetCount, Integer.MAX_VALUE));
+        animator.setDuration(1500);
+        animator.setInterpolator(new DecelerateInterpolator(1.5f));
+        animator.addUpdateListener(a -> mCommentsText.setText(
+                String.format(Locale.getDefault(), "%d comments", (int) a.getAnimatedValue())));
+        animator.start();
+    }
 
     private void updateCommentCountForUrl(String url) {
         if (url == null || url.isEmpty()) return;
@@ -768,8 +790,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                         new YouTubeCommentsUtil.GetYouTubeFirstCommentsCallback() {
                             @Override
                             public void onSuccess(List<Comment> comments, long totalCommentCount) {
-                                mCommentsText.setText(String.format(
-                                        Locale.getDefault(), "%d comments", totalCommentCount));
+                                animateCommentCount(totalCommentCount);
                                 showYouTubeCommentsPreview(comments);
                             }
 
