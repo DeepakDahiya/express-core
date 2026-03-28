@@ -360,29 +360,31 @@ public class ReplyListFragment extends Fragment {
                 mYouTubeReplies = null;
                 mDbReplies = new ArrayList<>();
 
-                // If parent is already registered in our DB, also fetch native user replies from it
-                boolean parentRegistered = mParentYouTubeComment != null
-                        && !mParentYouTubeComment.isYouTubeOnly();
-                mPendingReplyFetches = parentRegistered ? 2 : 1;
+                // Always fetch both: YouTube API replies and our DB's native replies.
+                // Use the parent's youtubeId (always available) so we don't depend on
+                // the in-memory comment having a DB _id yet.
+                mPendingReplyFetches = 2;
 
-                if (parentRegistered) {
-                    new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
-                            null, mParentYouTubeComment.getId(), null, 0, 50, finalAccessToken,
-                            new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
-                                @Override
-                                public void getCommentsSuccessful(List<Comment> comments, Comment p, Comment gp) {
-                                    mDbReplies = comments;
-                                    mPendingReplyFetches--;
-                                    if (mPendingReplyFetches == 0) mergeAndShowReplies();
-                                }
-                                @Override
-                                public void getCommentsFailed(String error) {
-                                    mDbReplies = new ArrayList<>();
-                                    mPendingReplyFetches--;
-                                    if (mPendingReplyFetches == 0) mergeAndShowReplies();
-                                }
-                            }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                }
+                final String parentYoutubeId = mParentYouTubeComment != null
+                        ? mParentYouTubeComment.getYoutubeId()
+                        : mCommentId; // mCommentId is the youtubeId in YouTube mode
+
+                new BrowserExpressGetYouTubeDbCommentsUtil.GetNativeRepliesTask(
+                        parentYoutubeId, finalAccessToken,
+                        new BrowserExpressGetYouTubeDbCommentsUtil.Callback() {
+                            @Override
+                            public void onSuccess(List<Comment> comments) {
+                                mDbReplies = comments;
+                                mPendingReplyFetches--;
+                                if (mPendingReplyFetches == 0) mergeAndShowReplies();
+                            }
+                            @Override
+                            public void onFailure(String error) {
+                                mDbReplies = new ArrayList<>();
+                                mPendingReplyFetches--;
+                                if (mPendingReplyFetches == 0) mergeAndShowReplies();
+                            }
+                        }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
                 new YouTubeCommentsUtil.GetYouTubeRepliesTask(mCommentId,
                         new BrowserExpressGetCommentsUtil.GetCommentsCallback() {

@@ -337,12 +337,44 @@ The YouTube comment has a YouTube author, not one of our users. The `user` field
 
 ---
 
+### 3. `GET /v1/comment/youtube/replies`
+
+Fetch all comments (native user replies and registered YouTube replies) stored under a given YouTube comment, identified by its YouTube comment ID. Used when opening the reply sheet for a YouTube comment.
+
+**Why a separate endpoint instead of `GET /v1/comment?commentId=_id`?**
+The client may not have the parent comment's MongoDB `_id` when it was loaded from the YouTube API only (i.e., not yet returned by `GET /v1/comment/youtube`). The `youtubeId` is always available from the YouTube API response, so using it as the lookup key avoids a sequential resolve-then-fetch round trip.
+
+**Query parameters**
+
+| Param | Type | Required | Description |
+|---|---|---|---|
+| `parentYoutubeId` | `String` | Yes | The YouTube comment ID of the parent comment |
+| `accessToken` | `String` | No | If provided, include the requesting user's vote state (`didVote`) on each reply |
+
+**Backend query**
+
+```js
+const parent = await Comment.findOne({ youtubeId: parentYoutubeId });
+if (!parent) return res.json({ success: true, comments: [] });
+
+const replies = await Comment.find({ commentParent: parent._id })
+  .sort({ trendingScore: -1 });
+```
+
+**Response `200 OK`** — same shape as `GET /v1/comment/youtube`, `comments` array contains both:
+- Registered YouTube replies (have `youtubeId` set)
+- Native user replies posted via `yt_interact` or `POST /v1/comment` (have `youtubeId = null`, `user` set)
+
+**Response `400`** if `parentYoutubeId` is missing.
+
+---
+
 ## Reply Fetch Strategy (client-side)
 
 When the user opens replies for a YouTube comment, the app fires **two parallel requests**:
 
 1. **YouTube Data API** — `GET commentThreads/{parentId}/comments` — returns YouTube-native replies
-2. **Our API** — `GET /v1/comment?commentId={dbParentId}` — returns native user replies and any registered YouTube replies — **only called if the parent comment is already registered** (`_id` ≠ `youtubeId`)
+2. **Our API** — `GET /v1/comment/youtube/replies?parentYoutubeId={youtubeId}` — returns native user replies and any registered YouTube replies. Always called — no `_id` required.
 
 Merge logic (same pattern as main comment list):
 - Build a map from DB results keyed by `youtubeId`
@@ -364,3 +396,4 @@ Merge logic (same pattern as main comment list):
 | 7 | Ensure vote + reply endpoints handle `user: null` without errors | High |
 | 8 | Normalise `pageUrl` on receipt in both endpoints | Medium |
 | 9 | Integration test: concurrent `yt_interact` for same `youtubeId` produces exactly one Comment document | Medium |
+| 10 | `GET /v1/comment/youtube/replies?parentYoutubeId=` — looks up parent by `youtubeId`, returns all children (registered YouTube replies + native user replies) | High |

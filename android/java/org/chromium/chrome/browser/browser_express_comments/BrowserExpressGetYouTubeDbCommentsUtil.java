@@ -24,12 +24,13 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Fetches our DB's YouTube-sourced comments for a given page URL.
- * Calls GET /v1/comment/youtube?pageUrl=...
+ * Fetches our DB's YouTube-sourced comments for a given page URL,
+ * and native replies for a registered YouTube comment by its YouTube ID.
  */
 public class BrowserExpressGetYouTubeDbCommentsUtil {
     private static final String TAG = "YTDbComments";
     private static final String URL_BASE = "https://api.browser.express/v1/comment/youtube";
+    private static final String REPLIES_URL_BASE = "https://api.browser.express/v1/comment/youtube/replies";
 
     public interface Callback {
         void onSuccess(List<Comment> comments);
@@ -113,6 +114,92 @@ public class BrowserExpressGetYouTubeDbCommentsUtil {
         }
 
         private Comment parseComment(JSONObject obj) {
+            return BrowserExpressGetYouTubeDbCommentsUtil.parseComment(obj);
+        }
+    }
+
+    /**
+     * Fetches native user replies for a registered YouTube comment, looked up by its
+     * YouTube comment ID. Calls GET /v1/comment/youtube/replies?parentYoutubeId=...
+     */
+    public static class GetNativeRepliesTask extends AsyncTask<Void> {
+        private final String mParentYoutubeId;
+        private final String mAccessToken;
+        private final Callback mCallback;
+
+        private List<Comment> mComments;
+        private String mError;
+
+        public GetNativeRepliesTask(String parentYoutubeId, String accessToken, Callback callback) {
+            mParentYoutubeId = parentYoutubeId;
+            mAccessToken = accessToken;
+            mCallback = callback;
+        }
+
+        @Override
+        protected Void doInBackground() {
+            HttpURLConnection conn = null;
+            try {
+                String encoded = URLEncoder.encode(mParentYoutubeId, "UTF-8");
+                URL url = new URL(REPLIES_URL_BASE + "?parentYoutubeId=" + encoded);
+                conn = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
+                        url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
+                conn.setRequestMethod("GET");
+                conn.setUseCaches(false);
+                conn.setRequestProperty("Content-Type", "application/json");
+                if (mAccessToken != null && !mAccessToken.isEmpty()) {
+                    conn.setRequestProperty("Authorization", mAccessToken);
+                }
+                conn.connect();
+
+                int code = conn.getResponseCode();
+                if (code != HttpURLConnection.HTTP_OK) {
+                    mError = "HTTP " + code;
+                    return null;
+                }
+
+                StringBuilder sb = new StringBuilder();
+                try (BufferedReader br = new BufferedReader(
+                        new InputStreamReader(conn.getInputStream(), StandardCharsets.UTF_8))) {
+                    String line;
+                    while ((line = br.readLine()) != null) sb.append(line);
+                }
+
+                JSONObject resp = new JSONObject(sb.toString());
+                if (!resp.optBoolean("success", false)) {
+                    mError = resp.optString("error", "Unknown");
+                    return null;
+                }
+
+                mComments = new ArrayList<>();
+                JSONArray arr = resp.optJSONArray("comments");
+                if (arr != null) {
+                    for (int i = 0; i < arr.length(); i++) {
+                        Comment c = parseComment(arr.optJSONObject(i));
+                        if (c != null) mComments.add(c);
+                    }
+                }
+            } catch (Exception e) {
+                mError = e.getMessage();
+                Log.e(TAG, "replies fetch error: " + e.getMessage());
+            } finally {
+                if (conn != null) conn.disconnect();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            assert ThreadUtils.runningOnUiThread();
+            if (mError != null) {
+                mCallback.onFailure(mError);
+            } else {
+                mCallback.onSuccess(mComments);
+            }
+        }
+    }
+
+    static Comment parseComment(JSONObject obj) {
             if (obj == null) return null;
             try {
                 String id = obj.getString("_id");
@@ -160,5 +247,4 @@ public class BrowserExpressGetYouTubeDbCommentsUtil {
                 return null;
             }
         }
-    }
 }
