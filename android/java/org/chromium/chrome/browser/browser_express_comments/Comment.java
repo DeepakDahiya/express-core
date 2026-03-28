@@ -1,15 +1,15 @@
 package org.chromium.chrome.browser.browser_express_comments;
 
-public class Comment{  
-    private final String _id;  
-    private final String content;  
-    private final int upvoteCount;  
-    private final int downvoteCount; 
-    private int trendingScore; 
-    private final int commentCount;  
-    private final String commentParent;  
-    private final String pageParent;  
-    private final String postParent;  
+public class Comment{
+    private String _id;
+    private final String content;
+    private final int upvoteCount;
+    private final int downvoteCount;
+    private int trendingScore;
+    private final int commentCount;
+    private final String commentParent;
+    private final String pageParent;
+    private final String postParent;
     private final String postContent;
     private final String postUsername;
     private final String postAvatarUrl;
@@ -17,6 +17,10 @@ public class Comment{
     private final String mediaVideoUrl;
     private final User user;
     private final Vote didVote;
+
+    private String youtubeId;
+    private String youtubeAuthorName;
+    private String youtubeAvatarUrl;
 
     private int mediaWidth;
     private int mediaHeight;
@@ -55,9 +59,30 @@ public class Comment{
     public int getTrendingScore() { return trendingScore; }
     public void setTrendingScore(int score) { this.trendingScore = score; }
 
-    public String getId() {  
-        return this._id;  
-    }  
+    public String getId() {
+        return this._id;
+    }
+
+    public void setId(String id) {
+        this._id = id;
+    }
+
+    /**
+     * Returns true when this is a YouTube comment that has not yet been registered in our DB.
+     * A comment is YouTube-only when both its _id and youtubeId are the same YouTube comment ID.
+     */
+    public boolean isYouTubeOnly() {
+        return youtubeId != null && youtubeId.equals(_id);
+    }
+
+    public String getYoutubeId() { return youtubeId; }
+    public void setYoutubeId(String id) { this.youtubeId = id; }
+
+    public String getYoutubeAuthorName() { return youtubeAuthorName; }
+    public void setYoutubeAuthorName(String name) { this.youtubeAuthorName = name; }
+
+    public String getYoutubeAvatarUrl() { return youtubeAvatarUrl; }
+    public void setYoutubeAvatarUrl(String url) { this.youtubeAvatarUrl = url; }
 
     public String getMediaImageUrl() {  
         return this.mediaImageUrl;  

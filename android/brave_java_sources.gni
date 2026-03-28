@@ -360,6 +360,8 @@ brave_java_sources = [
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/ImageProcessor.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/Vote.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/YouTubeCommentsUtil.java",
+  "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/YouTubeInteractUtil.java",
+  "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/BrowserExpressGetYouTubeDbCommentsUtil.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/CommentListAdapter.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/BrowserExpressCommentsBottomSheetFragment.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/BrowserExpressReplyWithAttachmentBottomSheetFragment.java",

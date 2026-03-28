@@ -392,7 +392,11 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         Bundle args = new Bundle();
         args.putString("comment_id", commentId);
         if (mCommentsFor != null) args.putString(ReplyListFragment.COMMENTS_FOR, mCommentsFor);
-        if (mVideoId != null) args.putString(CommentListFragment.VIDEO_ID, mVideoId);
+        if (mVideoId != null) {
+            args.putString(CommentListFragment.VIDEO_ID, mVideoId);
+            args.putString(ReplyListFragment.PAGE_URL,
+                    "https://www.youtube.com/watch?v=" + mVideoId);
+        }
         if (parentCommentJson != null) args.putString(ReplyListFragment.PARENT_COMMENT_JSON, parentCommentJson);
         replyFragment.setArguments(args);
         loadFragment(replyFragment);

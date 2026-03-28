@@ -16,6 +16,8 @@ import android.util.DisplayMetrics;
 import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
+import java.util.HashMap;
+import java.util.HashSet;
 import android.view.WindowManager;
 import android.content.SharedPreferences;
 import android.view.inputmethod.InputMethodManager;
@@ -78,9 +80,14 @@ public class CommentListFragment extends Fragment {
     private final int mPage = 1;
     private final int mPerPage = 100;
     private String mUrl;
+    private String mPageUrl;
     private String mCommentsFor;
     private String mPostId;
     private String mVideoId;
+
+    private int mPendingYouTubeFetches;
+    private List<Comment> mYouTubeApiComments;
+    private List<Comment> mDbComments;
     private Boolean mOpenKeyboard = false;
 
     private LinearLayoutManager mLayoutManager;
@@ -206,6 +213,9 @@ public class CommentListFragment extends Fragment {
             mPostId = getArguments().getString(POST_ID);
             mVideoId = getArguments().getString(VIDEO_ID);
             mOpenKeyboard = getArguments().getBoolean(OPEN_KEYBOARD);
+            if (mVideoId != null) {
+                mPageUrl = "https://www.youtube.com/watch?v=" + mVideoId;
+            }
         }
 
         mMessageEditText = inputCallback.getInputEditText();
@@ -238,7 +248,7 @@ public class CommentListFragment extends Fragment {
 
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
 
-        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mMessageEditText, parentFragment, false, false);
+        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mMessageEditText, parentFragment, false, false, mPageUrl);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         this.setOnClickForEmoji(inputCallback.getEmojiButton("lol"), mMessageEditText);
@@ -284,9 +294,44 @@ public class CommentListFragment extends Fragment {
                             null, null, mPostId, mPage, mPerPage, accessToken, getCommentsCallback);
                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             } else if (mCommentsFor.equals("youtube")) {
-                Log.e("YouTubeComments", "[CommentListFragment] Starting YouTubeCommentsUtil for videoId=" + mVideoId);
-                new YouTubeCommentsUtil.GetYouTubeCommentsTask(mVideoId, getCommentsCallback)
-                        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                Log.e("YouTubeComments", "[CommentListFragment] Starting parallel YouTube+DB fetch for videoId=" + mVideoId);
+                final String finalAccessToken = accessToken;
+                mPendingYouTubeFetches = 2;
+                mYouTubeApiComments = null;
+                mDbComments = null;
+
+                new YouTubeCommentsUtil.GetYouTubeCommentsTask(mVideoId,
+                        new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
+                            @Override
+                            public void getCommentsSuccessful(List<Comment> comments, Comment p, Comment gp) {
+                                mYouTubeApiComments = comments;
+                                mPendingYouTubeFetches--;
+                                if (mPendingYouTubeFetches == 0) mergeAndShowYouTubeComments();
+                            }
+                            @Override
+                            public void getCommentsFailed(String error) {
+                                mYouTubeApiComments = new ArrayList<>();
+                                mPendingYouTubeFetches--;
+                                if (mPendingYouTubeFetches == 0) mergeAndShowYouTubeComments();
+                            }
+                        }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+                new BrowserExpressGetYouTubeDbCommentsUtil.Task(mPageUrl, finalAccessToken,
+                        new BrowserExpressGetYouTubeDbCommentsUtil.Callback() {
+                            @Override
+                            public void onSuccess(List<Comment> comments) {
+                                mDbComments = comments;
+                                mPendingYouTubeFetches--;
+                                if (mPendingYouTubeFetches == 0) mergeAndShowYouTubeComments();
+                            }
+                            @Override
+                            public void onFailure(String error) {
+                                Log.e("YouTubeComments", "[DB] fetch failed: " + error);
+                                mDbComments = new ArrayList<>();
+                                mPendingYouTubeFetches--;
+                                if (mPendingYouTubeFetches == 0) mergeAndShowYouTubeComments();
+                            }
+                        }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             } else {
                 mUrl = activity.getActivityTab().getUrl().getSpec();
                 BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
@@ -493,6 +538,41 @@ public class CommentListFragment extends Fragment {
                 }
             });
         }
+    }
+
+    /**
+     * Called when both the YouTube API fetch and our DB fetch have completed.
+     * Merges the two lists: our DB version takes precedence for any comment also in YouTube API.
+     */
+    private void mergeAndShowYouTubeComments() {
+        HashMap<String, Comment> dbMap = new HashMap<>();
+        for (Comment c : mDbComments) {
+            if (c.getYoutubeId() != null) {
+                dbMap.put(c.getYoutubeId(), c);
+            }
+        }
+
+        List<Comment> merged = new ArrayList<>();
+        HashSet<String> addedYouTubeIds = new HashSet<>();
+
+        for (Comment ytComment : mYouTubeApiComments) {
+            String ytId = ytComment.getYoutubeId();
+            if (ytId != null && dbMap.containsKey(ytId)) {
+                merged.add(dbMap.get(ytId)); // Our DB version wins (has real vote counts)
+            } else {
+                merged.add(ytComment);
+            }
+            if (ytId != null) addedYouTubeIds.add(ytId);
+        }
+
+        // Append any DB comments not present in the current YouTube API page
+        for (Comment dbComment : mDbComments) {
+            if (dbComment.getYoutubeId() != null && !addedYouTubeIds.contains(dbComment.getYoutubeId())) {
+                merged.add(dbComment);
+            }
+        }
+
+        getCommentsCallback.getCommentsSuccessful(merged, null, null);
     }
 
     private final BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
