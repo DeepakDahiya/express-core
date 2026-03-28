@@ -52,7 +52,6 @@ import org.chromium.chrome.browser.browser_express_comments.Comment;
 import android.util.DisplayMetrics;
 import android.util.Base64;
 import java.util.List;
-import java.util.Random;
 import org.json.JSONObject;
 import org.chromium.chrome.browser.settings.PostHogEventKeys;
 import org.chromium.chrome.browser.settings.PostHogUtil;
@@ -751,17 +750,6 @@ public class BrowsingModeBottomToolbarCoordinator {
                 .start();
     }
 
-    /** Formats a large number as a compact string, e.g. 185149 → "185.1K". */
-    private String formatStatCount(long count) {
-        if (count >= 1_000_000_000L) {
-            return String.format(Locale.getDefault(), "%.1fB", count / 1_000_000_000.0);
-        } else if (count >= 1_000_000L) {
-            return String.format(Locale.getDefault(), "%.1fM", count / 1_000_000.0);
-        } else if (count >= 1_000L) {
-            return String.format(Locale.getDefault(), "%.1fK", count / 1_000.0);
-        }
-        return String.valueOf(count);
-    }
 
     private void updateCommentCountForUrl(String url) {
         if (url == null || url.isEmpty()) return;

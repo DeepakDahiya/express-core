@@ -762,7 +762,6 @@ brave_java_resources = [
   "java/res/layout/auto_reconnect_vpn_tutorial_item_layout.xml",
   "java/res/layout/bottom_toolbar.xml",
   "java/res/layout/bottom_toolbar_browsing.xml",
-  "java/res/layout/youtube_stat_blob.xml",
   "java/res/layout/bottom_toolbar_menu_button.xml",
   "java/res/layout/bottom_toolbar_tab_switcher.xml",
   "java/res/layout/brave_ads_custom_notification.xml",
@@ -1034,7 +1033,6 @@ brave_java_resources = [
   "java/res/layout/fragment_youtube_premium_bottom_sheet.xml",
   "java/res/drawable/circular_timer_progress.xml",
   "java/res/values/youtube_premium_strings.xml",
-  "java/res/drawable/stat_blob_bg.xml",
   "java/res/layout/youtube_comment_preview.xml",
   "java/res/drawable/comment_preview_bg.xml",
 ]
