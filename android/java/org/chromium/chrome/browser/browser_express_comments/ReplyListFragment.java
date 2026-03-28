@@ -369,17 +369,24 @@ public class ReplyListFragment extends Fragment {
                         ? mParentYouTubeComment.getYoutubeId()
                         : mCommentId; // mCommentId is the youtubeId in YouTube mode
 
+                Log.e("YouTubeComments", "[L2] Starting parallel YT+DB reply fetch | parentYtId=" + parentYoutubeId + " mCommentId=" + mCommentId);
+
                 new BrowserExpressGetYouTubeDbCommentsUtil.GetNativeRepliesTask(
                         parentYoutubeId, finalAccessToken,
                         new BrowserExpressGetYouTubeDbCommentsUtil.Callback() {
                             @Override
                             public void onSuccess(List<Comment> comments) {
+                                Log.e("YouTubeComments", "[L2][DB] Got " + comments.size() + " replies from our DB");
+                                for (Comment c : comments) {
+                                    Log.e("YouTubeComments", "[L2][DB]   _id=" + c.getId() + " ytId=" + c.getYoutubeId() + " content=" + c.getContent());
+                                }
                                 mDbReplies = comments;
                                 mPendingReplyFetches--;
                                 if (mPendingReplyFetches == 0) mergeAndShowReplies();
                             }
                             @Override
                             public void onFailure(String error) {
+                                Log.e("YouTubeComments", "[L2][DB] FAILED: " + error);
                                 mDbReplies = new ArrayList<>();
                                 mPendingReplyFetches--;
                                 if (mPendingReplyFetches == 0) mergeAndShowReplies();
@@ -390,12 +397,14 @@ public class ReplyListFragment extends Fragment {
                         new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
                             @Override
                             public void getCommentsSuccessful(List<Comment> comments, Comment p, Comment gp) {
+                                Log.e("YouTubeComments", "[L2][YT-API] Got " + comments.size() + " replies from YouTube API");
                                 mYouTubeReplies = comments;
                                 mPendingReplyFetches--;
                                 if (mPendingReplyFetches == 0) mergeAndShowReplies();
                             }
                             @Override
                             public void getCommentsFailed(String error) {
+                                Log.e("YouTubeComments", "[L2][YT-API] FAILED: " + error);
                                 mYouTubeReplies = new ArrayList<>();
                                 mPendingReplyFetches--;
                                 if (mPendingReplyFetches == 0) mergeAndShowReplies();
@@ -512,6 +521,8 @@ public class ReplyListFragment extends Fragment {
      * Native user replies (no youtubeId) from DB are appended after YouTube replies.
      */
     private void mergeAndShowReplies() {
+        Log.e("YouTubeComments", "[L2][MERGE] ytApi=" + mYouTubeReplies.size() + " db=" + mDbReplies.size());
+
         java.util.HashMap<String, Comment> dbMap = new java.util.HashMap<>();
         List<Comment> nativeReplies = new ArrayList<>();
 
@@ -520,6 +531,7 @@ public class ReplyListFragment extends Fragment {
                 dbMap.put(c.getYoutubeId(), c); // YouTube-sourced, registered in our DB
             } else {
                 nativeReplies.add(c); // Native user reply (posted via yt_interact or directly)
+                Log.e("YouTubeComments", "[L2][MERGE] native reply: _id=" + c.getId() + " content=" + c.getContent());
             }
         }
 
@@ -527,6 +539,7 @@ public class ReplyListFragment extends Fragment {
         for (Comment ytReply : mYouTubeReplies) {
             String ytId = ytReply.getYoutubeId();
             if (ytId != null && dbMap.containsKey(ytId)) {
+                Log.e("YouTubeComments", "[L2][MERGE] DB wins for ytId=" + ytId);
                 merged.add(dbMap.get(ytId)); // Our DB version wins (has real vote counts)
             } else {
                 merged.add(ytReply);
@@ -534,6 +547,7 @@ public class ReplyListFragment extends Fragment {
         }
         merged.addAll(nativeReplies); // Append native user replies at the end
 
+        Log.e("YouTubeComments", "[L2][MERGE] Final list=" + merged.size() + " (" + nativeReplies.size() + " native)");
         getCommentsCallback.getCommentsSuccessful(merged, null, null);
     }
 

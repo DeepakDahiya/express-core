@@ -1826,7 +1826,13 @@ public abstract class BraveActivity extends ChromeActivity
 
         ContextUtils.getAppSharedPreferences().registerOnSharedPreferenceChangeListener(this);
 
-        openNewOrSelectExistingTab(UrlConstants.NTP_URL, false);
+        if (!mIsLaunchedFromExternalIntent) {
+            try {
+                openNewOrSelectExistingTab(UrlConstants.NTP_URL, false);
+            } catch (NullPointerException e) {
+                Log.e(TAG, "openNewOrSelectExistingTab NTP on cold start: " + e.getMessage());
+            }
+        }
     }
 
     private void checkForCustomUpdates() {
