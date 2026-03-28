@@ -103,6 +103,9 @@ public class YouTubeInteractUtil {
                         avatarUrl = ancestor.getUser().getAvatar();
                     }
                     if (avatarUrl != null) a.put("youtubeAvatarUrl", avatarUrl);
+                    // Send real counts so backend uses them in $setOnInsert instead of 0
+                    a.put("upvoteCount", ancestor.getUpvoteCount());
+                    a.put("commentCount", ancestor.getCommentCount());
                     ancestorsArray.put(a);
                 }
                 body.put("ancestors", ancestorsArray);

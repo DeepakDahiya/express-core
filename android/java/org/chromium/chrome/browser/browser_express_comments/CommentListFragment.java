@@ -295,6 +295,7 @@ public class CommentListFragment extends Fragment {
                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             } else if (mCommentsFor.equals("youtube")) {
                 Log.e("YouTubeComments", "[CommentListFragment] Starting parallel YouTube+DB fetch for videoId=" + mVideoId);
+                mUrl = mPageUrl; // needed when user posts a new top-level comment on YouTube page
                 final String finalAccessToken = accessToken;
                 mPendingYouTubeFetches = 2;
                 mYouTubeApiComments = null;

@@ -151,7 +151,7 @@ In every case the backend does at most 2 upserts before recording the interactio
 | Field | Type | Required | Description |
 |---|---|---|---|
 | `pageUrl` | `String` | Yes | Full page URL — stored as `pageParent` on all created records |
-| `ancestors` | `Array` | Yes | 1 or 2 YouTube comment objects, root first. Each object must have `youtubeId`, `content`, `youtubeAuthorName`. `youtubeAvatarUrl` is optional. |
+| `ancestors` | `Array` | Yes | 1 or 2 YouTube comment objects, root first. Each object must have `youtubeId`, `content`, `youtubeAuthorName`. `youtubeAvatarUrl`, `upvoteCount`, `commentCount` are optional. |
 | `interactionType` | `String` | Yes | `"upvote"`, `"downvote"`, or `"reply"` |
 | `replyContent` | `String` | Only when `interactionType = "reply"` | Text of the new reply |
 
@@ -171,11 +171,11 @@ for (const ancestor of body.ancestors) {
         content:           ancestor.content,
         youtubeAuthorName: ancestor.youtubeAuthorName,
         youtubeAvatarUrl:  ancestor.youtubeAvatarUrl,
-        commentParent:     parentId,      // null for root, _id of root for reply
-        upvoteCount:       0,
+        commentParent:     parentId,           // null for root, _id of root for reply
+        upvoteCount:       ancestor.upvoteCount   || 0,
         downvoteCount:     0,
-        commentCount:      0,
-        trendingScore:     0,
+        commentCount:      ancestor.commentCount  || 0,
+        trendingScore:     ancestor.upvoteCount   || 0,
         user:              null,
       }
     },
@@ -334,6 +334,20 @@ The app must strip extra query parameters and normalise to `https://www.youtube.
 
 ### `user` field on registered comments
 The YouTube comment has a YouTube author, not one of our users. The `user` field on the registered document should be `null`. The app reads `youtubeAuthorName` and `youtubeAvatarUrl` for display when `user` is null. Existing vote and reply endpoints must not crash when `comment.user` is null — verify this in tests.
+
+---
+
+## Reply Fetch Strategy (client-side)
+
+When the user opens replies for a YouTube comment, the app fires **two parallel requests**:
+
+1. **YouTube Data API** — `GET commentThreads/{parentId}/comments` — returns YouTube-native replies
+2. **Our API** — `GET /v1/comment?commentId={dbParentId}` — returns native user replies and any registered YouTube replies — **only called if the parent comment is already registered** (`_id` ≠ `youtubeId`)
+
+Merge logic (same pattern as main comment list):
+- Build a map from DB results keyed by `youtubeId`
+- For each YouTube API reply, if its `youtubeId` is in the map, use DB version (has real vote counts)
+- Append DB replies where `youtubeId == null` — these are native user replies posted via `yt_interact` or directly, and won't appear in the YouTube API results
 
 ---
 
