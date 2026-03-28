@@ -1830,7 +1830,7 @@ public abstract class BraveActivity extends ChromeActivity
             try {
                 openNewOrSelectExistingTab(UrlConstants.NTP_URL, false);
             } catch (NullPointerException e) {
-                Log.e(TAG, "openNewOrSelectExistingTab NTP on cold start: " + e.getMessage());
+                Log.e("BraveActivity", "openNewOrSelectExistingTab NTP on cold start: " + e.getMessage());
             }
         }
     }
