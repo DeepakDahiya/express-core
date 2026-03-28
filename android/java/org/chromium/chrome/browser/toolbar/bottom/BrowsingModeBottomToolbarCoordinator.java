@@ -104,6 +104,7 @@ public class BrowsingModeBottomToolbarCoordinator {
     private View mYouTubePipContainer;
 
     private View[] mStatsOverlays;
+    private String mCurrentPreviewVideoId;
     private Tab mCurrentObservedTab;
     private TabObserver mPipTabObserver;
     private Callback<Tab> mTabProviderObserver;
@@ -775,8 +776,14 @@ public class BrowsingModeBottomToolbarCoordinator {
     }
 
     private void updateCommentCountForUrl(String url) {
-        if (url == null || url.isEmpty()) return;
-        if (!url.startsWith("http://") && !url.startsWith("https://")) return;
+        if (url == null || url.isEmpty()) {
+            mCurrentPreviewVideoId = null;
+            return;
+        }
+        if (!url.startsWith("http://") && !url.startsWith("https://")) {
+            mCurrentPreviewVideoId = null;
+            return;
+        }
         try {
             Uri uri = Uri.parse(url);
             String host = uri.getHost();
@@ -786,12 +793,14 @@ public class BrowsingModeBottomToolbarCoordinator {
 
             if (isYouTube) {
                 final String finalVideoId = videoId;
+                mCurrentPreviewVideoId = finalVideoId;
+                // Fetch top 3 comments for the preview animation
                 new YouTubeCommentsUtil.GetYouTubeFirstCommentsTask(
                         finalVideoId,
                         new YouTubeCommentsUtil.GetYouTubeFirstCommentsCallback() {
                             @Override
-                            public void onSuccess(List<Comment> comments, long totalCommentCount) {
-                                animateCommentCount(totalCommentCount);
+                            public void onSuccess(List<Comment> comments, long ignored) {
+                                if (!finalVideoId.equals(mCurrentPreviewVideoId)) return;
                                 showYouTubeCommentsPreview(comments);
                             }
 
@@ -800,7 +809,23 @@ public class BrowsingModeBottomToolbarCoordinator {
                                 Log.e(TAG, "[FirstComments] Failed to load YouTube comments: " + error);
                             }
                         }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                // Fetch accurate comment count from the video stats API for the toolbar label
+                new YouTubeCommentsUtil.GetYouTubeVideoStatsTask(
+                        finalVideoId,
+                        new YouTubeCommentsUtil.VideoStatsCallback() {
+                            @Override
+                            public void onSuccess(long commentCount, long viewCount, long likeCount) {
+                                if (!finalVideoId.equals(mCurrentPreviewVideoId)) return;
+                                animateCommentCount(commentCount);
+                            }
+
+                            @Override
+                            public void onFailure(String error) {
+                                Log.e(TAG, "[Stats] Failed to load YouTube stats: " + error);
+                            }
+                        }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             } else {
+                mCurrentPreviewVideoId = null;
                 BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
                         new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
                                 url, getFirstCommentsCallback);

@@ -65,6 +65,8 @@ import androidx.media3.common.util.Util;
 import android.view.MotionEvent;
 import android.animation.ValueAnimator;
 import android.view.animation.LinearInterpolator;
+import java.util.Map;
+import java.util.HashMap;
 import androidx.annotation.NonNull; 
 import androidx.media3.common.MediaMetadata;
 import com.bumptech.glide.request.target.Target;
@@ -91,13 +93,19 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
     private final BrowserExpressCommentsBottomSheetFragment mParentFragment;
     private final boolean mIsReplyAdapter;
     private final boolean mIsReplyToReplyAdapter;
+    private final String mPageUrl;
 
     public CommentListAdapter(Context context, List<Comment> commentList, EditText messageEditText, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyToReplyAdapter) {
+        this(context, commentList, messageEditText, parentFragment, isReplyAdapter, isReplyToReplyAdapter, null);
+    }
+
+    public CommentListAdapter(Context context, List<Comment> commentList, EditText messageEditText, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyToReplyAdapter, String pageUrl) {
         mCommentList = commentList;
         mMessageEditText = messageEditText;
         mParentFragment = parentFragment;
         mIsReplyAdapter = isReplyAdapter;
         mIsReplyToReplyAdapter = isReplyToReplyAdapter;
+        mPageUrl = pageUrl;
     }
 
     /**
@@ -304,7 +312,12 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 mCommentLayout.setLayoutParams(params);
             }
 
-            usernameText.setText(comment.getUser().getUsername());
+            if (comment.getUser() != null) {
+                usernameText.setText(comment.getUser().getUsername());
+            } else {
+                String ytAuthor = comment.getYoutubeAuthorName();
+                usernameText.setText(ytAuthor != null ? ytAuthor : "");
+            }
             if(comment.getContent().length() > 150){
                 String contentString = comment.getContent().substring(0, 150) + "...";
                 contentText.setText(contentString);
@@ -409,10 +422,19 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 }
             }
                 
-            if(comment.getUser().getAvatar() != null && !comment.getUser().getAvatar().isEmpty() && activity != null){
-                ImageLoader.downloadImage(comment.getUser().getAvatar(), Glide.with(activity), true, 5, mAvatarImage, null);
-            } else if (activity != null) {
-                ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + comment.getUser().getId() + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), true, 5, mAvatarImage, null);
+            String avatarUrl = null;
+            String avatarSeed = null;
+            if (comment.getUser() != null) {
+                avatarUrl = comment.getUser().getAvatar();
+                avatarSeed = comment.getUser().getId();
+            } else {
+                avatarUrl = comment.getYoutubeAvatarUrl();
+                avatarSeed = comment.getYoutubeId();
+            }
+            if (avatarUrl != null && !avatarUrl.isEmpty() && activity != null) {
+                ImageLoader.downloadImage(avatarUrl, Glide.with(activity), true, 5, mAvatarImage, null);
+            } else if (activity != null && avatarSeed != null) {
+                ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + avatarSeed + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), true, 5, mAvatarImage, null);
             }
 
             if (activity != null) {
@@ -507,61 +529,87 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
                     mUpvoteButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
                     if (bounceUp != null) mUpvoteButton.startAnimation(bounceUp);
-                    
-                    int oldFinalVote = finalVote;
 
-                    if(didVoteType != null && didVoteType.equals("down")){ 
+                    int oldFinalVote = finalVote;
+                    String oldDidVoteType = didVoteType;
+
+                    if (didVoteType != null && didVoteType.equals("down")) {
                         finalVote += 2;
                         didVoteType = "up";
                         mUpvoteButton.setBackgroundResource(R.drawable.btn_blue_upvote);
                         mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
-                    } else if (didVoteType != null && didVoteType.equals("up")){ 
+                    } else if (didVoteType != null && didVoteType.equals("up")) {
                         finalVote -= 1;
                         didVoteType = null;
                         mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
-                    } else { 
+                    } else {
                         finalVote += 1;
                         didVoteType = "up";
                         mUpvoteButton.setBackgroundResource(R.drawable.btn_blue_upvote);
                         mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
                     }
                     voteCountText.setText(formatNumberCompact(finalVote));
-                    mUpvoteButton.setClickable(false); 
+                    mUpvoteButton.setClickable(false);
                     mDownvoteButton.setClickable(false);
 
                     JSONObject payload = new JSONObject();
                     try {
-                            payload.put("comment_id", comment.getId());
+                        payload.put("comment_id", comment.getId());
                     } catch (JSONException e) {
                     }
-                    sendEventToPostHog(PostHogEventKeys.UPVOTE_GIVEN, accessToken, activity.getCurrentAppVersion(),payload);
+                    sendEventToPostHog(PostHogEventKeys.UPVOTE_GIVEN, accessToken, activity.getCurrentAppVersion(), payload);
 
-                    BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
-                        new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
-                                comment.getId(), "up", "comment", accessToken, new BrowserExpressAddVoteUtil.AddVoteCallback() {
+                    if (comment.isYouTubeOnly()) {
+                        java.util.List<Comment> ancestors = buildAncestors(comment, getAdapterPosition());
+                        new YouTubeInteractUtil.Task(mPageUrl, ancestors, "upvote", null, accessToken,
+                                new YouTubeInteractUtil.Callback() {
                                     @Override
-                                    public void addVoteSuccessful(String newAccessToken, String newRefreshToken) {
+                                    public void onSuccess(Map<String, String> resolvedIds, String targetId,
+                                            int upvoteCount, int downvoteCount, int commentCount, Vote didVoteResult) {
                                         mUpvoteButton.setClickable(true);
                                         mDownvoteButton.setClickable(true);
-                                        if (newRefreshToken != null && !newRefreshToken.isEmpty() && activity != null) {
-                                            handleNewToken(newAccessToken);
-                                        }
+                                        updateResolvedIds(resolvedIds);
                                     }
-
                                     @Override
-                                    public void addVoteFailed(String error) {
+                                    public void onFailure(String error) {
                                         finalVote = oldFinalVote;
+                                        didVoteType = oldDidVoteType;
                                         voteCountText.setText(formatNumberCompact(finalVote));
                                         mUpvoteButton.setClickable(true);
                                         mDownvoteButton.setClickable(true);
+                                        mUpvoteButton.setBackgroundResource(oldDidVoteType != null && oldDidVoteType.equals("up") ? R.drawable.btn_blue_upvote : R.drawable.btn_upvote);
+                                        mDownvoteButton.setBackgroundResource(oldDidVoteType != null && oldDidVoteType.equals("down") ? R.drawable.btn_white_downvote : R.drawable.btn_downvote);
                                         Toast.makeText(context, "Vote failed: " + error, Toast.LENGTH_SHORT).show();
                                     }
-                                });
-                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    } else {
+                        BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
+                            new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
+                                    comment.getId(), "up", "comment", accessToken,
+                                    new BrowserExpressAddVoteUtil.AddVoteCallback() {
+                                        @Override
+                                        public void addVoteSuccessful(String newAccessToken, String newRefreshToken) {
+                                            mUpvoteButton.setClickable(true);
+                                            mDownvoteButton.setClickable(true);
+                                            if (newRefreshToken != null && !newRefreshToken.isEmpty() && activity != null) {
+                                                handleNewToken(newAccessToken);
+                                            }
+                                        }
+                                        @Override
+                                        public void addVoteFailed(String error) {
+                                            finalVote = oldFinalVote;
+                                            voteCountText.setText(formatNumberCompact(finalVote));
+                                            mUpvoteButton.setClickable(true);
+                                            mDownvoteButton.setClickable(true);
+                                            Toast.makeText(context, "Vote failed: " + error, Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    }
                 });
             }
 
-            if(mDownvoteButton != null) {
+            if (mDownvoteButton != null) {
                 mDownvoteButton.setOnClickListener(v -> {
                     if (activity == null) return;
                     String accessToken = activity.getAccessToken();
@@ -570,21 +618,22 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     if (bounceDown != null) mDownvoteButton.startAnimation(bounceDown);
 
                     int oldFinalVote = finalVote;
+                    String oldDidVoteType = didVoteType;
 
-                    if(didVoteType != null && didVoteType.equals("up")){ 
+                    if (didVoteType != null && didVoteType.equals("up")) {
                         finalVote -= 2;
                         didVoteType = "down";
                         mDownvoteButton.setBackgroundResource(R.drawable.btn_white_downvote);
                         mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
-                    } else if (didVoteType != null && didVoteType.equals("down")){ 
+                    } else if (didVoteType != null && didVoteType.equals("down")) {
                         finalVote += 1;
                         didVoteType = null;
                         mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
-                    } else { 
+                    } else {
                         finalVote -= 1;
                         didVoteType = "down";
                         mDownvoteButton.setBackgroundResource(R.drawable.btn_white_downvote);
-                        mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote); 
+                        mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
                     }
                     voteCountText.setText(formatNumberCompact(finalVote));
                     mUpvoteButton.setClickable(false);
@@ -592,33 +641,58 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
                     JSONObject payload = new JSONObject();
                     try {
-                            payload.put("comment_id", comment.getId());
+                        payload.put("comment_id", comment.getId());
                     } catch (JSONException e) {
                     }
-                    sendEventToPostHog(PostHogEventKeys.DOWNVOTE_GIVEN, accessToken, activity.getCurrentAppVersion(),payload);
+                    sendEventToPostHog(PostHogEventKeys.DOWNVOTE_GIVEN, accessToken, activity.getCurrentAppVersion(), payload);
 
-                    BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
-                        new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
-                                comment.getId(), "down", "comment", accessToken, new BrowserExpressAddVoteUtil.AddVoteCallback() {
-                            @Override
-                            public void addVoteSuccessful(String newAccessToken, String newRefreshToken) {
-                                mUpvoteButton.setClickable(true);
-                                mDownvoteButton.setClickable(true);
-                                if (newAccessToken != null && !newAccessToken.isEmpty() && activity != null) {
-                                   handleNewToken(newAccessToken);
-                                }
-                            }
-
-                            @Override
-                            public void addVoteFailed(String error) {
-                                finalVote = oldFinalVote;
-                                voteCountText.setText(formatNumberCompact(finalVote));
-                                mUpvoteButton.setClickable(true);
-                                mDownvoteButton.setClickable(true);
-                                Toast.makeText(context, "Vote failed: " + error, Toast.LENGTH_SHORT).show();
-                            }
-                        });
-                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    if (comment.isYouTubeOnly()) {
+                        java.util.List<Comment> ancestors = buildAncestors(comment, getAdapterPosition());
+                        new YouTubeInteractUtil.Task(mPageUrl, ancestors, "downvote", null, accessToken,
+                                new YouTubeInteractUtil.Callback() {
+                                    @Override
+                                    public void onSuccess(Map<String, String> resolvedIds, String targetId,
+                                            int upvoteCount, int downvoteCount, int commentCount, Vote didVoteResult) {
+                                        mUpvoteButton.setClickable(true);
+                                        mDownvoteButton.setClickable(true);
+                                        updateResolvedIds(resolvedIds);
+                                    }
+                                    @Override
+                                    public void onFailure(String error) {
+                                        finalVote = oldFinalVote;
+                                        didVoteType = oldDidVoteType;
+                                        voteCountText.setText(formatNumberCompact(finalVote));
+                                        mUpvoteButton.setClickable(true);
+                                        mDownvoteButton.setClickable(true);
+                                        mUpvoteButton.setBackgroundResource(oldDidVoteType != null && oldDidVoteType.equals("up") ? R.drawable.btn_blue_upvote : R.drawable.btn_upvote);
+                                        mDownvoteButton.setBackgroundResource(oldDidVoteType != null && oldDidVoteType.equals("down") ? R.drawable.btn_white_downvote : R.drawable.btn_downvote);
+                                        Toast.makeText(context, "Vote failed: " + error, Toast.LENGTH_SHORT).show();
+                                    }
+                                }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    } else {
+                        BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
+                            new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
+                                    comment.getId(), "down", "comment", accessToken,
+                                    new BrowserExpressAddVoteUtil.AddVoteCallback() {
+                                        @Override
+                                        public void addVoteSuccessful(String newAccessToken, String newRefreshToken) {
+                                            mUpvoteButton.setClickable(true);
+                                            mDownvoteButton.setClickable(true);
+                                            if (newAccessToken != null && !newAccessToken.isEmpty() && activity != null) {
+                                                handleNewToken(newAccessToken);
+                                            }
+                                        }
+                                        @Override
+                                        public void addVoteFailed(String error) {
+                                            finalVote = oldFinalVote;
+                                            voteCountText.setText(formatNumberCompact(finalVote));
+                                            mUpvoteButton.setClickable(true);
+                                            mDownvoteButton.setClickable(true);
+                                            Toast.makeText(context, "Vote failed: " + error, Toast.LENGTH_SHORT).show();
+                                        }
+                                    });
+                        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    }
                 });
             }
         }
@@ -779,6 +853,34 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             } catch(IllegalArgumentException e) {
                 Log.e("TokenDecoder", "Base64 decoding error: " + e.getMessage());
                 return null;
+            }
+        }
+    }
+
+    /**
+     * Builds the ancestors array for a yt_interact call.
+     * For replies (mIsReplyAdapter=true, position>0), includes the top-level parent (position 0)
+     * followed by the target comment. For top-level interactions, returns just the target.
+     */
+    private java.util.List<Comment> buildAncestors(Comment targetComment, int position) {
+        java.util.List<Comment> ancestors = new ArrayList<>();
+        if (mIsReplyAdapter && position > 0 && !mCommentList.isEmpty()) {
+            ancestors.add(mCommentList.get(0));
+        }
+        ancestors.add(targetComment);
+        return ancestors;
+    }
+
+    /**
+     * Updates in-memory Comment objects after yt_interact returns resolvedIds.
+     * Maps youtubeId → DB _id for all ancestors that were registered.
+     */
+    private void updateResolvedIds(Map<String, String> resolvedIds) {
+        if (resolvedIds == null || resolvedIds.isEmpty()) return;
+        for (Comment c : mCommentList) {
+            String ytId = c.getYoutubeId();
+            if (ytId != null && resolvedIds.containsKey(ytId)) {
+                c.setId(resolvedIds.get(ytId));
             }
         }
     }

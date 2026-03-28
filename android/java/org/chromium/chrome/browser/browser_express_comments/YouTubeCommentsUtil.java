@@ -253,6 +253,9 @@ public class YouTubeCommentsUtil {
                 Comment comment = new Comment(id, text, likeCount, 0, 0,
                         null, null, parentId, user, null, null, null, null, null, null);
                 comment.setTrendingScore(likeCount);
+                comment.setYoutubeId(id);
+                comment.setYoutubeAuthorName(authorName);
+                comment.setYoutubeAvatarUrl(avatarUrl);
                 return comment;
             } catch (Exception e) {
                 Log.e(TAG, "[Replies/Parse] error: " + e.getMessage());
@@ -358,7 +361,6 @@ public class YouTubeCommentsUtil {
         private final String mVideoId;
         private final GetYouTubeFirstCommentsCallback mCallback;
         private List<Comment> mComments;
-        private long mTotalCount;
         private String mError;
 
         public GetYouTubeFirstCommentsTask(
@@ -385,9 +387,6 @@ public class YouTubeCommentsUtil {
                     return null;
                 }
 
-                JSONObject pageInfo = response.optJSONObject("pageInfo");
-                mTotalCount = pageInfo != null ? pageInfo.optLong("totalResults", 0) : 0;
-
                 JSONArray items = response.optJSONArray("items");
                 mComments = new ArrayList<>();
                 if (items != null) {
@@ -396,7 +395,7 @@ public class YouTubeCommentsUtil {
                         if (comment != null) mComments.add(comment);
                     }
                 }
-                Log.e(TAG, "[FirstComments] Got " + mComments.size() + " comments, total=" + mTotalCount);
+                Log.e(TAG, "[FirstComments] Got " + mComments.size() + " comments");
             } catch (Exception e) {
                 mError = e.getMessage();
                 Log.e(TAG, "[FirstComments] Error: " + e.getMessage());
@@ -408,7 +407,7 @@ public class YouTubeCommentsUtil {
         protected void onPostExecute(Void result) {
             assert org.chromium.base.ThreadUtils.runningOnUiThread();
             if (mComments != null) {
-                mCallback.onSuccess(mComments, mTotalCount);
+                mCallback.onSuccess(mComments, 0);
             } else {
                 mCallback.onFailure(mError != null ? mError : "Unknown error");
             }
@@ -458,6 +457,9 @@ public class YouTubeCommentsUtil {
             Comment comment = new Comment(id, text, likeCount, 0, totalReplyCount,
                     null, null, null, user, null, null, null, null, null, null);
             comment.setTrendingScore(likeCount);
+            comment.setYoutubeId(id);
+            comment.setYoutubeAuthorName(authorName);
+            comment.setYoutubeAvatarUrl(avatarUrl);
             return comment;
         } catch (Exception e) {
             Log.e(TAG, "[Parse] parseCommentThread error: " + e.getMessage());
