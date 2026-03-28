@@ -79,6 +79,7 @@ import java.io.UnsupportedEncodingException;
 import org.json.JSONException;
 import android.util.Base64;
 import org.json.JSONObject;
+import java.util.ArrayList;
 
 /**
  * The coordinator for the browsing mode bottom toolbar. This class has two primary components, an
