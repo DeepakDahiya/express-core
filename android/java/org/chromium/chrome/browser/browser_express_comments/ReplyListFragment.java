@@ -86,6 +86,10 @@ public class ReplyListFragment extends Fragment {
     private String mVideoId;
     private Comment mParentYouTubeComment;
 
+    private int mPendingReplyFetches;
+    private List<Comment> mYouTubeReplies;
+    private List<Comment> mDbReplies;
+
     private ShimmerFrameLayout mShimmerLoading;
     private ViewGroup mShimmerItems;
 
@@ -352,8 +356,49 @@ public class ReplyListFragment extends Fragment {
 
             // Getting replies
             if ("youtube".equals(mCommentsFor)) {
-                new YouTubeCommentsUtil.GetYouTubeRepliesTask(mCommentId, getCommentsCallback)
-                        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                final String finalAccessToken = accessToken;
+                mYouTubeReplies = null;
+                mDbReplies = new ArrayList<>();
+
+                // If parent is already registered in our DB, also fetch native user replies from it
+                boolean parentRegistered = mParentYouTubeComment != null
+                        && !mParentYouTubeComment.isYouTubeOnly();
+                mPendingReplyFetches = parentRegistered ? 2 : 1;
+
+                if (parentRegistered) {
+                    new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
+                            null, mParentYouTubeComment.getId(), null, 0, 50, finalAccessToken,
+                            new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
+                                @Override
+                                public void getCommentsSuccessful(List<Comment> comments, Comment p, Comment gp) {
+                                    mDbReplies = comments;
+                                    mPendingReplyFetches--;
+                                    if (mPendingReplyFetches == 0) mergeAndShowReplies();
+                                }
+                                @Override
+                                public void getCommentsFailed(String error) {
+                                    mDbReplies = new ArrayList<>();
+                                    mPendingReplyFetches--;
+                                    if (mPendingReplyFetches == 0) mergeAndShowReplies();
+                                }
+                            }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                }
+
+                new YouTubeCommentsUtil.GetYouTubeRepliesTask(mCommentId,
+                        new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
+                            @Override
+                            public void getCommentsSuccessful(List<Comment> comments, Comment p, Comment gp) {
+                                mYouTubeReplies = comments;
+                                mPendingReplyFetches--;
+                                if (mPendingReplyFetches == 0) mergeAndShowReplies();
+                            }
+                            @Override
+                            public void getCommentsFailed(String error) {
+                                mYouTubeReplies = new ArrayList<>();
+                                mPendingReplyFetches--;
+                                if (mPendingReplyFetches == 0) mergeAndShowReplies();
+                            }
+                        }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             } else {
                 BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
                     new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
@@ -457,6 +502,37 @@ public class ReplyListFragment extends Fragment {
                 }
             });
         }
+    }
+
+    /**
+     * Called when both YouTube API replies and our DB replies are ready.
+     * DB version wins for any YouTube reply that has been registered (upvoted by someone).
+     * Native user replies (no youtubeId) from DB are appended after YouTube replies.
+     */
+    private void mergeAndShowReplies() {
+        java.util.HashMap<String, Comment> dbMap = new java.util.HashMap<>();
+        List<Comment> nativeReplies = new ArrayList<>();
+
+        for (Comment c : mDbReplies) {
+            if (c.getYoutubeId() != null) {
+                dbMap.put(c.getYoutubeId(), c); // YouTube-sourced, registered in our DB
+            } else {
+                nativeReplies.add(c); // Native user reply (posted via yt_interact or directly)
+            }
+        }
+
+        List<Comment> merged = new ArrayList<>();
+        for (Comment ytReply : mYouTubeReplies) {
+            String ytId = ytReply.getYoutubeId();
+            if (ytId != null && dbMap.containsKey(ytId)) {
+                merged.add(dbMap.get(ytId)); // Our DB version wins (has real vote counts)
+            } else {
+                merged.add(ytReply);
+            }
+        }
+        merged.addAll(nativeReplies); // Append native user replies at the end
+
+        getCommentsCallback.getCommentsSuccessful(merged, null, null);
     }
 
     private final BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
