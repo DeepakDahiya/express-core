@@ -247,14 +247,19 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenHeight = displayMetrics.heightPixels;
 
-        int defaultHeight = (int) (screenHeight * 0.8);
-
         BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
         BottomSheetBehavior behavior = dialog.getBehavior();
 
-        behavior.setMaxHeight(defaultHeight);
-
-        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        if ("youtube".equals(mCommentsFor)) {
+            int peekHeight = (int) (screenHeight * 0.6);
+            behavior.setMaxHeight(screenHeight);
+            behavior.setPeekHeight(peekHeight);
+            behavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+        } else {
+            int defaultHeight = (int) (screenHeight * 0.8);
+            behavior.setMaxHeight(defaultHeight);
+            behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        }
 
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 

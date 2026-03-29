@@ -96,7 +96,8 @@ public class BrowsingModeBottomToolbarCoordinator {
     private int w;
     private int h;
 
-    private static final String PREF_PIP_COACH_MARK_SHOWN = "pip_coach_mark_shown";
+    private static final String PREF_PIP_INTRO_SHOWN_COUNT = "pip_intro_shown_count";
+    private static final int MAX_PIP_INTRO_SHOW_COUNT = 2;
     private static final String PREF_PIP_BG_PLAY_NUDGE_COUNT = "pip_bg_play_nudge_count";
     private static final int MAX_BG_PLAY_NUDGE_COUNT = 3;
 
@@ -393,8 +394,9 @@ public class BrowsingModeBottomToolbarCoordinator {
     private void maybeShowPipCoachMark() {
         if (mYouTubePipButton == null) return;
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
-        if (prefs.getBoolean(PREF_PIP_COACH_MARK_SHOWN, false)) return;
-        prefs.edit().putBoolean(PREF_PIP_COACH_MARK_SHOWN, true).apply();
+        int shownCount = prefs.getInt(PREF_PIP_INTRO_SHOWN_COUNT, 0);
+        if (shownCount >= MAX_PIP_INTRO_SHOW_COUNT) return;
+        prefs.edit().putInt(PREF_PIP_INTRO_SHOWN_COUNT, shownCount + 1).apply();
 
         // Wait for the button to be laid out before reading its screen coordinates.
         mYouTubePipButton.post(() -> {
