@@ -37,8 +37,8 @@ import org.chromium.base.Log;
 public class PipCoachMarkView extends FrameLayout {
     private static final String TAG = "PipCoachMark";
 
-    // Overlay background colour — 85 % opaque black
-    private static final int OVERLAY_COLOR = 0xD9000000;
+    // Overlay background colour — 60 % opaque black (background still visible through it)
+    private static final int OVERLAY_COLOR = 0x99000000;
     // Gold colour matching the button tint
     private static final int GOLD_COLOR = 0xFFD4AF37;
     // Extra padding around the spotlight circle

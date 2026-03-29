@@ -1244,13 +1244,96 @@ const char16_t kYoutubePIP[] =
         }());
     )";
 
-const char16_t kRemoveYoutubeComment[] = 
+const char16_t kRemoveYoutubeComment[] =
     uR"(
     (function() {
-        const el = document.querySelector('ytm-item-section-renderer.scwnr-content.single-column-watch-next-modern-panels');
-        if (el) {
-            el.remove();
+        'use strict';
+
+        // ── CSS injection ────────────────────────────────────────────────────
+        // Injecting a <style> tag means any comment element that appears later
+        // (lazy-loaded on scroll, SPA navigation, etc.) is hidden immediately
+        // without any timing dependency.
+        function injectHideStyles() {
+            if (document.getElementById('brave-hide-yt-comments')) return;
+            var style = document.createElement('style');
+            style.id = 'brave-hide-yt-comments';
+            // Cover every comment-related element YouTube uses on mobile/desktop.
+            // :has() is supported in Chromium 105+ (safe for an Android browser).
+            style.textContent =
+                'ytm-comments-entry-point-header-renderer,' +
+                'ytm-comment-section-renderer,' +
+                'ytm-comment-thread-renderer,' +
+                'ytm-comment-replies-renderer,' +
+                'ytm-item-section-renderer[section-identifier="comments"],' +
+                'ytm-item-section-renderer:has(ytm-comments-entry-point-header-renderer),' +
+                'ytm-item-section-renderer:has(ytm-comment-section-renderer),' +
+                'ytm-item-section-renderer:has(ytm-comment-thread-renderer),' +
+                '#comments,' +
+                'ytd-comments,' +
+                '[data-target-id="comments"]' +
+                '{ display: none !important; }';
+            (document.head || document.documentElement).appendChild(style);
         }
+
+        // ── DOM removal ──────────────────────────────────────────────────────
+        // Removes matched nodes entirely so they don't affect page layout or
+        // trigger further network requests.
+        function removeCommentNodes() {
+            var selectors = [
+                'ytm-comments-entry-point-header-renderer',
+                'ytm-comment-section-renderer',
+                'ytm-comment-thread-renderer',
+                'ytm-item-section-renderer[section-identifier="comments"]',
+                '#comments',
+                'ytd-comments'
+            ];
+            selectors.forEach(function(sel) {
+                document.querySelectorAll(sel).forEach(function(el) {
+                    el.remove();
+                });
+            });
+
+            // Also catch item-section-renderer wrappers that *contain* a comment node.
+            document.querySelectorAll('ytm-item-section-renderer').forEach(function(el) {
+                if (el.querySelector(
+                        'ytm-comments-entry-point-header-renderer,' +
+                        'ytm-comment-section-renderer,' +
+                        'ytm-comment-thread-renderer')) {
+                    el.remove();
+                }
+            });
+        }
+
+        // ── MutationObserver ─────────────────────────────────────────────────
+        // YouTube loads comments lazily when the user scrolls into that region.
+        // The observer fires on every DOM mutation and removes them as they land.
+        var observer = new MutationObserver(function() {
+            removeCommentNodes();
+        });
+
+        function startObserver() {
+            observer.disconnect();
+            observer.observe(document.documentElement, { childList: true, subtree: true });
+        }
+
+        // ── SPA navigation handling ──────────────────────────────────────────
+        // YouTube is a single-page app; the DOM is reused across navigations.
+        // yt-navigate-finish fires after each in-app navigation.
+        window.addEventListener('yt-navigate-finish', function() {
+            injectHideStyles();
+            removeCommentNodes();
+            startObserver();
+        });
+
+        // yt-page-data-updated fires when new page content is swapped in.
+        window.addEventListener('yt-page-data-updated', function() {
+            removeCommentNodes();
+        });
+
+        // ── Initial run ──────────────────────────────────────────────────────
+        injectHideStyles();
+        removeCommentNodes();
+        startObserver();
     })();
     )";
 
@@ -1728,7 +1811,9 @@ void YouTubeScriptInjectorTabHelper::PrimaryMainDocumentElementAvailable() {
         contents->GetPrimaryMainFrame()->ExecuteJavaScript(
             kRemoveYoutubeComment, base::NullCallback());
       }, contents),
-      base::Milliseconds(100));
+      // Delay long enough for the frame to be live; the script itself installs a
+      // MutationObserver so it handles all lazy-loaded comment nodes after this.
+      base::Milliseconds(500));
 
   if (IsBackgroundVideoPlaybackEnabled(contents)) {
     contents->GetPrimaryMainFrame()->ExecuteJavaScript(
