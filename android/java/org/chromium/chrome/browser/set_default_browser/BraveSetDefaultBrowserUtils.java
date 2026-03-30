@@ -46,6 +46,7 @@ public class BraveSetDefaultBrowserUtils {
     public static final int DAYS_15 = 15;
 
     public static boolean isBottomSheetVisible;
+    public static boolean sReturnedFromDefaultBrowserSettings;
 
     /**
      * Checks if any Brave browser variant (Production, Beta, or Nightly) is set as the default
@@ -212,6 +213,7 @@ public class BraveSetDefaultBrowserUtils {
             }
 
             // Fallback for older devices: open the default apps settings page
+            sReturnedFromDefaultBrowserSettings = true;
             Intent intent = new Intent(Settings.ACTION_MANAGE_DEFAULT_APPS_SETTINGS);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             activity.startActivity(intent);

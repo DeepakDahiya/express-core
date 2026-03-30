@@ -1431,6 +1431,15 @@ public abstract class BraveActivity extends ChromeActivity
         // mIsProcessingPendingDappsTxRequest = false;
         updateBackCallbackState();
 
+        // If user returned from default browser settings (older Android fallback path) without
+        // setting us as default, re-show the prompt immediately.
+        if (BraveSetDefaultBrowserUtils.sReturnedFromDefaultBrowserSettings) {
+            BraveSetDefaultBrowserUtils.sReturnedFromDefaultBrowserSettings = false;
+            if (!BraveSetDefaultBrowserUtils.isCurrentAppDefaultBrowser(this)) {
+                BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(this);
+            }
+        }
+
         // if (!BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(BraveActivity.this)) {
         //     BraveSetDefaultBrowserUtils.openDefaultAppsSettings(BraveActivity.this);
         // }
@@ -2790,9 +2799,12 @@ public abstract class BraveActivity extends ChromeActivity
                 && requestCode == BraveConstants.MONTHLY_CONTRIBUTION_REQUEST_CODE) {
             dismissRewardsPanel();
 
-        } else if (resultCode == RESULT_OK
-                && requestCode == BraveConstants.DEFAULT_BROWSER_ROLE_REQUEST_CODE) {
-            // We don't need to anything with the result here.
+        } else if (requestCode == BraveConstants.DEFAULT_BROWSER_ROLE_REQUEST_CODE) {
+            // User returned from the role picker (Android 10+). Re-show the prompt if they
+            // still haven't set us as default (covers both RESULT_OK and RESULT_CANCELED).
+            if (!BraveSetDefaultBrowserUtils.isCurrentAppDefaultBrowser(this)) {
+                BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(this);
+            }
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
