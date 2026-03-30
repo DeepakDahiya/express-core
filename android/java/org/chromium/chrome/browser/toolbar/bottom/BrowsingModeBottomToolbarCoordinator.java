@@ -333,6 +333,9 @@ public class BrowsingModeBottomToolbarCoordinator {
                 updateYouTubePipButtonVisibility(tab);
                 if (tab.getUrl() != null && !tab.getUrl().isEmpty()) {
                     updateCommentCountForUrl(tab.getUrl().getSpec());
+                    if (tab.getUrl().getSpec().contains("youtube.com")) {
+                        forceShowBottomToolbar();
+                    }
                 }
             }
 
@@ -341,6 +344,9 @@ public class BrowsingModeBottomToolbarCoordinator {
                 updateYouTubePipButtonVisibility(tab);
                 if (tab.getUrl() != null && !tab.getUrl().isEmpty()) {
                     updateCommentCountForUrl(tab.getUrl().getSpec());
+                    if (tab.getUrl().getSpec().contains("youtube.com")) {
+                        forceShowBottomToolbar();
+                    }
                 }
             }
         };

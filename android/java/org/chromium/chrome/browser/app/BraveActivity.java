@@ -701,8 +701,8 @@ public abstract class BraveActivity extends ChromeActivity
             return;
         }
 
-        Log.e("Browser Express", "Proceeding with PIP and NTP flow");
-        executePIPAndNewTabFlow(currentTab, UrlConstants.NTP_URL);
+        Log.e("Browser Express", "Proceeding with PIP and YouTube home flow");
+        executePIPAndNewTabFlow(currentTab, "https://m.youtube.com/");
     }
 
     private String getPreviousUrlFromHistory(Tab tab) {
