@@ -514,11 +514,35 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     sendEventToPostHog(PostHogEventKeys.COMMENT_REPLY_SHARE_CLICKED, accessToken, activity.getCurrentAppVersion(), payload);
 
                     String link = "https://browser.express/view?id=" + comment.getId();
-                    String message = "People say the craziest stuff! 👀 Check this out 👇\n\n" + link + "\n\n" + "Dive in—it's where everyone’s talking about everything, nonstop.";
+                    String message = "People say the craziest stuff! 👀 Check this out 👇\n\n" + link + "\n\n" + "Dive in—it’s where everyone’s talking about everything, nonstop.";
+
                     Intent sharingIntent = new Intent(Intent.ACTION_SEND);
                     sharingIntent.setType("text/plain");
                     sharingIntent.putExtra(Intent.EXTRA_TEXT, message);
-                    activity.startActivity(Intent.createChooser(sharingIntent, "Share via")); 
+
+                    List<Intent> pinnedIntents = new ArrayList<>();
+
+                    Intent instaStory = new Intent(Intent.ACTION_SEND);
+                    instaStory.setType("text/plain");
+                    instaStory.putExtra(Intent.EXTRA_TEXT, message);
+                    instaStory.setPackage("com.instagram.android");
+                    if (!activity.getPackageManager().queryIntentActivities(instaStory, 0).isEmpty()) {
+                        pinnedIntents.add(instaStory);
+                    }
+
+                    Intent whatsAppStatus = new Intent(Intent.ACTION_SEND);
+                    whatsAppStatus.setType("text/plain");
+                    whatsAppStatus.putExtra(Intent.EXTRA_TEXT, message);
+                    whatsAppStatus.setPackage("com.whatsapp");
+                    if (!activity.getPackageManager().queryIntentActivities(whatsAppStatus, 0).isEmpty()) {
+                        pinnedIntents.add(whatsAppStatus);
+                    }
+
+                    Intent chooser = Intent.createChooser(sharingIntent, "Share via");
+                    if (!pinnedIntents.isEmpty()) {
+                        chooser.putExtra(Intent.EXTRA_INITIAL_INTENTS, pinnedIntents.toArray(new Intent[0]));
+                    }
+                    activity.startActivity(chooser);
                 });
             }
 
