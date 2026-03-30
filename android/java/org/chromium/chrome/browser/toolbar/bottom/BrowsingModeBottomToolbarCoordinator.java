@@ -315,7 +315,9 @@ public class BrowsingModeBottomToolbarCoordinator {
             @Override
             public void onPageLoadStarted(Tab tab, GURL url) {
                 if (mYouTubePipContainer != null) mYouTubePipContainer.setVisibility(View.GONE);
-
+                if (url != null && url.getSpec().contains("youtube.com")) {
+                    forceShowBottomToolbar();
+                }
             }
 
             @Override
