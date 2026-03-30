@@ -90,7 +90,7 @@
             android:layout_height="wrap_content"
             android:text="@string/browser_express_empty_text"
             android:gravity="end"
-            android:textColor="@color/content_color"
+            android:textColor="@color/upvote_stroke_color"
             android:clickable="true"
             android:focusable="true"
             android:onClick="onClick"

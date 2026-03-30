@@ -68,6 +68,7 @@ import android.view.MotionEvent;
 import android.widget.ProgressBar;
 import android.animation.ValueAnimator;
 import android.view.animation.LinearInterpolator;
+import android.view.animation.DecelerateInterpolator;
 import org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout;
 import org.chromium.chrome.browser.crypto_wallet.util.AndroidUtils;
 import org.chromium.chrome.browser.local_database.TopSiteTable;
@@ -590,11 +591,15 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 });
 
             if (post.getCommentCount() > 0) {
-                String commentCountText = "View " + post.getCommentCount() + " comments";
-                mCommentButton.setText(commentCountText);
+                final int targetCount = post.getCommentCount();
+                ValueAnimator animator = ValueAnimator.ofInt(0, targetCount);
+                animator.setDuration(1500);
+                animator.setInterpolator(new DecelerateInterpolator(1.5f));
+                animator.addUpdateListener(a -> mCommentButton.setText(
+                        String.format(Locale.getDefault(), "View %d comments", (int) a.getAnimatedValue())));
+                animator.start();
             } else {
-                String commentCountText = "View comments";
-                mCommentButton.setText(commentCountText);
+                mCommentButton.setText("View comments");
             }
             
             mCommentButton.setOnClickListener(new View.OnClickListener() {

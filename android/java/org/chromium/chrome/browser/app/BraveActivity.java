@@ -698,23 +698,9 @@ public abstract class BraveActivity extends ChromeActivity
             performDefaultBackPress();
             return;
         }
-        
-        String currentUrl = currentTab.getUrl().getSpec();
-        Log.e("Browser Express", "Current URL: " + currentUrl);
-        
-        // Get the previous URL from navigation history
-        String previousUrl = getPreviousUrlFromHistory(currentTab);
-        Log.e("Browser Express", "Previous URL: " + previousUrl);
-        
-        if (previousUrl == null) {
-            Log.e("Browser Express", "No previous URL found in history");
-            performDefaultBackPress();
-            return;
-        }
-        
-        Log.e("Browser Express", "Proceeding with PIP and new tab flow");
-        // Execute the PIP and new tab flow
-        executePIPAndNewTabFlow(currentTab, previousUrl);
+
+        Log.e("Browser Express", "Proceeding with PIP and NTP flow");
+        executePIPAndNewTabFlow(currentTab, UrlConstants.NTP_URL);
     }
 
     private String getPreviousUrlFromHistory(Tab tab) {

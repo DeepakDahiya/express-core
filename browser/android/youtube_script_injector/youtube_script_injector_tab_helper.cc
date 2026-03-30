@@ -1254,6 +1254,7 @@ const char16_t kRemoveYoutubeComment[] =
         // (lazy-loaded on scroll, SPA navigation, etc.) is hidden immediately
         // without any timing dependency.
         function injectHideStyles() {
+            document.getElementsByTagName("lazy-list")[0].textContent = ""
             if (document.getElementById('brave-hide-yt-comments')) return;
             var style = document.createElement('style');
             style.id = 'brave-hide-yt-comments';
