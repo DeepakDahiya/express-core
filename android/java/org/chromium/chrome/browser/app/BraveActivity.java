@@ -702,7 +702,10 @@ public abstract class BraveActivity extends ChromeActivity
         }
 
         Log.e("Browser Express", "Proceeding with PIP and YouTube home flow");
-        executePIPAndNewTabFlow(currentTab, "https://m.youtube.com/");
+        BraveYouTubeScriptInjectorNativeHelper.triggerYouTubePiP(currentTab.getWebContents());
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            openNewOrSelectExistingTab("https://m.youtube.com/");
+        }, 300);
     }
 
     private String getPreviousUrlFromHistory(Tab tab) {
