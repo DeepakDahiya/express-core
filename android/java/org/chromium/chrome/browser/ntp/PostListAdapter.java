@@ -129,6 +129,40 @@ public class PostListAdapter extends RecyclerView.Adapter {
         return type;
     }
 
+    /**
+     * Called by RecyclerView when a card enters the visible window.
+     * This is the trigger for the comment count-up animation — it only fires for
+     * cards that are actually on screen, so off-screen items never waste the animation.
+     */
+    @Override
+    public void onViewAttachedToWindow(@NonNull RecyclerView.ViewHolder holder) {
+        super.onViewAttachedToWindow(holder);
+        if (!(holder instanceof PostHolder)) return;
+        PostHolder postHolder = (PostHolder) holder;
+        if (postHolder.mCountAnimator != null && !postHolder.mCountAnimationPlayed) {
+            postHolder.mCountAnimationPlayed = true;
+            postHolder.mCountAnimator.start();
+        }
+    }
+
+    /**
+     * Called when a card leaves the visible window (scrolled off-screen).
+     * Cancels the animation if it hasn't finished yet and resets the played flag
+     * so the count-up replays the next time the card scrolls back into view.
+     * If the animation already completed the flag stays true and it won't replay.
+     */
+    @Override
+    public void onViewDetachedFromWindow(@NonNull RecyclerView.ViewHolder holder) {
+        super.onViewDetachedFromWindow(holder);
+        if (!(holder instanceof PostHolder)) return;
+        PostHolder postHolder = (PostHolder) holder;
+        if (postHolder.mCountAnimator != null && postHolder.mCountAnimator.isRunning()) {
+            postHolder.mCountAnimator.cancel();
+            // Reset so the animation plays again when the card scrolls back into view
+            postHolder.mCountAnimationPlayed = false;
+        }
+    }
+
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         
@@ -326,6 +360,10 @@ public class PostListAdapter extends RecyclerView.Adapter {
         private final Context context;
 
         private int myPosition;
+
+        // Comment count animator — started only when the card enters the viewport
+        ValueAnimator mCountAnimator;
+        boolean mCountAnimationPlayed;
 
         private final Handler autoScrollHandler;
         private Runnable autoScrollRunnable;
@@ -590,19 +628,29 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     }
                 });
 
+            // Reset per-bind state so a freshly bound card can animate when it scrolls in.
+            mCountAnimationPlayed = false;
             if (post.getCommentCount() > 0) {
                 final int targetCount = post.getCommentCount();
+                // Show "0 comments" as the starting state so the count-up is visible
+                // from the moment the card enters the viewport.
+                mCommentButton.setText(
+                        mCommentButton.getContext().getResources().getQuantityString(
+                                R.plurals.view_comments_count, 0, 0));
                 ValueAnimator animator = ValueAnimator.ofInt(0, targetCount);
                 animator.setDuration(1500);
                 animator.setInterpolator(new DecelerateInterpolator(1.5f));
                 animator.addUpdateListener(a -> {
-                        int count = (int) a.getAnimatedValue();
-                        mCommentButton.setText(
-                                mCommentButton.getContext().getResources().getQuantityString(
-                                        R.plurals.view_comments_count, count, count));
+                    int count = (int) a.getAnimatedValue();
+                    mCommentButton.setText(
+                            mCommentButton.getContext().getResources().getQuantityString(
+                                    R.plurals.view_comments_count, count, count));
                 });
-                animator.start();
+                // Do NOT start here — onViewAttachedToWindow will fire when the card
+                // is actually visible and kick it off then.
+                mCountAnimator = animator;
             } else {
+                mCountAnimator = null;
                 mCommentButton.setText(R.string.view_comments);
             }
             
