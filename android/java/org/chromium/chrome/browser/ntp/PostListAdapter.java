@@ -595,9 +595,12 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 ValueAnimator animator = ValueAnimator.ofInt(0, targetCount);
                 animator.setDuration(1500);
                 animator.setInterpolator(new DecelerateInterpolator(1.5f));
-                animator.addUpdateListener(a -> mCommentButton.setText(
-                        mCommentButton.getContext().getString(
-                                R.string.view_comments_count, (int) a.getAnimatedValue())));
+                animator.addUpdateListener(a -> {
+                        int count = (int) a.getAnimatedValue();
+                        mCommentButton.setText(
+                                mCommentButton.getContext().getResources().getQuantityString(
+                                        R.plurals.view_comments_count, count, count));
+                });
                 animator.start();
             } else {
                 mCommentButton.setText(R.string.view_comments);

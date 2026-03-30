@@ -26,5 +26,8 @@
     <string name="pip_intro_banner_title">Keep watching while you multitask \uD83D\uDC40</string>
     <string name="pip_intro_banner_body">Tap this button to shrink your video into a floating mini-player. It\'s giving main character energy \uD83D\uDC85</string>
     <string name="view_comments">View comments</string>
-    <string name="view_comments_count">View %d comments</string>
+    <plurals name="view_comments_count">
+        <item quantity="one">View %d comment</item>
+        <item quantity="other">View %d comments</item>
+    </plurals>
 </resources>
