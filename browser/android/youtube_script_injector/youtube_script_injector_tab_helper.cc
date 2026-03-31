@@ -495,33 +495,15 @@ constexpr char16_t kYoutubeInAppPIP[] =
 
                     if (document.pictureInPictureElement) {
                         document.exitPictureInPicture().then(() => {
-                            // Playlist videos load slowly via SPA navigation — retry until
-                            // the new video is actually playing instead of a single fixed delay.
-                            let attempts = 0;
-                            const maxAttempts = 20; // up to ~4 seconds total
+                            setTimeout(() => {
+                                if (newVideoElement &&
+                                    typeof newVideoElement.requestPictureInPicture === 'function' &&
+                                    !newVideoElement.paused) {
 
-                            const tryEnterPIP = () => {
-                                attempts++;
-                                // Re-check we are still on the expected video page (playlist
-                                // navigation may have moved to yet another video).
-                                if (getCurrentVideoId() !== newVideoId) {
-                                    currentPIPVideoId = null;
-                                    setPIPStatus(null, false);
-                                    console.log('Video changed again before PIP could start, aborting');
-                                    return;
-                                }
-
-                                // Always re-fetch the element — the DOM node may have been
-                                // replaced during SPA navigation.
-                                const videoEl = getCurrentVideoElement();
-                                if (videoEl &&
-                                    typeof videoEl.requestPictureInPicture === 'function' &&
-                                    !videoEl.paused) {
-
-                                    videoEl.requestPictureInPicture()
+                                    newVideoElement.requestPictureInPicture()
                                         .then(() => {
                                             currentPIPVideoId = newVideoId;
-                                            lastPlayingVideoElement = videoEl;
+                                            lastPlayingVideoElement = newVideoElement;
                                             setPIPStatus(newVideoId, true);
                                             console.log('PIP replaced with new video:', newVideoId);
                                         })
@@ -530,17 +512,36 @@ constexpr char16_t kYoutubeInAppPIP[] =
                                             currentPIPVideoId = null;
                                             setPIPStatus(null, false);
                                         });
-                                } else if (attempts < maxAttempts) {
-                                    // Video still loading (common for playlist transitions) — wait
-                                    setTimeout(tryEnterPIP, 200);
                                 } else {
                                     currentPIPVideoId = null;
                                     setPIPStatus(null, false);
-                                    console.log('New video did not start playing for PIP, closed');
+                                    console.log('New video cannot do PIP, closed old PIP');
                                 }
-                            };
+                            }, 200);
 
-                            setTimeout(tryEnterPIP, 200);
+                            setTimeout(() => {
+                                if (newVideoElement &&
+                                    typeof newVideoElement.requestPictureInPicture === 'function' &&
+                                    !newVideoElement.paused) {
+
+                                    newVideoElement.requestPictureInPicture()
+                                        .then(() => {
+                                            currentPIPVideoId = newVideoId;
+                                            lastPlayingVideoElement = newVideoElement;
+                                            setPIPStatus(newVideoId, true);
+                                            console.log('PIP replaced with new video:', newVideoId);
+                                        })
+                                        .catch(err => {
+                                            console.warn('Failed to enter PIP with new video:', err);
+                                            currentPIPVideoId = null;
+                                            setPIPStatus(null, false);
+                                        });
+                                } else {
+                                    currentPIPVideoId = null;
+                                    setPIPStatus(null, false);
+                                    console.log('New video cannot do PIP, closed old PIP');
+                                }
+                            }, 500);
                         }).catch(err => {
                             console.warn('Failed to exit current PIP:', err);
                         });
