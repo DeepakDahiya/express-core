@@ -154,6 +154,7 @@ import org.chromium.chrome.browser.crypto_wallet.model.CryptoAccountTypeInfo;
 import org.chromium.chrome.browser.crypto_wallet.util.Utils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.customtabs.FullScreenCustomTabActivity;
+import org.chromium.chrome.browser.firstrun.FirstRunStatus;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.flags.ChromeSwitches;
 import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
@@ -1538,6 +1539,12 @@ public abstract class BraveActivity extends ChromeActivity
         }
 
         super.finishNativeInitialization();
+
+        // Ensure first run is marked as complete so that context menu items
+        // (Open in new tab, Save link, Share link, etc.) are not gated.
+        if (!FirstRunStatus.getFirstRunFlowComplete()) {
+            FirstRunStatus.setFirstRunFlowComplete(true);
+        }
 
         BraveMenuButtonCoordinator.setMenuFromBottom(false);
 

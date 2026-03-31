@@ -24,6 +24,6 @@ public class BraveLaunchIntentDispatcher {
 
     public static boolean useCustomTabs() {
         SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
-        return sharedPreferences.getBoolean(BravePreferenceKeys.BRAVE_USE_CUSTOM_TABS, true);
+        return sharedPreferences.getBoolean(BravePreferenceKeys.BRAVE_USE_CUSTOM_TABS, false);
     }
 }
