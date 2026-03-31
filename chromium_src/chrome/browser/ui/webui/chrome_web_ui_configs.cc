@@ -22,6 +22,7 @@
 #include "brave/browser/ui/webui/brave_settings_ui.h"
 #include "brave/browser/ui/webui/brave_shields/shields_panel_ui.h"
 #include "brave/browser/ui/webui/brave_wallet/wallet_panel_ui.h"
+#include "brave/browser/ui/webui/private_new_tab_page/brave_private_new_tab_ui.h"
 #include "brave/browser/ui/webui/speedreader/speedreader_toolbar_ui.h"
 #include "brave/browser/ui/webui/webcompat_reporter/webcompat_reporter_ui.h"
 #else  // !BUILDFLAG(IS_ANDROID)
@@ -45,6 +46,16 @@ const GURL GetWebUIConfigURL(const char* scheme, const char* host) {
 
 void RemoveOverridenWebUIs(content::WebUIConfigMap& map) {
 #if !BUILDFLAG(IS_ANDROID)
+  // Remove NewTabUIConfig. It will be replaced with BravePrivateNewTabUIConfig.
+  // Note that this only handles new tab for private profiles (Private, Tor,
+  // Guest). For regular profile the handling is still done in
+  // BraveWebUIControllerFactory. We will need to follow up on transitioning
+  // BraveNewTabUI to using WebUIConfig. Currently, we can't add both
+  // BravePrivateNewTabUI and BraveNewTabUI configs to the map because they
+  // use the same origin (content::kChromeUIScheme +
+  // chrome::kChromeUINewTabHost).
+  map.RemoveConfig(
+      GetWebUIConfigURL(content::kChromeUIScheme, chrome::kChromeUINewTabHost));
   // Remove SettingsUIConfig. It will be replaced with BraveSettingsUIConfig.
   map.RemoveConfig(GetWebUIConfigURL(content::kChromeUIScheme,
                                      chrome::kChromeUISettingsHost));
@@ -64,6 +75,7 @@ void RegisterChromeWebUIConfigs() {
 
 #if !BUILDFLAG(IS_ANDROID)
   map.AddWebUIConfig(std::make_unique<brave_rewards::RewardsPageTopUIConfig>());
+  map.AddWebUIConfig(std::make_unique<BravePrivateNewTabUIConfig>());
   map.AddWebUIConfig(std::make_unique<BraveSettingsUIConfig>());
   map.AddWebUIConfig(std::make_unique<ShieldsPanelUIConfig>());
   map.AddWebUIConfig(std::make_unique<SpeedreaderToolbarUIConfig>());
