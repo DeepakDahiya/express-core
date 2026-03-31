@@ -518,6 +518,30 @@ constexpr char16_t kYoutubeInAppPIP[] =
                                     console.log('New video cannot do PIP, closed old PIP');
                                 }
                             }, 200);
+
+                            setTimeout(() => {
+                                if (newVideoElement &&
+                                    typeof newVideoElement.requestPictureInPicture === 'function' &&
+                                    !newVideoElement.paused) {
+
+                                    newVideoElement.requestPictureInPicture()
+                                        .then(() => {
+                                            currentPIPVideoId = newVideoId;
+                                            lastPlayingVideoElement = newVideoElement;
+                                            setPIPStatus(newVideoId, true);
+                                            console.log('PIP replaced with new video:', newVideoId);
+                                        })
+                                        .catch(err => {
+                                            console.warn('Failed to enter PIP with new video:', err);
+                                            currentPIPVideoId = null;
+                                            setPIPStatus(null, false);
+                                        });
+                                } else {
+                                    currentPIPVideoId = null;
+                                    setPIPStatus(null, false);
+                                    console.log('New video cannot do PIP, closed old PIP');
+                                }
+                            }, 500);
                         }).catch(err => {
                             console.warn('Failed to exit current PIP:', err);
                         });
