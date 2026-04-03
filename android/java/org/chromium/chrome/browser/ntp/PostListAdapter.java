@@ -131,17 +131,33 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
     /**
      * Called by RecyclerView when a card enters the visible window.
-     * This is the trigger for the comment count-up animation — it only fires for
-     * cards that are actually on screen, so off-screen items never waste the animation.
+     * When item N+1 becomes visible, we trigger the comment count animation on item N.
+     * This ensures the comment counter on item N is already scrolled into view
+     * before the animation starts, so the user actually sees the count-up.
      */
     @Override
     public void onViewAttachedToWindow(@NonNull RecyclerView.ViewHolder holder) {
         super.onViewAttachedToWindow(holder);
-        if (!(holder instanceof PostHolder)) return;
-        PostHolder postHolder = (PostHolder) holder;
-        if (postHolder.mCountAnimator != null && !postHolder.mCountAnimationPlayed) {
-            postHolder.mCountAnimationPlayed = true;
-            postHolder.mCountAnimator.start();
+        int currentPos = holder.getAdapterPosition();
+        if (currentPos <= 0) return; // header or invalid
+
+        // When item N+1 becomes visible, trigger animation on item N (the one above).
+        // This ensures the comment counter is already scrolled into view before animating.
+        int prevPos = currentPos - 1;
+        RecyclerView.ViewHolder prevHolder =
+                mTopPostRecycler.findViewHolderForAdapterPosition(prevPos);
+        if (prevHolder instanceof PostHolder) {
+            ((PostHolder) prevHolder).startCountAnimation();
+        }
+
+        // For the very first post (adapter pos 1): there is no item after it at initial
+        // load to trigger it, so if this IS the first post and the header is the item
+        // above, we handle it directly — it's already visible on screen.
+        if (currentPos == 1 && holder instanceof PostHolder) {
+            // Delay slightly so the card finishes laying out before counting.
+            holder.itemView.postDelayed(() -> {
+                ((PostHolder) holder).startCountAnimation();
+            }, 300);
         }
     }
 
@@ -158,6 +174,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
         PostHolder postHolder = (PostHolder) holder;
         if (postHolder.mCountAnimator != null && postHolder.mCountAnimator.isRunning()) {
             postHolder.mCountAnimator.cancel();
+            postHolder.stopArrowBounce();
             // Reset so the animation plays again when the card scrolls back into view
             postHolder.mCountAnimationPlayed = false;
         }
@@ -364,6 +381,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
         // Comment count animator — started only when the card enters the viewport
         ValueAnimator mCountAnimator;
         boolean mCountAnimationPlayed;
+        android.animation.ObjectAnimator mArrowBounceAnimator;
+        final View mCountArrow;
 
         private final Handler autoScrollHandler;
         private Runnable autoScrollRunnable;
@@ -397,6 +416,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             titleText = (TextView) itemView.findViewById(R.id.title);
             contentText = (TextView) itemView.findViewById(R.id.post_content);
             mCommentButton = (Button) itemView.findViewById(R.id.btn_comment);
+            mCountArrow = itemView.findViewById(R.id.comment_count_arrow);
             mReadMoreButton = (Button) itemView.findViewById(R.id.btn_read_more_post);
             mReadMoreButton2 = (Button) itemView.findViewById(R.id.btn_read_more_post2);
             context = itemView.getContext();
@@ -630,6 +650,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
             // Reset per-bind state so a freshly bound card can animate when it scrolls in.
             mCountAnimationPlayed = false;
+            stopArrowBounce();
             if (post.getCommentCount() > 0) {
                 final int targetCount = post.getCommentCount();
                 // Show "0 comments" as the starting state so the count-up is visible
@@ -638,7 +659,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         mCommentButton.getContext().getResources().getQuantityString(
                                 R.plurals.view_comments_count, 0, 0));
                 ValueAnimator animator = ValueAnimator.ofInt(0, targetCount);
-                animator.setDuration(1500);
+                animator.setDuration(5000);
                 animator.setInterpolator(new DecelerateInterpolator(1.5f));
                 animator.addUpdateListener(a -> {
                     int count = (int) a.getAnimatedValue();
@@ -646,8 +667,14 @@ public class PostListAdapter extends RecyclerView.Adapter {
                             mCommentButton.getContext().getResources().getQuantityString(
                                     R.plurals.view_comments_count, count, count));
                 });
-                // Do NOT start here — onViewAttachedToWindow will fire when the card
-                // is actually visible and kick it off then.
+                animator.addListener(new android.animation.AnimatorListenerAdapter() {
+                    @Override
+                    public void onAnimationEnd(android.animation.Animator animation) {
+                        stopArrowBounce();
+                    }
+                });
+                // Do NOT start here — onViewAttachedToWindow of the NEXT card
+                // will trigger this so the count-up is fully visible to the user.
                 mCountAnimator = animator;
             } else {
                 mCountAnimator = null;
@@ -668,6 +695,41 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 Log.e("BE_GET_POST", "Exception occurred", ex);
                 stopAutoScroll();
                 releasePlayer();
+            }
+        }
+
+        void startCountAnimation() {
+            if (mCountAnimator != null && !mCountAnimationPlayed) {
+                mCountAnimationPlayed = true;
+                if (mCountArrow != null) {
+                    mCountArrow.setVisibility(View.VISIBLE);
+                    startArrowBounce();
+                }
+                mCountAnimator.start();
+            }
+        }
+
+        private void startArrowBounce() {
+            if (mCountArrow == null) return;
+            mCountArrow.setTranslationY(0f);
+            float jumpDist = -mCountArrow.getContext().getResources()
+                    .getDisplayMetrics().density * 4f;
+            mArrowBounceAnimator = android.animation.ObjectAnimator.ofFloat(
+                    mCountArrow, "translationY", 0f, jumpDist, 0f);
+            mArrowBounceAnimator.setDuration(600);
+            mArrowBounceAnimator.setRepeatCount(android.animation.ValueAnimator.INFINITE);
+            mArrowBounceAnimator.setInterpolator(new DecelerateInterpolator());
+            mArrowBounceAnimator.start();
+        }
+
+        private void stopArrowBounce() {
+            if (mArrowBounceAnimator != null) {
+                mArrowBounceAnimator.cancel();
+                mArrowBounceAnimator = null;
+            }
+            if (mCountArrow != null) {
+                mCountArrow.setTranslationY(0f);
+                mCountArrow.setVisibility(View.GONE);
             }
         }
 

@@ -95,6 +95,7 @@ public class BrowsingModeBottomToolbarCoordinator {
     private ImageButton mBeHomeButton;
     private TextView mBraveHomeText;
     private TextView mCommentsText;
+    private View mCommentsCountArrow;
     private int w;
     private int h;
 
@@ -105,6 +106,7 @@ public class BrowsingModeBottomToolbarCoordinator {
 
     private ImageButton mYouTubePipButton;
     private View mYouTubePipContainer;
+    private View mPipTrailingSpace;
 
     private View[] mStatsOverlays;
     private String mCurrentPreviewVideoId;
@@ -173,11 +175,12 @@ public class BrowsingModeBottomToolbarCoordinator {
         mBraveHomeText = mToolbarRoot.findViewById(R.id.bottom_home_text);
         mCommentsButton = mToolbarRoot.findViewById(R.id.comments_button);
         mCommentsText = mToolbarRoot.findViewById(R.id.comments_button1);
+        mCommentsCountArrow = mToolbarRoot.findViewById(R.id.comments_count_arrow);
         mBeHomeButton = mToolbarRoot.findViewById(R.id.be_home_button);
         int commentCount = 0;
         mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
         mCommentsText.setTextSize(10);
-        mCommentsText.setTextColor(android.graphics.Color.WHITE);
+        mCommentsText.setTextColor(ContextUtils.getApplicationContext().getColor(R.color.upvote_stroke_color));
         mBraveHomeText.setTextSize(10);
         mBraveHomeText.setTextColor(android.graphics.Color.WHITE);
         mBraveHomeButton.setOnClickListener(homeButtonListener);
@@ -294,6 +297,7 @@ public class BrowsingModeBottomToolbarCoordinator {
 
         mYouTubePipButton = mToolbarRoot.findViewById(R.id.bottom_youtube_pip_button);
         mYouTubePipContainer = mToolbarRoot.findViewById(R.id.youtube_pip_button_container);
+        mPipTrailingSpace = mToolbarRoot.findViewById(R.id.pip_trailing_space);
 
 
         if (mYouTubePipButton != null) {
@@ -321,6 +325,7 @@ public class BrowsingModeBottomToolbarCoordinator {
             @Override
             public void onPageLoadStarted(Tab tab, GURL url) {
                 if (mYouTubePipContainer != null) mYouTubePipContainer.setVisibility(View.GONE);
+                if (mPipTrailingSpace != null) mPipTrailingSpace.setVisibility(View.GONE);
                 updateYouTubeControlsLock(url != null ? url.getSpec() : "");
             }
 
@@ -366,6 +371,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                 }
             } else {
                 if (mYouTubePipContainer != null) mYouTubePipContainer.setVisibility(View.GONE);
+                if (mPipTrailingSpace != null) mPipTrailingSpace.setVisibility(View.GONE);
                 updateYouTubeControlsLock("");
             }
         };
@@ -386,7 +392,7 @@ public class BrowsingModeBottomToolbarCoordinator {
         if (mYouTubePipContainer == null) return;
         if (tab == null || tab.getWebContents() == null) {
             mYouTubePipContainer.setVisibility(View.GONE);
-
+            if (mPipTrailingSpace != null) mPipTrailingSpace.setVisibility(View.GONE);
             return;
         }
         boolean available =
@@ -395,6 +401,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                         tab.getWebContents());
         int visibility = available ? View.VISIBLE : View.GONE;
         mYouTubePipContainer.setVisibility(visibility);
+        if (mPipTrailingSpace != null) mPipTrailingSpace.setVisibility(visibility);
 
         if (available) maybeShowPipCoachMark();
     }
@@ -797,14 +804,58 @@ public class BrowsingModeBottomToolbarCoordinator {
     }
 
 
-    /** Animates mCommentsText counting up from 0 to {@code targetCount} over ~1.5 seconds. */
+    /** Animates mCommentsText counting up from 0 to {@code targetCount} over 5 seconds,
+     *  with a bouncing up-arrow visible while the count is running. */
     private void animateCommentCount(long targetCount) {
+        if (targetCount <= 0) {
+            mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", 0));
+            return;
+        }
+
+        // Show the arrow and start its bounce loop
+        if (mCommentsCountArrow != null) {
+            mCommentsCountArrow.setVisibility(View.VISIBLE);
+            startArrowBounce();
+        }
+
         ValueAnimator animator = ValueAnimator.ofInt(0, (int) Math.min(targetCount, Integer.MAX_VALUE));
-        animator.setDuration(1500);
+        animator.setDuration(5000);
         animator.setInterpolator(new DecelerateInterpolator(1.5f));
         animator.addUpdateListener(a -> mCommentsText.setText(
                 String.format(Locale.getDefault(), "%d comments", (int) a.getAnimatedValue())));
+        animator.addListener(new android.animation.AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(android.animation.Animator animation) {
+                stopArrowBounce();
+            }
+        });
         animator.start();
+    }
+
+    private android.animation.ObjectAnimator mArrowBounceAnimator;
+
+    private void startArrowBounce() {
+        if (mCommentsCountArrow == null) return;
+        mCommentsCountArrow.setTranslationY(0f);
+        float jumpDist = -mCommentsCountArrow.getContext().getResources()
+                .getDisplayMetrics().density * 4f; // 4dp jump
+        mArrowBounceAnimator = android.animation.ObjectAnimator.ofFloat(
+                mCommentsCountArrow, "translationY", 0f, jumpDist, 0f);
+        mArrowBounceAnimator.setDuration(600);
+        mArrowBounceAnimator.setRepeatCount(android.animation.ValueAnimator.INFINITE);
+        mArrowBounceAnimator.setInterpolator(new DecelerateInterpolator());
+        mArrowBounceAnimator.start();
+    }
+
+    private void stopArrowBounce() {
+        if (mArrowBounceAnimator != null) {
+            mArrowBounceAnimator.cancel();
+            mArrowBounceAnimator = null;
+        }
+        if (mCommentsCountArrow != null) {
+            mCommentsCountArrow.setTranslationY(0f);
+            mCommentsCountArrow.setVisibility(View.GONE);
+        }
     }
 
     private void updateCommentCountForUrl(String url) {

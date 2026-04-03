@@ -16,7 +16,9 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
+import android.os.Handler;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.DecelerateInterpolator;
@@ -49,11 +51,14 @@ public class PipCoachMarkView extends FrameLayout {
     private static final float GLOW_MAX_EXTRA_DP = 10f;
     // Glow ring stroke width
     private static final float GLOW_RING_STROKE_DP = 4f;
+    // Auto-dismiss after this duration (ms)
+    private static final long AUTO_DISMISS_MS = 4000;
 
     private final Paint mOverlayPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint mClearPaint   = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint mRingPaint    = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint mGlowPaint    = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Handler mHandler    = new Handler();
 
     private float mCx, mCy, mRadius;
     private float mAnimatedRadius;
@@ -61,6 +66,7 @@ public class PipCoachMarkView extends FrameLayout {
 
     private ValueAnimator mGlowAnimator;
     private Runnable mOnDismiss;
+    private View mTargetView;
 
     public PipCoachMarkView(Context context) {
         super(context);
@@ -82,9 +88,22 @@ public class PipCoachMarkView extends FrameLayout {
         mGlowPaint.setColor(GOLD_COLOR);
         mGlowPaint.setStyle(Paint.Style.STROKE);
         mGlowPaint.setStrokeWidth(dpToPx(GLOW_RING_STROKE_DP));
+    }
 
-        // Dismiss on any tap
-        setOnClickListener(v -> dismiss());
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (ev.getAction() == MotionEvent.ACTION_UP) {
+            float dx = ev.getX() - mCx;
+            float dy = ev.getY() - mCy;
+            boolean insideSpotlight = (dx * dx + dy * dy) <= (mRadius * mRadius);
+            dismiss();
+            if (insideSpotlight && mTargetView != null) {
+                mTargetView.performClick();
+            }
+            return true;
+        }
+        // Consume all other touch events so nothing leaks through.
+        return true;
     }
 
     /**
@@ -96,6 +115,7 @@ public class PipCoachMarkView extends FrameLayout {
      */
     public void show(View targetView, Runnable onDismiss) {
         mOnDismiss = onDismiss;
+        mTargetView = targetView;
 
         // Resolve screen-space centre of the target button
         int[] loc = new int[2];
@@ -127,6 +147,9 @@ public class PipCoachMarkView extends FrameLayout {
 
         addBanner(root);
         animateIn();
+
+        // Auto-dismiss so the user doesn't get stuck.
+        mHandler.postDelayed(this::dismiss, AUTO_DISMISS_MS);
     }
 
     /** Animates the spotlight radius from 0 → target, then starts the glow pulse. */
@@ -234,6 +257,9 @@ public class PipCoachMarkView extends FrameLayout {
     }
 
     private void dismiss() {
+        // Guard against multiple dismiss calls (tap + auto-dismiss timer).
+        mHandler.removeCallbacksAndMessages(null);
+        if (getParent() == null) return;
         if (mGlowAnimator != null) {
             mGlowAnimator.cancel();
             mGlowAnimator = null;

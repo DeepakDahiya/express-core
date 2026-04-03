@@ -370,6 +370,7 @@ brave_java_resources = [
   "java/res/drawable/ic_arrow_forward.xml",
   "java/res/drawable/ic_arrow_left_right_directions.xml",
   "java/res/drawable/ic_arrow_right.xml",
+  "java/res/drawable/ic_arrow_upward.xml",
   "java/res/drawable/ic_aurora_color.xml",
   "java/res/drawable/ic_autofill.xml",
   "java/res/drawable/ic_avax_color.xml",

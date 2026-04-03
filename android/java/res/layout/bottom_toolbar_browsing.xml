@@ -7,6 +7,7 @@
 <org.chromium.chrome.browser.toolbar.bottom.BrowsingModeBottomToolbarLinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/bottom_toolbar_browsing"
     android:orientation="horizontal"
     android:layout_width="match_parent"
@@ -86,17 +87,35 @@
             android:visibility="visible"
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
-        <TextView
-            android:id="@+id/comments_button1"
+        <LinearLayout
+            tools:ignore="UseCompoundDrawables"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/browser_express_empty_text"
-            android:gravity="end"
-            android:textColor="@color/upvote_stroke_color"
-            android:clickable="true"
-            android:focusable="true"
-            android:onClick="onClick"
-            android:textSize="11sp" />
+            android:layout_gravity="center"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <ImageView
+                android:id="@+id/comments_count_arrow"
+                android:layout_width="14dp"
+                android:layout_height="14dp"
+                android:src="@drawable/ic_arrow_upward"
+                android:tint="@color/upvote_stroke_color"
+                android:visibility="gone"
+                android:importantForAccessibility="no" />
+
+            <TextView
+                android:id="@+id/comments_button1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/browser_express_empty_text"
+                android:gravity="end"
+                android:textColor="@color/upvote_stroke_color"
+                android:clickable="true"
+                android:focusable="true"
+                android:onClick="onClick"
+                android:textSize="11sp" />
+        </LinearLayout>
     </LinearLayout>
 
     <!-- Permanent trailing space — always visible after comments -->
@@ -133,6 +152,14 @@
             android:textSize="11sp" />
 
     </LinearLayout>
+
+    <!-- Balancing spacer for PIP — visible only when PIP container is visible -->
+    <Space
+        android:id="@+id/pip_trailing_space"
+        android:layout_width="0dp"
+        android:layout_height="1dp"
+        android:layout_weight="1"
+        android:visibility="gone" />
 
     <include layout="@layout/brave_bookmark_toolbar" />
     <!-- <include layout="@layout/toolbar_space" /> -->
