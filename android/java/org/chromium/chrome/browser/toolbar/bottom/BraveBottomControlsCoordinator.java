@@ -52,6 +52,7 @@ public class BraveBottomControlsCoordinator extends BottomControlsCoordinator {
     private final ScrollingBottomViewResourceFrameLayout mRoot;
     private final ObservableSupplier<BookmarkModel> mBookmarkModelSupplier;
     private final LocationBarModel mLocationBarModel;
+    private final BrowserStateBrowserControlsVisibilityDelegate mControlsVisibilityDelegate;
 
     public BraveBottomControlsCoordinator(
             OneshotSupplier<LayoutStateProvider> layoutStateProviderSupplier,
@@ -102,6 +103,7 @@ public class BraveBottomControlsCoordinator extends BottomControlsCoordinator {
         mRoot = root;
         mBookmarkModelSupplier = bookmarkModelSupplier;
         mLocationBarModel = locationBarModel;
+        mControlsVisibilityDelegate = browserControlsVisibilityDelegate;
     }
 
     public void initializeWithNative(
@@ -131,7 +133,8 @@ public class BraveBottomControlsCoordinator extends BottomControlsCoordinator {
                             mMenuButtonHelperSupplier,
                             mMediator,
                             mBookmarkModelSupplier,
-                            mLocationBarModel);
+                            mLocationBarModel,
+                            mControlsVisibilityDelegate);
 
             mBottomToolbarCoordinator.initializeWithNative(
                     tabSwitcherListener,

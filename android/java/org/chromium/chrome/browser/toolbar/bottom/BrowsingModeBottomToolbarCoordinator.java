@@ -67,9 +67,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.view.ViewGroup;
 import com.bumptech.glide.Glide;
+import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.media.PictureInPicture;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.ui.util.TokenHolder;
 import org.chromium.chrome.browser.util.TabUtils;
 import org.chromium.url.GURL;
 import org.chromium.chrome.browser.settings.PostHogEventKeys;
@@ -146,6 +148,8 @@ public class BrowsingModeBottomToolbarCoordinator {
     private final BookmarksButton mBookmarkButton;
     private final MenuButton mMenuButton;
     private ThemeColorProvider mThemeColorProvider;
+    private final BrowserStateBrowserControlsVisibilityDelegate mControlsVisibilityDelegate;
+    private int mYouTubePersistentToken = TokenHolder.INVALID_TOKEN;
 
     BrowsingModeBottomToolbarCoordinator(
             View root,
@@ -153,10 +157,12 @@ public class BrowsingModeBottomToolbarCoordinator {
             OnClickListener homeButtonListener,
             OnClickListener searchAcceleratorListener,
             ObservableSupplier<OnClickListener> shareButtonListenerSupplier,
-            OnLongClickListener tabSwitcherLongClickListener) {
+            OnLongClickListener tabSwitcherLongClickListener,
+            BrowserStateBrowserControlsVisibilityDelegate controlsVisibilityDelegate) {
         mModel = new BrowsingModeBottomToolbarModel();
         mToolbarRoot = root.findViewById(R.id.bottom_toolbar_browsing);
         mTabProvider = tabProvider;
+        mControlsVisibilityDelegate = controlsVisibilityDelegate;
 
         PropertyModelChangeProcessor.create(
                 mModel, mToolbarRoot, new BrowsingModeBottomToolbarViewBinder());
@@ -315,19 +321,14 @@ public class BrowsingModeBottomToolbarCoordinator {
             @Override
             public void onPageLoadStarted(Tab tab, GURL url) {
                 if (mYouTubePipContainer != null) mYouTubePipContainer.setVisibility(View.GONE);
-                if (url != null && url.getSpec().contains("youtube.com")) {
-                    forceShowBottomToolbar();
-                }
+                updateYouTubeControlsLock(url != null ? url.getSpec() : "");
             }
 
             @Override
             public void onPageLoadFinished(Tab tab, GURL url) {
                 updateYouTubePipButtonVisibility(tab);
                 updateCommentCountForUrl(url.getSpec());
-                // Force-show the bottom toolbar on YouTube pages so no scroll is needed
-                if (url.getSpec().contains("youtube.com")) {
-                    forceShowBottomToolbar();
-                }
+                updateYouTubeControlsLock(url.getSpec());
             }
 
             @Override
@@ -335,9 +336,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                 updateYouTubePipButtonVisibility(tab);
                 if (tab.getUrl() != null && !tab.getUrl().isEmpty()) {
                     updateCommentCountForUrl(tab.getUrl().getSpec());
-                    if (tab.getUrl().getSpec().contains("youtube.com")) {
-                        forceShowBottomToolbar();
-                    }
+                    updateYouTubeControlsLock(tab.getUrl().getSpec());
                 }
             }
 
@@ -346,9 +345,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                 updateYouTubePipButtonVisibility(tab);
                 if (tab.getUrl() != null && !tab.getUrl().isEmpty()) {
                     updateCommentCountForUrl(tab.getUrl().getSpec());
-                    if (tab.getUrl().getSpec().contains("youtube.com")) {
-                        forceShowBottomToolbar();
-                    }
+                    updateYouTubeControlsLock(tab.getUrl().getSpec());
                 }
             }
         };
@@ -363,10 +360,13 @@ public class BrowsingModeBottomToolbarCoordinator {
                 updateYouTubePipButtonVisibility(tab);
                 if (tab.getUrl() != null && !tab.getUrl().isEmpty()) {
                     updateCommentCountForUrl(tab.getUrl().getSpec());
+                    updateYouTubeControlsLock(tab.getUrl().getSpec());
+                } else {
+                    updateYouTubeControlsLock("");
                 }
             } else {
                 if (mYouTubePipContainer != null) mYouTubePipContainer.setVisibility(View.GONE);
-
+                updateYouTubeControlsLock("");
             }
         };
         mTabProvider.addObserver(mTabProviderObserver);
@@ -464,6 +464,23 @@ public class BrowsingModeBottomToolbarCoordinator {
             } else {
                 break;
             }
+        }
+    }
+
+    /**
+     * Acquires or releases a persistent browser-controls-shown token based on whether
+     * the current URL is a YouTube page. While a token is held, both the top and bottom
+     * toolbars stay visible regardless of scroll.
+     */
+    private void updateYouTubeControlsLock(String url) {
+        boolean isYouTube = url != null && url.contains("youtube.com");
+        if (isYouTube && mYouTubePersistentToken == TokenHolder.INVALID_TOKEN) {
+            mYouTubePersistentToken =
+                    mControlsVisibilityDelegate.showControlsPersistent();
+        } else if (!isYouTube && mYouTubePersistentToken != TokenHolder.INVALID_TOKEN) {
+            mControlsVisibilityDelegate.releasePersistentShowingToken(
+                    mYouTubePersistentToken);
+            mYouTubePersistentToken = TokenHolder.INVALID_TOKEN;
         }
     }
 
@@ -604,6 +621,11 @@ public class BrowsingModeBottomToolbarCoordinator {
      * Clean up any state when the browsing mode bottom toolbar is destroyed.
      */
     public void destroy() {
+        // Release the YouTube persistent controls token if held.
+        if (mYouTubePersistentToken != TokenHolder.INVALID_TOKEN) {
+            mControlsVisibilityDelegate.releasePersistentShowingToken(mYouTubePersistentToken);
+            mYouTubePersistentToken = TokenHolder.INVALID_TOKEN;
+        }
         if (mShareButtonListenerSupplier != null) {
             mShareButtonListenerSupplier.removeObserver(mShareButtonListenerSupplierCallback);
         }

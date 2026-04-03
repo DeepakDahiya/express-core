@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.omnibox.OmniboxFocusReason;
 import org.chromium.chrome.browser.tabmodel.IncognitoStateProvider;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.theme.ThemeColorProvider;
+import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.toolbar.LocationBarModel;
 import org.chromium.chrome.browser.toolbar.home_button.HomeButton;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
@@ -96,7 +97,8 @@ class BottomToolbarCoordinator implements View.OnLongClickListener {
             ObservableSupplier<AppMenuButtonHelper> menuButtonHelperSupplier,
             BottomControlsMediator bottomControlsMediator,
             ObservableSupplier<BookmarkModel> bookmarkModelSupplier,
-            LocationBarModel locationBarModel) {
+            LocationBarModel locationBarModel,
+            BrowserStateBrowserControlsVisibilityDelegate controlsVisibilityDelegate) {
         layoutStateProviderSupplier.onAvailable(
                 mCallbackController.makeCancelable(this::setLayoutStateProvider));
 
@@ -119,7 +121,8 @@ class BottomToolbarCoordinator implements View.OnLongClickListener {
                         homeButtonListener,
                         searchAcceleratorListener,
                         mShareButtonListenerSupplier,
-                        tabsSwitcherLongClickListner);
+                        tabsSwitcherLongClickListner,
+                        controlsVisibilityDelegate);
 
         mTabSwitcherModeStub = root.findViewById(R.id.bottom_toolbar_tab_switcher_mode_stub);
 
