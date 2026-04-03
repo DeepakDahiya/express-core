@@ -172,6 +172,7 @@ constexpr char16_t kYoutubeInAppPIP[] =
             let pipReplacementEnabled = true;
             let lastPlayingVideoElement = null;
             let isOriginalPIPTab = false;
+            let isTransitionClose = false;
 
             function isPIPActive() {
                 return document.pictureInPictureElement !== null;
@@ -298,6 +299,7 @@ constexpr char16_t kYoutubeInAppPIP[] =
                             
                             if (isPIPActive()) {
                                 sendPlaybackState();
+                                isTransitionClose = true;
                                 closePIP();
                                 localStorage.removeItem('pip_transition_signal');
                             }
@@ -429,7 +431,34 @@ constexpr char16_t kYoutubeInAppPIP[] =
                                 })
                                 .catch(err => {
                                     console.warn('Failed to start PIP for new video:', err);
+                                    // On newer Android, PiP may fail due to lost user gesture.
+                                    // Ensure the new video keeps playing normally.
+                                    if (videoElement.paused) {
+                                        videoElement.play().catch(console.warn);
+                                    }
+                                    // Still signal old tab to close since we took over playback.
+                                    signalTabToClose(previousPIPTabId);
                                 });
+                        } else {
+                            // Video got paused during the wait — try to resume it.
+                            videoElement.play().then(() => {
+                                videoElement.requestPictureInPicture()
+                                    .then(() => {
+                                        currentPIPVideoId = videoId;
+                                        lastPlayingVideoElement = videoElement;
+                                        isOriginalPIPTab = true;
+                                        setPIPStatus(videoId, true);
+                                        console.log('PIP started after resuming video:', videoId);
+                                        signalTabToClose(previousPIPTabId);
+                                    })
+                                    .catch(err => {
+                                        console.warn('Failed to start PIP after resume:', err);
+                                        signalTabToClose(previousPIPTabId);
+                                    });
+                            }).catch(err => {
+                                console.warn('Failed to resume video for PIP:', err);
+                                signalTabToClose(previousPIPTabId);
+                            });
                         }
                     }, 300);
                 }
@@ -494,6 +523,7 @@ constexpr char16_t kYoutubeInAppPIP[] =
                     console.log('Replacing PIP video with:', newVideoId);
 
                     if (document.pictureInPictureElement) {
+                        isTransitionClose = true;
                         document.exitPictureInPicture().then(() => {
                             setTimeout(() => {
                                 if (newVideoElement &&
@@ -564,8 +594,27 @@ constexpr char16_t kYoutubeInAppPIP[] =
                 });
 
                 document.addEventListener('leavepictureinpicture', (event) => {
+                    const wasTransitionClose = isTransitionClose;
+                    isTransitionClose = false;
+
+                    if (wasTransitionClose) {
+                        // PiP closed because a new video is taking over in another tab.
+                        // Pause the old video so it doesn't keep playing in background.
+                        console.log('Left PiP mode - transition close, pausing old video');
+                        const video = event.target || document.querySelector('video');
+                        if (video && !video.paused) {
+                            video.pause();
+                        }
+                        currentPIPVideoId = null;
+                        lastPlayingVideoElement = null;
+                        isOriginalPIPTab = false;
+                        setPIPStatus(null, false);
+                        return;
+                    }
+
+                    // User-initiated PiP exit - restore tab and resume playback.
                     console.log('Left PiP mode - attempting tab restoration');
-                    
+
                     // Store that we're exiting PiP
                     try {
                         const exitSignal = {
@@ -576,7 +625,7 @@ constexpr char16_t kYoutubeInAppPIP[] =
                             shouldRestoreTab: true
                         };
                         localStorage.setItem('pip_exit_signal', JSON.stringify(exitSignal));
-                        
+
                         // Set a timeout to clean up the signal
                         setTimeout(() => {
                             try {
@@ -586,30 +635,30 @@ constexpr char16_t kYoutubeInAppPIP[] =
                     } catch (e) {
                         console.warn('Could not set PiP exit signal:', e);
                     }
-                    
+
                     // Try to focus this window/tab
                     if (window.focus) {
                         window.focus();
                     }
-                    
+
                     // For Android 15+, we need to be more aggressive about tab restoration
                     // Send a message to the native layer to restore the tab
                     if (window.Android && window.Android.restoreOriginalTab) {
                         window.Android.restoreOriginalTab();
                     }
-                    
+
                     currentPIPVideoId = null;
                     lastPlayingVideoElement = null;
                     isOriginalPIPTab = false;
                     setPIPStatus(null, false);
-        
+
                     // Ensure video continues playing after PiP exit
                     setTimeout(() => {
                         const video = document.querySelector('video');
                         if (video && video.paused) {
                             video.play().catch(console.warn);
                         }
-                        
+
                         // Force page visibility to visible
                         Object.defineProperty(document, 'hidden', {
                             value: false,
@@ -622,7 +671,7 @@ constexpr char16_t kYoutubeInAppPIP[] =
                             configurable: true
                         });
                     }, 200);
-                    
+
                     // Restore the playback state if needed
                     const videoElement = document.querySelector('video');
                     if (videoElement) {

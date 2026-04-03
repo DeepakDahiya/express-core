@@ -197,6 +197,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         removePreferenceIfPresent(PREF_LANGUAGES);
         removePreferenceIfPresent(PREF_BASICS_SECTION);
         removePreferenceIfPresent(MainSettings.PREF_HOMEPAGE);
+        removePreferenceIfPresent(PREF_PASSWORDS);
 
         // removePreferenceIfPresent(PREF_USE_CUSTOM_TABS);
         removePreferenceIfPresent(PREF_ADVANCED_SECTION);
