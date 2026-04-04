@@ -1298,20 +1298,26 @@ const char16_t kRemoveYoutubeComment[] =
     (function() {
         'use strict';
 
+        if (window.__braveCommentHiderActive) return;
+        window.__braveCommentHiderActive = true;
+
         // All comment-related CSS selectors covering both mobile (ytm-) and
         // desktop (ytd-) YouTube layouts, including the newer engagement-panel
-        // based comment sections.
+        // based comment sections and bottom-sheet comments.
         var COMMENT_SELECTORS = [
             'ytm-comments-entry-point-header-renderer',
             'ytm-comment-section-renderer',
             'ytm-comment-section-header-renderer',
             'ytm-comment-thread-renderer',
             'ytm-comment-replies-renderer',
+            'ytm-comments-simplebox-renderer',
             'ytm-item-section-renderer[section-identifier="comments"]',
+            'ytm-item-section-renderer[section-identifier="comment-item-section"]',
             'ytm-engagement-panel-section-list-renderer[target-id="comments-section"]',
             'ytm-engagement-panel-section-list-renderer[target-id="engagement-panel-comments-section"]',
             '#comments',
             '#comment-section-renderer',
+            '#comment-teaser',
             'ytd-comments',
             'ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-comments-section"]',
             '[data-target-id="comments"]',
@@ -1319,93 +1325,151 @@ const char16_t kRemoveYoutubeComment[] =
             '[data-target-id="engagement-panel-comments-section"]'
         ];
 
-        // Build a single CSS selector string from the array.
         var CSS_SELECTOR = COMMENT_SELECTORS.join(',');
+        var CSS_RULE = CSS_SELECTOR +
+            '{ display: none !important; visibility: hidden !important;' +
+            '  height: 0 !important; overflow: hidden !important; }';
 
         // ── CSS injection ────────────────────────────────────────────────────
-        // Injecting a <style> tag means any comment element that appears later
-        // (lazy-loaded on scroll, SPA navigation, etc.) is hidden immediately
-        // without any timing dependency.
-        function injectHideStyles() {
-            // Safely clear lazy-list if present (mobile YouTube).
+        function injectHideStyles(root) {
+            var isDoc = (root === document);
+            var parent = isDoc ? (document.head || document.documentElement) : root;
+
             try {
-                var ll = document.getElementsByTagName('lazy-list');
+                var existing = isDoc
+                    ? document.getElementById('brave-hide-yt-comments')
+                    : (root.querySelector ? root.querySelector('#brave-hide-yt-comments') : null);
+                if (existing) return;
+            } catch(e) {}
+
+            try {
+                var ll = (isDoc ? document : root).getElementsByTagName('lazy-list');
                 if (ll && ll[0]) ll[0].textContent = '';
             } catch(e) {}
 
-            if (document.getElementById('brave-hide-yt-comments')) return;
             var style = document.createElement('style');
             style.id = 'brave-hide-yt-comments';
-            style.textContent = CSS_SELECTOR + '{ display: none !important; }';
-            (document.head || document.documentElement).appendChild(style);
+            style.textContent = CSS_RULE;
+            parent.appendChild(style);
         }
 
         // ── DOM removal ──────────────────────────────────────────────────────
-        // Removes matched nodes entirely so they don't affect page layout or
-        // trigger further network requests.
-        function removeCommentNodes() {
-            document.querySelectorAll(CSS_SELECTOR).forEach(function(el) {
-                el.remove();
-            });
-
-            // Also catch item-section-renderer wrappers that *contain* a
-            // comment node (mobile YouTube nests them).
-            document.querySelectorAll(
-                'ytm-item-section-renderer, ytd-item-section-renderer'
-            ).forEach(function(el) {
-                if (el.querySelector(
-                        'ytm-comments-entry-point-header-renderer,' +
-                        'ytm-comment-section-renderer,' +
-                        'ytm-comment-thread-renderer,' +
-                        'ytm-comment-section-header-renderer')) {
+        function removeCommentNodes(root) {
+            var searchRoot = root || document;
+            try {
+                searchRoot.querySelectorAll(CSS_SELECTOR).forEach(function(el) {
                     el.remove();
+                });
+            } catch(e) {}
+
+            try {
+                searchRoot.querySelectorAll(
+                    'ytm-item-section-renderer, ytd-item-section-renderer'
+                ).forEach(function(el) {
+                    if (el.querySelector(
+                            'ytm-comments-entry-point-header-renderer,' +
+                            'ytm-comment-section-renderer,' +
+                            'ytm-comment-thread-renderer,' +
+                            'ytm-comment-section-header-renderer,' +
+                            'ytm-comments-simplebox-renderer')) {
+                        el.remove();
+                    }
+                });
+            } catch(e) {}
+        }
+
+        // ── Shadow DOM support ───────────────────────────────────────────────
+        // YouTube mobile increasingly renders components inside shadow roots.
+        // document.querySelectorAll and <style> in <head> cannot pierce shadow
+        // boundaries, so we must walk into open shadow roots explicitly.
+        var observedRoots = new WeakSet();
+
+        function processShadowRoots(root) {
+            var els;
+            try { els = root.querySelectorAll('*'); } catch(e) { return; }
+            els.forEach(function(el) {
+                if (el.shadowRoot && !observedRoots.has(el.shadowRoot)) {
+                    observedRoots.add(el.shadowRoot);
+                    injectHideStyles(el.shadowRoot);
+                    removeCommentNodes(el.shadowRoot);
+                    observeRoot(el.shadowRoot);
+                    processShadowRoots(el.shadowRoot);
                 }
             });
         }
 
         // ── MutationObserver ─────────────────────────────────────────────────
-        // YouTube loads comments lazily when the user scrolls into that region.
-        // The observer fires on every DOM mutation and removes them as they land.
-        // Debounce to avoid thrashing on rapid DOM updates.
         var pendingRemoval = false;
-        var observer = new MutationObserver(function() {
-            if (pendingRemoval) return;
-            pendingRemoval = true;
-            requestAnimationFrame(function() {
-                removeCommentNodes();
-                pendingRemoval = false;
-            });
-        });
 
-        function startObserver() {
-            observer.disconnect();
-            observer.observe(document.documentElement, { childList: true, subtree: true });
+        function observeRoot(root) {
+            var obs = new MutationObserver(function() {
+                if (pendingRemoval) return;
+                pendingRemoval = true;
+                requestAnimationFrame(function() {
+                    removeCommentNodes(root);
+                    processShadowRoots(root);
+                    pendingRemoval = false;
+                });
+            });
+            obs.observe(root, { childList: true, subtree: true });
         }
 
-        // ── SPA navigation handling ──────────────────────────────────────────
-        // YouTube is a single-page app; the DOM is reused across navigations.
-        // yt-navigate-finish fires after each in-app navigation.
-        window.addEventListener('yt-navigate-finish', function() {
-            injectHideStyles();
-            removeCommentNodes();
-            startObserver();
-        });
+        function startObserver() {
+            if (!observedRoots.has(document.documentElement)) {
+                observedRoots.add(document.documentElement);
+                observeRoot(document.documentElement);
+            }
+        }
 
-        // yt-page-data-updated fires when new page content is swapped in.
+        // ── Intercept attachShadow ───────────────────────────────────────────
+        // Catch future shadow roots the moment they are created so we can
+        // inject styles and observe them immediately.
+        try {
+            var origAttachShadow = Element.prototype.attachShadow;
+            Element.prototype.attachShadow = function(init) {
+                var shadowRoot = origAttachShadow.call(this, init);
+                if (init.mode === 'open' && !observedRoots.has(shadowRoot)) {
+                    observedRoots.add(shadowRoot);
+                    // Defer slightly so the shadow root is populated.
+                    setTimeout(function() {
+                        injectHideStyles(shadowRoot);
+                        removeCommentNodes(shadowRoot);
+                        observeRoot(shadowRoot);
+                        processShadowRoots(shadowRoot);
+                    }, 0);
+                }
+                return shadowRoot;
+            };
+        } catch(e) {}
+
+        // ── SPA navigation handling ──────────────────────────────────────────
+        function fullCleanup() {
+            injectHideStyles(document);
+            removeCommentNodes();
+            processShadowRoots(document);
+            startObserver();
+        }
+
+        window.addEventListener('yt-navigate-finish', fullCleanup);
         window.addEventListener('yt-page-data-updated', function() {
             removeCommentNodes();
+            processShadowRoots(document);
         });
-
-        // yt-page-type-changed fires on newer YouTube mobile when the page
-        // type changes (e.g. home → watch).
         window.addEventListener('yt-page-type-changed', function() {
             removeCommentNodes();
+            processShadowRoots(document);
         });
 
+        // ── Periodic safety net ──────────────────────────────────────────────
+        // Catches any comments that slip through event-driven removal (e.g.
+        // lazy-loaded via IntersectionObserver after scroll).
+        setInterval(function() {
+            removeCommentNodes();
+            processShadowRoots(document);
+        }, 2000);
+
         // ── Initial run ──────────────────────────────────────────────────────
-        injectHideStyles();
-        removeCommentNodes();
-        startObserver();
+        fullCleanup();
     })();
     )";
 
@@ -1877,9 +1941,11 @@ void YouTubeScriptInjectorTabHelper::PrimaryMainDocumentElementAvailable() {
       }, contents),
       base::Milliseconds(500));
 
-  // Inject the comment-hiding script at multiple delays to handle both fast
-  // and slow page loads. The script is idempotent (guards against duplicate
-  // style injection and the MutationObserver handles the rest).
+  // Inject the comment-hiding script immediately and at delayed intervals to
+  // handle both fast and slow page loads. The script guards against duplicate
+  // execution via window.__braveCommentHiderActive.
+  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+      kRemoveYoutubeComment, base::NullCallback());
   for (int delay_ms : {500, 1500, 3000}) {
     base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,

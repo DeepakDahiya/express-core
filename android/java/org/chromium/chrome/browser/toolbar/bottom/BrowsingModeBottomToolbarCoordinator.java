@@ -81,6 +81,8 @@ import java.io.UnsupportedEncodingException;
 import org.json.JSONException;
 import android.util.Base64;
 import org.json.JSONObject;
+import android.os.Handler;
+import android.os.Looper;
 import java.util.ArrayList;
 
 /**
@@ -109,6 +111,7 @@ public class BrowsingModeBottomToolbarCoordinator {
     private View mPipTrailingSpace;
 
     private View[] mStatsOverlays;
+    private Handler mPreviewHandler;
     private String mCurrentPreviewVideoId;
     private Tab mCurrentObservedTab;
     private TabObserver mPipTabObserver;
@@ -686,12 +689,21 @@ public class BrowsingModeBottomToolbarCoordinator {
             };
 
     /**
-     * Shows up to 3 comment preview cards that cycle up from the bottom one at a time,
-     * each rising with a spring animation, staying for 3 seconds, then sliding back down
-     * before the next one appears.
+     * Shows up to 3 comment preview cards that stack from bottom to top:
+     *   - Card 1 rises to the highest position
+     *   - Card 2 rises to the middle
+     *   - Card 3 rises to just above the toolbar
+     * Cards enter one after another with equal spacing, hold together, then
+     * vanish in the same order: first card disappears, then second, then third.
      */
     private void showYouTubeCommentsPreview(List<Comment> comments) {
-        // Cancel and remove any existing overlays first
+        // Cancel pending handler callbacks from a previous invocation so stale
+        // runnables don't fire and cause the first card to "pop" multiple times.
+        if (mPreviewHandler != null) {
+            mPreviewHandler.removeCallbacksAndMessages(null);
+        }
+
+        // Cancel and remove any existing overlays
         if (mStatsOverlays != null) {
             for (View old : mStatsOverlays) {
                 if (old != null) {
@@ -716,7 +728,8 @@ public class BrowsingModeBottomToolbarCoordinator {
         float density = metrics.density;
         int bottomToolbarHeight = mToolbarRoot.getContext().getResources()
                 .getDimensionPixelSize(R.dimen.bottom_controls_height);
-        float offScreen = metrics.heightPixels * 0.6f;
+        int screenHeight = metrics.heightPixels;
+        float offScreen = screenHeight * 0.4f;
 
         // Build all card views up front so Glide can start loading avatars immediately
         LayoutInflater inflater = LayoutInflater.from(mToolbarRoot.getContext());
@@ -743,7 +756,6 @@ public class BrowsingModeBottomToolbarCoordinator {
             }
             ((TextView) card.findViewById(R.id.preview_content)).setText(comment.getContent());
 
-            // Position each card just above the bottom toolbar, off-screen below to start
             FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
                     FrameLayout.LayoutParams.MATCH_PARENT,
                     FrameLayout.LayoutParams.WRAP_CONTENT);
@@ -756,51 +768,77 @@ public class BrowsingModeBottomToolbarCoordinator {
             card.setAlpha(0f);
 
             cards.add(card);
+            contentView.addView(card);
         }
 
         mStatsOverlays = new View[limit];
-        cycleCommentCard(cards, 0, contentView, offScreen, mStatsOverlays);
-    }
+        for (int i = 0; i < limit; i++) {
+            mStatsOverlays[i] = cards.get(i);
+        }
 
-    /**
-     * Recursively cycles through comment cards: slides the card at {@code index} up from
-     * the bottom, waits 3 seconds, slides it back down, then starts the next card.
-     * The {@code overlayRef} identity check ensures a stale cycle stops if a new preview
-     * call has already reset {@code mStatsOverlays}.
-     */
-    private void cycleCommentCard(
-            List<View> cards, int index, ViewGroup contentView, float offScreen, View[] overlayRef) {
-        if (index >= cards.size() || mStatsOverlays != overlayRef) return;
+        View[] overlayRef = mStatsOverlays;
+        Handler handler = new Handler(Looper.getMainLooper());
+        mPreviewHandler = handler;
 
-        View card = cards.get(index);
-        mStatsOverlays[index] = card;
-        contentView.addView(card);
+        // Fixed percentage positions — evenly spaced across 35% of available height.
+        // Card 1 (index 0) is highest, last card sits at translationY = 0.
+        float availableHeight = screenHeight - bottomToolbarHeight;
+        float totalSpan = availableHeight * 0.35f;
+        float step = (limit > 1) ? totalSpan / (limit - 1) : 0f;
 
-        // Slide up from below with a slight spring overshoot
-        card.animate()
-                .translationY(0f)
-                .alpha(1f)
-                .setDuration(500)
-                .setInterpolator(new OvershootInterpolator(0.8f))
-                .withEndAction(() -> card.postDelayed(() -> {
-                    // Slide current card back down
-                    card.animate()
-                            .translationY(offScreen)
-                            .alpha(0f)
-                            .setDuration(350)
-                            .setInterpolator(new AccelerateInterpolator())
-                            .withEndAction(() -> {
-                                ViewGroup p = (ViewGroup) card.getParent();
-                                if (p != null) p.removeView(card);
-                                if (index == cards.size() - 1 && mStatsOverlays == overlayRef) {
-                                    mStatsOverlays = null;
-                                }
-                            })
-                            .start();
-                    // Start next card as this one exits
-                    cycleCommentCard(cards, index + 1, contentView, offScreen, overlayRef);
-                }, 3000))
-                .start();
+        float[] targetY = new float[limit];
+        for (int i = 0; i < limit; i++) {
+            targetY[i] = -((limit - 1 - i) * step);
+        }
+
+        long entranceInterval = 400;
+        long holdDuration = 3000;
+        long exitInterval = 400;
+
+        // Stagger entrance: card 1 rises first, then card 2, then card 3
+        for (int i = 0; i < limit; i++) {
+            final View card = cards.get(i);
+            final float dest = targetY[i];
+            long delay = (long) i * entranceInterval;
+
+            handler.postDelayed(() -> {
+                if (mStatsOverlays != overlayRef) return;
+                card.animate()
+                        .translationY(dest)
+                        .alpha(1f)
+                        .setDuration(500)
+                        .setInterpolator(new OvershootInterpolator(0.8f))
+                        .start();
+            }, delay);
+        }
+
+        // Time when the last card finishes its entrance animation
+        long allVisibleAt = (long) (limit - 1) * entranceInterval + 500;
+
+        // Stagger exit: card 1 vanishes first, then card 2, then card 3
+        for (int i = 0; i < limit; i++) {
+            final View card = cards.get(i);
+            final int cardIndex = i;
+            long exitDelay = allVisibleAt + holdDuration + (long) i * exitInterval;
+
+            handler.postDelayed(() -> {
+                if (mStatsOverlays != overlayRef) return;
+                card.animate()
+                        .translationY(offScreen)
+                        .alpha(0f)
+                        .setDuration(350)
+                        .setInterpolator(new AccelerateInterpolator())
+                        .withEndAction(() -> {
+                            ViewGroup p = (ViewGroup) card.getParent();
+                            if (p != null) p.removeView(card);
+                            if (cardIndex == limit - 1 && mStatsOverlays == overlayRef) {
+                                mStatsOverlays = null;
+                                mPreviewHandler = null;
+                            }
+                        })
+                        .start();
+            }, exitDelay);
+        }
     }
 
 
