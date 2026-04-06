@@ -209,7 +209,7 @@ class BottomToolbarCoordinator implements View.OnLongClickListener {
                             mIsInTabSwitcherMode = true;
                             BrowsingModeBottomToolbarCoordinator browsingModeCoordinator =
                                     (BrowsingModeBottomToolbarCoordinator) mBrowsingModeCoordinator;
-                            browsingModeCoordinator.getSearchAccelerator().setVisibility(View.GONE);
+                            // browsingModeCoordinator.getSearchAccelerator().setVisibility(View.GONE);
                             if (BottomToolbarVariationManager.isHomeButtonOnBottomControls()) {
                                 browsingModeCoordinator
                                         .getHomeButton()
@@ -240,9 +240,9 @@ class BottomToolbarCoordinator implements View.OnLongClickListener {
                             mIsInTabSwitcherMode = false;
                             BrowsingModeBottomToolbarCoordinator browsingModeCoordinator =
                                     (BrowsingModeBottomToolbarCoordinator) mBrowsingModeCoordinator;
-                            browsingModeCoordinator
-                                    .getSearchAccelerator()
-                                    .setVisibility(View.VISIBLE);
+                            // browsingModeCoordinator
+                            //         .getSearchAccelerator()
+                            //         .setVisibility(View.VISIBLE);
                             if (BottomToolbarVariationManager.isHomeButtonOnBottomControls()) {
                                 browsingModeCoordinator.getHomeButton().setVisibility(View.VISIBLE);
                             }
