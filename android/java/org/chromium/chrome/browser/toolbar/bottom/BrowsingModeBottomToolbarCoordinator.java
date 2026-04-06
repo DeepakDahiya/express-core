@@ -105,6 +105,7 @@ public class BrowsingModeBottomToolbarCoordinator {
     private static final int MAX_PIP_INTRO_SHOW_COUNT = 2;
     private static final String PREF_PIP_BG_PLAY_NUDGE_COUNT = "pip_bg_play_nudge_count";
     private static final int MAX_BG_PLAY_NUDGE_COUNT = 3;
+    private boolean mPipIntroShownThisRun;
 
     private ImageButton mYouTubePipButton;
     private View mYouTubePipContainer;
@@ -415,6 +416,7 @@ public class BrowsingModeBottomToolbarCoordinator {
         int shownCount = prefs.getInt(PREF_PIP_INTRO_SHOWN_COUNT, 0);
         if (shownCount >= MAX_PIP_INTRO_SHOW_COUNT) return;
         prefs.edit().putInt(PREF_PIP_INTRO_SHOWN_COUNT, shownCount + 1).apply();
+        mPipIntroShownThisRun = true;
 
         // Wait for the button to be laid out before reading its screen coordinates.
         mYouTubePipButton.post(() -> {
@@ -922,6 +924,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                             @Override
                             public void onSuccess(List<Comment> comments, long ignored) {
                                 if (!finalVideoId.equals(mCurrentPreviewVideoId)) return;
+                                if (mPipIntroShownThisRun) return;
                                 showYouTubeCommentsPreview(comments);
                             }
 
