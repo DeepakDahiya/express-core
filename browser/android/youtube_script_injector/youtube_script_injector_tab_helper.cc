@@ -1305,28 +1305,44 @@ const char16_t kRemoveYoutubeComment[] =
         // desktop (ytd-) YouTube layouts, including the newer engagement-panel
         // based comment sections and bottom-sheet comments.
         var COMMENT_SELECTORS = [
+            // Mobile YouTube (ytm-) — entry point, sections, threads
             'ytm-comments-entry-point-header-renderer',
+            'ytm-comments-entry-point-teaser-renderer',
             'ytm-comment-section-renderer',
             'ytm-comment-section-header-renderer',
             'ytm-comment-thread-renderer',
             'ytm-comment-replies-renderer',
             'ytm-comments-simplebox-renderer',
+            'ytm-comments-entry-point-metadata-renderer',
             'ytm-item-section-renderer[section-identifier="comments"]',
             'ytm-item-section-renderer[section-identifier="comment-item-section"]',
             'ytm-engagement-panel-section-list-renderer[target-id="comments-section"]',
             'ytm-engagement-panel-section-list-renderer[target-id="engagement-panel-comments-section"]',
+            // Desktop YouTube (ytd-)
             '#comments',
             '#comment-section-renderer',
             '#comment-teaser',
             'ytd-comments',
+            'ytd-comments-header-renderer',
             'ytd-engagement-panel-section-list-renderer[target-id="engagement-panel-comments-section"]',
+            // Generic attribute-based selectors
             '[data-target-id="comments"]',
             '[data-target-id="comments-section"]',
-            '[data-target-id="engagement-panel-comments-section"]'
+            '[data-target-id="engagement-panel-comments-section"]',
+            // Aria-label based — catches the "Comments" button/link regardless
+            // of which custom element YouTube wraps it in.
+            '[aria-label="Comments"]',
+            '[aria-label="comments"]',
+            'button[aria-label*="comment" i]'
         ];
 
         var CSS_SELECTOR = COMMENT_SELECTORS.join(',');
-        var CSS_RULE = CSS_SELECTOR +
+        // Hide matched elements AND any section-level wrapper that contains them.
+        // :has() is supported in Chromium 105+ so it works in our WebView.
+        var WRAPPER_RULE =
+            'ytm-item-section-renderer:has(' + CSS_SELECTOR + '),' +
+            'ytd-item-section-renderer:has(' + CSS_SELECTOR + ')';
+        var CSS_RULE = CSS_SELECTOR + ',' + WRAPPER_RULE +
             '{ display: none !important; visibility: hidden !important;' +
             '  height: 0 !important; overflow: hidden !important; }';
 
@@ -1354,26 +1370,40 @@ const char16_t kRemoveYoutubeComment[] =
         }
 
         // ── DOM removal ──────────────────────────────────────────────────────
+        // Section-level tag names that act as containers on YouTube.
+        // When we find a comment element, we walk up and remove the nearest
+        // container so no empty wrapper is left behind.
+        var SECTION_TAGS = [
+            'YTM-ITEM-SECTION-RENDERER',
+            'YTD-ITEM-SECTION-RENDERER',
+            'YTM-ENGAGEMENT-PANEL-SECTION-LIST-RENDERER',
+            'YTD-ENGAGEMENT-PANEL-SECTION-LIST-RENDERER',
+            'YTM-COMMENTS-ENTRY-POINT-HEADER-RENDERER',
+            'YTM-COMMENTS-ENTRY-POINT-TEASER-RENDERER',
+            'YTM-COMMENT-SECTION-RENDERER',
+            'YTD-COMMENTS'
+        ];
+
+        function removeWithParent(el) {
+            // Walk up to the nearest section-level wrapper and remove it
+            // so the whole block disappears, not just the inner content.
+            var node = el.parentElement;
+            while (node && node !== document.body) {
+                if (SECTION_TAGS.indexOf(node.tagName) !== -1) {
+                    node.remove();
+                    return;
+                }
+                node = node.parentElement;
+            }
+            // No section wrapper found — remove the element itself.
+            el.remove();
+        }
+
         function removeCommentNodes(root) {
             var searchRoot = root || document;
             try {
                 searchRoot.querySelectorAll(CSS_SELECTOR).forEach(function(el) {
-                    el.remove();
-                });
-            } catch(e) {}
-
-            try {
-                searchRoot.querySelectorAll(
-                    'ytm-item-section-renderer, ytd-item-section-renderer'
-                ).forEach(function(el) {
-                    if (el.querySelector(
-                            'ytm-comments-entry-point-header-renderer,' +
-                            'ytm-comment-section-renderer,' +
-                            'ytm-comment-thread-renderer,' +
-                            'ytm-comment-section-header-renderer,' +
-                            'ytm-comments-simplebox-renderer')) {
-                        el.remove();
-                    }
+                    removeWithParent(el);
                 });
             } catch(e) {}
         }
