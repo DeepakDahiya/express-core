@@ -493,6 +493,36 @@ public class BrowsingModeBottomToolbarCoordinator {
             mControlsVisibilityDelegate.releasePersistentShowingToken(
                     mYouTubePersistentToken);
             mYouTubePersistentToken = TokenHolder.INVALID_TOKEN;
+            // Slide the toolbar off-screen so non-YouTube pages start with it hidden.
+            // Chromium's scroll system will bring it back up on the first upward scroll.
+            hideBottomToolbar();
+        }
+    }
+
+    /**
+     * Slides the bottom toolbar off-screen by animating the
+     * ScrollingBottomViewResourceFrameLayout down by its own height.
+     * This resets the toolbar to its default hidden state when leaving YouTube.
+     */
+    private void hideBottomToolbar() {
+        android.view.View view = mToolbarRoot;
+        while (view != null) {
+            if (view instanceof ScrollingBottomViewResourceFrameLayout) {
+                final android.view.View scrollingView = view;
+                view.post(() -> {
+                    int height = scrollingView.getHeight();
+                    if (height > 0) {
+                        scrollingView.animate().translationY(height).setDuration(250).start();
+                    }
+                });
+                return;
+            }
+            android.view.ViewParent parent = view.getParent();
+            if (parent instanceof android.view.View) {
+                view = (android.view.View) parent;
+            } else {
+                break;
+            }
         }
     }
 
