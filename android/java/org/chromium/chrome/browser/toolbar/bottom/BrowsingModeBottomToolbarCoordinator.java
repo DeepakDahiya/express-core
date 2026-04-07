@@ -848,11 +848,12 @@ public class BrowsingModeBottomToolbarCoordinator {
         // Time when the last card finishes its entrance animation
         long allVisibleAt = (long) (limit - 1) * entranceInterval + 500;
 
-        // Stagger exit: card 1 vanishes first, then card 2, then card 3
-        for (int i = 0; i < limit; i++) {
+        // Stagger exit: last card (bottom) goes down first, then second, then first (top).
+        // This mirrors the entrance — cards descend in reverse order of how they rose.
+        for (int i = limit - 1; i >= 0; i--) {
             final View card = cards.get(i);
             final int cardIndex = i;
-            long exitDelay = allVisibleAt + holdDuration + (long) i * exitInterval;
+            long exitDelay = allVisibleAt + holdDuration + (long) (limit - 1 - i) * exitInterval;
 
             handler.postDelayed(() -> {
                 if (mStatsOverlays != overlayRef) return;
