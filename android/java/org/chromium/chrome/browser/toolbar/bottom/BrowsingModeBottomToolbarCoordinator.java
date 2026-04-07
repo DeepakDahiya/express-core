@@ -782,10 +782,11 @@ public class BrowsingModeBottomToolbarCoordinator {
         Handler handler = new Handler(Looper.getMainLooper());
         mPreviewHandler = handler;
 
-        // Fixed percentage positions — evenly spaced across 35% of available height.
-        // Card 1 (index 0) is highest, last card sits at translationY = 0.
+        // Fixed percentage positions — evenly spaced, capped at 200dp so taller
+        // phones don't spread cards too far apart.
         float availableHeight = screenHeight - bottomToolbarHeight;
-        float totalSpan = availableHeight * 0.35f;
+        float maxSpanPx = 200f * density;
+        float totalSpan = Math.min(availableHeight * 0.35f, maxSpanPx);
         float step = (limit > 1) ? totalSpan / (limit - 1) : 0f;
 
         float[] targetY = new float[limit];
