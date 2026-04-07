@@ -815,7 +815,7 @@ public class BrowsingModeBottomToolbarCoordinator {
         // Fixed percentage positions — evenly spaced, capped at 200dp so taller
         // phones don't spread cards too far apart.
         float availableHeight = screenHeight - bottomToolbarHeight;
-        float maxSpanPx = 200f * density;
+        float maxSpanPx = 225f * density;
         float totalSpan = Math.min(availableHeight * 0.35f, maxSpanPx);
         float step = (limit > 1) ? totalSpan / (limit - 1) : 0f;
 
@@ -865,7 +865,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                         .withEndAction(() -> {
                             ViewGroup p = (ViewGroup) card.getParent();
                             if (p != null) p.removeView(card);
-                            if (cardIndex == limit - 1 && mStatsOverlays == overlayRef) {
+                            if (cardIndex == 0 && mStatsOverlays == overlayRef) {
                                 mStatsOverlays = null;
                                 mPreviewHandler = null;
                             }
