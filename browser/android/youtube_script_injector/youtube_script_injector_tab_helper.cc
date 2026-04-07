@@ -101,7 +101,8 @@ constexpr char16_t kYoutubeDisableHomeAutoplay[] =
         'use strict';
 
         function isWatchPage() {
-            return window.location.pathname === '/watch';
+            return window.location.pathname === '/watch' ||
+                   window.location.pathname.startsWith('/shorts/');
         }
 
         // On non-watch pages (home feed, search, etc.), prevent inline video autoplay
@@ -1624,29 +1625,13 @@ const char16_t kYoutubePipButton[] =
         }
 
         function updateButtonVisibility() {
+            // Button is currently hidden; no DOM observation needed.
             buttonElement.style.display = 'none';
-            // if (window.location.pathname === '/watch') {
-            //     if (!document.body.contains(buttonElement)) {
-            //         document.body.appendChild(buttonElement);
-            //     }
-            //     buttonElement.style.display = '';
-            // } else {
-            //     buttonElement.style.display = 'none';
-            // }
         }
 
-        const observer = new MutationObserver(updateButtonVisibility);
-        observer.observe(document.documentElement, { subtree: true, childList: true });
         updateButtonVisibility();
 
-        // Additional visibility override for problematic devices
-        const originalAddEventListener = document.addEventListener;
-        document.addEventListener = function(type, listener, options) {
-            if (type === 'visibilitychange') {
-                return; // Block visibility change events
-            }
-            return originalAddEventListener.call(this, type, listener, options);
-        };
+        // visibilitychange is already blocked by kYoutubeBackgroundPlayback.
 
     })();
 )";
