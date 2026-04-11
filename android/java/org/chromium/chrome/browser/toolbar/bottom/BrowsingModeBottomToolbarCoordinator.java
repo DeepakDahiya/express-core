@@ -745,6 +745,20 @@ public class BrowsingModeBottomToolbarCoordinator {
         int screenHeight = metrics.heightPixels;
         float offScreen = screenHeight * 0.4f;
 
+        // On newer phones with gesture navigation / edge-to-edge display the
+        // content view extends behind the navigation bar, so using only the
+        // toolbar dimen underestimates the margin.  Measure the real toolbar
+        // position to compute the correct gap.
+        int cardBottomMargin = bottomToolbarHeight + (int) (8 * density);
+        if (mToolbarRoot.isLaidOut() && contentView.isLaidOut()) {
+            int[] toolbarLoc = new int[2];
+            mToolbarRoot.getLocationOnScreen(toolbarLoc);
+            int[] contentLoc = new int[2];
+            contentView.getLocationOnScreen(contentLoc);
+            int contentViewBottom = contentLoc[1] + contentView.getHeight();
+            cardBottomMargin = contentViewBottom - toolbarLoc[1] + (int) (8 * density);
+        }
+
         // Build all card views up front so Glide can start loading avatars immediately
         LayoutInflater inflater = LayoutInflater.from(mToolbarRoot.getContext());
         int limit = Math.min(comments.size(), 2);
@@ -774,7 +788,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                     FrameLayout.LayoutParams.MATCH_PARENT,
                     FrameLayout.LayoutParams.WRAP_CONTENT);
             params.gravity = Gravity.BOTTOM;
-            params.bottomMargin = bottomToolbarHeight + (int) (8 * density);
+            params.bottomMargin = cardBottomMargin;
             params.setMarginStart((int) (12 * density));
             params.setMarginEnd((int) (12 * density));
             card.setLayoutParams(params);
