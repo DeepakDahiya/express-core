@@ -377,6 +377,13 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                 loadPostsAndProfile(accessToken);
             }
             
+            // Fetch tutorial video config from remote
+            TutorialVideoUtil.fetch((enabled, videoUrl) -> {
+                if (enabled && videoUrl != null && !videoUrl.isEmpty() && mPostAdapter != null) {
+                    mPostAdapter.setTutorialVideoUrl(videoUrl);
+                }
+            });
+
             // Show YouTube premium bottomsheet on NTP
             if (mActivity instanceof BraveActivity) {
                 YouTubePremiumBottomSheetFragment.showPermanent(
@@ -964,6 +971,10 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
         ContextUtils.getAppSharedPreferences()
                 .unregisterOnSharedPreferenceChangeListener(mPreferenceListener);
         mPreferenceListener = null;
+
+        if (mPostAdapter != null) {
+            mPostAdapter.releaseTutorialPlayer();
+        }
 
         mRecyclerView.clearOnScrollListeners();
         super.onDetachedFromWindow();
@@ -1711,7 +1722,8 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
 
                     int len = mPosts.size();
                     mPosts.addAll(posts);
-                    mPostAdapter.notifyItemRangeInserted(len + 1, posts.size());
+                    mPostAdapter.notifyItemRangeInserted(
+                            len + mPostAdapter.getPostAdapterOffset(), posts.size());
                 }
 
                 @Override

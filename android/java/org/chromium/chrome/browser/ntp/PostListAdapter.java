@@ -86,6 +86,7 @@ import android.widget.Space;
 public class PostListAdapter extends RecyclerView.Adapter {
     private static final int VIEW_TYPE_HEADER = 0;
     private static final int VIEW_TYPE_POST = 1;
+    private static final int VIEW_TYPE_TUTORIAL_VIDEO = 2;
 
     private final Context mContext;
     private List<Post> mPostList;
@@ -93,10 +94,13 @@ public class PostListAdapter extends RecyclerView.Adapter {
     private List<TopSiteTable> mTopSites;
     private BraveNewTabPageLayout mParentLayout;
     private HeaderViewHolder mHeaderViewHolder;
+    private TutorialVideoHolder mTutorialVideoHolder;
     private static final String TWITTER_TYPE = "Twitter";
     private static final String INSTAGRAM_TYPE = "Instagram";
 
     private boolean mIsLoading = true;
+    private String mTutorialVideoUrl;
+    private boolean mTutorialVideoDismissed;
 
     private final RecyclerView.RecycledViewPool mCommentRecycledViewPool;
 
@@ -117,16 +121,34 @@ public class PostListAdapter extends RecyclerView.Adapter {
         }
     }
 
+    private boolean hasTutorialVideo() {
+        return mTutorialVideoUrl != null && !mTutorialVideoDismissed;
+    }
+
     @Override
     public int getItemCount() {
-        int count = mPostList.size() + 1;
+        int count = mPostList.size() + 1; // +1 for header
+        if (hasTutorialVideo()) count++; // +1 for tutorial video
         return count;
     }
 
     @Override
     public int getItemViewType(int position) {
-        int type = position == 0 ? VIEW_TYPE_HEADER : VIEW_TYPE_POST;
-        return type;
+        if (position == 0) return VIEW_TYPE_HEADER;
+        if (hasTutorialVideo() && position == 1) return VIEW_TYPE_TUTORIAL_VIDEO;
+        return VIEW_TYPE_POST;
+    }
+
+    /** Returns the number of non-post rows (header + optional tutorial) before posts start. */
+    public int getPostAdapterOffset() {
+        int offset = 1; // header
+        if (hasTutorialVideo()) offset++;
+        return offset;
+    }
+
+    /** Returns the post index for a given adapter position, accounting for header + optional tutorial row. */
+    private int getPostIndex(int adapterPosition) {
+        return adapterPosition - getPostAdapterOffset();
     }
 
     /**
@@ -150,10 +172,11 @@ public class PostListAdapter extends RecyclerView.Adapter {
             ((PostHolder) prevHolder).startCountAnimation();
         }
 
-        // For the very first post (adapter pos 1): there is no item after it at initial
-        // load to trigger it, so if this IS the first post and the header is the item
-        // above, we handle it directly — it's already visible on screen.
-        if (currentPos == 1 && holder instanceof PostHolder) {
+        // For the very first post: there is no item after it at initial
+        // load to trigger it, so if this IS the first post we handle it
+        // directly — it's already visible on screen.
+        int firstPostPos = hasTutorialVideo() ? 2 : 1;
+        if (currentPos == firstPostPos && holder instanceof PostHolder) {
             // Delay slightly so the card finishes laying out before counting.
             holder.itemView.postDelayed(() -> {
                 ((PostHolder) holder).startCountAnimation();
@@ -178,21 +201,30 @@ public class PostListAdapter extends RecyclerView.Adapter {
             // Reset so the animation plays again when the card scrolls back into view
             postHolder.mCountAnimationPlayed = false;
         }
+        if (holder instanceof TutorialVideoHolder) {
+            ((TutorialVideoHolder) holder).releasePlayer();
+        }
     }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        
+
         try {
             View view;
             switch (viewType) {
                 case VIEW_TYPE_HEADER:
                     view = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.ntp_header, parent, false);
-                    
+
                     mHeaderViewHolder = new HeaderViewHolder(view);
                     return mHeaderViewHolder;
-                    
+
+                case VIEW_TYPE_TUTORIAL_VIDEO:
+                    view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.ntp_tutorial_video, parent, false);
+                    mTutorialVideoHolder = new TutorialVideoHolder(view);
+                    return mTutorialVideoHolder;
+
                 default:
                     view = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.browser_express_post, parent, false);
@@ -210,8 +242,11 @@ public class PostListAdapter extends RecyclerView.Adapter {
             case VIEW_TYPE_HEADER:
                 ((HeaderViewHolder) holder).bind(mTopSites, mIsLoading);
                 break;
+            case VIEW_TYPE_TUTORIAL_VIDEO:
+                ((TutorialVideoHolder) holder).bind(mTutorialVideoUrl);
+                break;
             case VIEW_TYPE_POST:
-                Post post = mPostList.get(position - 1);
+                Post post = mPostList.get(getPostIndex(position));
                 ((PostHolder) holder).bind(post);
                 break;
         }
@@ -232,6 +267,89 @@ public class PostListAdapter extends RecyclerView.Adapter {
     public void updateTopSites(List<TopSiteTable> topSites) {
         mTopSites = topSites != null ? topSites : new ArrayList<>();
         notifyItemChanged(0);
+    }
+
+    public void setTutorialVideoUrl(String videoUrl) {
+        boolean hadVideo = hasTutorialVideo();
+        mTutorialVideoUrl = videoUrl;
+        mTutorialVideoDismissed = false;
+        if (!hadVideo && hasTutorialVideo()) {
+            notifyItemInserted(1);
+        } else if (hadVideo && !hasTutorialVideo()) {
+            notifyItemRemoved(1);
+        } else if (hasTutorialVideo()) {
+            notifyItemChanged(1);
+        }
+    }
+
+    public void releaseTutorialPlayer() {
+        if (mTutorialVideoHolder != null) {
+            mTutorialVideoHolder.releasePlayer();
+        }
+    }
+
+    private static final String GOOGLE_LOGIN_URL =
+            "https://accounts.google.com/ServiceLogin?service=youtube&uilel=3&passive=true"
+            + "&continue=https%3A%2F%2Fm.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue"
+            + "%26app%3Dm%26hl%3Den-GB%26next%3D%252F&hl=en-GB";
+
+    private class TutorialVideoHolder extends RecyclerView.ViewHolder {
+        private final PlayerView playerView;
+        private final View closeButton;
+        private final View card;
+        private ExoPlayer player;
+        private String currentUrl;
+
+        TutorialVideoHolder(View itemView) {
+            super(itemView);
+            playerView = itemView.findViewById(R.id.tutorial_player_view);
+            closeButton = itemView.findViewById(R.id.tutorial_close);
+            card = itemView.findViewById(R.id.tutorial_card);
+
+            card.setOnClickListener(v -> {
+                try {
+                    BraveActivity activity = BraveActivity.getBraveActivity();
+                    TabUtils.openUrlInSameTab(GOOGLE_LOGIN_URL);
+                } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    Log.e("TutorialVideo", "Could not open login URL", e);
+                }
+            });
+
+            closeButton.setOnClickListener(v -> {
+                releasePlayer();
+                mTutorialVideoDismissed = true;
+                int pos = getAdapterPosition();
+                if (pos != RecyclerView.NO_POSITION) {
+                    notifyItemRemoved(pos);
+                }
+            });
+        }
+
+        void bind(String videoUrl) {
+            if (videoUrl == null || videoUrl.equals(currentUrl)) return;
+            currentUrl = videoUrl;
+            initializePlayer(videoUrl);
+        }
+
+        private void initializePlayer(String url) {
+            releasePlayer();
+            player = new ExoPlayer.Builder(mContext).build();
+            playerView.setPlayer(player);
+            playerView.setUseController(false);
+            player.setRepeatMode(Player.REPEAT_MODE_ALL);
+            player.setVolume(0f);
+            player.setMediaItem(MediaItem.fromUri(url));
+            player.prepare();
+            player.setPlayWhenReady(true);
+        }
+
+        void releasePlayer() {
+            if (player != null) {
+                player.stop();
+                player.release();
+                player = null;
+            }
+        }
     }
 
     private class HeaderViewHolder extends RecyclerView.ViewHolder {

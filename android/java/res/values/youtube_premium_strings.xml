@@ -30,4 +30,6 @@
         <item quantity="one">View %d comment</item>
         <item quantity="other">View %d comments</item>
     </plurals>
+    <string name="tutorial_video_play">Play tutorial</string>
+    <string name="tutorial_video_dismiss">Dismiss</string>
 </resources>
