@@ -94,9 +94,6 @@ import org.chromium.components.omnibox.action.OmniboxActionDelegate;
 import org.chromium.misc_metrics.mojom.MiscAndroidMetrics;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
-import org.chromium.components.embedder_support.util.UrlUtilities;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
-import org.chromium.url.GURL;
 import android.content.SharedPreferences;
 import org.chromium.chrome.browser.settings.BrowserExpressGetProfilePreferencesUtil;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
@@ -172,11 +169,7 @@ public class BraveToolbarManager extends ToolbarManager
     private final ObservableSupplier<TabBookmarker> mTabBookmarkerSupplier;
     private final Supplier<ShareDelegate> mShareDelegateSupplier;
 
-    private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
-    private boolean mIsCurrentPageNtpOrHome;
     private final ObservableSupplier<TabModelSelector> mPassedTabModelSelectorSupplier;
-    private Callback<TabModelSelector> mTabModelSelectorSupplierObserver;
-    private TabModelSelector mLocalTabModelSelector;
 
     private ImageButton mProfileButton;
 
@@ -293,25 +286,7 @@ public class BraveToolbarManager extends ToolbarManager
         mTabBookmarkerSupplier = tabBookmarkerSupplier;
         mShareDelegateSupplier = shareDelegateSupplier;
 
-        mLocalTabModelSelector = mPassedTabModelSelectorSupplier.get();
-        if (mLocalTabModelSelector != null) {
-            initializeTabObserver(mLocalTabModelSelector);
-        } else {
-            mTabModelSelectorSupplierObserver = (selector) -> {
-                if (selector != null) {
-                    mLocalTabModelSelector = selector;
-                    initializeTabObserver(selector);
-                    if (mPassedTabModelSelectorSupplier != null && mTabModelSelectorSupplierObserver != null) {
-                        mPassedTabModelSelectorSupplier.removeObserver(mTabModelSelectorSupplierObserver);
-                         mTabModelSelectorSupplierObserver = null;
-                    }
-                }
-            };
-            mPassedTabModelSelectorSupplier.addObserver(mTabModelSelectorSupplierObserver);
-        }
-
         if (isToolbarPhone()) {
-            updateBraveBottomControlsVisibility();
             mLayoutStateProviderSupplier.onAvailable(
                     mCallbackController.makeCancelable(this::setLayoutStateProvider));
         }
@@ -327,75 +302,11 @@ public class BraveToolbarManager extends ToolbarManager
                 };
         HomepageManager.getInstance().addListener(mBraveHomepageStateListener);
 
-        Tab currentTab = ((BraveActivity) mActivity).getActivityTab();
-        Log.d(TAG, "BraveToolbarManager: currentTab = " + currentTab);
-        if (currentTab != null) {
-            Log.d(TAG, "BraveToolbarManager: currentTab URL = " + currentTab.getUrl());
-            if (currentTab == null) {
-                mIsCurrentPageNtpOrHome = false;
-                setBraveBottomControlsVisible(true);
-                return;
-            }
-            GURL currentGurl = currentTab.getUrl();
-            boolean isNtp = UrlUtilities.isNtpUrl(currentGurl.getSpec());
-            Log.d(TAG, "BraveToolbarManager: isNtp = " + isNtp);
-
-            mIsCurrentPageNtpOrHome = isNtp;
-            setBraveBottomControlsVisible(!isNtp);
-        }else{
-            setBraveBottomControlsVisible(false);
-        }
-    }
-
-    private void initializeTabObserver(TabModelSelector selector) {
-        if (mTabModelSelectorTabObserver != null) {
-            mTabModelSelectorTabObserver.destroy();
-        }
-        mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(selector) {
-            private void updateToolbarForTab(Tab tab) {
-                if (tab == null) {
-                    mIsCurrentPageNtpOrHome = false;
-                    setBraveBottomControlsVisible(true);
-                    return;
-                }
-                GURL currentGurl = tab.getUrl();
-                boolean isNtp = UrlUtilities.isNtpUrl(currentGurl.getSpec());
-
-                mIsCurrentPageNtpOrHome = isNtp;
-                setBraveBottomControlsVisible(!isNtp);
-            }
-
-            @Override
-            public void onPageLoadStarted(Tab tab, GURL url) {
-                super.onPageLoadStarted(tab, url);
-                // Prefer using GURL overload if UrlUtilities.isNtpUrl supports it
-                boolean isNtp = UrlUtilities.isNtpUrl(url.getSpec());
-                mIsCurrentPageNtpOrHome = isNtp;
-                setBraveBottomControlsVisible(!isNtp);
-            }
-
-            @Override
-            public void onUrlUpdated(Tab tab) {
-                super.onUrlUpdated(tab);
-                updateToolbarForTab(tab);
-            }
-        };
-
-        if (selector != null) {
-            Tab currentTab = selector.getCurrentTab();
-            if (currentTab != null) {
-                if (currentTab == null) {
-                    mIsCurrentPageNtpOrHome = false;
-                    setBraveBottomControlsVisible(true);
-                    return;
-                }
-                GURL currentGurl = currentTab.getUrl();
-                boolean isNtp = UrlUtilities.isNtpUrl(currentGurl.getSpec());
-
-                mIsCurrentPageNtpOrHome = isNtp;
-                setBraveBottomControlsVisible(!isNtp);
-            }
-        }
+        // Always enable the bottom toolbar when conditions allow (portrait +
+        // settings enabled). YouTube stickiness (preventing scroll-away) is
+        // handled separately via persistent token in
+        // BrowsingModeBottomToolbarCoordinator.updateYouTubeControlsLock.
+        updateBraveBottomControlsVisibility();
     }
 
 
@@ -416,7 +327,7 @@ public class BraveToolbarManager extends ToolbarManager
             mBottomControls =
                     (BraveScrollingBottomViewResourceFrameLayout) bottomControlsStub.inflate();
 
-            TabModelSelector currentSelector = mLocalTabModelSelector != null ? mLocalTabModelSelector : mPassedTabModelSelectorSupplier.get();
+            TabModelSelector currentSelector = mPassedTabModelSelectorSupplier.get();
 
             ThemeColorProvider bottomUiThemeColorProvider =
                     new BottomUiThemeColorProvider(
@@ -620,9 +531,7 @@ public class BraveToolbarManager extends ToolbarManager
         if (mBottomControlsCoordinatorSupplier != null
                 && mBottomControlsCoordinatorSupplier.get() != null
                 && BottomToolbarConfiguration.isBraveBottomControlsEnabled()) {
-            boolean isBraveBottomControlsVisible =
-                    mCurrentOrientation != Configuration.ORIENTATION_LANDSCAPE;
-            setBraveBottomControlsVisible(isBraveBottomControlsVisible);
+            updateBraveBottomControlsVisibility();
         }
 
         if (mActivity instanceof FullScreenCustomTabActivity) {
@@ -660,26 +569,6 @@ public class BraveToolbarManager extends ToolbarManager
 
     private void setBraveBottomControlsVisible(boolean visible) {
         mIsBraveBottomControlsVisible = visible;
-
-        Tab currentTab = mLocationBarModel.getTab();
-        if (currentTab != null) {
-            Log.d(TAG, "BraveToolbarManager: currentTab URL = " + currentTab.getUrl());
-            if (currentTab == null) {
-                mIsCurrentPageNtpOrHome = false;
-                setBraveBottomControlsVisible(true);
-                return;
-            }
-            GURL currentGurl = currentTab.getUrl();
-            boolean isNtp = UrlUtilities.isNtpUrl(currentGurl.getSpec());
-            Log.d(TAG, "BraveToolbarManager: isNtp = " + isNtp);
-
-            mIsCurrentPageNtpOrHome = isNtp;
-            mIsBraveBottomControlsVisible = !isNtp;
-            visible = !isNtp;
-        }else{
-            mIsBraveBottomControlsVisible = false;
-            visible = false;
-        }
 
         if (visible) {
             if (mBottomControlsCoordinatorSupplier != null

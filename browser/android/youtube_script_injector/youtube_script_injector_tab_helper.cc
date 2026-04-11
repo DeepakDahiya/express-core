@@ -292,17 +292,25 @@ constexpr char16_t kYoutubeInAppPIP[] =
                     const stored = localStorage.getItem('pip_transition_signal');
                     if (stored) {
                         const signal = JSON.parse(stored);
-                        
-                        if (Date.now() - signal.timestamp < 5000 && 
+
+                        if (Date.now() - signal.timestamp < 5000 &&
                             signal.fromTabId !== getTabId()) {
-                            
+
                             console.log('Received PIP transition signal:', signal);
-                            
+                            localStorage.removeItem('pip_transition_signal');
+
                             if (isPIPActive()) {
                                 sendPlaybackState();
                                 isTransitionClose = true;
                                 closePIP();
-                                localStorage.removeItem('pip_transition_signal');
+                            } else {
+                                // PIP element not in this document but we may
+                                // still own the pip_status — clear it so the
+                                // new tab can proceed.
+                                setPIPStatus(null, false);
+                                currentPIPVideoId = null;
+                                lastPlayingVideoElement = null;
+                                isOriginalPIPTab = false;
                             }
                         }
                     }
@@ -414,55 +422,93 @@ constexpr char16_t kYoutubeInAppPIP[] =
                 }
             }
 
-            // --- MODIFIED FUNCTION ---
-            // Added `previousPIPTabId` parameter to know which tab to close later.
+            // Attempts to enter PIP, retrying a few times if the video element
+            // isn't ready yet (YouTube SPA may swap elements during navigation).
             function startPIPForNewVideo(videoElement, videoId, previousPIPTabId) {
-                if (videoElement && typeof videoElement.requestPictureInPicture === 'function') {
-                    setTimeout(() => {
-                        if (!videoElement.paused) {
-                            videoElement.requestPictureInPicture()
-                                .then(() => {
-                                    currentPIPVideoId = videoId;
-                                    lastPlayingVideoElement = videoElement;
-                                    isOriginalPIPTab = true;
-                                    setPIPStatus(videoId, true);
-                                    console.log('PIP started for new video:', videoId);
-                                    // After successfully starting PIP, tell the old tab to close.
-                                    signalTabToClose(previousPIPTabId);
-                                })
-                                .catch(err => {
-                                    console.warn('Failed to start PIP for new video:', err);
-                                    // On newer Android, PiP may fail due to lost user gesture.
-                                    // Ensure the new video keeps playing normally.
-                                    if (videoElement.paused) {
-                                        videoElement.play().catch(console.warn);
-                                    }
-                                    // Still signal old tab to close since we took over playback.
-                                    signalTabToClose(previousPIPTabId);
-                                });
-                        } else {
-                            // Video got paused during the wait — try to resume it.
-                            videoElement.play().then(() => {
-                                videoElement.requestPictureInPicture()
-                                    .then(() => {
-                                        currentPIPVideoId = videoId;
-                                        lastPlayingVideoElement = videoElement;
-                                        isOriginalPIPTab = true;
-                                        setPIPStatus(videoId, true);
-                                        console.log('PIP started after resuming video:', videoId);
-                                        signalTabToClose(previousPIPTabId);
-                                    })
-                                    .catch(err => {
-                                        console.warn('Failed to start PIP after resume:', err);
-                                        signalTabToClose(previousPIPTabId);
-                                    });
-                            }).catch(err => {
-                                console.warn('Failed to resume video for PIP:', err);
-                                signalTabToClose(previousPIPTabId);
-                            });
-                        }
-                    }, 300);
+                let waitAttempts = 0;
+                const maxWaitAttempts = 20;  // 20 x 100ms = 2 seconds max wait
+                const waitInterval = 100;
+
+                // Phase 1: Wait for the old tab to actually exit PIP.
+                // The old tab receives our transition signal via the storage event
+                // and calls closePIP() + setPIPStatus(null, false).
+                // We poll pip_status until it clears.
+                function waitForOldPIPToExit() {
+                    const pipStatus = getPIPStatus();
+                    const oldPIPCleared = !pipStatus.isActive || pipStatus.videoId === videoId;
+
+                    if (oldPIPCleared) {
+                        console.log('Old PIP cleared, proceeding to request PIP');
+                        attemptPIP();
+                        return;
+                    }
+
+                    if (++waitAttempts < maxWaitAttempts) {
+                        setTimeout(waitForOldPIPToExit, waitInterval);
+                    } else {
+                        // Old tab didn't respond in time — force ahead anyway.
+                        console.warn('Old PIP did not clear in time, forcing PIP request');
+                        attemptPIP();
+                    }
                 }
+
+                // Phase 2: Actually request PIP on the new video.
+                let pipAttempts = 0;
+                const maxPIPAttempts = 6;
+                const retryInterval = 250;
+
+                function attemptPIP() {
+                    // Re-fetch the video element each attempt — YouTube may
+                    // have replaced the original element during SPA navigation.
+                    const video = getCurrentVideoElement() || videoElement;
+                    if (!video || typeof video.requestPictureInPicture !== 'function') {
+                        if (++pipAttempts < maxPIPAttempts) {
+                            setTimeout(attemptPIP, retryInterval);
+                        } else {
+                            console.warn('PIP: gave up — no usable video element');
+                            signalTabToClose(previousPIPTabId);
+                        }
+                        return;
+                    }
+
+                    const tryRequest = () => {
+                        video.requestPictureInPicture()
+                            .then(() => {
+                                currentPIPVideoId = videoId;
+                                lastPlayingVideoElement = video;
+                                isOriginalPIPTab = true;
+                                setPIPStatus(videoId, true);
+                                console.log('PIP started for new video:', videoId);
+                                signalTabToClose(previousPIPTabId);
+                            })
+                            .catch(err => {
+                                console.warn('PIP request failed (attempt ' + (pipAttempts+1) + '):', err);
+                                if (++pipAttempts < maxPIPAttempts) {
+                                    setTimeout(attemptPIP, retryInterval);
+                                } else {
+                                    console.warn('PIP: all attempts exhausted');
+                                    if (video.paused) video.play().catch(console.warn);
+                                    signalTabToClose(previousPIPTabId);
+                                }
+                            });
+                    };
+
+                    if (!video.paused) {
+                        tryRequest();
+                    } else {
+                        video.play().then(tryRequest).catch(err => {
+                            console.warn('PIP: could not resume video:', err);
+                            if (++pipAttempts < maxPIPAttempts) {
+                                setTimeout(attemptPIP, retryInterval);
+                            } else {
+                                signalTabToClose(previousPIPTabId);
+                            }
+                        });
+                    }
+                }
+
+                // Start Phase 1 — wait for old PIP to exit first.
+                waitForOldPIPToExit();
             }
 
             // --- MODIFIED FUNCTION ---
@@ -489,7 +535,7 @@ constexpr char16_t kYoutubeInAppPIP[] =
                             }
                             // Pass the old tab's ID to the function that starts the new PIP
                             startPIPForNewVideo(videoElement, currentVideoId, previousPIPTabId);
-                        }, 600);
+                        }, 200);
                     } else {
                         if (pipReplacementEnabled) {
                             replacePIPVideo(videoElement, currentVideoId);
@@ -716,11 +762,20 @@ constexpr char16_t kYoutubeInAppPIP[] =
                     }
                 }, true);
 
-                // --- MODIFIED INTERVAL ---
-                // Now checks for both transition signals and close signals.
+                // Listen for cross-tab localStorage changes — fires immediately
+                // when another tab writes to localStorage (much faster than polling).
+                window.addEventListener('storage', (event) => {
+                    if (event.key === 'pip_transition_signal') {
+                        checkForPIPTransitionSignal();
+                    } else if (event.key === 'pip_close_tab_signal') {
+                        checkForCloseSignal();
+                    }
+                });
+
+                // Fallback polling in case storage events are missed.
                 setInterval(() => {
                     checkForPIPTransitionSignal();
-                    checkForCloseSignal(); // Add check for the close signal
+                    checkForCloseSignal();
                 }, 1000);
 
                 setInterval(saveCurrentPlaybackState, 500);

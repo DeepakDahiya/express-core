@@ -105,7 +105,8 @@ public class BrowsingModeBottomToolbarCoordinator {
     private static final int MAX_PIP_INTRO_SHOW_COUNT = 2;
     private static final String PREF_PIP_BG_PLAY_NUDGE_COUNT = "pip_bg_play_nudge_count";
     private static final int MAX_BG_PLAY_NUDGE_COUNT = 3;
-    private boolean mPipIntroShownThisRun;
+    private boolean mPipIntroActiveOnCurrentPage;
+    private PipCoachMarkView mCurrentCoachMark;
 
     private ImageButton mYouTubePipButton;
     private View mYouTubePipContainer;
@@ -306,6 +307,12 @@ public class BrowsingModeBottomToolbarCoordinator {
 
         if (mYouTubePipButton != null) {
             OnClickListener pipClickHandler = v -> {
+                // Dismiss the coach mark if it's currently showing.
+                dismissPipCoachMark();
+                // User discovered PIP — never show the intro again.
+                ContextUtils.getAppSharedPreferences().edit()
+                        .putInt(PREF_PIP_INTRO_SHOWN_COUNT, MAX_PIP_INTRO_SHOW_COUNT).apply();
+
                 Tab tab = mTabProvider.get();
                 if (tab == null || tab.getWebContents() == null) return;
                 BraveYouTubeScriptInjectorNativeHelper.triggerYouTubePiP(tab.getWebContents());
@@ -330,6 +337,9 @@ public class BrowsingModeBottomToolbarCoordinator {
             public void onPageLoadStarted(Tab tab, GURL url) {
                 if (mYouTubePipContainer != null) mYouTubePipContainer.setVisibility(View.GONE);
                 if (mPipTrailingSpace != null) mPipTrailingSpace.setVisibility(View.GONE);
+                // Reset per-page intro flag so preview comments can show on the next page.
+                mPipIntroActiveOnCurrentPage = false;
+                dismissPipCoachMark();
                 updateYouTubeControlsLock(url != null ? url.getSpec() : "");
             }
 
@@ -364,6 +374,9 @@ public class BrowsingModeBottomToolbarCoordinator {
                 mCurrentObservedTab.removeObserver(mPipTabObserver);
             }
             mCurrentObservedTab = tab;
+            // Switching tabs is a new page context — reset the per-page intro flag.
+            mPipIntroActiveOnCurrentPage = false;
+            dismissPipCoachMark();
             if (tab != null) {
                 tab.addObserver(mPipTabObserver);
                 updateYouTubePipButtonVisibility(tab);
@@ -388,6 +401,9 @@ public class BrowsingModeBottomToolbarCoordinator {
             updateYouTubePipButtonVisibility(initialTab);
             if (initialTab.getUrl() != null && !initialTab.getUrl().isEmpty()) {
                 updateCommentCountForUrl(initialTab.getUrl().getSpec());
+                updateYouTubeControlsLock(initialTab.getUrl().getSpec());
+            } else {
+                updateYouTubeControlsLock("");
             }
         }
     }
@@ -412,18 +428,29 @@ public class BrowsingModeBottomToolbarCoordinator {
 
     private void maybeShowPipCoachMark() {
         if (mYouTubePipButton == null) return;
+        // mPipIntroActiveOnCurrentPage is set synchronously, so even rapid
+        // re-entrant calls from multiple tab observer callbacks are blocked.
+        if (mPipIntroActiveOnCurrentPage) return;
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
         int shownCount = prefs.getInt(PREF_PIP_INTRO_SHOWN_COUNT, 0);
         if (shownCount >= MAX_PIP_INTRO_SHOW_COUNT) return;
         prefs.edit().putInt(PREF_PIP_INTRO_SHOWN_COUNT, shownCount + 1).apply();
-        mPipIntroShownThisRun = true;
+        mPipIntroActiveOnCurrentPage = true;
 
         // Wait for the button to be laid out before reading its screen coordinates.
         mYouTubePipButton.post(() -> {
             if (mYouTubePipButton == null || mYouTubePipButton.getWidth() == 0) return;
             PipCoachMarkView coachMark = new PipCoachMarkView(mYouTubePipButton.getContext());
-            coachMark.show(mYouTubePipButton, null);
+            mCurrentCoachMark = coachMark;
+            coachMark.show(mYouTubePipButton, () -> mCurrentCoachMark = null);
         });
+    }
+
+    private void dismissPipCoachMark() {
+        if (mCurrentCoachMark != null) {
+            mCurrentCoachMark.dismiss();
+        }
+        mCurrentCoachMark = null;
     }
 
     /**
@@ -458,31 +485,12 @@ public class BrowsingModeBottomToolbarCoordinator {
     }
 
     /**
-     * Forces the bottom toolbar to be visible by resetting the translationY of the
-     * ScrollingBottomViewResourceFrameLayout ancestor. This bypasses
-     * Chromium's scroll-to-hide behavior for YouTube pages.
-     */
-    private void forceShowBottomToolbar() {
-        // Walk up the view hierarchy from mToolbarRoot to find the scrolling container
-        android.view.View view = mToolbarRoot;
-        while (view != null) {
-            if (view instanceof ScrollingBottomViewResourceFrameLayout) {
-                view.animate().translationY(0).setDuration(250).start();
-                return;
-            }
-            android.view.ViewParent parent = view.getParent();
-            if (parent instanceof android.view.View) {
-                view = (android.view.View) parent;
-            } else {
-                break;
-            }
-        }
-    }
-
-    /**
      * Acquires or releases a persistent browser-controls-shown token based on whether
-     * the current URL is a YouTube page. While a token is held, both the top and bottom
-     * toolbars stay visible regardless of scroll.
+     * the current URL is a YouTube page. While the token is held, both the top and
+     * bottom toolbars stay visible regardless of scroll — this is what makes the
+     * bottom toolbar "stick" on YouTube. The actual show/hide of the bottom toolbar
+     * on non-YouTube pages is handled upstream by BraveToolbarManager via
+     * setBottomToolbarVisible(), so there's nothing to animate here.
      */
     private void updateYouTubeControlsLock(String url) {
         boolean isYouTube = url != null && url.contains("youtube.com");
@@ -493,36 +501,6 @@ public class BrowsingModeBottomToolbarCoordinator {
             mControlsVisibilityDelegate.releasePersistentShowingToken(
                     mYouTubePersistentToken);
             mYouTubePersistentToken = TokenHolder.INVALID_TOKEN;
-            // Slide the toolbar off-screen so non-YouTube pages start with it hidden.
-            // Chromium's scroll system will bring it back up on the first upward scroll.
-            hideBottomToolbar();
-        }
-    }
-
-    /**
-     * Slides the bottom toolbar off-screen by animating the
-     * ScrollingBottomViewResourceFrameLayout down by its own height.
-     * This resets the toolbar to its default hidden state when leaving YouTube.
-     */
-    private void hideBottomToolbar() {
-        android.view.View view = mToolbarRoot;
-        while (view != null) {
-            if (view instanceof ScrollingBottomViewResourceFrameLayout) {
-                final android.view.View scrollingView = view;
-                view.post(() -> {
-                    int height = scrollingView.getHeight();
-                    if (height > 0) {
-                        scrollingView.animate().translationY(height).setDuration(250).start();
-                    }
-                });
-                return;
-            }
-            android.view.ViewParent parent = view.getParent();
-            if (parent instanceof android.view.View) {
-                view = (android.view.View) parent;
-            } else {
-                break;
-            }
         }
     }
 
@@ -721,12 +699,9 @@ public class BrowsingModeBottomToolbarCoordinator {
             };
 
     /**
-     * Shows up to 3 comment preview cards that stack from bottom to top:
-     *   - Card 1 rises to the highest position
-     *   - Card 2 rises to the middle
-     *   - Card 3 rises to just above the toolbar
+     * Shows up to 2 comment preview cards that stack from bottom to top.
      * Cards enter one after another with equal spacing, hold together, then
-     * vanish in the same order: first card disappears, then second, then third.
+     * vanish in the same order: first card disappears, then second.
      */
     private void showYouTubeCommentsPreview(List<Comment> comments) {
         // Cancel pending handler callbacks from a previous invocation so stale
@@ -765,7 +740,7 @@ public class BrowsingModeBottomToolbarCoordinator {
 
         // Build all card views up front so Glide can start loading avatars immediately
         LayoutInflater inflater = LayoutInflater.from(mToolbarRoot.getContext());
-        int limit = Math.min(comments.size(), 3);
+        int limit = Math.min(comments.size(), 2);
         List<View> cards = new ArrayList<>();
 
         for (int i = 0; i < limit; i++) {
@@ -812,67 +787,77 @@ public class BrowsingModeBottomToolbarCoordinator {
         Handler handler = new Handler(Looper.getMainLooper());
         mPreviewHandler = handler;
 
-        // Fixed percentage positions — evenly spaced, capped at 200dp so taller
-        // phones don't spread cards too far apart.
-        float availableHeight = screenHeight - bottomToolbarHeight;
-        float maxSpanPx = 225f * density;
-        float totalSpan = Math.min(availableHeight * 0.35f, maxSpanPx);
-        float step = (limit > 1) ? totalSpan / (limit - 1) : 0f;
-
-        float[] targetY = new float[limit];
-        for (int i = 0; i < limit; i++) {
-            targetY[i] = -((limit - 1 - i) * step);
-        }
+        int gap = (int) (8 * density);
 
         long entranceInterval = 400;
         long holdDuration = 3000;
         long exitInterval = 400;
 
-        // Stagger entrance: card 1 rises first, then card 2, then card 3
-        for (int i = 0; i < limit; i++) {
-            final View card = cards.get(i);
-            final float dest = targetY[i];
-            long delay = (long) i * entranceInterval;
+        // Wait for cards to be measured so we know their actual heights, then
+        // compute positions dynamically. Each card sits above the previous one
+        // with a uniform gap — the same gap used between the toolbar and the
+        // bottom card — so spacing looks consistent on every screen size.
+        cards.get(0).post(() -> {
+            if (mStatsOverlays != overlayRef) return;
 
-            handler.postDelayed(() -> {
-                if (mStatsOverlays != overlayRef) return;
-                card.animate()
-                        .translationY(dest)
-                        .alpha(1f)
-                        .setDuration(500)
-                        .setInterpolator(new OvershootInterpolator(0.8f))
-                        .start();
-            }, delay);
-        }
+            // Compute translationY targets based on measured card heights.
+            // Cards are initially positioned with bottomMargin = toolbarHeight + gap
+            // (i.e. the bottom card's resting spot). Upper cards shift up by
+            // (cardHeight + gap) for each position above.
+            float[] targetY = new float[limit];
+            targetY[limit - 1] = 0f;  // bottom card stays at its natural position
+            for (int i = limit - 2; i >= 0; i--) {
+                int cardBelow = i + 1;
+                targetY[i] = targetY[cardBelow]
+                        - cards.get(cardBelow).getMeasuredHeight() - gap;
+            }
 
-        // Time when the last card finishes its entrance animation
-        long allVisibleAt = (long) (limit - 1) * entranceInterval + 500;
+            // Stagger entrance: card 0 (top) rises first, then card 1 (bottom)
+            for (int i = 0; i < limit; i++) {
+                final View card = cards.get(i);
+                final float dest = targetY[i];
+                long delay = (long) i * entranceInterval;
 
-        // Stagger exit: last card (bottom) goes down first, then second, then first (top).
-        // This mirrors the entrance — cards descend in reverse order of how they rose.
-        for (int i = limit - 1; i >= 0; i--) {
-            final View card = cards.get(i);
-            final int cardIndex = i;
-            long exitDelay = allVisibleAt + holdDuration + (long) (limit - 1 - i) * exitInterval;
+                handler.postDelayed(() -> {
+                    if (mStatsOverlays != overlayRef) return;
+                    card.animate()
+                            .translationY(dest)
+                            .alpha(1f)
+                            .setDuration(500)
+                            .setInterpolator(new OvershootInterpolator(0.8f))
+                            .start();
+                }, delay);
+            }
 
-            handler.postDelayed(() -> {
-                if (mStatsOverlays != overlayRef) return;
-                card.animate()
-                        .translationY(offScreen)
-                        .alpha(0f)
-                        .setDuration(350)
-                        .setInterpolator(new AccelerateInterpolator())
-                        .withEndAction(() -> {
-                            ViewGroup p = (ViewGroup) card.getParent();
-                            if (p != null) p.removeView(card);
-                            if (cardIndex == 0 && mStatsOverlays == overlayRef) {
-                                mStatsOverlays = null;
-                                mPreviewHandler = null;
-                            }
-                        })
-                        .start();
-            }, exitDelay);
-        }
+            // Time when the last card finishes its entrance animation
+            long allVisibleAt = (long) (limit - 1) * entranceInterval + 500;
+
+            // Stagger exit: bottom card goes down first, then top.
+            for (int i = limit - 1; i >= 0; i--) {
+                final View card = cards.get(i);
+                final int cardIndex = i;
+                long exitDelay = allVisibleAt + holdDuration
+                        + (long) (limit - 1 - i) * exitInterval;
+
+                handler.postDelayed(() -> {
+                    if (mStatsOverlays != overlayRef) return;
+                    card.animate()
+                            .translationY(offScreen)
+                            .alpha(0f)
+                            .setDuration(350)
+                            .setInterpolator(new AccelerateInterpolator())
+                            .withEndAction(() -> {
+                                ViewGroup p = (ViewGroup) card.getParent();
+                                if (p != null) p.removeView(card);
+                                if (cardIndex == 0 && mStatsOverlays == overlayRef) {
+                                    mStatsOverlays = null;
+                                    mPreviewHandler = null;
+                                }
+                            })
+                            .start();
+                }, exitDelay);
+            }
+        });
     }
 
 
@@ -949,14 +934,14 @@ public class BrowsingModeBottomToolbarCoordinator {
             if (isYouTube) {
                 final String finalVideoId = videoId;
                 mCurrentPreviewVideoId = finalVideoId;
-                // Fetch top 3 comments for the preview animation
+                // Fetch top comments for the preview animation
                 new YouTubeCommentsUtil.GetYouTubeFirstCommentsTask(
                         finalVideoId,
                         new YouTubeCommentsUtil.GetYouTubeFirstCommentsCallback() {
                             @Override
                             public void onSuccess(List<Comment> comments, long ignored) {
                                 if (!finalVideoId.equals(mCurrentPreviewVideoId)) return;
-                                if (mPipIntroShownThisRun) return;
+                                if (mPipIntroActiveOnCurrentPage) return;
                                 showYouTubeCommentsPreview(comments);
                             }
 

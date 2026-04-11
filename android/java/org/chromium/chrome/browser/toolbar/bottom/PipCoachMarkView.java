@@ -251,7 +251,7 @@ public class PipCoachMarkView extends FrameLayout {
         canvas.drawCircle(mCx, mCy, mAnimatedRadius, mRingPaint);
     }
 
-    private void dismiss() {
+    void dismiss() {
         // Guard against multiple dismiss calls (tap + auto-dismiss timer).
         mHandler.removeCallbacksAndMessages(null);
         if (getParent() == null) return;
