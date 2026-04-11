@@ -115,6 +115,10 @@ public class BrowsingModeBottomToolbarCoordinator {
     private View[] mStatsOverlays;
     private Handler mPreviewHandler;
     private String mCurrentPreviewVideoId;
+    /** The video ID for which we already kicked off a preview-comments fetch.
+     *  Prevents duplicate fetches from multiple tab-observer callbacks firing
+     *  for the same page load (onPageLoadFinished, onLoadStopped, onUrlUpdated). */
+    private String mLastFetchedPreviewVideoId;
     private Tab mCurrentObservedTab;
     private TabObserver mPipTabObserver;
     private Callback<Tab> mTabProviderObserver;
@@ -339,6 +343,8 @@ public class BrowsingModeBottomToolbarCoordinator {
                 if (mPipTrailingSpace != null) mPipTrailingSpace.setVisibility(View.GONE);
                 // Reset per-page intro flag so preview comments can show on the next page.
                 mPipIntroActiveOnCurrentPage = false;
+                // Allow a fresh comment fetch for the new page load.
+                mLastFetchedPreviewVideoId = null;
                 dismissPipCoachMark();
                 updateYouTubeControlsLock(url != null ? url.getSpec() : "");
             }
@@ -374,8 +380,9 @@ public class BrowsingModeBottomToolbarCoordinator {
                 mCurrentObservedTab.removeObserver(mPipTabObserver);
             }
             mCurrentObservedTab = tab;
-            // Switching tabs is a new page context — reset the per-page intro flag.
+            // Switching tabs is a new page context — reset flags.
             mPipIntroActiveOnCurrentPage = false;
+            mLastFetchedPreviewVideoId = null;
             dismissPipCoachMark();
             if (tab != null) {
                 tab.addObserver(mPipTabObserver);
@@ -918,10 +925,12 @@ public class BrowsingModeBottomToolbarCoordinator {
     private void updateCommentCountForUrl(String url) {
         if (url == null || url.isEmpty()) {
             mCurrentPreviewVideoId = null;
+            mLastFetchedPreviewVideoId = null;
             return;
         }
         if (!url.startsWith("http://") && !url.startsWith("https://")) {
             mCurrentPreviewVideoId = null;
+            mLastFetchedPreviewVideoId = null;
             return;
         }
         try {
@@ -934,6 +943,14 @@ public class BrowsingModeBottomToolbarCoordinator {
             if (isYouTube) {
                 final String finalVideoId = videoId;
                 mCurrentPreviewVideoId = finalVideoId;
+
+                // Skip if we already started a fetch for this exact video — prevents
+                // duplicate preview animations when multiple tab callbacks
+                // (onPageLoadFinished, onLoadStopped, onUrlUpdated) fire for the
+                // same page load or when in-page popups trigger onUrlUpdated.
+                if (finalVideoId.equals(mLastFetchedPreviewVideoId)) return;
+                mLastFetchedPreviewVideoId = finalVideoId;
+
                 // Fetch top comments for the preview animation
                 new YouTubeCommentsUtil.GetYouTubeFirstCommentsTask(
                         finalVideoId,
