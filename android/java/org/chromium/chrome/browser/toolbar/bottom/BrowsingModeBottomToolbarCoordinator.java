@@ -73,6 +73,7 @@ import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.TabObserver;
 import org.chromium.ui.util.TokenHolder;
 import org.chromium.chrome.browser.util.TabUtils;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.url.GURL;
 import org.chromium.chrome.browser.settings.PostHogEventKeys;
 import org.chromium.chrome.browser.settings.PostHogUtil;
@@ -195,7 +196,9 @@ public class BrowsingModeBottomToolbarCoordinator {
         mBraveHomeButton.setOnClickListener(homeButtonListener);
         mBraveHomeText.setOnClickListener(homeButtonListener);
         mBeHomeButton.setOnClickListener(homeButtonListener);
-
+        // Make the entire home section tappable.
+        View homeSection = mToolbarRoot.findViewById(R.id.home_button_section);
+        if (homeSection != null) homeSection.setOnClickListener(homeButtonListener);
 
         if (mCommentsButton != null) {
             mCommentsButton.setClickable(true);
@@ -242,6 +245,9 @@ public class BrowsingModeBottomToolbarCoordinator {
             };
             mCommentsButton.setOnClickListener(commentsClickHandler);
             mCommentsText.setOnClickListener(commentsClickHandler);
+            // Make the entire comments section tappable.
+            View commentsSection = mToolbarRoot.findViewById(R.id.comments_button_section);
+            if (commentsSection != null) commentsSection.setOnClickListener(commentsClickHandler);
             BraveTouchUtils.ensureMinTouchTarget(mCommentsButton);
              // SETTING HEIGHT AND WIDTH MATCHING COMMENT BUTTON
            
@@ -334,6 +340,8 @@ public class BrowsingModeBottomToolbarCoordinator {
             mYouTubePipButton.setOnClickListener(pipClickHandler);
             mToolbarRoot.findViewById(R.id.bottom_youtube_pip_text).setOnClickListener(
                     pipClickHandler);
+            // Make the entire PIP section tappable.
+            mYouTubePipContainer.setOnClickListener(pipClickHandler);
         }
 
         mPipTabObserver = new EmptyTabObserver() {

@@ -243,9 +243,12 @@ class BottomToolbarCoordinator implements View.OnLongClickListener {
                             // browsingModeCoordinator
                             //         .getSearchAccelerator()
                             //         .setVisibility(View.VISIBLE);
-                            if (BottomToolbarVariationManager.isHomeButtonOnBottomControls()) {
-                                browsingModeCoordinator.getHomeButton().setVisibility(View.VISIBLE);
-                            }
+                            // be_home_button + bottom_home_text are the visible home
+                            // controls; keep bottom_home_button (BraveHomeButton) GONE
+                            // so it doesn't push the label off-screen.
+                            // if (BottomToolbarVariationManager.isHomeButtonOnBottomControls()) {
+                            //     browsingModeCoordinator.getHomeButton().setVisibility(View.VISIBLE);
+                            // }
                             if (BottomToolbarVariationManager.isBookmarkButtonOnBottomControls()) {
                                 browsingModeCoordinator
                                         .getBookmarkButton()
