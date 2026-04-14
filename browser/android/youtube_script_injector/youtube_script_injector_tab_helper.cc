@@ -170,7 +170,7 @@ constexpr char16_t kYoutubeInAppPIP[] =
     (function() {
         function setupPIPProtection() {
             let currentPIPVideoId = null;
-            let pipReplacementEnabled = true;
+            let pipReplacementEnabled = false;
             let lastPlayingVideoElement = null;
             let isOriginalPIPTab = false;
             let isTransitionClose = false;
@@ -524,18 +524,8 @@ constexpr char16_t kYoutubeInAppPIP[] =
                     console.log('New video playing, PIP detected for different video.');
                     
                     if (!isPIPActive()) {
-                        console.log('This is a new tab, attempting PIP transition');
-                        const previousPIPTabId = pipStatus.tabId; // Capture the old tab's ID
+                        console.log('New tab with different video, closing existing PIP');
                         signalPIPTransition(currentVideoId);
-                        
-                        setTimeout(() => {
-                            const playbackState = getPlaybackState();
-                            if (playbackState) {
-                                applyPlaybackState(videoElement, playbackState);
-                            }
-                            // Pass the old tab's ID to the function that starts the new PIP
-                            startPIPForNewVideo(videoElement, currentVideoId, previousPIPTabId);
-                        }, 200);
                     } else {
                         if (pipReplacementEnabled) {
                             replacePIPVideo(videoElement, currentVideoId);
