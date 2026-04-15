@@ -41,9 +41,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.util.BraveTouchUtils;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
-import android.content.Context;
 import android.content.SharedPreferences;
-import android.view.inputmethod.InputMethodManager;
 import com.google.android.material.snackbar.Snackbar;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -364,14 +362,6 @@ public class BrowsingModeBottomToolbarCoordinator {
                 updateYouTubePipButtonVisibility(tab);
                 updateCommentCountForUrl(url.getSpec());
                 updateYouTubeControlsLock(url.getSpec());
-                final Tab loadedTab = tab;
-                final String loadedUrl = url.getSpec();
-                new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    maybeScrollToHideToolbars(loadedTab, loadedUrl);
-                }, 800);
-                new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    maybeTriggerGoogleLoginFun(loadedTab, loadedUrl);
-                }, 1200);
             }
 
             @Override
@@ -527,91 +517,6 @@ public class BrowsingModeBottomToolbarCoordinator {
                     mYouTubePersistentToken);
             mYouTubePersistentToken = TokenHolder.INVALID_TOKEN;
         }
-    }
-
-    /**
-     * On non-YouTube http(s) page loads, nudge the page down by the bottom-toolbar
-     * height so Chromium's scroll-driven hide kicks in and both toolbars retract.
-     * YouTube holds a persistent show-token so we skip it there.
-     */
-    private void maybeScrollToHideToolbars(Tab tab, String url) {
-        if (tab == null || tab.getWebContents() == null) return;
-        if (url == null || url.isEmpty()) return;
-        if (url.contains("youtube.com")) return;
-        if (!url.startsWith("http://") && !url.startsWith("https://")) return;
-        if (mToolbarRoot == null) return;
-        int heightPx = mToolbarRoot.getHeight();
-        if (heightPx <= 0) heightPx = mToolbarRoot.getMeasuredHeight();
-        if (heightPx <= 0) return;
-        float density = mToolbarRoot.getResources().getDisplayMetrics().density;
-        if (density <= 0f) density = 1f;
-        int scrollCssPx = (int) Math.ceil(heightPx / density) + 1;
-        String js =
-                "(function(){try{window.scrollBy({top:" + scrollCssPx
-                + ",left:0,behavior:'instant'});}catch(e){window.scrollBy(0,"
-                + scrollCssPx + ");}})();";
-        tab.getWebContents().evaluateJavaScript(js, null);
-    }
-
-    /**
-     * On the Google ServiceLogin page, rain confetti and focus the first text
-     * input so the keyboard pops. If Google auto-redirects a signed-in user,
-     * the ServiceLogin page never finishes loading at this URL, so this is a
-     * no-op and any in-flight animation is torn down with the old document.
-     */
-    private void maybeTriggerGoogleLoginFun(Tab tab, String url) {
-        if (tab == null || tab.getWebContents() == null) return;
-        if (url == null || !url.startsWith("https://accounts.google.com/ServiceLogin")) return;
-        // Bail if the tab has since navigated away (e.g. auto-login redirect).
-        String current = tab.getUrl() != null ? tab.getUrl().getSpec() : null;
-        if (current == null || !current.startsWith("https://accounts.google.com/ServiceLogin")) {
-            return;
-        }
-        // Force-open the soft keyboard — programmatic focus from JS alone
-        // won't trigger the IME in Chromium's web contents.
-        View tabView = tab.getView();
-        if (tabView != null) {
-            try {
-                InputMethodManager imm =
-                        (InputMethodManager) tabView.getContext()
-                                .getSystemService(Context.INPUT_METHOD_SERVICE);
-                if (imm != null) {
-                    tabView.requestFocus();
-                    imm.showSoftInput(tabView, InputMethodManager.SHOW_IMPLICIT);
-                }
-            } catch (Exception e) {
-                Log.w(TAG, "showSoftInput failed: " + e.getMessage());
-            }
-        }
-        String js =
-            "(function(){try{"
-            + "if(window.__braveLoginFun)return;window.__braveLoginFun=true;"
-            + "function focusInput(tries){"
-            + "var el=document.querySelector('input[type=\"email\"],input[type=\"tel\"],input[type=\"text\"],input:not([type])');"
-            + "if(el){try{el.focus({preventScroll:true});el.click();}catch(e){}return;}"
-            + "if(tries>0)setTimeout(function(){focusInput(tries-1);},200);"
-            + "}focusInput(25);"
-            + "var c=document.createElement('canvas');"
-            + "c.setAttribute('data-brave-confetti','1');"
-            + "c.style.cssText='position:fixed!important;top:0!important;left:0!important;width:100vw!important;height:100vh!important;pointer-events:none!important;z-index:2147483647!important;display:block!important;';"
-            + "function size(){c.width=window.innerWidth;c.height=window.innerHeight;}"
-            + "size();window.addEventListener('resize',size);"
-            + "function mount(){var parent=document.documentElement||document.body;if(parent&&!c.isConnected)parent.appendChild(c);}"
-            + "mount();var mountIv=setInterval(mount,250);"
-            + "var ctx=c.getContext('2d');"
-            + "var colors=['#ff3b30','#ff9500','#ffcc00','#34c759','#007aff','#af52de','#ff2d55'];"
-            + "var P=[];for(var i=0;i<140;i++){P.push({x:Math.random()*c.width,y:Math.random()*-c.height,w:6+Math.random()*6,h:8+Math.random()*10,vy:2+Math.random()*3,vx:-1.2+Math.random()*2.4,r:Math.random()*Math.PI*2,vr:-0.12+Math.random()*0.24,col:colors[(Math.random()*colors.length)|0]});}"
-            + "var start=Date.now(),DUR=6000;"
-            + "function tick(){"
-            + "var el=Date.now()-start;"
-            + "try{ctx.clearRect(0,0,c.width,c.height);"
-            + "for(var i=0;i<P.length;i++){var p=P[i];p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;"
-            + "if(p.y>c.height+20){p.y=-20;p.x=Math.random()*c.width;}"
-            + "ctx.save();ctx.translate(p.x,p.y);ctx.rotate(p.r);ctx.fillStyle=p.col;ctx.fillRect(-p.w/2,-p.h/2,p.w,p.h);ctx.restore();}}catch(e){}"
-            + "if(el<DUR){requestAnimationFrame(tick);}else{clearInterval(mountIv);try{c.remove();}catch(e){}window.__braveLoginFun=false;}"
-            + "}requestAnimationFrame(tick);"
-            + "}catch(e){window.__braveLoginFun=false;}})();";
-        tab.getWebContents().evaluateJavaScript(js, null);
     }
 
     /**
@@ -1000,7 +905,7 @@ public class BrowsingModeBottomToolbarCoordinator {
         }
 
         ValueAnimator animator = ValueAnimator.ofInt(0, (int) Math.min(targetCount, Integer.MAX_VALUE));
-        animator.setDuration(7000);
+        animator.setDuration(5000);
         animator.setInterpolator(new DecelerateInterpolator(1.5f));
         animator.addUpdateListener(a -> mCommentsText.setText(
                 String.format(Locale.getDefault(), "%d comments", (int) a.getAnimatedValue())));
