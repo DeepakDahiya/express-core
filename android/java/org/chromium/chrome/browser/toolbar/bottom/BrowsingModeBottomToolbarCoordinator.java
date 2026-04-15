@@ -905,7 +905,7 @@ public class BrowsingModeBottomToolbarCoordinator {
         }
 
         ValueAnimator animator = ValueAnimator.ofInt(0, (int) Math.min(targetCount, Integer.MAX_VALUE));
-        animator.setDuration(5000);
+        animator.setDuration(7000);
         animator.setInterpolator(new DecelerateInterpolator(1.5f));
         animator.addUpdateListener(a -> mCommentsText.setText(
                 String.format(Locale.getDefault(), "%d comments", (int) a.getAnimatedValue())));
