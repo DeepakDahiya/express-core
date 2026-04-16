@@ -355,6 +355,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                 mLastFetchedPreviewVideoId = null;
                 dismissPipCoachMark();
                 updateYouTubeControlsLock(url != null ? url.getSpec() : "");
+                updateToolbarVisibilityForNtp(url != null ? url.getSpec() : "");
             }
 
             @Override
@@ -379,6 +380,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                 if (tab.getUrl() != null && !tab.getUrl().isEmpty()) {
                     updateCommentCountForUrl(tab.getUrl().getSpec());
                     updateYouTubeControlsLock(tab.getUrl().getSpec());
+                    updateToolbarVisibilityForNtp(tab.getUrl().getSpec());
                 }
             }
         };
@@ -398,13 +400,16 @@ public class BrowsingModeBottomToolbarCoordinator {
                 if (tab.getUrl() != null && !tab.getUrl().isEmpty()) {
                     updateCommentCountForUrl(tab.getUrl().getSpec());
                     updateYouTubeControlsLock(tab.getUrl().getSpec());
+                    updateToolbarVisibilityForNtp(tab.getUrl().getSpec());
                 } else {
                     updateYouTubeControlsLock("");
+                    updateToolbarVisibilityForNtp("");
                 }
             } else {
                 if (mYouTubePipContainer != null) mYouTubePipContainer.setVisibility(View.GONE);
                 if (mPipTrailingSpace != null) mPipTrailingSpace.setVisibility(View.GONE);
                 updateYouTubeControlsLock("");
+                updateToolbarVisibilityForNtp("");
             }
         };
         mTabProvider.addObserver(mTabProviderObserver);
@@ -417,8 +422,10 @@ public class BrowsingModeBottomToolbarCoordinator {
             if (initialTab.getUrl() != null && !initialTab.getUrl().isEmpty()) {
                 updateCommentCountForUrl(initialTab.getUrl().getSpec());
                 updateYouTubeControlsLock(initialTab.getUrl().getSpec());
+                updateToolbarVisibilityForNtp(initialTab.getUrl().getSpec());
             } else {
                 updateYouTubeControlsLock("");
+                updateToolbarVisibilityForNtp("");
             }
         }
     }
@@ -517,6 +524,12 @@ public class BrowsingModeBottomToolbarCoordinator {
                     mYouTubePersistentToken);
             mYouTubePersistentToken = TokenHolder.INVALID_TOKEN;
         }
+    }
+
+    private void updateToolbarVisibilityForNtp(String url) {
+        if (mToolbarRoot == null) return;
+        boolean isNtp = UrlUtilities.isNtpUrl(url);
+        mToolbarRoot.setVisibility(isNtp ? View.GONE : View.VISIBLE);
     }
 
     /**
