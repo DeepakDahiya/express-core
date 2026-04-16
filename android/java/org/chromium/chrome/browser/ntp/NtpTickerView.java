@@ -142,6 +142,15 @@ public class NtpTickerView extends FrameLayout {
     }
 
     @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        if (getVisibility() == View.VISIBLE && mAnimator == null
+                && !TextUtils.isEmpty(mCurrentText)) {
+            mTextContainer.post(this::startScrolling);
+        }
+    }
+
+    @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
         cancelAnimator();

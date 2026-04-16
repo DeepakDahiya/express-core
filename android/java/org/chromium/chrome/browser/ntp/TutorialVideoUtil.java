@@ -17,7 +17,7 @@ public class TutorialVideoUtil {
     private static final String API_URL = "https://api.browser.express/v1/public/tutorial-video";
 
     public interface TutorialVideoCallback {
-        void onResult(boolean enabled, String videoUrl);
+        void onResult(boolean enabled, String videoUrl, String imageUrl);
     }
 
     public static void fetch(TutorialVideoCallback callback) {
@@ -28,6 +28,7 @@ public class TutorialVideoUtil {
         private final TutorialVideoCallback mCallback;
         private boolean mEnabled;
         private String mVideoUrl;
+        private String mImageUrl;
 
         FetchTask(TutorialVideoCallback callback) {
             mCallback = callback;
@@ -57,6 +58,7 @@ public class TutorialVideoUtil {
                     JSONObject json = new JSONObject(sb.toString());
                     mEnabled = json.optBoolean("enabled", false);
                     mVideoUrl = json.optString("videoUrl", null);
+                    mImageUrl = json.optString("imageUrl", null);
                 } else {
                     Log.e(TAG, "HTTP " + conn.getResponseCode());
                 }
@@ -72,7 +74,7 @@ public class TutorialVideoUtil {
         protected void onPostExecute(Void result) {
             assert ThreadUtils.runningOnUiThread();
             if (mCallback != null) {
-                mCallback.onResult(mEnabled, mVideoUrl);
+                mCallback.onResult(mEnabled, mVideoUrl, mImageUrl);
             }
         }
     }

@@ -28,6 +28,14 @@
                 app:surface_type="texture_view"
                 app:resize_mode="zoom" />
 
+            <ImageView
+                android:id="@+id/tutorial_image_view"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:scaleType="centerCrop"
+                android:contentDescription="@null"
+                android:visibility="gone" />
+
             <!-- Play icon overlay shown while loading -->
             <ImageView
                 android:id="@+id/tutorial_play_icon"

@@ -99,6 +99,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
     private boolean mIsLoading = true;
     private String mTutorialVideoUrl;
+    private String mTutorialImageUrl;
     private boolean mTutorialVideoDismissed;
 
     private final RecyclerView.RecycledViewPool mCommentRecycledViewPool;
@@ -120,8 +121,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
         }
     }
 
-    private boolean hasTutorialVideo() {
-        return mTutorialVideoUrl != null && !mTutorialVideoDismissed;
+    private boolean hasTutorialMedia() {
+        return (mTutorialVideoUrl != null || mTutorialImageUrl != null) && !mTutorialVideoDismissed;
     }
 
     @Override
@@ -224,7 +225,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         switch (getItemViewType(position)) {
             case VIEW_TYPE_HEADER:
-                ((HeaderViewHolder) holder).bind(mTopSites, mIsLoading, mTutorialVideoUrl, hasTutorialVideo());
+                ((HeaderViewHolder) holder).bind(mTopSites, mIsLoading, mTutorialVideoUrl, mTutorialImageUrl, hasTutorialMedia());
                 break;
             case VIEW_TYPE_POST:
                 Post post = mPostList.get(getPostIndex(position));
@@ -250,10 +251,11 @@ public class PostListAdapter extends RecyclerView.Adapter {
         notifyItemChanged(0);
     }
 
-    public void setTutorialVideoUrl(String videoUrl) {
+    public void setTutorialMedia(String videoUrl, String imageUrl) {
         mTutorialVideoUrl = videoUrl;
+        mTutorialImageUrl = imageUrl;
         mTutorialVideoDismissed = false;
-        notifyItemChanged(0); // refresh header which now contains the tutorial video
+        notifyItemChanged(0);
     }
 
     public void releaseTutorialPlayer() {
@@ -274,8 +276,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
         private final FrameLayout tutorialContainer;
         private final NtpTickerView tickerView;
 
-        // Tutorial video player state
         private PlayerView tutorialPlayerView;
+        private ImageView tutorialImageView;
         private View tutorialCloseButton;
         private View tutorialCard;
         private ExoPlayer tutorialPlayer;
@@ -317,30 +319,30 @@ public class PostListAdapter extends RecyclerView.Adapter {
             });
         }
 
-        void bind(List<TopSiteTable> topSites, boolean isLoading, String tutorialVideoUrl, boolean showTutorial) {
+        void bind(List<TopSiteTable> topSites, boolean isLoading, String tutorialVideoUrl, String tutorialImageUrl, boolean showTutorial) {
             setupTopSites(topSites);
             if (isLoading) {
                 showShimmer();
             } else {
                 hideShimmer();
             }
-            bindTutorialVideo(tutorialVideoUrl, showTutorial);
+            bindTutorialMedia(tutorialVideoUrl, tutorialImageUrl, showTutorial);
         }
 
-        private void bindTutorialVideo(String videoUrl, boolean showTutorial) {
-            if (!showTutorial || videoUrl == null) {
+        private void bindTutorialMedia(String videoUrl, String imageUrl, boolean showTutorial) {
+            if (!showTutorial || (videoUrl == null && imageUrl == null)) {
                 tutorialContainer.setVisibility(View.GONE);
                 releasePlayer();
                 return;
             }
 
-            // Inflate the tutorial layout if not yet done
             if (tutorialCard == null) {
                 View tutorialView = LayoutInflater.from(mContext)
                         .inflate(R.layout.ntp_tutorial_video, tutorialContainer, false);
                 tutorialContainer.addView(tutorialView);
 
                 tutorialPlayerView = tutorialView.findViewById(R.id.tutorial_player_view);
+                tutorialImageView = tutorialView.findViewById(R.id.tutorial_image_view);
                 tutorialCloseButton = tutorialView.findViewById(R.id.tutorial_close);
                 tutorialCard = tutorialView.findViewById(R.id.tutorial_card);
 
@@ -361,9 +363,20 @@ public class PostListAdapter extends RecyclerView.Adapter {
             }
 
             tutorialContainer.setVisibility(View.VISIBLE);
-            if (!videoUrl.equals(currentTutorialUrl)) {
-                currentTutorialUrl = videoUrl;
-                initializeTutorialPlayer(videoUrl);
+
+            boolean useImage = imageUrl != null && videoUrl == null;
+            if (useImage) {
+                releasePlayer();
+                tutorialPlayerView.setVisibility(View.GONE);
+                tutorialImageView.setVisibility(View.VISIBLE);
+                Glide.with(mContext).load(imageUrl).centerCrop().into(tutorialImageView);
+            } else {
+                tutorialImageView.setVisibility(View.GONE);
+                tutorialPlayerView.setVisibility(View.VISIBLE);
+                if (!videoUrl.equals(currentTutorialUrl)) {
+                    currentTutorialUrl = videoUrl;
+                    initializeTutorialPlayer(videoUrl);
+                }
             }
         }
 

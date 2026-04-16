@@ -378,9 +378,11 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
             }
             
             // Fetch tutorial video config from remote
-            TutorialVideoUtil.fetch((enabled, videoUrl) -> {
-                if (enabled && videoUrl != null && !videoUrl.isEmpty() && mPostAdapter != null) {
-                    mPostAdapter.setTutorialVideoUrl(videoUrl);
+            TutorialVideoUtil.fetch((enabled, videoUrl, imageUrl) -> {
+                if (enabled && mPostAdapter != null
+                        && ((videoUrl != null && !videoUrl.isEmpty())
+                                || (imageUrl != null && !imageUrl.isEmpty()))) {
+                    mPostAdapter.setTutorialMedia(videoUrl, imageUrl);
                 }
             });
 
