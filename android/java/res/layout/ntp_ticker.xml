@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Brave Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+       xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <!-- Clipping container that hosts the continuously translating text. -->
+    <FrameLayout
+        android:id="@+id/ntp_ticker_text_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipChildren="true"
+        android:clipToPadding="true"
+        android:paddingStart="12dp"
+        android:paddingEnd="40dp">
+
+        <TextView
+            android:id="@+id/ntp_ticker_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:singleLine="true"
+            android:includeFontPadding="false"
+            android:textColor="@color/content_color"
+            android:textSize="13sp"
+            android:textStyle="bold" />
+    </FrameLayout>
+
+    <!-- Optional dismiss button — visibility is toggled at runtime when the
+         backend payload sets dismissable=true. -->
+    <ImageButton
+        android:id="@+id/ntp_ticker_close"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_gravity="end|center_vertical"
+        android:layout_marginEnd="4dp"
+        android:src="@drawable/ic_close"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/close"
+        android:visibility="gone"
+        app:tint="@color/content_color" />
+
+</merge>

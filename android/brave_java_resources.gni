@@ -729,6 +729,7 @@ brave_java_resources = [
   "java/res/layout-sw600dp/rewards_tipping_banner_fragment.xml",
   "java/res/layout-sw600dp/rewards_tipping_success_contribution_fragment.xml",
   "java/res/layout/ntp_header.xml",
+  "java/res/layout/ntp_ticker.xml",
   "java/res/layout/ntp_tutorial_video.xml",
   "java/res/layout/custom_update_dialog.xml",
   "java/res/layout/activity_account_selector.xml",

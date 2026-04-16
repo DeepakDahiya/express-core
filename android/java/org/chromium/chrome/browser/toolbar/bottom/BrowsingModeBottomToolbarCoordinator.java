@@ -354,8 +354,9 @@ public class BrowsingModeBottomToolbarCoordinator {
                 // Allow a fresh comment fetch for the new page load.
                 mLastFetchedPreviewVideoId = null;
                 dismissPipCoachMark();
-                updateYouTubeControlsLock(url != null ? url.getSpec() : "");
-                updateToolbarVisibilityForNtp(url != null ? url.getSpec() : "");
+                String urlSpec = url != null ? url.getSpec() : "";
+                updateYouTubeControlsLock(urlSpec);
+                updateToolbarVisibilityForNtp(urlSpec);
             }
 
             @Override

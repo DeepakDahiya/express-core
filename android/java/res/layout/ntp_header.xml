@@ -7,6 +7,12 @@
       android:orientation="vertical"
       android:gravity="center_horizontal">
 
+      <org.chromium.chrome.browser.ntp.NtpTickerView
+            android:id="@+id/ntp_ticker"
+            android:layout_width="match_parent"
+            android:layout_height="36dp"
+            android:visibility="gone" />
+
       <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

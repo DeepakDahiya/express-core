@@ -272,6 +272,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
         private final ShimmerFrameLayout shimmerLoading;
         private final LinearLayout shimmerItems;
         private final FrameLayout tutorialContainer;
+        private final NtpTickerView tickerView;
 
         // Tutorial video player state
         private PlayerView tutorialPlayerView;
@@ -292,11 +293,28 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
                 tutorialContainer = itemView.findViewById(R.id.tutorial_video_container);
 
+                tickerView = itemView.findViewById(R.id.ntp_ticker);
+                bindTicker();
+
                 setupShimmerItems();
 
             } catch (Exception e) {
                 throw e;
             }
+        }
+
+        /**
+         * Paint the ticker from cache for an instant first frame, then trigger
+         * a background refresh and re-bind on completion. Hides cleanly if the
+         * backend says invisible, the user dismissed this text, or fetch fails.
+         */
+        private void bindTicker() {
+            if (tickerView == null) return;
+            NtpTickerUtil.TickerData cached = NtpTickerUtil.getCached();
+            if (cached != null) tickerView.bind(cached);
+            NtpTickerUtil.fetch(data -> {
+                if (data != null) tickerView.bind(data);
+            });
         }
 
         void bind(List<TopSiteTable> topSites, boolean isLoading, String tutorialVideoUrl, boolean showTutorial) {

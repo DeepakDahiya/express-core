@@ -265,6 +265,8 @@ brave_java_sources = [
   "../../brave/android/java/org/chromium/chrome/browser/ntp/BraveNewTabTakeoverInfobar.java",
   "../../brave/android/java/org/chromium/chrome/browser/ntp/BraveNtpAdapter.java",
   "../../brave/android/java/org/chromium/chrome/browser/ntp/BrowserExpressGetPostsUtil.java",
+  "../../brave/android/java/org/chromium/chrome/browser/ntp/NtpTickerUtil.java",
+  "../../brave/android/java/org/chromium/chrome/browser/ntp/NtpTickerView.java",
   "../../brave/android/java/org/chromium/chrome/browser/ntp/TutorialVideoUtil.java",
   "../../brave/android/java/org/chromium/chrome/browser/ntp/Post.java",
   "../../brave/android/java/org/chromium/chrome/browser/ntp/TwitterGetOEmbedDataUtil.java",
