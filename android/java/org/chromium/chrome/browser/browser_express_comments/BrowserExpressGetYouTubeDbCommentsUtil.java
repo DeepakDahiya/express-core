@@ -199,6 +199,31 @@ public class BrowserExpressGetYouTubeDbCommentsUtil {
         }
     }
 
+    /**
+     * Parses the "user" field of a comment. Backend may send it as a populated JSONObject
+     * (native user comment), as JSON null / absent (YouTube-sourced comment with no native
+     * user), or — defensively — as a bare ObjectId string when the backend forgot to
+     * populate. In the last case we keep the id so the avatar fallback uses a stable seed.
+     */
+    static User parseUser(Object raw) {
+        if (raw == null || raw == JSONObject.NULL) return null;
+        if (raw instanceof JSONObject) {
+            JSONObject u = (JSONObject) raw;
+            String uid = u.isNull("_id") ? null : u.optString("_id", null);
+            String uname = u.isNull("username") ? null : u.optString("username", null);
+            String uavatar = u.isNull("avatar") ? null : u.optString("avatar", null);
+            if (uid == null && uname == null && uavatar == null) return null;
+            return new User(uid, uname, uavatar);
+        }
+        if (raw instanceof String) {
+            String uid = (String) raw;
+            if (uid.isEmpty()) return null;
+            Log.w(TAG, "user field returned as bare id (not populated): " + uid);
+            return new User(uid, null, null);
+        }
+        return null;
+    }
+
     static Comment parseComment(JSONObject obj) {
             if (obj == null) return null;
             try {
@@ -221,16 +246,11 @@ public class BrowserExpressGetYouTubeDbCommentsUtil {
                             didVoteObj.optString("type", null));
                 }
 
-                // user is null for YouTube-sourced comments (no native app user)
-                User user = null;
-                if (!obj.isNull("user")) {
-                    JSONObject userObj = obj.optJSONObject("user");
-                    if (userObj != null) {
-                        user = new User(userObj.optString("_id", null),
-                                userObj.optString("username", null),
-                                userObj.optString("avatar", null));
-                    }
-                }
+                // For YouTube-sourced comments the user is genuinely null (no native app
+                // user). For native user comments on a YouTube page the user object must be
+                // parsed the same way as the standard /v1/comment/page endpoint does so the
+                // row renders with the real username and avatar.
+                User user = parseUser(obj.opt("user"));
 
                 Comment c = new Comment(id, content, upvotes, downvotes, commentCount,
                         pageParent, null, commentParent, user, vote,
