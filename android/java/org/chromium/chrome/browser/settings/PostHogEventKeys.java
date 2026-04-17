@@ -7,7 +7,6 @@ public final class PostHogEventKeys {
         public static final String LOGOUT = "Logout"; // DONE
         public static final String LOGIN = "Login"; // DONE
         public static final String SOCIAL_LOGIN_USED = "Social Login Used";
-        public static final String PAGE_VISITED = "Page Visited";
         public static final String URL_ENTERED = "URL Entered"; // DONE
         public static final String HOME_VISITED = "Home Visited"; // DONE
         public static final String PAGE_VISITED = "Page Visited"; // DONE
