@@ -1,19 +1,22 @@
 package org.chromium.chrome.browser.settings;
 
 public final class PostHogEventKeys {
-        public static final String APP_INSTALLED = "App Installed";
-        public static final String APP_LAUNCHED = "App Launched";
-        public static final String USER_SIGNED_UP = "User Signed Up";
-        public static final String LOGOUT = "Logout";
+        public static final String APP_INSTALLED = "App Installed"; // DONE
+        public static final String APP_LAUNCHED = "App Launched"; // DONE
+        public static final String USER_SIGNED_UP = "User Signed Up"; // DONE
+        public static final String LOGOUT = "Logout"; // DONE
         public static final String LOGIN = "Login"; // DONE
         public static final String SOCIAL_LOGIN_USED = "Social Login Used";
         public static final String PAGE_VISITED = "Page Visited";
-        public static final String URL_ENTERED = "URL Entered";
+        public static final String URL_ENTERED = "URL Entered"; // DONE
+        public static final String HOME_VISITED = "Home Visited"; // DONE
         public static final String SEARCH_PERFORMED = "Search Performed";
         public static final String LINK_CLICKED = "Link Clicked";
         public static final String TAB_OPENED = "Tab Opened";
         public static final String AVG_TABS_OPENED_CONCURRENTLY = "Avg Tabs Opened Concurrently";
-        public static final String INCOGNITO_TAB_OPENED = "Incognito Tab Opened";
+        public static final String INCOGNITO_TAB_OPENED = "Incognito Tab Opened"; // DONE
+        public static final String DEFAULT_BROWSER_SELECTED = "Default Browser Selected"; // DONE
+        public static final String NOTIFICATIONS_PERMISSION_GRANTED = "Notifications Permission Granted"; // DONE
         public static final String BOOKMARK_ADDED = "Bookmark Added";
         public static final String DOWNLOAD_INITIATED = "Download Initiated";
         public static final String DOWNLOAD_COMPLETED = "Download Completed";
@@ -27,10 +30,10 @@ public final class PostHogEventKeys {
         public static final String KEYBOARD_LANGUAGE = "Keyboard Language";
         public static final String LANGUAGE_CHANGED = "Language Changed";       
         public static final String PROFILE_VIEWED = "Profile Viewed"; // DONE
-        public static final String PROFILE_UPDATED = "Profile Updated";
+        public static final String PROFILE_UPDATED = "Profile Updated"; // DONE
         public static final String YTP_PREMIUM_CLICKED_ON_QUICKLINK = "YTP Premium Clicked on Quicklink"; // DONE
         public static final String YTP_PREMIUM_CLICKED_ON_HOME = "YTP Premium Clicked on Home"; // DONE
-        public static final String FEED_CLICKED_ON = "Feed Clicked On";
+        public static final String FEED_CLICKED_ON = "Feed Clicked On"; // DONE
         public static final String POST_CLICKED_ON = "Post Clicked On"; // DONE
         public static final String SCROLL_DEPTH_ON_FEED = "Scroll Depth on Feed";
         public static final String SHARE_LINK_CLICKED = "Share Link Clicked";
@@ -50,14 +53,14 @@ public final class PostHogEventKeys {
         public static final String REFERRAL_CLICKED_IN_PROFILE = "Referral Clicked in Profile"; // DONE
 
         // YouTube feature events
-        public static final String YT_SIGN_IN_COMPLETE = "YT Sign-In Complete";
-        public static final String YT_FEATURE_EXPLORED_PIP = "YT Feature Explored (PIP)";
-        public static final String YT_FEATURE_EXPLORED_PIP_BG_PLAY = "YT Feature Explored (PIP + Background Play)";
-        public static final String YT_FEATURE_EXPLORED_BG_PLAY = "YT Feature Explored (Background Play)";
+        public static final String YT_SIGN_IN_COMPLETE = "YT Sign-In Complete"; // DONE
+        public static final String YT_FEATURE_EXPLORED_PIP = "YT Feature Explored (PIP)"; // DONE
+        public static final String YT_FEATURE_EXPLORED_PIP_BG_PLAY = "YT Feature Explored (PIP + Background Play)"; // DONE
+        public static final String YT_FEATURE_EXPLORED_BG_PLAY = "YT Feature Explored (Background Play)"; // DONE
 
         // Referral events
-        public static final String REFERRAL_INITIATED = "Referral Initiated";
-        public static final String REFERRAL_SOURCE = "Referral Source";
+        public static final String REFERRAL_INITIATED = "Referral Initiated"; // DONE
+        public static final String REFERRAL_SOURCE = "Referral Source"; // DONE
         public static final String REFERRAL_MODE_CHOSEN = "Mode of Referral Chosen";
         public static final String REFERRAL_SUCCESSFUL_COUNT = "Count of Successful Referrals";
 }

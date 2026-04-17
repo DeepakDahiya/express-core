@@ -276,6 +276,25 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
                     try {
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         activity.setAccessToken(accessToken);
+
+                        try {
+                            String[] parts = accessToken.split("\\.");
+                            if (parts.length >= 2) {
+                                byte[] decoded = Base64.decode(parts[1], Base64.DEFAULT);
+                                JSONObject jwt = new JSONObject(new String(decoded, "UTF-8"));
+                                String userId = jwt.getString("_id");
+                                JSONObject payload = new JSONObject();
+                                payload.put("app_version", activity.getCurrentAppVersion());
+                                PostHogUtil.PostHogWorkerTask task =
+                                        new PostHogUtil.PostHogWorkerTask(
+                                                PostHogEventKeys.PROFILE_UPDATED, userId, payload);
+                                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                            }
+                        } catch (Exception ex) {
+                            Log.e("EditProfilePrefs",
+                                    "PostHog profile-updated error: " + ex.getMessage());
+                        }
+
                         Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                         intent.setAction(Intent.ACTION_VIEW);

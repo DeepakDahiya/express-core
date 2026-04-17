@@ -28,6 +28,9 @@ import com.airbnb.lottie.model.KeyPath;
 
 import org.chromium.ui.widget.Toast;
 import androidx.fragment.app.FragmentManager;
+import android.util.Base64;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import org.chromium.base.BravePreferenceKeys;
 import org.chromium.base.ContextUtils;
@@ -159,6 +162,25 @@ public class BrowserExpressOtpVerifyPreferences extends BravePreferenceFragment
                     try {
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         activity.setAccessToken(accessToken);
+
+                        try {
+                            String[] parts = accessToken.split("\\.");
+                            if (parts.length >= 2) {
+                                byte[] decoded = Base64.decode(parts[1], Base64.DEFAULT);
+                                JSONObject jwt = new JSONObject(new String(decoded, "UTF-8"));
+                                String userId = jwt.getString("_id");
+                                JSONObject payload = new JSONObject();
+                                payload.put("app_version", activity.getCurrentAppVersion());
+                                PostHogUtil.PostHogWorkerTask task =
+                                        new PostHogUtil.PostHogWorkerTask(
+                                                PostHogEventKeys.USER_SIGNED_UP, userId, payload);
+                                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                            }
+                        } catch (Exception ex) {
+                            Log.e("OtpVerifyPrefs",
+                                    "PostHog signup error: " + ex.getMessage());
+                        }
+
                         Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                         intent.setAction(Intent.ACTION_VIEW);

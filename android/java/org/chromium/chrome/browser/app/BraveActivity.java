@@ -203,6 +203,8 @@ import org.chromium.chrome.browser.settings.BrowserExpressLoginPreferences;
 import org.chromium.chrome.browser.settings.BrowserExpressCommentsPreferences;
 import org.chromium.chrome.browser.settings.BrowserExpressSignupPreferences;
 import org.chromium.chrome.browser.settings.BrowserExpressOtpVerifyPreferences;
+import org.chromium.chrome.browser.settings.PostHogEventKeys;
+import org.chromium.chrome.browser.settings.PostHogUtil;
 import org.chromium.chrome.browser.settings.BraveSearchEngineUtils;
 import org.chromium.chrome.browser.settings.BraveWalletPreferences;
 import org.chromium.chrome.browser.settings.SettingsNavigationFactory;
@@ -213,6 +215,7 @@ import org.chromium.chrome.browser.shields.ContentFilteringFragment;
 import org.chromium.chrome.browser.shields.CreateCustomFiltersFragment;
 import org.chromium.chrome.browser.site_settings.BraveWalletEthereumConnectedSites;
 import org.chromium.chrome.browser.speedreader.BraveSpeedReaderUtils;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
@@ -256,7 +259,9 @@ import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.user_prefs.UserPrefs;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.base.Callback;
 import org.chromium.content_public.browser.MediaSession;
+import org.chromium.content_public.browser.MediaSessionObserver;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.misc_metrics.mojom.MiscAndroidMetrics;
 import org.chromium.mojo.bindings.ConnectionErrorHandler;
@@ -595,6 +600,9 @@ public abstract class BraveActivity extends ChromeActivity
                     public void onNewTabCreated(Tab tab, int creationState) {
                         updateBackCallbackState();
                         setupWebContentsObserver(); // Setup observer for new tab
+                        if (tab != null && tab.isIncognito()) {
+                            firePostHogUserEvent(PostHogEventKeys.INCOGNITO_TAB_OPENED);
+                        }
                     }
                 });
             }
@@ -940,6 +948,10 @@ public abstract class BraveActivity extends ChromeActivity
     @Override
     public void onPictureInPictureModeChanged(boolean inPicture, Configuration newConfig) {
         super.onPictureInPictureModeChanged(inPicture, newConfig);
+
+        if (inPicture && isCurrentTabYouTube()) {
+            firePostHogUserEvent(PostHogEventKeys.YT_FEATURE_EXPLORED_PIP_BG_PLAY);
+        }
 
         if (!inPicture
                 && getCurrentWebContents() != null
@@ -1425,6 +1437,7 @@ public abstract class BraveActivity extends ChromeActivity
     @Override
     public void onResume() {
         super.onResume();
+        mBgPlayFiredThisForeground = false;
         // Keep screen on while app is in the foreground
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         // mIsProcessingPendingDappsTxRequest = false;
@@ -1434,7 +1447,9 @@ public abstract class BraveActivity extends ChromeActivity
         // setting us as default, re-show the prompt immediately.
         if (BraveSetDefaultBrowserUtils.sReturnedFromDefaultBrowserSettings) {
             BraveSetDefaultBrowserUtils.sReturnedFromDefaultBrowserSettings = false;
-            if (!BraveSetDefaultBrowserUtils.isCurrentAppDefaultBrowser(this)) {
+            if (BraveSetDefaultBrowserUtils.isCurrentAppDefaultBrowser(this)) {
+                firePostHogUserEvent(PostHogEventKeys.DEFAULT_BROWSER_SELECTED);
+            } else {
                 BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(this);
             }
         }
@@ -1464,6 +1479,18 @@ public abstract class BraveActivity extends ChromeActivity
         super.performPostInflationStartup();
 
         createNotificationChannel();
+        setupBgPlayTracking();
+        setupUrlEnteredTracking();
+    }
+
+    @Override
+    public void onUserLeaveHint() {
+        super.onUserLeaveHint();
+        if (!mIsMediaPlaying || mBgPlayFiredThisForeground) return;
+        if (isInPictureInPictureMode()) return;
+        if (!isCurrentTabYouTube()) return;
+        firePostHogUserEvent(PostHogEventKeys.YT_FEATURE_EXPLORED_BG_PLAY);
+        mBgPlayFiredThisForeground = true;
     }
 
     @Override
@@ -1603,6 +1630,8 @@ public abstract class BraveActivity extends ChromeActivity
                         .readInt(BravePreferenceKeys.BRAVE_APP_OPEN_COUNT);
         ChromeSharedPreferences.getInstance()
                 .writeInt(BravePreferenceKeys.BRAVE_APP_OPEN_COUNT, appOpenCount + 1);
+
+        firePostHogAppLifecycleEvents();
 
         BraveSetDefaultBrowserUtils.checkForBraveSetDefaultBrowser(
                 appOpenCount, BraveActivity.this);
@@ -2810,7 +2839,9 @@ public abstract class BraveActivity extends ChromeActivity
         } else if (requestCode == BraveConstants.DEFAULT_BROWSER_ROLE_REQUEST_CODE) {
             // User returned from the role picker (Android 10+). Re-show the prompt if they
             // still haven't set us as default (covers both RESULT_OK and RESULT_CANCELED).
-            if (!BraveSetDefaultBrowserUtils.isCurrentAppDefaultBrowser(this)) {
+            if (BraveSetDefaultBrowserUtils.isCurrentAppDefaultBrowser(this)) {
+                firePostHogUserEvent(PostHogEventKeys.DEFAULT_BROWSER_SELECTED);
+            } else {
                 BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(this);
             }
         }
@@ -2832,6 +2863,14 @@ public abstract class BraveActivity extends ChromeActivity
                 && grantResults.length != 0
                 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
             BraveStatsUtil.shareStats(R.layout.brave_stats_share_layout);
+        }
+
+        if (requestCode == BravePermissionUtils.NOTIFICATION_PERMISSION_CODE
+                && permissions.length != 0
+                && android.Manifest.permission.POST_NOTIFICATIONS.equals(permissions[0])
+                && grantResults.length != 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            firePostHogUserEvent(PostHogEventKeys.NOTIFICATIONS_PERMISSION_GRANTED);
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
@@ -2936,7 +2975,207 @@ public abstract class BraveActivity extends ChromeActivity
         return findViewById(R.id.comment_content);
     }
 
+    private static final String POSTHOG_APP_INSTALLED_FIRED_PREF = "ph_app_installed_fired";
+
+    private boolean mIsMediaPlaying;
+    private boolean mBgPlayFiredThisForeground;
+    private MediaSessionObserver mBgPlayMediaSessionObserver;
+    private WebContents mBgPlayObservedWebContents;
+    private Callback<Tab> mBgPlayTabObserver;
+
+    private void setupBgPlayTracking() {
+        if (mBgPlayTabObserver != null) return;
+        mBgPlayTabObserver = tab -> {
+            WebContents wc = tab != null ? tab.getWebContents() : null;
+            attachBgPlayObserver(wc);
+        };
+        try {
+            getActivityTabProvider().addObserver(mBgPlayTabObserver);
+            Tab currentTab = getActivityTabProvider().get();
+            if (currentTab != null) attachBgPlayObserver(currentTab.getWebContents());
+        } catch (Exception e) {
+            Log.e("BraveActivity", "setupBgPlayTracking error: " + e.getMessage());
+        }
+    }
+
+    private void attachBgPlayObserver(WebContents wc) {
+        if (wc == mBgPlayObservedWebContents) return;
+        if (mBgPlayMediaSessionObserver != null) {
+            mBgPlayMediaSessionObserver.stopObserving();
+            mBgPlayMediaSessionObserver = null;
+        }
+        mBgPlayObservedWebContents = wc;
+        mIsMediaPlaying = false;
+        if (wc == null) return;
+        MediaSession ms = MediaSession.fromWebContents(wc);
+        if (ms == null) return;
+        mBgPlayMediaSessionObserver = new MediaSessionObserver(ms) {
+            @Override
+            public void mediaSessionStateChanged(boolean isControllable, boolean isPaused) {
+                mIsMediaPlaying = isControllable && !isPaused;
+            }
+
+            @Override
+            public void mediaSessionDestroyed() {
+                mIsMediaPlaying = false;
+            }
+        };
+    }
+
+    private boolean isCurrentTabYouTube() {
+        WebContents wc = getCurrentWebContents();
+        if (wc == null) return false;
+        GURL url = wc.getLastCommittedUrl();
+        if (url == null || !url.isValid()) return false;
+        String host = url.getHost();
+        return host != null
+                && (host.endsWith("youtube.com") || host.endsWith("youtu.be"));
+    }
+
+    private void firePostHogUserEvent(String eventKey) {
+        firePostHogUserEvent(eventKey, null);
+    }
+
+    private void firePostHogUserEvent(String eventKey, JSONObject extraProps) {
+        try {
+            String userId = "ANONYMOUS";
+            SharedPreferences tokenPref = getApplicationContext().getSharedPreferences(
+                    BravePreferenceKeys.BROWSER_EXPRESS_ACCESS_TOKEN, 0);
+            String accessToken = tokenPref.getString(ACCESS_TOKEN_KEY, null);
+            if (accessToken != null) {
+                String[] parts = accessToken.split("\\.");
+                if (parts.length >= 2) {
+                    byte[] decoded = Base64.decode(parts[1], Base64.DEFAULT);
+                    JSONObject jwt = new JSONObject(new String(decoded, "UTF-8"));
+                    String id = jwt.optString("_id", "");
+                    if (id.length() > 0) userId = id;
+                }
+            }
+            JSONObject payload = extraProps != null ? extraProps : new JSONObject();
+            payload.put("app_version", getCurrentAppVersion());
+            new PostHogUtil.PostHogWorkerTask(eventKey, userId, payload)
+                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } catch (Exception e) {
+            Log.e("BraveActivity", "PostHog fire error: " + e.getMessage());
+        }
+    }
+
+    private EmptyTabObserver mUrlEnteredTabObserver;
+    private Tab mUrlEnteredObservedTab;
+    private Callback<Tab> mUrlEnteredTabSupplierObserver;
+
+    private void setupUrlEnteredTracking() {
+        if (mUrlEnteredTabObserver != null) return;
+        mUrlEnteredTabObserver = new EmptyTabObserver() {
+            @Override
+            public void onPageLoadFinished(Tab tab, GURL url) {
+                firePageVisitEvents(tab, url);
+            }
+        };
+        mUrlEnteredTabSupplierObserver = tab -> attachUrlEnteredObserverTo(tab);
+        try {
+            getActivityTabProvider().addObserver(mUrlEnteredTabSupplierObserver);
+            attachUrlEnteredObserverTo(getActivityTabProvider().get());
+        } catch (Exception e) {
+            Log.e("BraveActivity", "setupUrlEnteredTracking error: " + e.getMessage());
+        }
+    }
+
+    private void attachUrlEnteredObserverTo(Tab tab) {
+        if (tab == mUrlEnteredObservedTab) return;
+        if (mUrlEnteredObservedTab != null) {
+            mUrlEnteredObservedTab.removeObserver(mUrlEnteredTabObserver);
+        }
+        mUrlEnteredObservedTab = tab;
+        if (tab != null) tab.addObserver(mUrlEnteredTabObserver);
+    }
+
+    private void firePageVisitEvents(Tab tab, GURL url) {
+        if (url == null || !url.isValid()) return;
+        String spec = url.getSpec();
+        if (spec == null || spec.isEmpty()) return;
+        boolean isNtp = (tab != null && tab.isNativePage())
+                || spec.startsWith(UrlConstants.NTP_URL)
+                || spec.startsWith("chrome-native://newtab");
+        if (isNtp) {
+            firePostHogUserEvent(PostHogEventKeys.HOME_VISITED);
+            return;
+        }
+        String scheme = url.getScheme();
+        if (!"http".equals(scheme) && !"https".equals(scheme)) return;
+        try {
+            JSONObject props = new JSONObject();
+            props.put("url", spec);
+            firePostHogUserEvent(PostHogEventKeys.URL_ENTERED, props);
+        } catch (Exception e) {
+            Log.e("BraveActivity", "PostHog URL_ENTERED error: " + e.getMessage());
+        }
+    }
+
+    private void firePostHogAppLifecycleEvents() {
+        try {
+            String userId = "ANONYMOUS";
+            SharedPreferences tokenPref = getApplicationContext().getSharedPreferences(
+                    BravePreferenceKeys.BROWSER_EXPRESS_ACCESS_TOKEN, 0);
+            String accessToken = tokenPref.getString(ACCESS_TOKEN_KEY, null);
+            if (accessToken != null) {
+                String[] parts = accessToken.split("\\.");
+                if (parts.length >= 2) {
+                    byte[] decoded = Base64.decode(parts[1], Base64.DEFAULT);
+                    JSONObject jwt = new JSONObject(new String(decoded, "UTF-8"));
+                    String id = jwt.optString("_id", "");
+                    if (id.length() > 0) userId = id;
+                }
+            }
+
+            String appVersion = getCurrentAppVersion();
+
+            JSONObject launchedPayload = new JSONObject();
+            launchedPayload.put("app_version", appVersion);
+            new PostHogUtil.PostHogWorkerTask(
+                    PostHogEventKeys.APP_LAUNCHED, userId, launchedPayload)
+                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+            SharedPreferences installedPref = getApplicationContext()
+                    .getSharedPreferences(POSTHOG_APP_INSTALLED_FIRED_PREF, 0);
+            if (!installedPref.getBoolean("fired", false)) {
+                JSONObject installedPayload = new JSONObject();
+                installedPayload.put("app_version", appVersion);
+                new PostHogUtil.PostHogWorkerTask(
+                        PostHogEventKeys.APP_INSTALLED, userId, installedPayload)
+                        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                installedPref.edit().putBoolean("fired", true).apply();
+            }
+        } catch (Exception e) {
+            Log.e("BraveActivity", "PostHog app lifecycle error: " + e.getMessage());
+        }
+    }
+
     public void logout() {
+        try {
+            SharedPreferences tokenPref = getApplicationContext().getSharedPreferences(
+                    BravePreferenceKeys.BROWSER_EXPRESS_ACCESS_TOKEN, 0);
+            String accessToken = tokenPref.getString(ACCESS_TOKEN_KEY, null);
+            if (accessToken != null) {
+                String[] parts = accessToken.split("\\.");
+                if (parts.length >= 2) {
+                    byte[] decoded = Base64.decode(parts[1], Base64.DEFAULT);
+                    JSONObject jwt = new JSONObject(new String(decoded, "UTF-8"));
+                    String userId = jwt.optString("_id", "");
+                    if (userId.length() > 0) {
+                        JSONObject payload = new JSONObject();
+                        payload.put("app_version", getCurrentAppVersion());
+                        PostHogUtil.PostHogWorkerTask task =
+                                new PostHogUtil.PostHogWorkerTask(
+                                        PostHogEventKeys.LOGOUT, userId, payload);
+                        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            Log.e("BraveActivity", "PostHog logout error: " + e.getMessage());
+        }
+
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 BravePreferenceKeys.BROWSER_EXPRESS_ACCESS_TOKEN, 0);
         SharedPreferences.Editor editor = sharedPref.edit();

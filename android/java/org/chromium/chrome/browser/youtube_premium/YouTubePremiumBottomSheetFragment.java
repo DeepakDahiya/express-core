@@ -299,15 +299,13 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                             mReferralCode = data.referralCode;
                         }
 
-                        // Track successful referral count
-                        if (data.referralCount > 0) {
-                            try {
-                                JSONObject props = new JSONObject();
-                                props.put("count", data.referralCount);
-                                firePostHogEvent(PostHogEventKeys.REFERRAL_SUCCESSFUL_COUNT, props);
-                            } catch (JSONException e) {
-                                Log.e(TAG, "PostHog error: " + e.getMessage());
-                            }
+                        // Track referral flow initiated (sheet opened)
+                        try {
+                            JSONObject props = new JSONObject();
+                            props.put("count", data.referralCount);
+                            firePostHogEvent(PostHogEventKeys.REFERRAL_INITIATED, props);
+                        } catch (JSONException e) {
+                            Log.e(TAG, "PostHog error: " + e.getMessage());
                         }
 
                         // Cache data
