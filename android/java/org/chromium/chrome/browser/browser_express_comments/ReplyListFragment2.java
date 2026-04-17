@@ -332,32 +332,24 @@ public class ReplyListFragment2 extends Fragment {
                 }
             });
 
-            // Getting replies. On YouTube pages, when the L2 parent reply is a YT-sourced
-            // comment whose youtubeId we know, fetch L3 replies from our backend keyed by
-            // parentYoutubeId — the standard /v1/comment endpoint cannot find the parent
-            // when its _id is a YouTube id (not a Mongo ObjectId).
-            final String parentYoutubeId = (mParentReply != null) ? mParentReply.getYoutubeId() : null;
-            if ("youtube".equals(mCommentsFor) && parentYoutubeId != null) {
-                Log.e("YouTubeComments", "[L3] Fetching replies via backend by parentYoutubeId=" + parentYoutubeId);
-                new BrowserExpressGetYouTubeDbCommentsUtil.GetNativeRepliesTask(
-                        parentYoutubeId, accessToken,
-                        new BrowserExpressGetYouTubeDbCommentsUtil.Callback() {
-                            @Override
-                            public void onSuccess(List<Comment> comments) {
-                                Log.e("YouTubeComments", "[L3][DB] Got " + comments.size() + " replies");
-                                getCommentsCallback.getCommentsSuccessful(comments, mParentReply, null);
-                            }
-                            @Override
-                            public void onFailure(String error) {
-                                Log.e("YouTubeComments", "[L3][DB] FAILED: " + error);
-                                getCommentsCallback.getCommentsSuccessful(new ArrayList<>(), mParentReply, null);
-                            }
-                        }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            } else {
+            // Getting replies. L3 replies are always native (YouTube has no nested replies),
+            // so we only need to fetch from our backend via /v1/comment with the parent's
+            // DB _id. If the L2 parent is YT-only (unregistered), it has no DB record and
+            // therefore no replies — skip the call to avoid a Mongo ObjectId cast failure.
+            boolean parentIsRegistered = mParentReply == null
+                    || !mParentReply.isYouTubeOnly();
+            if (parentIsRegistered) {
+                String parentDbId = (mParentReply != null && !mParentReply.isYouTubeOnly())
+                        ? mParentReply.getId()
+                        : mCommentId;
+                Log.e("YouTubeComments", "[L3] Fetching replies via /v1/comment commentParent=" + parentDbId);
                 BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
                     new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
-                            null, mCommentId, null, mPage, mPerPage, accessToken, getCommentsCallback);
+                            null, parentDbId, null, mPage, mPerPage, accessToken, getCommentsCallback);
                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            } else {
+                Log.e("YouTubeComments", "[L3] Parent is YT-only (unregistered) — no backend replies to fetch");
+                getCommentsCallback.getCommentsSuccessful(new ArrayList<>(), mParentReply, null);
             }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e("Express Browser Access Token", e.getMessage());

@@ -119,6 +119,53 @@ public class BrowserExpressGetCommentsUtil {
         }
     }
 
+    /**
+     * Parses a comment that may originate from a YouTube-sourced row (user can be JSON null,
+     * youtubeId/youtubeAuthorName/youtubeAvatarUrl may be present) or a normal native row.
+     * Tolerates JSON null in any optional field. Returns null on hard parse errors.
+     */
+    private static Comment parseCommentSafe(JSONObject obj) {
+        if (obj == null) return null;
+        try {
+            String id = obj.getString("_id");
+            String content = obj.optString("content", "");
+            int upvotes = obj.optInt("upvoteCount", 0);
+            int downvotes = obj.optInt("downvoteCount", 0);
+            int commentCount = obj.optInt("commentCount", 0);
+            int trendingScore = obj.optInt("trendingScore", 0);
+            String pageParent = obj.isNull("pageParent") ? null : obj.optString("pageParent", null);
+            String postParent = obj.isNull("postParent") ? null : obj.optString("postParent", null);
+            String commentParent = obj.isNull("commentParent") ? null : obj.optString("commentParent", null);
+            String mediaImageUrl = obj.isNull("mediaImageUrl") ? null : obj.optString("mediaImageUrl", null);
+            String mediaVideoUrl = obj.isNull("mediaVideoUrl") ? null : obj.optString("mediaVideoUrl", null);
+            String youtubeId = obj.isNull("youtubeId") ? null : obj.optString("youtubeId", null);
+            String youtubeAuthorName = obj.isNull("youtubeAuthorName") ? null : obj.optString("youtubeAuthorName", null);
+            String youtubeAvatarUrl = obj.isNull("youtubeAvatarUrl") ? null : obj.optString("youtubeAvatarUrl", null);
+
+            Vote vote = null;
+            JSONObject didVoteObj = obj.optJSONObject("didVote");
+            if (didVoteObj != null) {
+                vote = new Vote(didVoteObj.optString("_id", null), didVoteObj.optString("type", null));
+            }
+
+            User user = BrowserExpressGetYouTubeDbCommentsUtil.parseUser(obj.opt("user"));
+
+            Comment c = new Comment(id, content, upvotes, downvotes, commentCount,
+                    pageParent, postParent, commentParent, user, vote,
+                    mediaImageUrl, mediaVideoUrl, null, null, null);
+            c.setTrendingScore(trendingScore);
+            if (youtubeId != null) {
+                c.setYoutubeId(youtubeId);
+                c.setYoutubeAuthorName(youtubeAuthorName);
+                c.setYoutubeAvatarUrl(youtubeAvatarUrl);
+            }
+            return c;
+        } catch (Exception e) {
+            Log.e(TAG, "parseCommentSafe error: " + e.getMessage());
+            return null;
+        }
+    }
+
     private static void sendGetCommentsRequest(GetCommentsWorkerTask task, String pageUrl, String commentId, String postId, int page, int perPage, String accessToken) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
@@ -162,141 +209,19 @@ public class BrowserExpressGetCommentsUtil {
                     task.setGetCommentsSuccessStatus(true);
                     JSONArray commentsArray = responseObject.getJSONArray("comments");
                     if (!responseObject.isNull("grandParentComment")) {
-                        JSONObject parentComment = responseObject.getJSONObject("grandParentComment");
-                        if(parentComment != null){
-                            JSONObject user = parentComment.getJSONObject("user");
-                            JSONObject didVote = parentComment.optJSONObject("didVote");
-                            Vote v = null;
-                            if(didVote != null){
-                                v = new Vote(didVote.getString("_id"), didVote.getString("type"));
-                            }
-                            String pageParent = null;
-                            String postParent = null;
-                            String commentParent = null;
-                            if(parentComment.has("pageParent")){
-                                pageParent = parentComment.getString("pageParent");
-                            }
-
-                            if(parentComment.has("postParent")){
-                                postParent = parentComment.getString("postParent");
-                            }
-
-                            if(parentComment.has("commentParent")){
-                                commentParent = parentComment.getString("commentParent");
-                            }
-                            User u = new User(user.getString("_id"), user.getString("username"), user.optString("avatar", null));
-                            Comment newComment = new Comment(
-                                parentComment.getString("_id"), 
-                                parentComment.getString("content"),
-                                parentComment.getInt("upvoteCount"),
-                                parentComment.getInt("downvoteCount"),
-                                parentComment.getInt("commentCount"),
-                                pageParent,
-                                postParent,
-                                commentParent,
-                                u,
-                                v,
-                                parentComment.optString("mediaImageUrl", null),
-                                parentComment.optString("mediaVideoUrl", null),
-                                null,
-                                null,
-                                null
-                            );
-                            newComment.setTrendingScore(parentComment.getInt("trendingScore"));
-                            task.setGrandParentComment(newComment);    
-                        }
+                        Comment gp = parseCommentSafe(responseObject.getJSONObject("grandParentComment"));
+                        if (gp != null) task.setGrandParentComment(gp);
                     }
 
                     if (!responseObject.isNull("parentComment")) {
-                        JSONObject parentComment = responseObject.getJSONObject("parentComment");
-                        if(parentComment != null){
-                            JSONObject user = parentComment.getJSONObject("user");
-                            JSONObject didVote = parentComment.optJSONObject("didVote");
-                            Vote v = null;
-                            if(didVote != null){
-                                v = new Vote(didVote.getString("_id"), didVote.getString("type"));
-                            }
-                            String pageParent = null;
-                            String postParent = null;
-                            String commentParent = null;
-                            if(parentComment.has("pageParent")){
-                                pageParent = parentComment.getString("pageParent");
-                            }
-
-                            if(parentComment.has("postParent")){
-                                postParent = parentComment.getString("postParent");
-                            }
-
-                            if(parentComment.has("commentParent")){
-                                commentParent = parentComment.getString("commentParent");
-                            }
-                            User u = new User(user.getString("_id"), user.getString("username"), user.optString("avatar", null));
-                            Comment newComment = new Comment(
-                                parentComment.getString("_id"), 
-                                parentComment.getString("content"),
-                                parentComment.getInt("upvoteCount"),
-                                parentComment.getInt("downvoteCount"),
-                                parentComment.getInt("commentCount"),
-                                pageParent,
-                                postParent,
-                                commentParent,
-                                u, 
-                                v,
-                                parentComment.optString("mediaImageUrl", null),
-                                parentComment.optString("mediaVideoUrl", null),
-                                null,
-                                null,
-                                null
-                            );
-                            newComment.setTrendingScore(parentComment.getInt("trendingScore"));
-                            task.setParentComment(newComment);
-                        }
+                        Comment p = parseCommentSafe(responseObject.getJSONObject("parentComment"));
+                        if (p != null) task.setParentComment(p);
                     }
+
                     List<Comment> comments = new ArrayList<Comment>();
                     for (int i = 0; i < commentsArray.length(); i++) {
-                        JSONObject comment = commentsArray.getJSONObject(i);
-                        JSONObject user = comment.getJSONObject("user");
-                        JSONObject didVote = comment.optJSONObject("didVote");
-                        Vote v = null;
-                        if(didVote != null){
-                            v = new Vote(didVote.getString("_id"), didVote.getString("type"));
-                        }
-                        String pageParent = null;
-                        String postParent = null;
-                        String commentParent = null;
-                        if(comment.has("pageParent")){
-                            pageParent = comment.getString("pageParent");
-                        }
-
-                        if(comment.has("postParent")){
-                            postParent = comment.getString("postParent");
-                        }
-
-                        if(comment.has("commentParent")){
-                            commentParent = comment.getString("commentParent");
-                        }
-
-                        User u = new User(user.getString("_id"), user.getString("username"), user.optString("avatar", null));
-                        Comment newComment = new Comment(
-                            comment.getString("_id"), 
-                            comment.getString("content"),
-                            comment.getInt("upvoteCount"),
-                            comment.getInt("downvoteCount"),
-                            comment.getInt("commentCount"),
-                            pageParent,
-                            postParent,
-                            commentParent,
-                            u, 
-                            v,
-                            comment.optString("mediaImageUrl", null),
-                            comment.optString("mediaVideoUrl", null),
-                            null,
-                            null,
-                            null
-                        );
-                        newComment.setTrendingScore(comment.getInt("trendingScore"));
-                        comments.add(newComment);
-
+                        Comment c = parseCommentSafe(commentsArray.getJSONObject(i));
+                        if (c != null) comments.add(c);
                     }
 
                     task.setComments(comments);

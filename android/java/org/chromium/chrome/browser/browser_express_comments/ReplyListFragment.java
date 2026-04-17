@@ -482,34 +482,21 @@ public class ReplyListFragment extends Fragment {
     }
 
     private void startDbReplyFetch(String parentYoutubeId, String backendCommentId, String accessToken) {
-        if (!isNullOrEmpty(parentYoutubeId)) {
-            new BrowserExpressGetYouTubeDbCommentsUtil.GetNativeRepliesTask(
-                    parentYoutubeId, accessToken,
-                    new BrowserExpressGetYouTubeDbCommentsUtil.Callback() {
-                        @Override
-                        public void onSuccess(List<Comment> comments) {
-                            Log.e("YouTubeComments", "[L2][DB] Got " + comments.size() + " replies from our DB");
-                            mDbReplies = comments;
-                            onReplyFetchComplete();
-                        }
+        // Skip the backend call entirely when the parent is YT-only (its _id is the YouTube
+        // id, not a Mongo ObjectId) — no replies can exist in our DB for an unregistered
+        // parent, and the standard /v1/comment endpoint would fail to cast the id.
+        boolean parentIsRegistered = mParentYouTubeComment != null
+                && !mParentYouTubeComment.isYouTubeOnly()
+                && !isNullOrEmpty(backendCommentId);
 
-                        @Override
-                        public void onFailure(String error) {
-                            Log.e("YouTubeComments", "[L2][DB] FAILED: " + error);
-                            mDbReplies = new ArrayList<>();
-                            onReplyFetchComplete();
-                        }
-                    }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            return;
-        }
-
-        if (isNullOrEmpty(backendCommentId)) {
-            Log.e("YouTubeComments", "[L2][DB] Skipping backend reply fetch, no parent id available");
+        if (!parentIsRegistered) {
+            Log.e("YouTubeComments", "[L2][DB] Parent not registered — skipping backend reply fetch");
+            mDbReplies = new ArrayList<>();
             onReplyFetchComplete();
             return;
         }
 
-        Log.e("YouTubeComments", "[L2][DB] Falling back to backend reply fetch by commentParent="
+        Log.e("YouTubeComments", "[L2][DB] Fetching replies via /v1/comment commentParent="
                 + backendCommentId);
         BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
                 new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
@@ -518,13 +505,15 @@ public class ReplyListFragment extends Fragment {
                             @Override
                             public void getCommentsSuccessful(List<Comment> comments, Comment parentComment,
                                     Comment grandParentComment) {
+                                Log.e("YouTubeComments", "[L2][DB] Got "
+                                        + (comments != null ? comments.size() : 0) + " replies from /v1/comment");
                                 mDbReplies = comments != null ? comments : new ArrayList<Comment>();
                                 onReplyFetchComplete();
                             }
 
                             @Override
                             public void getCommentsFailed(String error) {
-                                Log.e("YouTubeComments", "[L2][DB] Fallback FAILED: " + error);
+                                Log.e("YouTubeComments", "[L2][DB] FAILED: " + error);
                                 mDbReplies = new ArrayList<>();
                                 onReplyFetchComplete();
                             }
