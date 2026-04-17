@@ -404,7 +404,7 @@ public class ReplyListFragment2 extends Fragment {
                 public void addCommentSuccessful(Comment comment, String newAccessToken, String newRefreshToken) {
                     mCombinedList.add(1, comment);
                     mCommentAdapter.notifyItemInserted(1);
-                    mLayoutManager.scrollToPositionWithOffset(0, 0); // Scroll to top
+                    scrollNewReplyIntoView();
                     
                     try{
                         BraveActivity activity = BraveActivity.getBraveActivity();
@@ -442,7 +442,7 @@ public class ReplyListFragment2 extends Fragment {
         if (mCombinedList != null && mCommentAdapter != null && mCommentRecycler != null) {
             mCombinedList.add(1, newComment);
             mCommentAdapter.notifyItemInserted(1);
-            mLayoutManager.scrollToPositionWithOffset(0, 0);
+            scrollNewReplyIntoView();
 
             try{
                 BraveActivity activity = BraveActivity.getBraveActivity();
@@ -453,6 +453,20 @@ public class ReplyListFragment2 extends Fragment {
                 // Log.e("Express Browser Access Token", e.getMessage());
             }
         }
+    }
+
+    /**
+     * Defers the scroll to the next frame so the RecyclerView lays out the just-inserted
+     * reply before we scroll to it. Targets position 1 (the new reply) so it lands as the
+     * topmost visible row, with the pinned parent staying just above.
+     */
+    private void scrollNewReplyIntoView() {
+        if (mCommentRecycler == null || mLayoutManager == null) return;
+        mCommentRecycler.post(() -> {
+            if (mLayoutManager != null) {
+                mLayoutManager.scrollToPositionWithOffset(1, 0);
+            }
+        });
     }
 
     public void updateTemporaryComment(String tempId, Comment realComment) {

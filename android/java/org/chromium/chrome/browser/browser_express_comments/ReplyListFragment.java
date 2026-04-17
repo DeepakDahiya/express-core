@@ -357,59 +357,68 @@ public class ReplyListFragment extends Fragment {
             // Getting replies
             if ("youtube".equals(mCommentsFor)) {
                 final String finalAccessToken = accessToken;
-                mYouTubeReplies = null;
-                mDbReplies = new ArrayList<>();
-
-                // Always fetch both: YouTube API replies and our DB's native replies.
-                // Use the parent's youtubeId (always available) so we don't depend on
-                // the in-memory comment having a DB _id yet.
-                mPendingReplyFetches = 2;
 
                 final String parentYoutubeId = mParentYouTubeComment != null
                         ? mParentYouTubeComment.getYoutubeId()
-                        : mCommentId; // mCommentId is the youtubeId in YouTube mode
+                        : null;
 
-                Log.e("YouTubeComments", "[L2] Starting parallel YT+DB reply fetch | parentYtId=" + parentYoutubeId + " mCommentId=" + mCommentId);
+                if (parentYoutubeId == null) {
+                    // Native (backend-only) parent comment on a YouTube page — YouTube has no
+                    // record of it, so fetch replies from our backend by commentParent.
+                    Log.e("YouTubeComments", "[L2] Native parent — fetching replies via backend by commentParent=" + mCommentId);
+                    BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
+                            new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
+                                    null, mCommentId, null, mPage, mPerPage, accessToken, getCommentsCallback);
+                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                } else {
+                    // YouTube-sourced parent — fetch both YouTube API replies and our DB's
+                    // native replies in parallel, keying by youtubeId in both cases.
+                    mYouTubeReplies = null;
+                    mDbReplies = new ArrayList<>();
+                    mPendingReplyFetches = 2;
 
-                new BrowserExpressGetYouTubeDbCommentsUtil.GetNativeRepliesTask(
-                        parentYoutubeId, finalAccessToken,
-                        new BrowserExpressGetYouTubeDbCommentsUtil.Callback() {
-                            @Override
-                            public void onSuccess(List<Comment> comments) {
-                                Log.e("YouTubeComments", "[L2][DB] Got " + comments.size() + " replies from our DB");
-                                for (Comment c : comments) {
-                                    Log.e("YouTubeComments", "[L2][DB]   _id=" + c.getId() + " ytId=" + c.getYoutubeId() + " content=" + c.getContent());
+                    Log.e("YouTubeComments", "[L2] Starting parallel YT+DB reply fetch | parentYtId=" + parentYoutubeId + " mCommentId=" + mCommentId);
+
+                    new BrowserExpressGetYouTubeDbCommentsUtil.GetNativeRepliesTask(
+                            parentYoutubeId, finalAccessToken,
+                            new BrowserExpressGetYouTubeDbCommentsUtil.Callback() {
+                                @Override
+                                public void onSuccess(List<Comment> comments) {
+                                    Log.e("YouTubeComments", "[L2][DB] Got " + comments.size() + " replies from our DB");
+                                    for (Comment c : comments) {
+                                        Log.e("YouTubeComments", "[L2][DB]   _id=" + c.getId() + " ytId=" + c.getYoutubeId() + " content=" + c.getContent());
+                                    }
+                                    mDbReplies = comments;
+                                    mPendingReplyFetches--;
+                                    if (mPendingReplyFetches == 0) mergeAndShowReplies();
                                 }
-                                mDbReplies = comments;
-                                mPendingReplyFetches--;
-                                if (mPendingReplyFetches == 0) mergeAndShowReplies();
-                            }
-                            @Override
-                            public void onFailure(String error) {
-                                Log.e("YouTubeComments", "[L2][DB] FAILED: " + error);
-                                mDbReplies = new ArrayList<>();
-                                mPendingReplyFetches--;
-                                if (mPendingReplyFetches == 0) mergeAndShowReplies();
-                            }
-                        }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                @Override
+                                public void onFailure(String error) {
+                                    Log.e("YouTubeComments", "[L2][DB] FAILED: " + error);
+                                    mDbReplies = new ArrayList<>();
+                                    mPendingReplyFetches--;
+                                    if (mPendingReplyFetches == 0) mergeAndShowReplies();
+                                }
+                            }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-                new YouTubeCommentsUtil.GetYouTubeRepliesTask(mCommentId,
-                        new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
-                            @Override
-                            public void getCommentsSuccessful(List<Comment> comments, Comment p, Comment gp) {
-                                Log.e("YouTubeComments", "[L2][YT-API] Got " + comments.size() + " replies from YouTube API");
-                                mYouTubeReplies = comments;
-                                mPendingReplyFetches--;
-                                if (mPendingReplyFetches == 0) mergeAndShowReplies();
-                            }
-                            @Override
-                            public void getCommentsFailed(String error) {
-                                Log.e("YouTubeComments", "[L2][YT-API] FAILED: " + error);
-                                mYouTubeReplies = new ArrayList<>();
-                                mPendingReplyFetches--;
-                                if (mPendingReplyFetches == 0) mergeAndShowReplies();
-                            }
-                        }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    new YouTubeCommentsUtil.GetYouTubeRepliesTask(parentYoutubeId,
+                            new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
+                                @Override
+                                public void getCommentsSuccessful(List<Comment> comments, Comment p, Comment gp) {
+                                    Log.e("YouTubeComments", "[L2][YT-API] Got " + comments.size() + " replies from YouTube API");
+                                    mYouTubeReplies = comments;
+                                    mPendingReplyFetches--;
+                                    if (mPendingReplyFetches == 0) mergeAndShowReplies();
+                                }
+                                @Override
+                                public void getCommentsFailed(String error) {
+                                    Log.e("YouTubeComments", "[L2][YT-API] FAILED: " + error);
+                                    mYouTubeReplies = new ArrayList<>();
+                                    mPendingReplyFetches--;
+                                    if (mPendingReplyFetches == 0) mergeAndShowReplies();
+                                }
+                            }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                }
             } else {
                 BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
                     new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
@@ -605,7 +614,7 @@ public class ReplyListFragment extends Fragment {
                 public void addCommentSuccessful(Comment comment, String newAccessToken, String newRefreshToken) {
                     mCombinedList.add(1, comment);
                     mCommentAdapter.notifyItemInserted(1);
-                    mLayoutManager.scrollToPositionWithOffset(0, 0); // Scroll to top
+                    scrollNewReplyIntoView();
                     
                     try{
                         BraveActivity activity = BraveActivity.getBraveActivity();
@@ -642,7 +651,7 @@ public class ReplyListFragment extends Fragment {
         if (mCombinedList != null && mCommentAdapter != null && mCommentRecycler != null) {
             mCombinedList.add(1, newComment);
             mCommentAdapter.notifyItemInserted(1);
-            mLayoutManager.scrollToPositionWithOffset(0, 0);
+            scrollNewReplyIntoView();
 
             try{
                 BraveActivity activity = BraveActivity.getBraveActivity();
@@ -653,6 +662,20 @@ public class ReplyListFragment extends Fragment {
                 // Log.e("Express Browser Access Token", e.getMessage());
             }
         }
+    }
+
+    /**
+     * Defers the scroll to the next frame so the RecyclerView has a chance to lay out the
+     * just-inserted reply before we scroll to it. Targets position 1 (the new reply) so it
+     * lands as the topmost visible row, with the pinned parent staying just above it.
+     */
+    private void scrollNewReplyIntoView() {
+        if (mCommentRecycler == null || mLayoutManager == null) return;
+        mCommentRecycler.post(() -> {
+            if (mLayoutManager != null) {
+                mLayoutManager.scrollToPositionWithOffset(1, 0);
+            }
+        });
     }
 
     private void scrollToCommentId(String commentId) {

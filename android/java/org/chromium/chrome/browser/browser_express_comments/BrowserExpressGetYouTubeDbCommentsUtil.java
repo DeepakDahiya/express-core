@@ -208,11 +208,11 @@ public class BrowserExpressGetYouTubeDbCommentsUtil {
                 int downvotes = obj.optInt("downvoteCount", 0);
                 int commentCount = obj.optInt("commentCount", 0);
                 int trendingScore = obj.optInt("trendingScore", 0);
-                String pageParent = obj.optString("pageParent", null);
+                String pageParent = obj.isNull("pageParent") ? null : obj.optString("pageParent", null);
                 String commentParent = obj.isNull("commentParent") ? null : obj.optString("commentParent", null);
-                String youtubeId = obj.optString("youtubeId", null);
-                String youtubeAuthorName = obj.optString("youtubeAuthorName", null);
-                String youtubeAvatarUrl = obj.optString("youtubeAvatarUrl", null);
+                String youtubeId = obj.isNull("youtubeId") ? null : obj.optString("youtubeId", null);
+                String youtubeAuthorName = obj.isNull("youtubeAuthorName") ? null : obj.optString("youtubeAuthorName", null);
+                String youtubeAvatarUrl = obj.isNull("youtubeAvatarUrl") ? null : obj.optString("youtubeAvatarUrl", null);
 
                 Vote vote = null;
                 JSONObject didVoteObj = obj.optJSONObject("didVote");

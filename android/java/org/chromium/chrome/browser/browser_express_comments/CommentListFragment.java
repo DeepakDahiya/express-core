@@ -558,9 +558,13 @@ public class CommentListFragment extends Fragment {
         Log.e("YouTubeComments", "[L1][MERGE] ytApi=" + mYouTubeApiComments.size() + " db=" + mDbComments.size());
 
         HashMap<String, Comment> dbMap = new HashMap<>();
+        List<Comment> nativeDbComments = new ArrayList<>();
         for (Comment c : mDbComments) {
-            if (c.getYoutubeId() != null) {
-                dbMap.put(c.getYoutubeId(), c);
+            String ytId = c.getYoutubeId();
+            if (ytId != null) {
+                dbMap.put(ytId, c);
+            } else {
+                nativeDbComments.add(c);
             }
         }
 
@@ -581,13 +585,19 @@ public class CommentListFragment extends Fragment {
         // Append any DB comments not present in the current YouTube API page
         int injected = 0;
         for (Comment dbComment : mDbComments) {
-            if (dbComment.getYoutubeId() != null && !addedYouTubeIds.contains(dbComment.getYoutubeId())) {
+            String dbYtId = dbComment.getYoutubeId();
+            if (dbYtId != null && !addedYouTubeIds.contains(dbYtId)) {
                 merged.add(dbComment);
                 injected++;
             }
         }
 
-        Log.e("YouTubeComments", "[L1][MERGE] Final list=" + merged.size() + " (injected " + injected + " DB-only)");
+        // Append native DB comments (no youtubeId) — these are top-level comments
+        // posted by our users on the YouTube page; YouTube's API doesn't know about them.
+        merged.addAll(nativeDbComments);
+
+        Log.e("YouTubeComments", "[L1][MERGE] Final list=" + merged.size()
+                + " (injected " + injected + " DB-only, " + nativeDbComments.size() + " native)");
         getCommentsCallback.getCommentsSuccessful(merged, null, null);
     }
 
