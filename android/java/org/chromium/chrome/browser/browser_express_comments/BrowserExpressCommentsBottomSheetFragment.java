@@ -127,6 +127,11 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private String mLastOpenedRepliesForCommentId;
     private String mLastOpenedRepliesToRepliesForCommentId;
 
+    // L1 (top-level) YouTube comment that the currently-open L2 replies belong to.
+    // Cached on openReplies so that openRepliesToReply (L3) can pass it through as the
+    // grand-ancestor needed by yt_interact when registering an unregistered L2 parent.
+    private String mLastOpenedL1ParentJson;
+
     private ActivityResultLauncher<PickVisualMediaRequest> mMediaPickerLauncher;
 
     private android.content.BroadcastReceiver mUploadReceiver;
@@ -393,6 +398,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     public void openReplies(String commentId, String parentCommentJson) {
         mLastOpenedRepliesForCommentId = commentId;
         mLastOpenedRepliesToRepliesForCommentId = null;
+        mLastOpenedL1ParentJson = parentCommentJson;
         ReplyListFragment replyFragment = new ReplyListFragment();
         Bundle args = new Bundle();
         args.putString("comment_id", commentId);
@@ -408,10 +414,23 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     public void openRepliesToReply(String commentId) {
+        openRepliesToReply(commentId, null);
+    }
+
+    public void openRepliesToReply(String commentId, String parentCommentJson) {
         mLastOpenedRepliesToRepliesForCommentId = commentId;
         ReplyListFragment2 replyFragment = new ReplyListFragment2();
         Bundle args = new Bundle();
         args.putString("comment_id", commentId);
+        if (mCommentsFor != null) args.putString(ReplyListFragment2.COMMENTS_FOR, mCommentsFor);
+        if (mVideoId != null) {
+            args.putString(ReplyListFragment2.PAGE_URL,
+                    "https://www.youtube.com/watch?v=" + mVideoId);
+        }
+        if (parentCommentJson != null) args.putString(ReplyListFragment2.PARENT_COMMENT_JSON, parentCommentJson);
+        if (mLastOpenedL1ParentJson != null) {
+            args.putString(ReplyListFragment2.L1_ANCESTOR_JSON, mLastOpenedL1ParentJson);
+        }
         replyFragment.setArguments(args);
         loadFragment(replyFragment);
     }

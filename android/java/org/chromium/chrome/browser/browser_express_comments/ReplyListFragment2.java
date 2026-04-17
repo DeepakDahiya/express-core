@@ -69,6 +69,9 @@ public class ReplyListFragment2 extends Fragment {
     public static final String COMMENTS_FOR = "comments_for";
     public static final String POST_ID = "post_id";
     public static final String COMMENT_ID = "comment_id";
+    public static final String PAGE_URL = "page_url";
+    public static final String PARENT_COMMENT_JSON = "parent_comment_json";
+    public static final String L1_ANCESTOR_JSON = "l1_ancestor_json";
     private RecyclerView mCommentRecycler;
     private CommentListAdapter mCommentAdapter;
     private List<Comment> mCombinedList;
@@ -77,6 +80,10 @@ public class ReplyListFragment2 extends Fragment {
     private String mUrl;
 
     private String mCommentId;
+    private String mCommentsFor;
+    private String mPageUrl;
+    private Comment mParentReply;
+    private Comment mL1Ancestor;
 
     private ShimmerFrameLayout mShimmerLoading;
     private ViewGroup mShimmerItems;
@@ -153,6 +160,16 @@ public class ReplyListFragment2 extends Fragment {
 
         if (getArguments() != null) {
             mCommentId = getArguments().getString(COMMENT_ID);
+            mCommentsFor = getArguments().getString(COMMENTS_FOR);
+            mPageUrl = getArguments().getString(PAGE_URL);
+            String parentJson = getArguments().getString(PARENT_COMMENT_JSON);
+            if (parentJson != null) {
+                mParentReply = new com.google.gson.Gson().fromJson(parentJson, Comment.class);
+            }
+            String l1Json = getArguments().getString(L1_ANCESTOR_JSON);
+            if (l1Json != null) {
+                mL1Ancestor = new com.google.gson.Gson().fromJson(l1Json, Comment.class);
+            }
         }
 
         mMessageEditText = inputCallback.getInputEditText();
@@ -251,11 +268,56 @@ public class ReplyListFragment2 extends Fragment {
                                     postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                                 } catch (JSONException e) {
                                 }
-                                
-                                BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
-                                    new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
-                                            content, "comment", mUrl, mCommentId, mediaUri, mediaType, accessToken, addCommentCallback);
-                                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+                                final String finalContent = content;
+                                final String finalAccessToken = accessToken;
+                                final Uri finalMediaUri = mediaUri;
+                                final String finalMediaType = mediaType;
+
+                                // For YouTube pages where the L2 parent reply has not been
+                                // registered in our DB (its _id is the YouTube comment id, not
+                                // a Mongo ObjectId), use yt_interact to register the [L1, L2]
+                                // ancestor chain and create the L3 reply atomically.
+                                if ("youtube".equals(mCommentsFor) && mParentReply != null
+                                        && mParentReply.isYouTubeOnly() && mL1Ancestor != null
+                                        && mL1Ancestor.getYoutubeId() != null) {
+                                    java.util.List<Comment> ancestors = new java.util.ArrayList<>();
+                                    ancestors.add(mL1Ancestor);
+                                    ancestors.add(mParentReply);
+                                    new YouTubeInteractUtil.Task(mPageUrl, ancestors, "reply", finalContent, finalAccessToken,
+                                            new YouTubeInteractUtil.Callback() {
+                                                @Override
+                                                public void onSuccess(java.util.Map<String, String> resolvedIds, String targetId,
+                                                        int upvoteCount, int downvoteCount, int commentCount, Vote didVote) {
+                                                    if (resolvedIds != null) {
+                                                        if (mL1Ancestor.getYoutubeId() != null
+                                                                && resolvedIds.containsKey(mL1Ancestor.getYoutubeId())) {
+                                                            mL1Ancestor.setId(resolvedIds.get(mL1Ancestor.getYoutubeId()));
+                                                        }
+                                                        if (mParentReply.getYoutubeId() != null
+                                                                && resolvedIds.containsKey(mParentReply.getYoutubeId())) {
+                                                            mParentReply.setId(resolvedIds.get(mParentReply.getYoutubeId()));
+                                                            mCommentId = mParentReply.getId();
+                                                        }
+                                                    }
+                                                    org.chromium.ui.widget.Toast.makeText(
+                                                            getContext(), "Reply posted!", android.widget.Toast.LENGTH_SHORT).show();
+                                                }
+                                                @Override
+                                                public void onFailure(String error) {
+                                                    org.chromium.ui.widget.Toast.makeText(
+                                                            getContext(), "Reply failed: " + error, android.widget.Toast.LENGTH_SHORT).show();
+                                                }
+                                            }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                } else {
+                                    String parentIdForCreate = (mParentReply != null && !mParentReply.isYouTubeOnly())
+                                            ? mParentReply.getId()
+                                            : mCommentId;
+                                    BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
+                                        new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
+                                                finalContent, "comment", mUrl, parentIdForCreate, finalMediaUri, finalMediaType, finalAccessToken, addCommentCallback);
+                                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                }
                                 mMessageEditText.setText(R.string.browser_express_empty_text);
                                 if (inputCallback != null) {
                                     inputCallback.clearSelectedMedia();
@@ -270,11 +332,33 @@ public class ReplyListFragment2 extends Fragment {
                 }
             });
 
-            // Getting replies
-            BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
-                new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
-                        null, mCommentId, null, mPage, mPerPage, accessToken, getCommentsCallback);
-            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            // Getting replies. On YouTube pages, when the L2 parent reply is a YT-sourced
+            // comment whose youtubeId we know, fetch L3 replies from our backend keyed by
+            // parentYoutubeId — the standard /v1/comment endpoint cannot find the parent
+            // when its _id is a YouTube id (not a Mongo ObjectId).
+            final String parentYoutubeId = (mParentReply != null) ? mParentReply.getYoutubeId() : null;
+            if ("youtube".equals(mCommentsFor) && parentYoutubeId != null) {
+                Log.e("YouTubeComments", "[L3] Fetching replies via backend by parentYoutubeId=" + parentYoutubeId);
+                new BrowserExpressGetYouTubeDbCommentsUtil.GetNativeRepliesTask(
+                        parentYoutubeId, accessToken,
+                        new BrowserExpressGetYouTubeDbCommentsUtil.Callback() {
+                            @Override
+                            public void onSuccess(List<Comment> comments) {
+                                Log.e("YouTubeComments", "[L3][DB] Got " + comments.size() + " replies");
+                                getCommentsCallback.getCommentsSuccessful(comments, mParentReply, null);
+                            }
+                            @Override
+                            public void onFailure(String error) {
+                                Log.e("YouTubeComments", "[L3][DB] FAILED: " + error);
+                                getCommentsCallback.getCommentsSuccessful(new ArrayList<>(), mParentReply, null);
+                            }
+                        }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            } else {
+                BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
+                    new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
+                            null, mCommentId, null, mPage, mPerPage, accessToken, getCommentsCallback);
+                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e("Express Browser Access Token", e.getMessage());
         }catch(Exception ex){
@@ -379,9 +463,16 @@ public class ReplyListFragment2 extends Fragment {
                 @Override
                 public void getCommentsSuccessful(List<Comment> comments, Comment parentComment, Comment grandParentComment) {
                     mCombinedList.clear();
-                    if (parentComment != null) {
-                        mCombinedList.add(parentComment);
-                        inputCallback.setPostStuff(parentComment.getId(), parentComment.getUser().getUsername(), parentComment.getContent(), parentComment.getUser().getAvatar(), "comment");
+                    Comment effectiveParent = parentComment != null ? parentComment : mParentReply;
+                    if (effectiveParent != null) {
+                        mCombinedList.add(effectiveParent);
+                        String displayName = effectiveParent.getUser() != null
+                                ? effectiveParent.getUser().getUsername()
+                                : effectiveParent.getYoutubeAuthorName();
+                        String displayAvatar = effectiveParent.getUser() != null
+                                ? effectiveParent.getUser().getAvatar()
+                                : effectiveParent.getYoutubeAvatarUrl();
+                        inputCallback.setPostStuff(effectiveParent.getId(), displayName, effectiveParent.getContent(), displayAvatar, "comment");
                     }
                     mCombinedList.addAll(comments); // Add all replies
 
