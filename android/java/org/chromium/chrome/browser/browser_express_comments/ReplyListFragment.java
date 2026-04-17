@@ -356,69 +356,7 @@ public class ReplyListFragment extends Fragment {
 
             // Getting replies
             if ("youtube".equals(mCommentsFor)) {
-                final String finalAccessToken = accessToken;
-
-                final String parentYoutubeId = mParentYouTubeComment != null
-                        ? mParentYouTubeComment.getYoutubeId()
-                        : null;
-
-                if (parentYoutubeId == null) {
-                    // Native (backend-only) parent comment on a YouTube page — YouTube has no
-                    // record of it, so fetch replies from our backend by commentParent.
-                    Log.e("YouTubeComments", "[L2] Native parent — fetching replies via backend by commentParent=" + mCommentId);
-                    BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
-                            new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
-                                    null, mCommentId, null, mPage, mPerPage, accessToken, getCommentsCallback);
-                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                } else {
-                    // YouTube-sourced parent — fetch both YouTube API replies and our DB's
-                    // native replies in parallel, keying by youtubeId in both cases.
-                    mYouTubeReplies = null;
-                    mDbReplies = new ArrayList<>();
-                    mPendingReplyFetches = 2;
-
-                    Log.e("YouTubeComments", "[L2] Starting parallel YT+DB reply fetch | parentYtId=" + parentYoutubeId + " mCommentId=" + mCommentId);
-
-                    new BrowserExpressGetYouTubeDbCommentsUtil.GetNativeRepliesTask(
-                            parentYoutubeId, finalAccessToken,
-                            new BrowserExpressGetYouTubeDbCommentsUtil.Callback() {
-                                @Override
-                                public void onSuccess(List<Comment> comments) {
-                                    Log.e("YouTubeComments", "[L2][DB] Got " + comments.size() + " replies from our DB");
-                                    for (Comment c : comments) {
-                                        Log.e("YouTubeComments", "[L2][DB]   _id=" + c.getId() + " ytId=" + c.getYoutubeId() + " content=" + c.getContent());
-                                    }
-                                    mDbReplies = comments;
-                                    mPendingReplyFetches--;
-                                    if (mPendingReplyFetches == 0) mergeAndShowReplies();
-                                }
-                                @Override
-                                public void onFailure(String error) {
-                                    Log.e("YouTubeComments", "[L2][DB] FAILED: " + error);
-                                    mDbReplies = new ArrayList<>();
-                                    mPendingReplyFetches--;
-                                    if (mPendingReplyFetches == 0) mergeAndShowReplies();
-                                }
-                            }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-                    new YouTubeCommentsUtil.GetYouTubeRepliesTask(parentYoutubeId,
-                            new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
-                                @Override
-                                public void getCommentsSuccessful(List<Comment> comments, Comment p, Comment gp) {
-                                    Log.e("YouTubeComments", "[L2][YT-API] Got " + comments.size() + " replies from YouTube API");
-                                    mYouTubeReplies = comments;
-                                    mPendingReplyFetches--;
-                                    if (mPendingReplyFetches == 0) mergeAndShowReplies();
-                                }
-                                @Override
-                                public void getCommentsFailed(String error) {
-                                    Log.e("YouTubeComments", "[L2][YT-API] FAILED: " + error);
-                                    mYouTubeReplies = new ArrayList<>();
-                                    mPendingReplyFetches--;
-                                    if (mPendingReplyFetches == 0) mergeAndShowReplies();
-                                }
-                            }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                }
+                fetchYouTubeReplies(accessToken);
             } else {
                 BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
                     new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
@@ -522,6 +460,117 @@ public class ReplyListFragment extends Fragment {
                 }
             });
         }
+    }
+
+    private void fetchYouTubeReplies(String accessToken) {
+        mYouTubeReplies = new ArrayList<>();
+        mDbReplies = new ArrayList<>();
+        mPendingReplyFetches = 2;
+
+        final String parentYoutubeId = mParentYouTubeComment != null
+                ? firstNonEmpty(mParentYouTubeComment.getYoutubeId(), mParentYouTubeComment.getId())
+                : null;
+        final String backendCommentId = mParentYouTubeComment != null
+                ? firstNonEmpty(mParentYouTubeComment.getId(), mCommentId)
+                : mCommentId;
+
+        Log.e("YouTubeComments", "[L2] Starting reply fetches | parentYtId="
+                + parentYoutubeId + " backendCommentId=" + backendCommentId);
+
+        startDbReplyFetch(parentYoutubeId, backendCommentId, accessToken);
+        startYouTubeApiReplyFetch(parentYoutubeId);
+    }
+
+    private void startDbReplyFetch(String parentYoutubeId, String backendCommentId, String accessToken) {
+        if (!isNullOrEmpty(parentYoutubeId)) {
+            new BrowserExpressGetYouTubeDbCommentsUtil.GetNativeRepliesTask(
+                    parentYoutubeId, accessToken,
+                    new BrowserExpressGetYouTubeDbCommentsUtil.Callback() {
+                        @Override
+                        public void onSuccess(List<Comment> comments) {
+                            Log.e("YouTubeComments", "[L2][DB] Got " + comments.size() + " replies from our DB");
+                            mDbReplies = comments;
+                            onReplyFetchComplete();
+                        }
+
+                        @Override
+                        public void onFailure(String error) {
+                            Log.e("YouTubeComments", "[L2][DB] FAILED: " + error);
+                            mDbReplies = new ArrayList<>();
+                            onReplyFetchComplete();
+                        }
+                    }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            return;
+        }
+
+        if (isNullOrEmpty(backendCommentId)) {
+            Log.e("YouTubeComments", "[L2][DB] Skipping backend reply fetch, no parent id available");
+            onReplyFetchComplete();
+            return;
+        }
+
+        Log.e("YouTubeComments", "[L2][DB] Falling back to backend reply fetch by commentParent="
+                + backendCommentId);
+        BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
+                new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
+                        null, backendCommentId, null, mPage, mPerPage, accessToken,
+                        new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
+                            @Override
+                            public void getCommentsSuccessful(List<Comment> comments, Comment parentComment,
+                                    Comment grandParentComment) {
+                                mDbReplies = comments != null ? comments : new ArrayList<Comment>();
+                                onReplyFetchComplete();
+                            }
+
+                            @Override
+                            public void getCommentsFailed(String error) {
+                                Log.e("YouTubeComments", "[L2][DB] Fallback FAILED: " + error);
+                                mDbReplies = new ArrayList<>();
+                                onReplyFetchComplete();
+                            }
+                        });
+        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    private void startYouTubeApiReplyFetch(String parentYoutubeId) {
+        if (isNullOrEmpty(parentYoutubeId)) {
+            Log.e("YouTubeComments", "[L2][YT-API] Skipping YouTube reply fetch, no parentYoutubeId available");
+            onReplyFetchComplete();
+            return;
+        }
+
+        new YouTubeCommentsUtil.GetYouTubeRepliesTask(parentYoutubeId,
+                new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
+                    @Override
+                    public void getCommentsSuccessful(List<Comment> comments, Comment p, Comment gp) {
+                        Log.e("YouTubeComments", "[L2][YT-API] Got " + comments.size()
+                                + " replies from YouTube API");
+                        mYouTubeReplies = comments;
+                        onReplyFetchComplete();
+                    }
+
+                    @Override
+                    public void getCommentsFailed(String error) {
+                        Log.e("YouTubeComments", "[L2][YT-API] FAILED: " + error);
+                        mYouTubeReplies = new ArrayList<>();
+                        onReplyFetchComplete();
+                    }
+                }).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    private void onReplyFetchComplete() {
+        mPendingReplyFetches--;
+        if (mPendingReplyFetches == 0) {
+            mergeAndShowReplies();
+        }
+    }
+
+    private static boolean isNullOrEmpty(String value) {
+        return value == null || value.isEmpty();
+    }
+
+    private static String firstNonEmpty(String primary, String fallback) {
+        return !isNullOrEmpty(primary) ? primary : fallback;
     }
 
     /**
