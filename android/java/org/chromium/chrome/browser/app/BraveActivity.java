@@ -3033,11 +3033,11 @@ public abstract class BraveActivity extends ChromeActivity
                 && (host.endsWith("youtube.com") || host.endsWith("youtu.be"));
     }
 
-    private void firePostHogUserEvent(String eventKey) {
+    public void firePostHogUserEvent(String eventKey) {
         firePostHogUserEvent(eventKey, null);
     }
 
-    private void firePostHogUserEvent(String eventKey, JSONObject extraProps) {
+    public void firePostHogUserEvent(String eventKey, JSONObject extraProps) {
         try {
             String userId = "ANONYMOUS";
             SharedPreferences tokenPref = getApplicationContext().getSharedPreferences(
@@ -3070,13 +3070,7 @@ public abstract class BraveActivity extends ChromeActivity
         mUrlEnteredTabObserver = new EmptyTabObserver() {
             @Override
             public void onPageLoadFinished(Tab tab, GURL url) {
-                firePageVisitEvents(tab, url);
-            }
-
-            @Override
-            public void onUrlUpdated(Tab tab) {
-                if (tab == null) return;
-                firePageVisitEvents(tab, tab.getUrl());
+                fireHomeVisitedIfNtp(tab, url);
             }
 
             @Override
@@ -3110,32 +3104,19 @@ public abstract class BraveActivity extends ChromeActivity
         if (tab != null) tab.addObserver(mUrlEnteredTabObserver);
     }
 
-    private String mLastReportedPageUrl;
+    private String mLastHomeVisitedUrl;
 
-    private void firePageVisitEvents(Tab tab, GURL url) {
+    private void fireHomeVisitedIfNtp(Tab tab, GURL url) {
         if (url == null || !url.isValid()) return;
         String spec = url.getSpec();
         if (spec == null || spec.isEmpty()) return;
         boolean isNtp = (tab != null && tab.isNativePage())
                 || spec.startsWith(UrlConstants.NTP_URL)
                 || spec.startsWith("chrome-native://newtab");
-        if (isNtp) {
-            if (spec.equals(mLastReportedPageUrl)) return;
-            mLastReportedPageUrl = spec;
-            firePostHogUserEvent(PostHogEventKeys.HOME_VISITED);
-            return;
-        }
-        String scheme = url.getScheme();
-        if (!"http".equals(scheme) && !"https".equals(scheme)) return;
-        if (spec.equals(mLastReportedPageUrl)) return;
-        mLastReportedPageUrl = spec;
-        try {
-            JSONObject props = new JSONObject();
-            props.put("url", spec);
-            firePostHogUserEvent(PostHogEventKeys.PAGE_VISITED, props);
-        } catch (Exception e) {
-            Log.e("BraveActivity", "PostHog PAGE_VISITED error: " + e.getMessage());
-        }
+        if (!isNtp) return;
+        if (spec.equals(mLastHomeVisitedUrl)) return;
+        mLastHomeVisitedUrl = spec;
+        firePostHogUserEvent(PostHogEventKeys.HOME_VISITED);
     }
 
     private void fireUrlEnteredEvent(GURL url) {

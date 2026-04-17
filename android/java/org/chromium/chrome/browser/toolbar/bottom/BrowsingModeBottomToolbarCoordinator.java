@@ -123,6 +123,7 @@ public class BrowsingModeBottomToolbarCoordinator {
     private Tab mCurrentObservedTab;
     private TabObserver mPipTabObserver;
     private Callback<Tab> mTabProviderObserver;
+    private String mLastPostHogPageUrl;
 
     /** The mediator that handles events from outside the browsing mode bottom toolbar. */
     private final BrowsingModeBottomToolbarMediator mMediator;
@@ -381,6 +382,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                     updateCommentCountForUrl(tab.getUrl().getSpec());
                     updateYouTubeControlsLock(tab.getUrl().getSpec());
                 }
+                firePageVisitedPostHog(tab);
             }
         };
 
@@ -1042,6 +1044,25 @@ public class BrowsingModeBottomToolbarCoordinator {
             task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } catch (Exception e) {
             Log.e(TAG, "firePostHogEvent error: " + e.getMessage());
+        }
+    }
+
+    private void firePageVisitedPostHog(Tab tab) {
+        if (tab == null || tab.getUrl() == null) return;
+        String spec = tab.getUrl().getSpec();
+        if (spec == null || spec.isEmpty()) return;
+        if (tab.isNativePage()) return;
+        String scheme = tab.getUrl().getScheme();
+        if (!"http".equals(scheme) && !"https".equals(scheme)) return;
+        if (spec.equals(mLastPostHogPageUrl)) return;
+        mLastPostHogPageUrl = spec;
+        try {
+            JSONObject props = new JSONObject();
+            props.put("url", spec);
+            BraveActivity activity = BraveActivity.getBraveActivity();
+            activity.firePostHogUserEvent(PostHogEventKeys.PAGE_VISITED, props);
+        } catch (Exception e) {
+            Log.e(TAG, "firePageVisitedPostHog error: " + e.getMessage());
         }
     }
 }

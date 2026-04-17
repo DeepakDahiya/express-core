@@ -299,15 +299,6 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                             mReferralCode = data.referralCode;
                         }
 
-                        // Track referral flow initiated (sheet opened)
-                        try {
-                            JSONObject props = new JSONObject();
-                            props.put("count", data.referralCount);
-                            firePostHogEvent(PostHogEventKeys.REFERRAL_INITIATED, props);
-                        } catch (JSONException e) {
-                            Log.e(TAG, "PostHog error: " + e.getMessage());
-                        }
-
                         // Cache data
                         ChromeSharedPreferences.getInstance()
                                 .writeLong(BravePreferenceKeys.YOUTUBE_PREMIUM_ACCESS_SECONDS,
