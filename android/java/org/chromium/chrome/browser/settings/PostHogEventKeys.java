@@ -10,6 +10,7 @@ public final class PostHogEventKeys {
         public static final String PAGE_VISITED = "Page Visited";
         public static final String URL_ENTERED = "URL Entered"; // DONE
         public static final String HOME_VISITED = "Home Visited"; // DONE
+        public static final String PAGE_VISITED = "Page Visited"; // DONE
         public static final String SEARCH_PERFORMED = "Search Performed";
         public static final String LINK_CLICKED = "Link Clicked";
         public static final String TAB_OPENED = "Tab Opened";

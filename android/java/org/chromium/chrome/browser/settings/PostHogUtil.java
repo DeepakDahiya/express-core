@@ -34,9 +34,9 @@ public class PostHogUtil {
     private static final String POST_HOG_API_KEY = "phc_Nn8HVrhAeFqo35ymuvUKOKe59RhXnShdushDuyDn3vL";
 
     public static class PostHogWorkerTask extends AsyncTask<Void> {
-        private static String mEvent;
-        private static String mUserId;
-        private static JSONObject mProperties;
+        private final String mEvent;
+        private final String mUserId;
+        private final JSONObject mProperties;
 
         public PostHogWorkerTask(String event, String userId, JSONObject properties) {
             mEvent = event;

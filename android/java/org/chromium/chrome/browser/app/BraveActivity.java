@@ -310,6 +310,7 @@ import org.chromium.chrome.browser.util.TabUtils;
 import org.chromium.url.GURL;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.browser.NavigationHandle;
+import org.chromium.ui.base.PageTransition;
 
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
 
@@ -3071,6 +3072,25 @@ public abstract class BraveActivity extends ChromeActivity
             public void onPageLoadFinished(Tab tab, GURL url) {
                 firePageVisitEvents(tab, url);
             }
+
+            @Override
+            public void onUrlUpdated(Tab tab) {
+                if (tab == null) return;
+                firePageVisitEvents(tab, tab.getUrl());
+            }
+
+            @Override
+            public void onDidFinishNavigationInPrimaryMainFrame(
+                    Tab tab, NavigationHandle navigation) {
+                if (navigation == null || !navigation.hasCommitted()
+                        || navigation.isErrorPage()) {
+                    return;
+                }
+                int core = navigation.pageTransition() & PageTransition.CORE_MASK;
+                if (core == PageTransition.TYPED || core == PageTransition.GENERATED) {
+                    fireUrlEnteredEvent(navigation.getUrl());
+                }
+            }
         };
         mUrlEnteredTabSupplierObserver = tab -> attachUrlEnteredObserverTo(tab);
         try {
@@ -3090,6 +3110,8 @@ public abstract class BraveActivity extends ChromeActivity
         if (tab != null) tab.addObserver(mUrlEnteredTabObserver);
     }
 
+    private String mLastReportedPageUrl;
+
     private void firePageVisitEvents(Tab tab, GURL url) {
         if (url == null || !url.isValid()) return;
         String spec = url.getSpec();
@@ -3098,11 +3120,30 @@ public abstract class BraveActivity extends ChromeActivity
                 || spec.startsWith(UrlConstants.NTP_URL)
                 || spec.startsWith("chrome-native://newtab");
         if (isNtp) {
+            if (spec.equals(mLastReportedPageUrl)) return;
+            mLastReportedPageUrl = spec;
             firePostHogUserEvent(PostHogEventKeys.HOME_VISITED);
             return;
         }
         String scheme = url.getScheme();
         if (!"http".equals(scheme) && !"https".equals(scheme)) return;
+        if (spec.equals(mLastReportedPageUrl)) return;
+        mLastReportedPageUrl = spec;
+        try {
+            JSONObject props = new JSONObject();
+            props.put("url", spec);
+            firePostHogUserEvent(PostHogEventKeys.PAGE_VISITED, props);
+        } catch (Exception e) {
+            Log.e("BraveActivity", "PostHog PAGE_VISITED error: " + e.getMessage());
+        }
+    }
+
+    private void fireUrlEnteredEvent(GURL url) {
+        if (url == null || !url.isValid()) return;
+        String scheme = url.getScheme();
+        if (!"http".equals(scheme) && !"https".equals(scheme)) return;
+        String spec = url.getSpec();
+        if (spec == null || spec.isEmpty()) return;
         try {
             JSONObject props = new JSONObject();
             props.put("url", spec);
