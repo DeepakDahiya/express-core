@@ -1907,6 +1907,455 @@ constexpr char16_t kYoutubePipNavigationFix[] =
     })();
 )";
 
+// First-run intro tutorial on the m.youtube.com home feed.
+// Picks the first long-form video tile (≥ 60s, not Shorts), scrolls it into
+// view, and dims the rest of the page with a gold-ringed cutout around the
+// tile. Tap inside the cutout = clicks the tile (navigates to /watch, where
+// the existing PiP coach mark fires). Tap outside dismisses. localStorage
+// gate makes this strictly one-shot per origin.
+constexpr char16_t kYoutubeHomeIntroTutorial[] =
+    uR"(
+    (function() {
+        'use strict';
+
+        const LOG = '[brave-yt-tutorial]';
+        function log() {
+            try {
+                const a = Array.prototype.slice.call(arguments);
+                a.unshift(LOG);
+                console.log.apply(console, a);
+            } catch (e) {}
+        }
+
+        if (window.__braveYtHomeTutorialActive) {
+            log('already active in this document, skipping');
+            return;
+        }
+        window.__braveYtHomeTutorialActive = true;
+        log('script loaded on', window.location.href);
+
+        // Bumped to v2 so any stale flag from earlier failed attempts is
+        // bypassed and the tutorial gets a fresh chance to render.
+        const STORAGE_KEY    = 'brave_yt_home_tutorial_shown_v2';
+        const ROOT_ID        = 'brave-yt-home-tutorial-root';
+        const STYLE_ID       = 'brave-yt-home-tutorial-style';
+        const GOLD           = '#D4AF37';
+        const NAVY           = '#1A1A2E';
+        const DIM_RGBA       = 'rgba(0, 0, 0, 0.92)';
+        const RING_PADDING   = 8;
+        const RING_RADIUS    = 14;
+        const POLL_MS        = 350;
+        const MAX_WAIT_MS    = 10000;
+
+        function isYouTubeHome() {
+            const host = window.location.hostname;
+            const path = window.location.pathname;
+            return /(?:^|\.)youtube\.com$/.test(host) &&
+                   (path === '/' || path === '');
+        }
+
+        function alreadyShown() {
+            try { return localStorage.getItem(STORAGE_KEY) === '1'; }
+            catch (e) { return false; }
+        }
+        function markShown() {
+            try { localStorage.setItem(STORAGE_KEY, '1'); } catch (e) {}
+        }
+
+        // "10:34" -> 634, "1:23:45" -> 5025, otherwise -1.
+        function parseDuration(text) {
+            if (!text) return -1;
+            const m = String(text).trim().match(
+                /^(\d{1,2}):(\d{2})(?::(\d{2}))?$/);
+            if (!m) return -1;
+            return m[3] !== undefined
+                ? (+m[1]) * 3600 + (+m[2]) * 60 + (+m[3])
+                : (+m[1]) * 60   + (+m[2]);
+        }
+
+        // Picks the first home-feed video tile whose duration is >= 60s.
+        // Uses a permissive regex on the tile's text content so YouTube
+        // renaming the badge class doesn't break the lookup.
+        function findLongFormTile() {
+            const selector =
+                'ytm-rich-item-renderer, ytm-video-with-context-renderer, ' +
+                'ytm-compact-video-renderer';
+            let nodes = Array.from(document.querySelectorAll(selector));
+            if (nodes.length === 0) {
+                // Fallback: any anchor pointing to /watch?v= on the page.
+                nodes = Array.from(document.querySelectorAll(
+                    'a[href*="/watch?v="]'
+                )).map(a => a.closest(
+                    'ytm-rich-item-renderer, ytm-video-with-context-renderer, ' +
+                    'ytm-compact-video-renderer, [class*="renderer"]'
+                ) || a.parentElement).filter(Boolean);
+            }
+            for (let i = 0; i < nodes.length; i++) {
+                const tile = nodes[i];
+                if (!tile) continue;
+                // Skip Shorts shelves — they don't lead to /watch.
+                const reelShelf = tile.closest('ytm-reel-shelf-renderer');
+                if (reelShelf) continue;
+                const headedShelf = tile.closest(
+                    'ytm-rich-shelf-renderer, ytm-shelf-renderer'
+                );
+                if (headedShelf) {
+                    const heading = headedShelf.querySelector(
+                        'h2, h3, [role="heading"]');
+                    if (heading && /shorts/i.test(heading.textContent || '')) {
+                        continue;
+                    }
+                }
+                // Find any MM:SS or H:MM:SS run anywhere in the tile text.
+                const text = tile.textContent || '';
+                const match = text.match(
+                    /(?:^|[^0-9])(\d{1,2}):(\d{2})(?::(\d{2}))?(?:[^0-9]|$)/);
+                if (!match) continue;
+                const dur = match[3] !== undefined
+                    ? (+match[1]) * 3600 + (+match[2]) * 60 + (+match[3])
+                    : (+match[1]) * 60   + (+match[2]);
+                if (dur >= 60) {
+                    log('picked tile', i, 'duration=' + dur + 's');
+                    return tile;
+                }
+            }
+            log('no qualifying tile yet, will retry');
+            return null;
+        }
+
+        function injectStyles() {
+            if (document.getElementById(STYLE_ID)) return;
+            const style = document.createElement('style');
+            style.id = STYLE_ID;
+            // Four solid-color rectangles (not box-shadow, not SVG mask) tile
+            // the viewport around the cutout. Each is just a plain colored
+            // div — guaranteed to render in any WebView.
+            style.textContent = `
+                #${ROOT_ID} {
+                    position: fixed !important; inset: 0 !important;
+                    z-index: 2147483646 !important;
+                    pointer-events: auto !important;
+                    touch-action: none !important;
+                    overscroll-behavior: contain !important;
+                    font-family: 'Roboto', 'Helvetica Neue', Helvetica, Arial, sans-serif !important;
+                    animation: braveTutFadeIn 220ms ease-out both;
+                }
+                @keyframes braveTutFadeIn {
+                    from { opacity: 0; }
+                    to   { opacity: 1; }
+                }
+                #${ROOT_ID} .brave-tut-dim {
+                    position: fixed !important;
+                    background: ${DIM_RGBA} !important;
+                    pointer-events: none !important;
+                    box-sizing: border-box !important;
+                }
+                #${ROOT_ID} .brave-tut-ring {
+                    position: fixed !important;
+                    border: 3px solid ${GOLD} !important;
+                    border-radius: ${RING_RADIUS}px !important;
+                    pointer-events: none !important;
+                    box-sizing: border-box !important;
+                    animation: braveTutGlow 1500ms ease-in-out infinite;
+                }
+                @keyframes braveTutGlow {
+                    0%   { box-shadow: 0 0 8px  rgba(212, 175, 55, 0.6); }
+                    50%  { box-shadow: 0 0 28px rgba(212, 175, 55, 1.0),
+                                       0 0 0 8px rgba(212, 175, 55, 0.20); }
+                    100% { box-shadow: 0 0 8px  rgba(212, 175, 55, 0.6); }
+                }
+                #${ROOT_ID} .brave-tut-banner {
+                    position: fixed !important;
+                    left: 16px !important; right: 16px !important;
+                    background: ${NAVY} !important;
+                    border: 1px solid rgba(212, 175, 55, 0.5) !important;
+                    border-radius: 16px !important;
+                    padding: 18px 20px 16px !important;
+                    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.7) !important;
+                    pointer-events: none !important;
+                    animation: braveTutBannerIn 360ms cubic-bezier(.2,.7,.2,1) both;
+                }
+                @keyframes braveTutBannerIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to   { opacity: 1; transform: translateY(0); }
+                }
+                #${ROOT_ID} .brave-tut-title {
+                    color: ${GOLD} !important;
+                    font-size: 17px !important;
+                    font-weight: 700 !important;
+                    line-height: 1.3 !important;
+                    letter-spacing: 0.2px !important;
+                    margin: 0 0 8px 0 !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    gap: 8px !important;
+                }
+                #${ROOT_ID} .brave-tut-pulse-dot {
+                    width: 9px !important; height: 9px !important;
+                    border-radius: 50% !important;
+                    background: ${GOLD} !important;
+                    box-shadow: 0 0 12px rgba(212, 175, 55, 1.0) !important;
+                    animation: braveTutDot 1.05s ease-in-out infinite;
+                    flex: 0 0 auto !important;
+                }
+                @keyframes braveTutDot {
+                    0%, 100% { transform: scale(1);   opacity: 1;    }
+                    50%      { transform: scale(1.6); opacity: 0.55; }
+                }
+                #${ROOT_ID} .brave-tut-body {
+                    color: #FFFFFF !important;
+                    font-size: 14px !important;
+                    line-height: 1.45 !important;
+                    margin: 0 !important;
+                    opacity: 0.95 !important;
+                }
+                #${ROOT_ID} .brave-tut-cta {
+                    position: fixed !important;
+                    background: ${GOLD} !important;
+                    color: ${NAVY} !important;
+                    font-size: 12px !important;
+                    font-weight: 800 !important;
+                    letter-spacing: 0.8px !important;
+                    padding: 8px 14px !important;
+                    border-radius: 999px !important;
+                    pointer-events: none !important;
+                    box-shadow: 0 6px 20px rgba(212, 175, 55, 0.7) !important;
+                    text-transform: uppercase !important;
+                    white-space: nowrap !important;
+                    animation: braveTutCta 1.1s ease-in-out infinite;
+                }
+                @keyframes braveTutCta {
+                    0%, 100% { transform: translateY(0)    scale(1);    }
+                    50%      { transform: translateY(-3px) scale(1.05); }
+                }
+            `;
+            (document.head || document.documentElement).appendChild(style);
+        }
+
+        function makeDimDiv(left, top, width, height) {
+            const d = document.createElement('div');
+            d.className = 'brave-tut-dim';
+            d.style.left   = left   + 'px';
+            d.style.top    = top    + 'px';
+            d.style.width  = Math.max(0, width)  + 'px';
+            d.style.height = Math.max(0, height) + 'px';
+            return d;
+        }
+
+        function buildOverlay(rect) {
+            injectStyles();
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            const pos = {
+                x: Math.max(0, rect.left - RING_PADDING),
+                y: Math.max(0, rect.top  - RING_PADDING),
+                w: Math.min(vw, rect.width  + RING_PADDING * 2),
+                h: Math.min(vh, rect.height + RING_PADDING * 2)
+            };
+
+            const root = document.createElement('div');
+            root.id = ROOT_ID;
+
+            // Four solid dim rectangles around the cutout. Plain background-
+            // color divs — no SVG masks, no box-shadow tricks.
+            root.appendChild(makeDimDiv(0, 0, vw, pos.y));                       // top
+            root.appendChild(makeDimDiv(0, pos.y + pos.h, vw, vh - (pos.y + pos.h))); // bottom
+            root.appendChild(makeDimDiv(0, pos.y, pos.x, pos.h));                // left
+            root.appendChild(makeDimDiv(pos.x + pos.w, pos.y, vw - (pos.x + pos.w), pos.h)); // right
+
+            // Gold animated ring around the cutout.
+            const ring = document.createElement('div');
+            ring.className = 'brave-tut-ring';
+            ring.style.left   = pos.x + 'px';
+            ring.style.top    = pos.y + 'px';
+            ring.style.width  = pos.w + 'px';
+            ring.style.height = pos.h + 'px';
+            root.appendChild(ring);
+
+            // Banner: gold pulsing dot + gold title + white body.
+            const banner = document.createElement('div');
+            banner.className = 'brave-tut-banner';
+            const title = document.createElement('div');
+            title.className = 'brave-tut-title';
+            const dot = document.createElement('span');
+            dot.className = 'brave-tut-pulse-dot';
+            const titleText = document.createElement('span');
+            titleText.textContent = 'Pick this video to start \uD83D\uDC40';
+            title.appendChild(dot);
+            title.appendChild(titleText);
+            const body = document.createElement('div');
+            body.className = 'brave-tut-body';
+            body.textContent = 'Tap the highlighted video \u2014 we\u2019ll then show you '
+                + 'the gold floating mini-player so you can keep watching while you scroll \u2728';
+            banner.appendChild(title);
+            banner.appendChild(body);
+            root.appendChild(banner);
+
+            const gap = 14;
+            const bannerEstHeight = 120;
+            const cutoutBottom = pos.y + pos.h;
+            if (cutoutBottom + gap + bannerEstHeight < vh - 16) {
+                banner.style.top = (cutoutBottom + gap) + 'px';
+            } else if (pos.y - gap - bannerEstHeight > 16) {
+                banner.style.bottom = (vh - pos.y + gap) + 'px';
+            } else {
+                banner.style.bottom = '24px';
+            }
+
+            // Gold "TAP TO WATCH" pill — measured then centered horizontally
+            // over the cutout's bottom edge.
+            const cta = document.createElement('div');
+            cta.className = 'brave-tut-cta';
+            cta.textContent = 'TAP TO WATCH';
+            cta.style.visibility = 'hidden';
+            root.appendChild(cta);
+            requestAnimationFrame(() => {
+                const cw = cta.offsetWidth;
+                const ch = cta.offsetHeight;
+                const cx = pos.x + (pos.w - cw) / 2;
+                const cy = pos.y + pos.h - ch / 2;
+                cta.style.left = Math.max(8, Math.min(vw - cw - 8, cx)) + 'px';
+                cta.style.top  = cy + 'px';
+                cta.style.visibility = 'visible';
+            });
+
+            return root;
+        }
+
+        function dismiss(root) {
+            try {
+                if (root && root.parentElement) {
+                    root.parentElement.removeChild(root);
+                }
+                const style = document.getElementById(STYLE_ID);
+                if (style && style.parentElement) {
+                    style.parentElement.removeChild(style);
+                }
+            } catch (e) {}
+        }
+
+        // Scrolls the tile so its center sits ~38% from the top of the
+        // viewport. Uses scrollIntoView which respects whatever scroll
+        // container the page actually uses, then nudges the result if the
+        // tile didn't end up where we wanted.
+        function scrollTileIntoUpperView(tile) {
+            try {
+                tile.scrollIntoView({ block: 'center', inline: 'nearest' });
+            } catch (e) {
+                try { tile.scrollIntoView(); } catch (e2) {}
+            }
+            const rect = tile.getBoundingClientRect();
+            const vh = window.innerHeight;
+            const desiredCenter = vh * 0.38;
+            const currentCenter = rect.top + rect.height / 2;
+            const delta = currentCenter - desiredCenter;
+            if (Math.abs(delta) > 8) {
+                try { window.scrollBy(0, delta); } catch (e) {}
+                const sc = document.scrollingElement;
+                if (sc) {
+                    try { sc.scrollTop += delta; } catch (e) {}
+                }
+            }
+        }
+
+        function spotlightTile(tile) {
+            log('spotlighting tile');
+            scrollTileIntoUpperView(tile);
+            // Two rAFs let layout settle after the scroll before we measure.
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                if (!isYouTubeHome() || alreadyShown()) return;
+                const rect = tile.getBoundingClientRect();
+                if (!rect.width || !rect.height) {
+                    log('tile has no size after scroll, aborting');
+                    return;
+                }
+                log('overlay rect', rect.left|0, rect.top|0,
+                    rect.width|0, rect.height|0);
+
+                const root = buildOverlay(rect);
+                document.body.appendChild(root);
+
+                // Mark shown only after we've successfully attached and
+                // confirmed it has on-screen dimensions, so a render
+                // failure doesn't permanently lock the user out.
+                requestAnimationFrame(() => {
+                    const r = root.getBoundingClientRect();
+                    if (r.width > 0 && r.height > 0) {
+                        markShown();
+                        log('overlay attached, marked shown');
+                    } else {
+                        log('overlay attached but has zero size');
+                    }
+                });
+
+                root.addEventListener('click', (event) => {
+                    const px = event.clientX, py = event.clientY;
+                    const cur = tile.getBoundingClientRect();
+                    const inside =
+                        px >= (cur.left   - RING_PADDING) &&
+                        px <= (cur.right  + RING_PADDING) &&
+                        py >= (cur.top    - RING_PADDING) &&
+                        py <= (cur.bottom + RING_PADDING);
+                    log('overlay clicked, inside=' + inside);
+                    dismiss(root);
+                    if (inside) {
+                        const link = tile.querySelector('a[href]');
+                        if (link) link.click();
+                        else tile.click();
+                    }
+                });
+
+                const onNav = () => {
+                    dismiss(root);
+                    window.removeEventListener('yt-navigate-start', onNav);
+                };
+                window.addEventListener('yt-navigate-start', onNav);
+            }));
+        }
+
+        let attempted = false;
+        function attempt() {
+            if (attempted) return true;
+            if (alreadyShown()) {
+                log('already shown previously, bailing');
+                return true;
+            }
+            if (!isYouTubeHome()) {
+                log('not on home, bailing (path=' + window.location.pathname + ')');
+                return true;
+            }
+            const tile = findLongFormTile();
+            if (!tile) return false;
+            attempted = true;
+            spotlightTile(tile);
+            return true;
+        }
+
+        const start = Date.now();
+        function poll() {
+            if (alreadyShown() || !isYouTubeHome()) return;
+            if (attempt()) return;
+            if (Date.now() - start > MAX_WAIT_MS) {
+                log('poll timed out without finding a tile');
+                return;
+            }
+            setTimeout(poll, POLL_MS);
+        }
+
+        log('arming poll');
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', poll);
+        } else {
+            poll();
+        }
+
+        window.addEventListener('yt-navigate-finish', () => {
+            attempted = false;
+            setTimeout(poll, 200);
+        });
+    })();
+)";
+
 bool IsBackgroundVideoPlaybackEnabled(content::WebContents* contents) {
   PrefService* prefs =
       static_cast<Profile*>(contents->GetBrowserContext())->GetPrefs();
@@ -2000,6 +2449,14 @@ void YouTubeScriptInjectorTabHelper::PrimaryMainDocumentElementAvailable() {
             kYoutubePipNavigationFix, base::NullCallback());
       }, contents),
       base::Milliseconds(500));
+
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce([](content::WebContents* contents) {
+        contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+            kYoutubeHomeIntroTutorial, base::NullCallback());
+      }, contents),
+      base::Milliseconds(300));
 
   // Inject the comment-hiding script immediately and at delayed intervals to
   // handle both fast and slow page loads. The script guards against duplicate

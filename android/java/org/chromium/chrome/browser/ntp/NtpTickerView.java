@@ -29,8 +29,9 @@ import org.chromium.chrome.browser.util.TabUtils;
 public class NtpTickerView extends FrameLayout {
     // Pixels per second the text travels. Tuned to feel readable but not slow.
     private static final float SCROLL_DP_PER_SECOND = 60f;
-    // Gap between the trailing edge of one loop and the leading edge of the next.
-    private static final float LOOP_GAP_DP = 64f;
+    // Separator placed between each repeated copy of the ticker text.
+    // U+25C7 = WHITE DIAMOND. Padded with spaces for visual breathing room.
+    private static final String SEPARATOR = "     \u25C7     ";
 
     private FrameLayout mTextContainer;
     private TextView mTextView;
@@ -109,23 +110,31 @@ public class NtpTickerView extends FrameLayout {
         final int containerWidth = mTextContainer.getWidth()
                 - mTextContainer.getPaddingStart() - mTextContainer.getPaddingEnd();
         if (containerWidth <= 0) return;
-        // Force a measure so the TextView reports its full intrinsic width
-        // (it's wrap_content inside a clipping container).
+
+        // Measure the width of a single "text + separator" unit by binding
+        // just that string and forcing a measure pass.
+        final String unit = mCurrentText + SEPARATOR;
+        mTextView.setText(unit);
         mTextView.measure(
                 MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED),
                 MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED));
-        final int textWidth = mTextView.getMeasuredWidth();
-        if (textWidth <= 0) return;
+        final int unitWidth = mTextView.getMeasuredWidth();
+        if (unitWidth <= 0) return;
 
-        final float gap = dp(LOOP_GAP_DP);
-        // Travel = container + text + gap so the trailing edge fully clears.
-        final float travel = containerWidth + textWidth + gap;
+        // Render enough copies that the strip always covers the viewport,
+        // even when translated by one full unit. Need ceil(container/unit)+1.
+        final int copies = (int) Math.ceil((double) containerWidth / unitWidth) + 1;
+        final StringBuilder sb = new StringBuilder(unit.length() * copies);
+        for (int i = 0; i < copies; i++) sb.append(unit);
+        mTextView.setText(sb.toString());
+        mTextView.setTranslationX(0f);
+
+        // Translate by exactly one unit; on RESTART the next copy is already
+        // in the previous copy's position so the loop is visually seamless.
         final float pxPerSec = dp(SCROLL_DP_PER_SECOND);
-        final long durationMs = (long) (travel / pxPerSec * 1000f);
-        final float startX = containerWidth;
-        final float endX = -(textWidth + gap);
+        final long durationMs = (long) (unitWidth / pxPerSec * 1000f);
 
-        mAnimator = ValueAnimator.ofFloat(startX, endX);
+        mAnimator = ValueAnimator.ofFloat(0f, -unitWidth);
         mAnimator.setDuration(durationMs);
         mAnimator.setRepeatCount(ValueAnimator.INFINITE);
         mAnimator.setRepeatMode(ValueAnimator.RESTART);
