@@ -11,6 +11,7 @@ import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
@@ -127,6 +128,16 @@ public class NtpTickerView extends FrameLayout {
         final StringBuilder sb = new StringBuilder(unit.length() * copies);
         for (int i = 0; i < copies; i++) sb.append(unit);
         mTextView.setText(sb.toString());
+        // Force the TextView's bounds to the full strip width. With
+        // wrap_content the parent FrameLayout caps measured width at the
+        // container width, so the trailing copies would never paint and the
+        // animation would scroll into empty space.
+        final int stripWidth = unitWidth * copies;
+        ViewGroup.LayoutParams lp = mTextView.getLayoutParams();
+        if (lp.width != stripWidth) {
+            lp.width = stripWidth;
+            mTextView.setLayoutParams(lp);
+        }
         mTextView.setTranslationX(0f);
 
         // Translate by exactly one unit; on RESTART the next copy is already

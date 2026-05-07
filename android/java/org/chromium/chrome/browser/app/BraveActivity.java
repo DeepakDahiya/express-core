@@ -958,10 +958,19 @@ public abstract class BraveActivity extends ChromeActivity
                 && getCurrentWebContents() != null
                 && BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
                         getCurrentWebContents())) {
-            // PiP has been dismissed when watching a YT video, then pause it.
-            MediaSession mediaSession = MediaSession.fromWebContents(getCurrentWebContents());
-            if (mediaSession != null) {
-                mediaSession.suspend();
+            // Only suspend the media session when the user has actually
+            // closed PiP (which finishes the activity). When they tap the
+            // PiP window to expand back to fullscreen, the activity is just
+            // resuming — suspending here would leave the video paused, and
+            // on some devices (notably Samsung One UI) the player never
+            // auto-recovers from that state, so the user sees a blank/
+            // paused video on expand.
+            if (isFinishing()) {
+                MediaSession mediaSession =
+                        MediaSession.fromWebContents(getCurrentWebContents());
+                if (mediaSession != null) {
+                    mediaSession.suspend();
+                }
             }
             FullscreenManager fullscreenManager = getFullscreenManager();
             if (fullscreenManager.getPersistentFullscreenMode()) {

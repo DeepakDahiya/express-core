@@ -1646,15 +1646,12 @@ const char16_t kYoutubePipButton[] =
                 if (window.focus) {
                     window.focus();
                 }
-                
-                // Ensure video continues playing after PiP exit
-                setTimeout(() => {
-                    const video = document.querySelector('video');
-                    if (video && wasPlaying && video.paused) {
-                        video.play().catch(console.error);
-                    }
-                    
-                    // Force page visibility to visible
+
+                // Force page visibility to 'visible' immediately so YouTube's
+                // player sees a foregrounded tab before we attempt to resume
+                // playback. Doing this inside the play retry was too late on
+                // Samsung — the player had already latched a paused state.
+                try {
                     Object.defineProperty(document, 'hidden', {
                         value: false,
                         writable: false,
@@ -1665,7 +1662,29 @@ const char16_t kYoutubePipButton[] =
                         writable: false,
                         configurable: true
                     });
-                }, 200);
+                } catch (e) {}
+
+                // Resume playback unconditionally (we drop the previous
+                // wasPlaying gate — it was only set when PiP was entered via
+                // the in-page gold button, never via the toolbar PiP button,
+                // so the toolbar flow always saw wasPlaying=false and skipped
+                // resume). Retry across ~2s because Samsung One UI takes
+                // longer than other vendors to fully restore the activity
+                // and free the player to accept play().
+                const RETRY_DELAYS_MS = [100, 300, 700, 1200, 2000];
+                let resumed = false;
+                RETRY_DELAYS_MS.forEach((delay) => {
+                    setTimeout(() => {
+                        if (resumed) return;
+                        const video = document.querySelector('video');
+                        if (!video) return;
+                        if (!video.paused) { resumed = true; return; }
+                        const p = video.play();
+                        if (p && typeof p.then === 'function') {
+                            p.then(() => { resumed = true; }).catch(() => {});
+                        }
+                    }, delay);
+                });
             });
         }
 
@@ -1941,7 +1960,10 @@ constexpr char16_t kYoutubeHomeIntroTutorial[] =
         const STYLE_ID       = 'brave-yt-home-tutorial-style';
         const GOLD           = '#D4AF37';
         const NAVY           = '#1A1A2E';
-        const DIM_RGBA       = 'rgba(0, 0, 0, 0.92)';
+        // 0x99000000 in PipCoachMarkView.java — the home tutorial and the
+        // watch-page PiP coach mark must use the same dim level so the two
+        // steps feel like one continuous flow.
+        const DIM_RGBA       = 'rgba(0, 0, 0, 0.6)';
         const RING_PADDING   = 8;
         const RING_RADIUS    = 14;
         const POLL_MS        = 350;
@@ -2288,6 +2310,9 @@ constexpr char16_t kYoutubeHomeIntroTutorial[] =
                     }
                 });
 
+                // Only the tile itself advances the flow. Taps on the
+                // dimmed area are swallowed so the user can't skip the
+                // tutorial — they must tap the highlighted video.
                 root.addEventListener('click', (event) => {
                     const px = event.clientX, py = event.clientY;
                     const cur = tile.getBoundingClientRect();
@@ -2297,11 +2322,15 @@ constexpr char16_t kYoutubeHomeIntroTutorial[] =
                         py >= (cur.top    - RING_PADDING) &&
                         py <= (cur.bottom + RING_PADDING);
                     log('overlay clicked, inside=' + inside);
-                    dismiss(root);
                     if (inside) {
+                        dismiss(root);
                         const link = tile.querySelector('a[href]');
                         if (link) link.click();
                         else tile.click();
+                    } else {
+                        // Eat the event — no dismiss, no pass-through.
+                        event.preventDefault();
+                        event.stopPropagation();
                     }
                 });
 

@@ -94,8 +94,11 @@ public class PipCoachMarkView extends FrameLayout {
             float dx = ev.getX() - mCx;
             float dy = ev.getY() - mCy;
             boolean insideSpotlight = (dx * dx + dy * dy) <= (mRadius * mRadius);
-            dismiss();
+            // Only the spotlighted PiP button advances the flow. Taps on
+            // the dim area are swallowed so the user can't skip the
+            // tutorial — they must tap the gold PiP button.
             if (insideSpotlight && mTargetView != null) {
+                dismiss();
                 mTargetView.performClick();
             }
             return true;
