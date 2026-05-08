@@ -2202,13 +2202,12 @@ constexpr char16_t kYoutubeHomeIntroTutorial[] =
             const dot = document.createElement('span');
             dot.className = 'brave-tut-pulse-dot';
             const titleText = document.createElement('span');
-            titleText.textContent = 'Pick this video to start \uD83D\uDC40';
+            titleText.textContent = 'Claim Premium Youtube \uD83D\uDC40';
             title.appendChild(dot);
             title.appendChild(titleText);
             const body = document.createElement('div');
             body.className = 'brave-tut-body';
-            body.textContent = 'Tap the highlighted video \u2014 we\u2019ll then show you '
-                + 'the gold floating mini-player so you can keep watching while you scroll \u2728';
+            body.textContent = '';
             banner.appendChild(title);
             banner.appendChild(body);
             root.appendChild(banner);

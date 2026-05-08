@@ -23,8 +23,8 @@
     <string name="youtube_premium_colon">:</string>
     <string name="youtube_premium_timer_zero">00</string>
     <string name="bottom_toolbar_pip_button_label">PP</string>
-    <string name="pip_intro_banner_title">Keep watching while you multitask \uD83D\uDC40</string>
-    <string name="pip_intro_banner_body">Tap this button to shrink your video into a floating mini-player. It\'s giving main character energy \uD83D\uDC85</string>
+    <string name="pip_intro_banner_title">Click button for background play 🔥</string>
+    <string name="pip_intro_banner_body">Congratulations!</string>
     <string name="pip_bg_play_nudge_title">Minimize the app</string>
     <string name="pip_bg_play_nudge_body">Press home or swipe up \u2014 the video keeps playing in the floating window.</string>
     <string name="view_comments">View comments</string>

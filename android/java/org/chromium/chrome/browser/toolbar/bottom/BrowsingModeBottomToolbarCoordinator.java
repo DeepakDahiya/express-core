@@ -385,7 +385,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                             Log.e(TAG, "moveTaskToBack during PiP intro: "
                                     + e.getMessage());
                         }
-                    }, 5000);
+                    }, 3000);
                 }
             };
             mYouTubePipButton.setOnClickListener(pipClickHandler);
