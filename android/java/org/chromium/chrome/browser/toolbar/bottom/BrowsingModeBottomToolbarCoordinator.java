@@ -42,7 +42,6 @@ import org.chromium.chrome.browser.util.BraveTouchUtils;
 import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import android.content.SharedPreferences;
-import com.google.android.material.snackbar.Snackbar;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.view.HapticFeedbackConstants;
@@ -61,6 +60,7 @@ import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.OvershootInterpolator;
 import android.animation.ValueAnimator;
+import android.graphics.drawable.GradientDrawable;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -68,6 +68,8 @@ import android.widget.TextView;
 import android.view.ViewGroup;
 import com.bumptech.glide.Glide;
 import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.media.PictureInPicture;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -108,6 +110,10 @@ public class BrowsingModeBottomToolbarCoordinator {
     private static final int MAX_BG_PLAY_NUDGE_COUNT = 3;
     private boolean mPipIntroActiveOnCurrentPage;
     private PipCoachMarkView mCurrentCoachMark;
+    // Signal that the next PiP-button click came from the intro spotlight,
+    // so the click handler can schedule the "close Brave activity 5s after
+    // PiP starts" demo finale.
+    private boolean mIntroPipClickPending;
 
     private ImageButton mYouTubePipButton;
     private View mYouTubePipContainer;
@@ -318,6 +324,13 @@ public class BrowsingModeBottomToolbarCoordinator {
 
         if (mYouTubePipButton != null) {
             OnClickListener pipClickHandler = v -> {
+                // Capture and clear the intro flag up-front so a stray flag
+                // (e.g. a spotlight tap that never reached performClick)
+                // gets consumed by the next real click rather than firing
+                // later.
+                final boolean fromIntro = mIntroPipClickPending;
+                mIntroPipClickPending = false;
+
                 // Dismiss the coach mark if it's currently showing.
                 dismissPipCoachMark();
                 // User discovered PIP — never show the intro again.
@@ -337,6 +350,43 @@ public class BrowsingModeBottomToolbarCoordinator {
                     Log.e(TAG, "openYouTubeHome: " + e.getMessage());
                 }
                 maybeShowBgPlayNudge();
+
+                // Final beat of the intro tutorial: 5 s after the PiP click,
+                // send Brave to the background (like a Home-button press) so
+                // the user feels the PiP can "live outside the app". We use
+                // moveTaskToBack instead of finish() so the activity stays
+                // alive and the in-page PiP keeps rendering.
+                //
+                // Before backgrounding we have to undo whatever YouTube /
+                // JS-PiP did to the browser-controls state. The page enters
+                // persistent fullscreen which retracts the bottom toolbar
+                // (translates it off-screen). If we move the task to back
+                // while it is in that retracted state, the toolbar comes
+                // back invisible on resume — until a configuration change
+                // (e.g. rotation) forces a re-layout. Exiting fullscreen
+                // and explicitly showing the android controls gets the
+                // toolbar back to its resting position before we leave.
+                if (fromIntro) {
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        try {
+                            BraveActivity activity = BraveActivity.getBraveActivity();
+                            FullscreenManager fm = activity.getFullscreenManager();
+                            if (fm != null && fm.getPersistentFullscreenMode()) {
+                                fm.exitPersistentFullscreenMode();
+                            }
+                            BrowserControlsManager bcm =
+                                    activity.getBrowserControlsManagerSupplier().get();
+                            if (bcm != null) {
+                                bcm.showAndroidControls(false);
+                            }
+                            mToolbarRoot.requestLayout();
+                            activity.moveTaskToBack(true);
+                        } catch (BraveActivity.BraveActivityNotFoundException e) {
+                            Log.e(TAG, "moveTaskToBack during PiP intro: "
+                                    + e.getMessage());
+                        }
+                    }, 5000);
+                }
             };
             mYouTubePipButton.setOnClickListener(pipClickHandler);
             mToolbarRoot.findViewById(R.id.bottom_youtube_pip_text).setOnClickListener(
@@ -460,6 +510,9 @@ public class BrowsingModeBottomToolbarCoordinator {
             if (mYouTubePipButton == null || mYouTubePipButton.getWidth() == 0) return;
             PipCoachMarkView coachMark = new PipCoachMarkView(mYouTubePipButton.getContext());
             mCurrentCoachMark = coachMark;
+            // Tag the impending click as intro-driven so the click handler
+            // knows to fire the close-the-app demo finale.
+            coachMark.setOnSpotlightTap(() -> mIntroPipClickPending = true);
             coachMark.show(mYouTubePipButton, () -> mCurrentCoachMark = null);
         });
     }
@@ -472,8 +525,10 @@ public class BrowsingModeBottomToolbarCoordinator {
     }
 
     /**
-     * Shows a snackbar nudging the user to minimize the app for background playback.
-     * Only shown the first {@link #MAX_BG_PLAY_NUDGE_COUNT} times PIP is triggered.
+     * Shows a centered "minimize the app" nudge styled to match the intro
+     * coach-mark banner (dark navy card with a gold border, gold title, white
+     * body). Only shown the first {@link #MAX_BG_PLAY_NUDGE_COUNT} times PIP
+     * is triggered.
      */
     private void maybeShowBgPlayNudge() {
         SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
@@ -481,25 +536,100 @@ public class BrowsingModeBottomToolbarCoordinator {
         if (count >= MAX_BG_PLAY_NUDGE_COUNT) return;
         prefs.edit().putInt(PREF_PIP_BG_PLAY_NUDGE_COUNT, count + 1).apply();
 
-        mToolbarRoot.postDelayed(() -> {
-            try {
-                View rootView = BraveActivity.getBraveActivity()
-                        .findViewById(android.R.id.content);
-                Snackbar snackbar = Snackbar.make(rootView,
-                        "Minimize app to watch in background \uD83D\uDE0A",
-                        Snackbar.LENGTH_LONG);
-                // Move snackbar to the top so it doesn't hide behind PIP window
-                View snackView = snackbar.getView();
-                FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) snackView.getLayoutParams();
-                lp.gravity = Gravity.TOP | Gravity.CENTER_HORIZONTAL;
-                lp.topMargin = (int) (48 * rootView.getResources()
-                        .getDisplayMetrics().density);
-                snackView.setLayoutParams(lp);
-                snackbar.show();
-            } catch (BraveActivity.BraveActivityNotFoundException e) {
-                // Ignore
-            }
-        }, 1500);
+        mToolbarRoot.postDelayed(this::showBgPlayBrandedToast, 1500);
+    }
+
+    /**
+     * Builds and shows the branded center-screen toast. Card matches the
+     * intro coach-mark style so the user perceives one continuous tutorial.
+     */
+    private void showBgPlayBrandedToast() {
+        final ViewGroup root;
+        try {
+            root = (ViewGroup) BraveActivity.getBraveActivity()
+                    .findViewById(android.R.id.content);
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+            return;
+        }
+        if (root == null) return;
+
+        final float density = root.getResources().getDisplayMetrics().density;
+        final int dp16 = (int) (16 * density);
+        final int dp20 = (int) (20 * density);
+        final int dp32 = (int) (32 * density);
+
+        // Outer card: dark navy with gold border, rounded.
+        FrameLayout card = new FrameLayout(root.getContext());
+        GradientDrawable bg = new GradientDrawable();
+        bg.setColor(0xFF1A1A2E);
+        bg.setCornerRadius(16f * density);
+        bg.setStroke((int) Math.max(1, density), 0x55D4AF37);
+        card.setBackground(bg);
+        card.setElevation(8f * density);
+
+        LinearLayout content = new LinearLayout(root.getContext());
+        content.setOrientation(LinearLayout.VERTICAL);
+        content.setPadding(dp20, dp16, dp20, dp16);
+        content.setGravity(Gravity.CENTER_HORIZONTAL);
+
+        TextView titleView = new TextView(root.getContext());
+        titleView.setText(root.getContext().getString(R.string.pip_bg_play_nudge_title));
+        titleView.setTextColor(0xFFD4AF37);
+        titleView.setTextSize(16f);
+        titleView.setTypeface(null, android.graphics.Typeface.BOLD);
+        titleView.setGravity(Gravity.CENTER);
+
+        TextView bodyView = new TextView(root.getContext());
+        bodyView.setText(root.getContext().getString(R.string.pip_bg_play_nudge_body));
+        bodyView.setTextColor(0xFFFFFFFF);
+        bodyView.setTextSize(13f);
+        bodyView.setGravity(Gravity.CENTER);
+        bodyView.setLineSpacing(2f * density, 1f);
+        LinearLayout.LayoutParams bodyLp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        bodyLp.topMargin = (int) (6 * density);
+
+        content.addView(titleView);
+        content.addView(bodyView, bodyLp);
+        card.addView(content, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        lp.gravity = Gravity.CENTER;
+        lp.leftMargin = dp32;
+        lp.rightMargin = dp32;
+        card.setLayoutParams(lp);
+        // Decorative \u2014 should never block the user from interacting with PiP.
+        card.setClickable(false);
+        card.setFocusable(false);
+
+        root.addView(card);
+
+        // Animate in: fade + slight scale-up. Auto-dismiss after a beat.
+        card.setAlpha(0f);
+        card.setScaleX(0.92f);
+        card.setScaleY(0.92f);
+        card.animate()
+                .alpha(1f)
+                .scaleX(1f)
+                .scaleY(1f)
+                .setDuration(220)
+                .start();
+
+        card.postDelayed(() -> {
+            card.animate()
+                    .alpha(0f)
+                    .setDuration(220)
+                    .withEndAction(() -> {
+                        ViewGroup parent = (ViewGroup) card.getParent();
+                        if (parent != null) parent.removeView(card);
+                    })
+                    .start();
+        }, 2800);
     }
 
     /**

@@ -64,6 +64,7 @@ public class PipCoachMarkView extends FrameLayout {
 
     private ValueAnimator mGlowAnimator;
     private Runnable mOnDismiss;
+    private Runnable mOnSpotlightTap;
     private View mTargetView;
 
     public PipCoachMarkView(Context context) {
@@ -99,12 +100,27 @@ public class PipCoachMarkView extends FrameLayout {
             // tutorial — they must tap the gold PiP button.
             if (insideSpotlight && mTargetView != null) {
                 dismiss();
+                // Fire BEFORE performClick so the click handler can read
+                // the "this came from the intro tutorial" signal.
+                if (mOnSpotlightTap != null) {
+                    mOnSpotlightTap.run();
+                }
                 mTargetView.performClick();
             }
             return true;
         }
         // Consume all other touch events so nothing leaks through.
         return true;
+    }
+
+    /**
+     * Optional callback fired the moment the user taps inside the spotlight,
+     * before the target view's click is dispatched. Lets the caller detect
+     * "this PiP click came from the intro tutorial" without racing the click
+     * handler.
+     */
+    public void setOnSpotlightTap(Runnable onSpotlightTap) {
+        mOnSpotlightTap = onSpotlightTap;
     }
 
     /**
