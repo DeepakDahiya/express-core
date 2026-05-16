@@ -96,6 +96,13 @@ public final class BravePreferenceKeys {
     public static final String EXPRESS_REFERRAL_CODE = "express_referral_code";
     public static final String EXPRESS_REFERRAL_PROCESSED = "express_referral_processed";
     public static final String DEBUG_TEST_REFERRAL = "debug_test_referral";
+    public static final String EXPRESS_REFERRAL_ATTEMPT_COUNT = "express_referral_attempt_count";
+    public static final String EXPRESS_REFERRAL_LAST_ATTEMPT_MS = "express_referral_last_attempt_ms";
+    public static final String EXPRESS_REFERRAL_FINGERPRINT_TRIED =
+            "express_referral_fingerprint_tried";
+    public static final String EXPRESS_REFERRAL_CLIPBOARD_TRIED =
+            "express_referral_clipboard_tried";
+    public static final String EXPRESS_REFERRAL_SOURCE = "express_referral_source";
 
     public static final String SHOW_UNDO_WHEN_TABS_CLOSED = "show_undo_when_tabs_closed";
 
@@ -127,6 +134,8 @@ public final class BravePreferenceKeys {
     public static final String YOUTUBE_PREMIUM_BOTTOMSHEET_LAST_SHOWN_IN_NTP =
             "youtube_premium_bottomsheet_last_shown_in_ntp";
     public static final String BRAVE_YOUTUBE_VISIT_COUNT = "brave_youtube_visit_count";
+    public static final String BRAVE_YT_INTRO_TUTORIAL_VIDEO_CLICK_FIRED =
+            "brave_yt_intro_tutorial_video_click_fired";
 
     public static final String BRAVE_APP_BACKGROUND_TIMESTAMP =
             "brave_app_background_timestamp";

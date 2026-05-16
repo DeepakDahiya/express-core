@@ -18,7 +18,11 @@ import android.widget.ImageButton;
 import android.widget.TextView;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.app.BraveActivity;
+import org.chromium.chrome.browser.settings.PostHogEventKeys;
 import org.chromium.chrome.browser.util.TabUtils;
+
+import org.json.JSONObject;
 
 /**
  * NTP ticker — a thin pinned bar at the top of the New Tab Page header that
@@ -67,6 +71,7 @@ public class NtpTickerView extends FrameLayout {
         setFocusable(true);
         setOnClickListener(v -> {
             if (!TextUtils.isEmpty(mUrl)) {
+                fireTickerClickedEvent();
                 TabUtils.openUrlInSameTab(mUrl);
             }
         });
@@ -178,5 +183,17 @@ public class NtpTickerView extends FrameLayout {
 
     private float dp(float dp) {
         return dp * getResources().getDisplayMetrics().density;
+    }
+
+    private void fireTickerClickedEvent() {
+        try {
+            JSONObject props = new JSONObject();
+            if (!TextUtils.isEmpty(mCurrentText)) props.put("text", mCurrentText);
+            if (!TextUtils.isEmpty(mUrl)) props.put("url", mUrl);
+            BraveActivity.getBraveActivity()
+                    .firePostHogUserEvent(PostHogEventKeys.NTP_TICKER_CLICKED, props);
+        } catch (Exception e) {
+            // Best-effort — never let analytics break the click.
+        }
     }
 }

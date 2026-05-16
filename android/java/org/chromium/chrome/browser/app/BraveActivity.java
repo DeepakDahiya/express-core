@@ -1491,6 +1491,7 @@ public abstract class BraveActivity extends ChromeActivity
         createNotificationChannel();
         setupBgPlayTracking();
         setupUrlEnteredTracking();
+        PostHogUtil.flushPendingEvents();
     }
 
     @Override
@@ -2826,6 +2827,7 @@ public abstract class BraveActivity extends ChromeActivity
                 }
             }
         }
+        handleReferralDeepLink(intent);
         checkForNotificationData();
     }
 
@@ -3093,6 +3095,7 @@ public abstract class BraveActivity extends ChromeActivity
                 if (core == PageTransition.TYPED || core == PageTransition.GENERATED) {
                     fireUrlEnteredEvent(navigation.getUrl());
                 }
+                maybeFireYtIntroTutorialVideoClicked(navigation.getUrl());
             }
         };
         mUrlEnteredTabSupplierObserver = tab -> attachUrlEnteredObserverTo(tab);
@@ -3126,6 +3129,67 @@ public abstract class BraveActivity extends ChromeActivity
         if (spec.equals(mLastHomeVisitedUrl)) return;
         mLastHomeVisitedUrl = spec;
         firePostHogUserEvent(PostHogEventKeys.HOME_VISITED);
+    }
+
+    // Tracks the most recent committed URL so we can detect the
+    // m.youtube.com home → /watch?v=* transition that signals the user
+    // tapped the highlighted tile in the YT first-run intro tutorial.
+    private String mLastCommittedUrlForYtIntro;
+
+    private void maybeFireYtIntroTutorialVideoClicked(GURL url) {
+        if (url == null || !url.isValid()) return;
+        String spec = url.getSpec();
+        if (spec == null) return;
+        String prev = mLastCommittedUrlForYtIntro;
+        mLastCommittedUrlForYtIntro = spec;
+        // One-shot per install — the JS overlay itself is one-shot
+        // (localStorage gate), so the first home → /watch?v= navigation
+        // is reliably the tutorial click.
+        if (ChromeSharedPreferences.getInstance().readBoolean(
+                    BravePreferenceKeys.BRAVE_YT_INTRO_TUTORIAL_VIDEO_CLICK_FIRED, false)) {
+            return;
+        }
+        if (prev == null || !isYouTubeHomeUrl(prev)) return;
+        if (!isYouTubeWatchUrl(spec)) return;
+        ChromeSharedPreferences.getInstance().writeBoolean(
+                BravePreferenceKeys.BRAVE_YT_INTRO_TUTORIAL_VIDEO_CLICK_FIRED, true);
+        firePostHogUserEvent(PostHogEventKeys.YT_INTRO_TUTORIAL_VIDEO_CLICKED);
+    }
+
+    private static boolean isYouTubeHomeUrl(String spec) {
+        // Matches https://m.youtube.com, https://www.youtube.com, etc. with
+        // an empty / root / trailing-slash path. Query and fragment ignored.
+        if (spec == null) return false;
+        int schemeEnd = spec.indexOf("://");
+        if (schemeEnd < 0) return false;
+        int hostStart = schemeEnd + 3;
+        int hostEnd = spec.length();
+        for (int i = hostStart; i < spec.length(); i++) {
+            char c = spec.charAt(i);
+            if (c == '/' || c == '?' || c == '#') { hostEnd = i; break; }
+        }
+        String host = spec.substring(hostStart, hostEnd);
+        if (!host.endsWith("youtube.com")) return false;
+        int pathStart = hostEnd;
+        int pathEnd = spec.length();
+        for (int i = pathStart; i < spec.length(); i++) {
+            char c = spec.charAt(i);
+            if (c == '?' || c == '#') { pathEnd = i; break; }
+        }
+        String path = pathStart < spec.length() ? spec.substring(pathStart, pathEnd) : "";
+        return path.isEmpty() || "/".equals(path);
+    }
+
+    private static boolean isYouTubeWatchUrl(String spec) {
+        if (spec == null) return false;
+        int schemeEnd = spec.indexOf("://");
+        if (schemeEnd < 0) return false;
+        int hostStart = schemeEnd + 3;
+        int slash = spec.indexOf('/', hostStart);
+        if (slash < 0) return false;
+        String host = spec.substring(hostStart, slash);
+        if (!host.endsWith("youtube.com")) return false;
+        return spec.indexOf("/watch", slash) == slash;
     }
 
     private void fireUrlEnteredEvent(GURL url) {
@@ -3839,10 +3903,28 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     private void checkReferral() {
-        // Referral is now checked early in BraveLauncherActivity via ReferralHelper.
-        // This is kept as a fallback in case the launcher activity path is skipped.
-        Log.i("REFERRAL", "checkReferral called in BraveActivity (fallback)");
+        // Cold start: route any incoming VIEW deep link first.
+        handleReferralDeepLink(getIntent());
+        // Drives Install Referrer retry + server fingerprint fallback.
         org.chromium.chrome.browser.referral.ReferralHelper.checkAndProcessReferral(this);
+        // Clipboard fallback needs a foreground activity on Android 10+.
+        org.chromium.chrome.browser.referral.ReferralHelper.attemptClipboardFallback(this);
+    }
+
+    private void handleReferralDeepLink(Intent intent) {
+        if (intent == null) return;
+        Uri uri = intent.getData();
+        if (uri == null) return;
+        String host = uri.getHost();
+        String path = uri.getPath();
+        if ("browser.express".equals(host) && path != null && path.startsWith("/refer")) {
+            String code = uri.getQueryParameter("code");
+            if (code != null && !code.isEmpty()) {
+                Log.i("REFERRAL", "Deep link captured in BraveActivity: " + code);
+                org.chromium.chrome.browser.referral.ReferralHelper
+                        .processDeepLinkReferral(this, code);
+            }
+        }
     }
 
     private enum DifferenceType {

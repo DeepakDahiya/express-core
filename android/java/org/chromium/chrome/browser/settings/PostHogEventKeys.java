@@ -57,10 +57,22 @@ public final class PostHogEventKeys {
         public static final String YT_FEATURE_EXPLORED_PIP = "YT Feature Explored (PIP)"; // DONE
         public static final String YT_FEATURE_EXPLORED_PIP_BG_PLAY = "YT Feature Explored (PIP + Background Play)"; // DONE
         public static final String YT_FEATURE_EXPLORED_BG_PLAY = "YT Feature Explored (Background Play)"; // DONE
+        public static final String NTP_TICKER_CLICKED = "NTP Ticker Clicked"; // DONE
+        public static final String HOME_BANNER_CLICKED = "Home Banner Clicked"; // DONE
+        public static final String YT_INTRO_TUTORIAL_VIDEO_CLICKED =
+                "YT Intro Tutorial Video Clicked"; // DONE
 
         // Referral events
         public static final String REFERRAL_INITIATED = "Referral Initiated"; // DONE
         public static final String REFERRAL_SOURCE = "Referral Source"; // DONE
         public static final String REFERRAL_MODE_CHOSEN = "Mode of Referral Chosen";
         public static final String REFERRAL_SUCCESSFUL_COUNT = "Count of Successful Referrals";
+
+        // Referral attribution diagnostics (used to quantify Play Install Referrer gap)
+        public static final String REFERRAL_INSTALL_REFERRER_RESULT =
+                "Referral Install Referrer Result";
+        public static final String REFERRAL_DEEP_LINK_RECEIVED = "Referral Deep Link Received";
+        public static final String REFERRAL_FINGERPRINT_RESULT = "Referral Fingerprint Result";
+        public static final String REFERRAL_CLIPBOARD_RESULT = "Referral Clipboard Result";
+        public static final String REFERRAL_ATTRIBUTED = "Referral Attributed";
 }

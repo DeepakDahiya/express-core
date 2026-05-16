@@ -567,13 +567,10 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
     }
 
     private void doShareReferralLink(String referralCode) {
-        // Build Play Store URL with referrer parameter so Google's Install Referrer API
-        // can capture the referral code on fresh installs.
-        // Format: referrer=utm_source=referral&referral_code=<code>
-        String encodedReferrer = "utm_source%3Dreferral%26referral_code%3D" + referralCode;
-        String referralLink = "https://play.google.com/store/apps/details?id="
-                + requireActivity().getPackageName()
-                + "&referrer=" + encodedReferrer;
+        // Routes through the browser.express landing page, which captures a
+        // device fingerprint + writes a clipboard token before redirecting to
+        // Play Store with the same referral code. See docs/referral-landing-page.md.
+        String referralLink = "https://browser.express/refer?code=" + referralCode;
 
         String shareText = getString(R.string.youtube_premium_share_text, referralLink);
 

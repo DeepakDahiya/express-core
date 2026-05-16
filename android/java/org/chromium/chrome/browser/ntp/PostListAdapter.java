@@ -349,6 +349,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 tutorialCard.setOnClickListener(v -> {
                     try {
                         BraveActivity activity = BraveActivity.getBraveActivity();
+                        activity.firePostHogUserEvent(PostHogEventKeys.HOME_BANNER_CLICKED);
                         TabUtils.openUrlInSameTab(GOOGLE_LOGIN_URL);
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                         Log.e("TutorialVideo", "Could not open login URL", e);
