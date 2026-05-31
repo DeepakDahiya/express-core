@@ -339,10 +339,20 @@ public class BrowsingModeBottomToolbarCoordinator {
 
                 Tab tab = mTabProvider.get();
                 if (tab == null || tab.getWebContents() == null) return;
-                BraveYouTubeScriptInjectorNativeHelper.triggerYouTubePiP(tab.getWebContents());
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();
-                    activity.openNewOrSelectExistingTab("https://m.youtube.com/");
+                    Log.e(
+                            "BravePiPDebug",
+                            "bottomToolbar PiP click tabId="
+                                    + tab.getId()
+                                    + " url="
+                                    + tab.getUrl().getSpec());
+                    // Record the watch tab as the PiP origin before requesting
+                    // PiP. BraveActivity will switch to YouTube home only
+                    // after the framework confirms PiP entry.
+                    activity.notePipOriginTab(tab, true);
+                    Log.e("BravePiPDebug", "bottomToolbar triggerYouTubePiP tabId=" + tab.getId());
+                    BraveYouTubeScriptInjectorNativeHelper.triggerYouTubePiP(tab.getWebContents());
 
                     // Track PIP feature explored
                     firePostHogEvent(PostHogEventKeys.YT_FEATURE_EXPLORED_PIP, null);

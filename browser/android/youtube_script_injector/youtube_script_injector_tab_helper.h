@@ -51,6 +51,7 @@ class YouTubeScriptInjectorTabHelper
   void OnFullscreenScriptComplete(content::GlobalRenderFrameHostToken token,
                                   base::Value value);
 
+  void ExecuteJavaScriptIfYouTube(const char16_t* script);
   void EnsureBound(content::RenderFrameHost* rfh);
 
   // The remote used to send the fullscreen script to the renderer.

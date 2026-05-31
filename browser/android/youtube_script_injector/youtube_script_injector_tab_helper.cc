@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/supports_user_data.h"
 #include "brave/browser/android/youtube_script_injector/brave_youtube_script_injector_native_helper.h"
 #include "brave/browser/android/youtube_script_injector/features.h"
@@ -43,8 +44,14 @@ namespace {
 
             // Page Visibility API
             if (IS_ANDROID || !IS_DESKTOP_YOUTUBE) {
-            Object.defineProperties(document,
-                { 'hidden': {value: false}, 'visibilityState': {value: 'visible'} });
+            try {
+              Object.defineProperties(document,
+                  { 'hidden': {value: false}, 'visibilityState': {value: 'visible'} });
+            } catch (e) {
+              // Newer Chromium builds may expose non-configurable visibility
+              // properties. Background playback still works through the
+              // visibilitychange listener guard below.
+            }
             }
 
             window.addEventListener(
@@ -631,95 +638,55 @@ constexpr char16_t kYoutubeInAppPIP[] =
                 });
 
                 document.addEventListener('leavepictureinpicture', (event) => {
-                    const wasTransitionClose = isTransitionClose;
-                    isTransitionClose = false;
+                    // Defensive wrapper: any throw here happens inside a media
+                    // event handler during the PiP-to-resume transition, which
+                    // on newer WebView (Android 15/16) can take down the
+                    // renderer. Swallow everything.
+                    try {
+                        const wasTransitionClose = isTransitionClose;
+                        isTransitionClose = false;
 
-                    if (wasTransitionClose) {
-                        // PiP closed because a new video is taking over in another tab.
-                        // Pause the old video so it doesn't keep playing in background.
-                        console.log('Left PiP mode - transition close, pausing old video');
-                        const video = event.target || document.querySelector('video');
-                        if (video && !video.paused) {
-                            video.pause();
+                        if (wasTransitionClose) {
+                            // PiP closed because a new video is taking over in
+                            // another tab. Pause the old video so it doesn't
+                            // keep playing in background.
+                            console.log('Left PiP - transition close, pausing old video');
+                            const video = event.target || document.querySelector('video');
+                            if (video && !video.paused) {
+                                video.pause();
+                            }
+                            currentPIPVideoId = null;
+                            lastPlayingVideoElement = null;
+                            isOriginalPIPTab = false;
+                            setPIPStatus(null, false);
+                            return;
                         }
+
+                        // User-initiated PiP exit (tapped expand or closed PiP).
+                        // The native side switches back to the watch tab in
+                        // onPictureInPictureModeChanged; nothing for JS to do
+                        // beyond clearing local state and nudging playback.
+                        console.log('Left PiP - user exit');
+
                         currentPIPVideoId = null;
                         lastPlayingVideoElement = null;
                         isOriginalPIPTab = false;
                         setPIPStatus(null, false);
-                        return;
-                    }
 
-                    // User-initiated PiP exit - restore tab and resume playback.
-                    console.log('Left PiP mode - attempting tab restoration');
-
-                    // Store that we're exiting PiP
-                    try {
-                        const exitSignal = {
-                            action: 'PIP_EXIT',
-                            originalTabId: getTabId(),
-                            videoId: getCurrentVideoId(),
-                            timestamp: Date.now(),
-                            shouldRestoreTab: true
-                        };
-                        localStorage.setItem('pip_exit_signal', JSON.stringify(exitSignal));
-
-                        // Set a timeout to clean up the signal
+                        // If the video paused as a side effect of the PiP exit,
+                        // resume it. Don't touch document.hidden/visibilityState
+                        // because Chromium owns those and redefining throws on newer
+                        // WebView, which used to crash the renderer here.
                         setTimeout(() => {
                             try {
-                                localStorage.removeItem('pip_exit_signal');
+                                const video = document.querySelector('video');
+                                if (video && video.paused) {
+                                    video.play().catch(() => {});
+                                }
                             } catch (e) {}
-                        }, 10000);
+                        }, 200);
                     } catch (e) {
-                        console.warn('Could not set PiP exit signal:', e);
-                    }
-
-                    // Try to focus this window/tab
-                    if (window.focus) {
-                        window.focus();
-                    }
-
-                    // For Android 15+, we need to be more aggressive about tab restoration
-                    // Send a message to the native layer to restore the tab
-                    if (window.Android && window.Android.restoreOriginalTab) {
-                        window.Android.restoreOriginalTab();
-                    }
-
-                    currentPIPVideoId = null;
-                    lastPlayingVideoElement = null;
-                    isOriginalPIPTab = false;
-                    setPIPStatus(null, false);
-
-                    // Ensure video continues playing after PiP exit
-                    setTimeout(() => {
-                        const video = document.querySelector('video');
-                        if (video && video.paused) {
-                            video.play().catch(console.warn);
-                        }
-
-                        // Force page visibility to visible
-                        Object.defineProperty(document, 'hidden', {
-                            value: false,
-                            writable: false,
-                            configurable: true
-                        });
-                        Object.defineProperty(document, 'visibilityState', {
-                            value: 'visible',
-                            writable: false,
-                            configurable: true
-                        });
-                    }, 200);
-
-                    // Restore the playback state if needed
-                    const videoElement = document.querySelector('video');
-                    if (videoElement) {
-                        const videoId = localStorage.getItem('pip_video_id');
-                        const playbackTime = localStorage.getItem('pip_playback_time');
-                        if (videoId && playbackTime) {
-                            videoElement.currentTime = parseFloat(playbackTime);
-                            if (!videoElement.paused) {
-                                videoElement.play().catch(console.warn);
-                            }
-                        }
+                        console.warn('leavepictureinpicture handler error:', e);
                     }
                 });
 
@@ -1642,30 +1609,8 @@ const char16_t kYoutubePipButton[] =
 
             document.addEventListener('leavepictureinpicture', (event) => {
                 console.log('Left PiP mode');
-                // Force focus back to this tab
-                if (window.focus) {
-                    window.focus();
-                }
-
-                // Force page visibility to 'visible' immediately so YouTube's
-                // player sees a foregrounded tab before we attempt to resume
-                // playback. Doing this inside the play retry was too late on
-                // Samsung — the player had already latched a paused state.
-                try {
-                    Object.defineProperty(document, 'hidden', {
-                        value: false,
-                        writable: false,
-                        configurable: true
-                    });
-                    Object.defineProperty(document, 'visibilityState', {
-                        value: 'visible',
-                        writable: false,
-                        configurable: true
-                    });
-                } catch (e) {}
-
                 // Resume playback unconditionally (we drop the previous
-                // wasPlaying gate — it was only set when PiP was entered via
+                // wasPlaying gate. It was only set when PiP was entered via
                 // the in-page gold button, never via the toolbar PiP button,
                 // so the toolbar flow always saw wasPlaying=false and skipped
                 // resume). Retry across ~2s because Samsung One UI takes
@@ -1708,8 +1653,17 @@ const char16_t kYoutubePipTrigger[] =
     (function() {
         var video = document.querySelector('video');
         if (video) {
+            console.error('[BravePiPDebug] kYoutubePipTrigger requestPictureInPicture url=' + location.href);
             video.removeAttribute('disablePictureInPicture');
-            video.requestPictureInPicture().catch(console.error);
+            video.requestPictureInPicture()
+                .then(function() {
+                    console.error('[BravePiPDebug] kYoutubePipTrigger request resolved');
+                })
+                .catch(function(error) {
+                    console.error('[BravePiPDebug] kYoutubePipTrigger request failed', error);
+                });
+        } else {
+            console.error('[BravePiPDebug] kYoutubePipTrigger no video url=' + location.href);
         }
     })();
 )";
@@ -1869,60 +1823,9 @@ constexpr char16_t kYoutubePipNavigationFix[] =
         if (window.bravePipFixAttached) return;
         window.bravePipFixAttached = true;
 
-        let originalTabUrl = null;
-        let videoEl = null;
-
-        const handleEnterPiP = (event) => {
-            originalTabUrl = window.location.href;
-            console.log('Brave PiP Fix: Entered PiP. Storing URL:', originalTabUrl);
-            
-        };
-
-        const handleLeavePiP = (event) => {
-            if (originalTabUrl && window.BravePiPNavigator && window.BravePiPNavigator.restoreTabWithUrl) {
-                console.log('Brave PiP Fix: Calling native bridge with URL:', originalTabUrl);
-                try {
-                    window.BravePiPNavigator.restoreTabWithUrl(originalTabUrl);
-                } catch (e) {
-                    console.error('Failed to call BravePiPNavigator bridge:', e);
-                }
-            }
-            originalTabUrl = null;
-        };
-
-        const attachListeners = (vid) => {
-            if (!vid) return;
-            // Remove old listeners to be safe.
-            if (videoEl) {
-                videoEl.removeEventListener('enterpictureinpicture', handleEnterPiP);
-                videoEl.removeEventListener('leavepictureinpicture', handleLeavePiP);
-            }
-            videoEl = vid;
-            videoEl.addEventListener('enterpictureinpicture', handleEnterPiP);
-            videoEl.addEventListener('leavepictureinpicture', handleLeavePiP);
-            
-            // VISUAL DEBUG 2: If the video border turns green, the event listeners were attached.
-            console.log('Brave PiP Fix: Attached listeners to video element.');
-            videoEl.style.border = '1px solid black';
-        };
-
-        // Use a MutationObserver to robustly find the video element as it's added to the page.
-        const observer = new MutationObserver(() => {
-            const newVideoEl = document.querySelector('video');
-            if (newVideoEl && !newVideoEl.hasAttribute('data-pip-fix-attached')) {
-                newVideoEl.setAttribute('data-pip-fix-attached', 'true');
-                attachListeners(newVideoEl);
-            }
-        });
-
-        // Try to find it immediately.
-        const initialVideoEl = document.querySelector('video');
-        if (initialVideoEl) {
-            attachListeners(initialVideoEl);
-        }
-
-        // And observe for any future changes.
-        observer.observe(document.body, { childList: true, subtree: true });
+        // Tab restore is owned by BraveActivity using the native tab id captured
+        // before PiP entry. URL-based JS restoration races Android's own PiP
+        // resume intent and can select the wrong tab when YouTube rewrites URLs.
     })();
 )";
 
@@ -2446,44 +2349,33 @@ void YouTubeScriptInjectorTabHelper::PrimaryMainDocumentElementAvailable() {
     return;
   }
   content::RenderFrameHost::AllowInjectingJavaScript();
-  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-      kYoutubeBackgroundPlayback2, base::NullCallback());
-  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-      kYoutubeDisableHomeAutoplay, base::NullCallback());
+  ExecuteJavaScriptIfYouTube(kYoutubeBackgroundPlayback2);
+  ExecuteJavaScriptIfYouTube(kYoutubeDisableHomeAutoplay);
   
   base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce([](content::WebContents* contents) {
-        contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-            kYoutubePIP, base::NullCallback());
-      }, contents),
+      base::BindOnce(&YouTubeScriptInjectorTabHelper::ExecuteJavaScriptIfYouTube,
+                     weak_factory_.GetWeakPtr(), kYoutubePIP),
       base::Milliseconds(100));
       
   base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce([](content::WebContents* contents) {
-        contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-            kYoutubePipButton, base::NullCallback());
-      }, contents),
+      base::BindOnce(&YouTubeScriptInjectorTabHelper::ExecuteJavaScriptIfYouTube,
+                     weak_factory_.GetWeakPtr(), kYoutubePipButton),
       base::Milliseconds(200));
 
-  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-    kYoutubeInAppPIP, base::NullCallback());
+  ExecuteJavaScriptIfYouTube(kYoutubeInAppPIP);
 
   base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce([](content::WebContents* contents) {
-        contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-            kYoutubePipNavigationFix, base::NullCallback());
-      }, contents),
+      base::BindOnce(&YouTubeScriptInjectorTabHelper::ExecuteJavaScriptIfYouTube,
+                     weak_factory_.GetWeakPtr(), kYoutubePipNavigationFix),
       base::Milliseconds(500));
 
   base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce([](content::WebContents* contents) {
-        contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-            kYoutubeHomeIntroTutorial, base::NullCallback());
-      }, contents),
+      base::BindOnce(&YouTubeScriptInjectorTabHelper::ExecuteJavaScriptIfYouTube,
+                     weak_factory_.GetWeakPtr(), kYoutubeHomeIntroTutorial),
       base::Milliseconds(300));
 
   // Inject the comment-hiding script immediately and at delayed intervals to
@@ -2494,21 +2386,17 @@ void YouTubeScriptInjectorTabHelper::PrimaryMainDocumentElementAvailable() {
   for (int delay_ms : {500, 1500, 3000}) {
     base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce([](content::WebContents* contents) {
-          contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-              kRemoveYoutubeComment, base::NullCallback());
-        }, contents),
+        base::BindOnce(&YouTubeScriptInjectorTabHelper::ExecuteJavaScriptIfYouTube,
+                       weak_factory_.GetWeakPtr(), kRemoveYoutubeComment),
         base::Milliseconds(delay_ms));
   }
 
   if (IsBackgroundVideoPlaybackEnabled(contents)) {
-    contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-        kYoutubeBackgroundPlayback, base::NullCallback());
+    ExecuteJavaScriptIfYouTube(kYoutubeBackgroundPlayback);
   }
   if (base::FeatureList::IsEnabled(
           ::preferences::features::kBravePictureInPictureForYouTubeVideos)) {
-    contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-        kYoutubePictureInPictureSupport, base::NullCallback());
+    ExecuteJavaScriptIfYouTube(kYoutubePictureInPictureSupport);
   }
 }
 
@@ -2544,8 +2432,12 @@ void YouTubeScriptInjectorTabHelper::MaybeSetFullscreen() {
 void YouTubeScriptInjectorTabHelper::TriggerYouTubePiP() {
   content::RenderFrameHost* rfh = web_contents()->GetPrimaryMainFrame();
   if (!rfh || !rfh->IsRenderFrameLive()) {
+    LOG(ERROR) << "BravePiPDebug TriggerYouTubePiP skip rfh=" << rfh
+               << " url=" << web_contents()->GetLastCommittedURL();
     return;
   }
+  LOG(ERROR) << "BravePiPDebug TriggerYouTubePiP executing JS rfh=" << rfh
+             << " url=" << web_contents()->GetLastCommittedURL();
   EnsureBound(rfh);
   script_injector_remote_->RequestAsyncExecuteScript(
       ISOLATED_WORLD_ID_BRAVE_INTERNAL, kYoutubePipTrigger,
@@ -2655,6 +2547,22 @@ bool YouTubeScriptInjectorTabHelper::IsPictureInPictureAvailable() const {
              preferences::features::kBravePictureInPictureForYouTubeVideos) &&
          IsYouTubeVideo(true) && web_contents() &&
          web_contents()->IsDocumentOnLoadCompletedInPrimaryMainFrame();
+}
+
+void YouTubeScriptInjectorTabHelper::ExecuteJavaScriptIfYouTube(
+    const char16_t* script) {
+  content::WebContents* contents = web_contents();
+  if (!script || !contents || contents->IsBeingDestroyed() ||
+      !IsYouTubeDomain(contents->GetLastCommittedURL())) {
+    return;
+  }
+
+  content::RenderFrameHost* rfh = contents->GetPrimaryMainFrame();
+  if (!rfh || !rfh->IsRenderFrameLive()) {
+    return;
+  }
+
+  rfh->ExecuteJavaScript(script, base::NullCallback());
 }
 
 void YouTubeScriptInjectorTabHelper::EnsureBound(

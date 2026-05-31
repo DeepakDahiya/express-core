@@ -710,10 +710,19 @@ public abstract class BraveActivity extends ChromeActivity
         }
 
         Log.e("Browser Express", "Proceeding with PIP and YouTube home flow");
+        Log.e(
+                PIP_DEBUG_TAG,
+                "handleYouTubeBackPress PiP flow tabId="
+                        + currentTab.getId()
+                        + " url="
+                        + currentTab.getUrl().getSpec());
+        // Record the watch tab as the PiP origin before requesting PiP. The
+        // home tab is opened only after the framework confirms PiP entry; doing
+        // it earlier can hide the WebContents while requestPictureInPicture()
+        // is still settling.
+        notePipOriginTab(currentTab, true);
+        Log.e(PIP_DEBUG_TAG, "handleYouTubeBackPress triggerYouTubePiP tabId=" + currentTab.getId());
         BraveYouTubeScriptInjectorNativeHelper.triggerYouTubePiP(currentTab.getWebContents());
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            openNewOrSelectExistingTab("https://m.youtube.com/");
-        }, 300);
     }
 
     private String getPreviousUrlFromHistory(Tab tab) {
@@ -946,37 +955,353 @@ public abstract class BraveActivity extends ChromeActivity
         }
     }
 
+    // Tab whose WebContents hosts the in-PiP video. Captured at the moment
+    // PiP is requested (see notePipOriginTab) so we can switch back to it
+    // when the user taps "expand" on the PiP window. By then the *current*
+    // tab may be a different one (the PiP entry flow itself opens
+    // m.youtube.com home), and without an explicit switch the activity
+    // resumes on whatever tab happens to be selected, which is the
+    // "wrong tab on expand" symptom.
+    private static final String PIP_DEBUG_TAG = "BravePiPDebug";
+    private static final String PIP_ORIGIN_TAB_ID_PREF = "brave_pip_origin_tab_id";
+    private static final String PIP_OPEN_YOUTUBE_HOME_AFTER_ENTER_PREF =
+            "brave_pip_open_youtube_home_after_enter";
+    private static final String PIP_REQUEST_TIMESTAMP_PREF = "brave_pip_request_timestamp";
+    private static final String YOUTUBE_HOME_URL = "https://m.youtube.com/";
+    private static final long PIP_ENTER_PENDING_TIMEOUT_MS = 30_000L;
+    private int mPipOriginTabId = Tab.INVALID_TAB_ID;
+    private boolean mOpenYouTubeHomeAfterPipEntered;
+    private long mPipRequestTimestampMs;
+
+    /**
+     * Record which tab hosts the WebContents that's entering PiP. Call this
+     * from the PiP trigger site *before* doing anything that might change
+     * the selected tab (e.g. opening m.youtube.com home), because Android's
+     * onPictureInPictureModeChanged fires later and by then the activity
+     * tab may no longer be the one in PiP.
+     */
+    public void notePipOriginTab(Tab originTab) {
+        notePipOriginTab(originTab, false);
+    }
+
+    public void notePipOriginTab(Tab originTab, boolean openYouTubeHomeAfterPipEntered) {
+        mPipOriginTabId = originTab != null ? originTab.getId() : Tab.INVALID_TAB_ID;
+        mOpenYouTubeHomeAfterPipEntered = openYouTubeHomeAfterPipEntered;
+        mPipRequestTimestampMs = System.currentTimeMillis();
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putInt(PIP_ORIGIN_TAB_ID_PREF, mPipOriginTabId)
+                .putBoolean(
+                        PIP_OPEN_YOUTUBE_HOME_AFTER_ENTER_PREF,
+                        mOpenYouTubeHomeAfterPipEntered)
+                .putLong(PIP_REQUEST_TIMESTAMP_PREF, mPipRequestTimestampMs)
+                .apply();
+        Log.e(
+                PIP_DEBUG_TAG,
+                "BraveActivity.notePipOriginTab tabId="
+                        + mPipOriginTabId
+                        + " openHomeAfterEnter="
+                        + mOpenYouTubeHomeAfterPipEntered
+                        + " url="
+                        + (originTab != null ? originTab.getUrl().getSpec() : "null"));
+    }
+
+    public void onPipEnteredForOriginTab(Tab originTab) {
+        int enteredTabId = originTab != null ? originTab.getId() : Tab.INVALID_TAB_ID;
+        if (mPipOriginTabId == Tab.INVALID_TAB_ID && enteredTabId != Tab.INVALID_TAB_ID) {
+            mPipOriginTabId = enteredTabId;
+            ContextUtils.getAppSharedPreferences()
+                    .edit()
+                    .putInt(PIP_ORIGIN_TAB_ID_PREF, mPipOriginTabId)
+                    .apply();
+        }
+        openYouTubeHomeAfterPipEnteredIfNeeded(enteredTabId);
+    }
+
+    public void restorePipOriginTab(Tab originTab) {
+        final int restoreId = originTab != null ? originTab.getId() : Tab.INVALID_TAB_ID;
+        Log.e(
+                PIP_DEBUG_TAG,
+                "BraveActivity.restorePipOriginTab tabId="
+                        + restoreId
+                        + " url="
+                        + (originTab != null ? originTab.getUrl().getSpec() : "null"));
+        clearPipRestoreState();
+        schedulePipOriginRestore(restoreId);
+    }
+
     @Override
     public void onPictureInPictureModeChanged(boolean inPicture, Configuration newConfig) {
-        super.onPictureInPictureModeChanged(inPicture, newConfig);
+        // Wrap everything: a throw here on PiP exit (tab selection race,
+        // dead renderer, media-session glitch) can take the activity down
+        // and dump the user on the launcher home: the symptom we've seen
+        // on Android 15/16 when PiP is exited via the media notification.
+        // A lost fullscreen-exit or tab restore is recoverable on the next
+        // layout pass; an activity crash isn't.
+        try {
+            Tab beforeSuperTab = getActivityTab();
+            Log.e(
+                    PIP_DEBUG_TAG,
+                    "BraveActivity.onPictureInPictureModeChanged start inPip="
+                            + inPicture
+                            + " storedOrigin="
+                            + mPipOriginTabId
+                            + " currentTab="
+                            + (beforeSuperTab != null ? beforeSuperTab.getId() : Tab.INVALID_TAB_ID)
+                            + " currentUrl="
+                            + (beforeSuperTab != null ? beforeSuperTab.getUrl().getSpec() : "null")
+                            + " finishing="
+                            + isFinishing()
+                            + " destroyed="
+                            + isDestroyed());
+            super.onPictureInPictureModeChanged(inPicture, newConfig);
+            Tab afterSuperTab = getActivityTab();
+            Log.e(
+                    PIP_DEBUG_TAG,
+                    "BraveActivity.onPictureInPictureModeChanged afterSuper inPip="
+                            + inPicture
+                            + " storedOrigin="
+                            + mPipOriginTabId
+                            + " currentTab="
+                            + (afterSuperTab != null ? afterSuperTab.getId() : Tab.INVALID_TAB_ID)
+                            + " currentUrl="
+                            + (afterSuperTab != null ? afterSuperTab.getUrl().getSpec() : "null"));
 
-        if (inPicture && isCurrentTabYouTube()) {
-            firePostHogUserEvent(PostHogEventKeys.YT_FEATURE_EXPLORED_PIP_BG_PLAY);
-        }
+            if (inPicture) {
+                // Fallback: if no caller recorded an origin tab, take the
+                // currently active one. Better than nothing.
+                if (mPipOriginTabId == Tab.INVALID_TAB_ID) {
+                    Tab originTab = getActivityTab();
+                    mPipOriginTabId =
+                            originTab != null ? originTab.getId() : Tab.INVALID_TAB_ID;
+                    ContextUtils.getAppSharedPreferences()
+                            .edit()
+                            .putInt(PIP_ORIGIN_TAB_ID_PREF, mPipOriginTabId)
+                            .apply();
+                    Log.e(
+                            PIP_DEBUG_TAG,
+                            "BraveActivity.onPictureInPictureModeChanged fallbackOrigin tabId="
+                                    + mPipOriginTabId);
+                }
 
-        if (!inPicture
-                && getCurrentWebContents() != null
-                && BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
-                        getCurrentWebContents())) {
-            // Only suspend the media session when the user has actually
-            // closed PiP (which finishes the activity). When they tap the
-            // PiP window to expand back to fullscreen, the activity is just
-            // resuming — suspending here would leave the video paused, and
-            // on some devices (notably Samsung One UI) the player never
-            // auto-recovers from that state, so the user sees a blank/
-            // paused video on expand.
-            if (isFinishing()) {
+                if (isCurrentTabYouTube()) {
+                    firePostHogUserEvent(PostHogEventKeys.YT_FEATURE_EXPLORED_PIP_BG_PLAY);
+                }
+                openYouTubeHomeAfterPipEnteredIfNeeded(mPipOriginTabId);
+                return;
+            }
+
+            // PiP exited. Two paths: user tapped expand (activity resuming,
+            // !isFinishing) or user closed PiP (isFinishing == true).
+            //
+            // Capture the restore id now and clear the field synchronously
+            // so a subsequent PiP session can overwrite it cleanly. The
+            // deferred restore uses the captured local and never re-reads
+            // the field. This avoids a previous bug where clearing the
+            // field in `finally` made the deferred restore a no-op.
+            final int restoreId = getPipOriginTabIdForRestore();
+            clearPipRestoreState();
+
+            // Restore in a short retry ladder. Android may deliver the PiP
+            // resume intent and the mode-change callback in either order; the
+            // later retries make the watch tab win after Chrome's own tab
+            // selection settles, while restoreToTab no-ops if it is already
+            // current.
+            Log.e(PIP_DEBUG_TAG, "BraveActivity PiP exit scheduling restoreId=" + restoreId);
+            schedulePipOriginRestore(restoreId);
+
+            if (getCurrentWebContents() != null
+                    && BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
+                            getCurrentWebContents())
+                    && isFinishing()) {
+                // Only suspend the media session when the user has actually
+                // closed PiP (which finishes the activity). When they tap the
+                // PiP window to expand back to fullscreen, the activity is just
+                // resuming. Suspending here would leave the video paused, and
+                // on some devices (notably Samsung One UI) the player never
+                // auto-recovers from that state, so the user sees a blank/
+                // paused video on expand.
+                Log.e(PIP_DEBUG_TAG, "BraveActivity PiP exit suspending media because finishing");
                 MediaSession mediaSession =
                         MediaSession.fromWebContents(getCurrentWebContents());
                 if (mediaSession != null) {
                     mediaSession.suspend();
                 }
             }
+
             FullscreenManager fullscreenManager = getFullscreenManager();
             if (fullscreenManager.getPersistentFullscreenMode()) {
+                Log.e(PIP_DEBUG_TAG, "BraveActivity PiP exit leaving persistent fullscreen");
                 fullscreenManager.exitPersistentFullscreenMode();
             }
+        } catch (Exception e) {
+            Log.e(PIP_DEBUG_TAG, "BraveActivity.onPictureInPictureModeChanged error: " + e.getMessage());
+            Log.e("BraveActivity", "onPictureInPictureModeChanged error: " + e.getMessage());
         }
+    }
+
+    private void schedulePipOriginRestore(int tabId) {
+        Log.e(
+                PIP_DEBUG_TAG,
+                "schedulePipOriginRestore tabId="
+                        + tabId
+                        + " finishing="
+                        + isFinishing()
+                        + " destroyed="
+                        + isDestroyed());
+        if (tabId == Tab.INVALID_TAB_ID || isFinishing()) return;
+
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(() -> restoreToTab(tabId));
+        handler.postDelayed(() -> restoreToTab(tabId), 150);
+        handler.postDelayed(() -> restoreToTab(tabId), 500);
+        handler.postDelayed(() -> restoreToTab(tabId), 1000);
+        handler.postDelayed(() -> restoreToTab(tabId), 2000);
+        handler.postDelayed(() -> restoreToTab(tabId), 3000);
+    }
+
+    private int getPipOriginTabIdForRestore() {
+        if (mPipOriginTabId != Tab.INVALID_TAB_ID) return mPipOriginTabId;
+        return ContextUtils.getAppSharedPreferences()
+                .getInt(PIP_ORIGIN_TAB_ID_PREF, Tab.INVALID_TAB_ID);
+    }
+
+    private void clearPipRestoreState() {
+        mPipOriginTabId = Tab.INVALID_TAB_ID;
+        mOpenYouTubeHomeAfterPipEntered = false;
+        mPipRequestTimestampMs = 0L;
+        ContextUtils.getAppSharedPreferences()
+                .edit()
+                .putInt(PIP_ORIGIN_TAB_ID_PREF, Tab.INVALID_TAB_ID)
+                .putBoolean(PIP_OPEN_YOUTUBE_HOME_AFTER_ENTER_PREF, false)
+                .putLong(PIP_REQUEST_TIMESTAMP_PREF, 0L)
+                .apply();
+    }
+
+    private void openYouTubeHomeAfterPipEnteredIfNeeded(int enteredTabId) {
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        boolean shouldOpen =
+                mOpenYouTubeHomeAfterPipEntered
+                        || prefs.getBoolean(PIP_OPEN_YOUTUBE_HOME_AFTER_ENTER_PREF, false);
+        if (!shouldOpen) return;
+
+        long requestTimestamp =
+                mPipRequestTimestampMs != 0L
+                        ? mPipRequestTimestampMs
+                        : prefs.getLong(PIP_REQUEST_TIMESTAMP_PREF, 0L);
+        if (requestTimestamp == 0L
+                || System.currentTimeMillis() - requestTimestamp > PIP_ENTER_PENDING_TIMEOUT_MS) {
+            mOpenYouTubeHomeAfterPipEntered = false;
+            prefs.edit().putBoolean(PIP_OPEN_YOUTUBE_HOME_AFTER_ENTER_PREF, false).apply();
+            Log.e(PIP_DEBUG_TAG, "openYouTubeHomeAfterPipEntered skip stale request");
+            return;
+        }
+
+        if (enteredTabId != Tab.INVALID_TAB_ID
+                && mPipOriginTabId != Tab.INVALID_TAB_ID
+                && enteredTabId != mPipOriginTabId) {
+            Log.e(
+                    PIP_DEBUG_TAG,
+                    "openYouTubeHomeAfterPipEntered skip mismatched enteredTabId="
+                            + enteredTabId
+                            + " origin="
+                            + mPipOriginTabId);
+            return;
+        }
+
+        mOpenYouTubeHomeAfterPipEntered = false;
+        prefs.edit().putBoolean(PIP_OPEN_YOUTUBE_HOME_AFTER_ENTER_PREF, false).apply();
+
+        new Handler(Looper.getMainLooper())
+                .post(
+                        () -> {
+                            if (isFinishing() || isDestroyed()) return;
+                            Log.e(PIP_DEBUG_TAG, "Opening YouTube home after confirmed PiP entry");
+                            openNewOrSelectExistingTab(YOUTUBE_HOME_URL);
+                        });
+    }
+
+    private void restoreToTab(int tabId) {
+        try {
+            if (tabId == Tab.INVALID_TAB_ID || isFinishing() || isDestroyed()) {
+                Log.e(
+                        PIP_DEBUG_TAG,
+                        "restoreToTab skip invalid/lifecycle tabId="
+                                + tabId
+                                + " finishing="
+                                + isFinishing()
+                                + " destroyed="
+                                + isDestroyed());
+                return;
+            }
+
+            Tab currentTab = getActivityTab();
+            Log.e(
+                    PIP_DEBUG_TAG,
+                    "restoreToTab attempt target="
+                            + tabId
+                            + " current="
+                            + (currentTab != null ? currentTab.getId() : Tab.INVALID_TAB_ID)
+                            + " currentUrl="
+                            + (currentTab != null ? currentTab.getUrl().getSpec() : "null"));
+            if (currentTab != null && currentTab.getId() == tabId) {
+                Log.e(PIP_DEBUG_TAG, "restoreToTab already on target tabId=" + tabId);
+                return;
+            }
+
+            TabModel tabModel = findTabModelForTab(tabId);
+            if (tabModel == null) {
+                Log.e(PIP_DEBUG_TAG, "restoreToTab no model for tabId=" + tabId);
+                return;
+            }
+            int index = TabModelUtils.getTabIndexById(tabModel, tabId);
+            if (index == TabModel.INVALID_TAB_INDEX) {
+                // Origin tab was closed while in PiP. Nothing to restore to.
+                Log.e(PIP_DEBUG_TAG, "restoreToTab target tab closed tabId=" + tabId);
+                return;
+            }
+            Log.e(
+                    PIP_DEBUG_TAG,
+                    "restoreToTab selecting tabId="
+                            + tabId
+                            + " index="
+                            + index
+                            + " incognito="
+                            + tabModel.isIncognito());
+            tabModel.setIndex(index, TabSelectionType.FROM_USER);
+        } catch (Exception e) {
+            // Never let tab restoration break PiP exit.
+            Log.e(PIP_DEBUG_TAG, "restoreToTab error: " + e.getMessage());
+            Log.e("BraveActivity", "restoreToTab error: " + e.getMessage());
+        }
+    }
+
+    private @Nullable TabModel findTabModelForTab(int tabId) {
+        TabModel currentModel = getCurrentTabModel();
+        if (currentModel != null
+                && TabModelUtils.getTabIndexById(currentModel, tabId)
+                        != TabModel.INVALID_TAB_INDEX) {
+            return currentModel;
+        }
+
+        TabModelSelector selector = getTabModelSelector();
+        if (selector == null) return null;
+
+        TabModel regularModel = selector.getModel(false);
+        if (regularModel != null
+                && TabModelUtils.getTabIndexById(regularModel, tabId)
+                        != TabModel.INVALID_TAB_INDEX) {
+            return regularModel;
+        }
+
+        TabModel incognitoModel = selector.getModel(true);
+        if (incognitoModel != null
+                && TabModelUtils.getTabIndexById(incognitoModel, tabId)
+                        != TabModel.INVALID_TAB_INDEX) {
+            return incognitoModel;
+        }
+
+        return null;
     }
 
     /**

@@ -6,6 +6,7 @@
 #include "brave/browser/android/youtube_script_injector/brave_youtube_script_injector_native_helper.h"
 
 #include "base/android/jni_android.h"
+#include "base/logging.h"
 #include "brave/browser/android/youtube_script_injector/jni_headers/BraveYouTubeScriptInjectorNativeHelper_jni.h"
 #include "brave/browser/android/youtube_script_injector/youtube_script_injector_tab_helper.h"
 #include "content/public/browser/web_contents.h"
@@ -19,6 +20,9 @@ void JNI_BraveYouTubeScriptInjectorNativeHelper_SetFullscreen(
     const base::android::JavaParamRef<jobject>& jweb_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
+  if (!web_contents) {
+    return;
+  }
   YouTubeScriptInjectorTabHelper* helper =
       YouTubeScriptInjectorTabHelper::FromWebContents(web_contents);
   if (!helper) {
@@ -34,6 +38,9 @@ jboolean JNI_BraveYouTubeScriptInjectorNativeHelper_HasFullscreenBeenRequested(
     const base::android::JavaParamRef<jobject>& jweb_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
+  if (!web_contents) {
+    return false;
+  }
 
   YouTubeScriptInjectorTabHelper* helper =
       YouTubeScriptInjectorTabHelper::FromWebContents(web_contents);
@@ -50,6 +57,9 @@ jboolean JNI_BraveYouTubeScriptInjectorNativeHelper_IsPictureInPictureAvailable(
     const base::android::JavaParamRef<jobject>& jweb_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
+  if (!web_contents) {
+    return false;
+  }
 
   YouTubeScriptInjectorTabHelper* helper =
       YouTubeScriptInjectorTabHelper::FromWebContents(web_contents);
@@ -66,16 +76,31 @@ void JNI_BraveYouTubeScriptInjectorNativeHelper_TriggerYouTubePiP(
     const base::android::JavaParamRef<jobject>& jweb_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(jweb_contents);
+  if (!web_contents) {
+    LOG(ERROR) << "BravePiPDebug native TriggerYouTubePiP no WebContents";
+    return;
+  }
+  LOG(ERROR) << "BravePiPDebug native TriggerYouTubePiP web_contents="
+             << web_contents << " url=" << web_contents->GetLastCommittedURL();
   YouTubeScriptInjectorTabHelper* helper =
       YouTubeScriptInjectorTabHelper::FromWebContents(web_contents);
   if (!helper) {
+    LOG(ERROR) << "BravePiPDebug native TriggerYouTubePiP no helper";
     return;
   }
+  LOG(ERROR) << "BravePiPDebug native TriggerYouTubePiP calling helper";
   helper->TriggerYouTubePiP();
 }
 
 // static
 void EnterPictureInPicture(content::WebContents* web_contents) {
+  if (!web_contents || web_contents->IsBeingDestroyed()) {
+    LOG(ERROR) << "BravePiPDebug native EnterPictureInPicture skip web_contents="
+               << web_contents;
+    return;
+  }
+  LOG(ERROR) << "BravePiPDebug native EnterPictureInPicture web_contents="
+             << web_contents << " url=" << web_contents->GetLastCommittedURL();
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_BraveYouTubeScriptInjectorNativeHelper_enterPictureInPicture(
       env, web_contents->GetJavaWebContents());

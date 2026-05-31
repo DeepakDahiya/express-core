@@ -29,12 +29,17 @@ import org.chromium.content_public.browser.JavascriptInjector;
 @NullMarked
 public class BraveYouTubeScriptInjectorNativeHelper {
     private static final String TAG = "YouTubeNativeHelper";
+    private static final String PIP_DEBUG_TAG = "BravePiPDebug";
     private static final String JAVASCRIPT_INTERFACE_NAME = "BravePiPNavigator";
 
     public static void setFullscreen(WebContents webContents) {
         BraveYouTubeScriptInjectorNativeHelperJni.get().setFullscreen(webContents);
     }
     public static void triggerYouTubePiP(WebContents webContents) {
+        Log.e(
+                PIP_DEBUG_TAG,
+                "BraveYouTubeScriptInjectorNativeHelper.triggerYouTubePiP webContents="
+                        + webContents);
         BraveYouTubeScriptInjectorNativeHelperJni.get().triggerYouTubePiP(webContents);
     }
     public static boolean hasFullscreenBeenRequested(WebContents webContents) {
@@ -45,21 +50,37 @@ public class BraveYouTubeScriptInjectorNativeHelper {
     }
     @CalledByNative
     public static void enterPictureInPicture(WebContents webContents) {
+        Log.e(
+                PIP_DEBUG_TAG,
+                "BraveYouTubeScriptInjectorNativeHelper.enterPictureInPicture webContents="
+                        + webContents);
         MediaSession mediaSession = MediaSession.fromWebContents(webContents);
         if (mediaSession != null) {
+            Log.e(PIP_DEBUG_TAG, "enterPictureInPicture resume media session");
             mediaSession.resume();
+        } else {
+            Log.e(PIP_DEBUG_TAG, "enterPictureInPicture no media session");
         }
         final WindowAndroid windowAndroid = webContents.getTopLevelNativeWindow();
         if (windowAndroid != null) {
             final Activity activity = windowAndroid.getActivity().get();
+            Log.e(
+                    PIP_DEBUG_TAG,
+                    "enterPictureInPicture activity="
+                            + (activity != null ? activity.getClass().getName() : "null"));
             if (activity != null) {
                 try {
-                    activity.enterPictureInPictureMode(
-                            new PictureInPictureParams.Builder().build());
+                    boolean entered =
+                            activity.enterPictureInPictureMode(
+                                    new PictureInPictureParams.Builder().build());
+                    Log.e(PIP_DEBUG_TAG, "enterPictureInPicture framework result=" + entered);
                 } catch (IllegalStateException | IllegalArgumentException e) {
+                    Log.e(PIP_DEBUG_TAG, "enterPictureInPicture framework error: " + e.getMessage());
                     Log.e(TAG, "Error entering picture in picture mode.", e);
                 }
             }
+        } else {
+            Log.e(PIP_DEBUG_TAG, "enterPictureInPicture no WindowAndroid");
         }
     }
 
