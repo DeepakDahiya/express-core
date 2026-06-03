@@ -365,12 +365,12 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         setPreferenceOrder(PREF_ADDRESSES, ++passwordsAndAutofillSectionOrder);
         setPreferenceOrder(PREF_AUTOFILL_PRIVATE_WINDOW, ++passwordsAndAutofillSectionOrder);
 
-        // int supportSectionOrder = passwordsAndAutofillSectionOrder;
+        int supportSectionOrder = passwordsAndAutofillSectionOrder;
         // setPreferenceOrder(PREF_SUPPORT_SECTION, ++supportSectionOrder);
 
         // setPreferenceOrder(PREF_RATE_BRAVE, ++supportSectionOrder);
 
-        // int aboutSectionOrder = supportSectionOrder;
+        int aboutSectionOrder = supportSectionOrder;
         // This preference doesn't exist by default in Release mode
         if (findPreference(MainSettings.PREF_DEVELOPER) != null) {
             findPreference(MainSettings.PREF_DEVELOPER).setOrder(++aboutSectionOrder);
