@@ -372,10 +372,10 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
 
         // int aboutSectionOrder = supportSectionOrder;
         // This preference doesn't exist by default in Release mode
-        // if (findPreference(MainSettings.PREF_DEVELOPER) != null) {
-        //     findPreference(MainSettings.PREF_DEVELOPER).setOrder(++aboutSectionOrder);
-        // }
-        // setPreferenceOrder(PREF_ABOUT_SECTION, ++aboutSectionOrder);
+        if (findPreference(MainSettings.PREF_DEVELOPER) != null) {
+            findPreference(MainSettings.PREF_DEVELOPER).setOrder(++aboutSectionOrder);
+        }
+        setPreferenceOrder(PREF_ABOUT_SECTION, ++aboutSectionOrder);
 
         // This preference doesn't exist by default in Release mode
         // if (findPreference(MainSettings.PREF_DEVELOPER) != null) {
@@ -394,7 +394,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         removePreferenceIfPresent(MainSettings.PREF_ADDRESS_BAR);
         removePreferenceIfPresent(PREF_NOTIFICATIONS);
         removePreferenceIfPresent(PREF_ABOUT_SECTION);
-        removePreferenceIfPresent(MainSettings.PREF_DEVELOPER);
+        // removePreferenceIfPresent(MainSettings.PREF_DEVELOPER);
     }
 
     // A wrapper to suppress NullAway warning for the prefs which always present
