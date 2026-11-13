@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- Karma: a hand offering a heart (design handoff "Profile page", icons/). Tinted where it is used. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="21dp"
+    android:height="21dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M11,14h2a2,2 0,1 0,0 -4h-3c-0.6,0 -1.1,0.2 -1.4,0.6L3,16"
+        android:strokeWidth="1.8"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M7,20l1.6,-1.4c0.3,-0.4 0.8,-0.6 1.4,-0.6h4c1.1,0 2.1,-0.4 2.8,-1.2l4.6,-4.4a2,2 0,0 0,-2.75 -2.91l-4.2,3.9"
+        android:strokeWidth="1.8"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M2,15l6,6"
+        android:strokeWidth="1.8"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M19.5,8.5c0.7,-0.7 1.5,-1.6 1.5,-2.7A2.73,2.73 0,0 0,16 4a2.78,2.78 0,0 0,-5 1.8c0,1.2 0.8,2 1.5,2.8L16,12Z"
+        android:strokeWidth="1.8"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

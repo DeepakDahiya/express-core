@@ -4301,18 +4301,6 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_UNSUPPORTED_FILE_TYPE" desc="Brave wallet password hint text">
       Unsupported file type.
     </message>
-    <message name="IDS_CONFIRM_PASSWORD" desc="Brave wallet password hint text">
-      Confirm password
-    </message>
-    <message name="IDS_LIKES_RECEIVED" desc="Brave wallet password hint text">
-      Received Xp
-    </message>
-    <message name="IDS_LIKES_GIVEN" desc="Brave wallet password hint text">
-      Given Xp
-    </message>
-    <message name="IDS_BE_EDIT_PROFILE" desc="Brave wallet password hint text">
-      Edit Profile
-    </message>
     <message name="IDS_BE_REFERRAL" desc="Brave wallet password hint text">
       Referral
     </message>
@@ -4325,9 +4313,6 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <!-- <message name="IDS_BE_NOTIFICATIONS" desc="Brave wallet password hint text">
       Notifications
     </message> -->
-    <message name="IDS_BE_YOUTUBE" desc="Brave wallet password hint text">
-      Youtube
-    </message>
      <!-- <message name="IDS_BE_SETTINGS" desc="Brave wallet password hint text">
       Settings
     </message> -->

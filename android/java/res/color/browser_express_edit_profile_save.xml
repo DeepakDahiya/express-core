@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- Save in the nav bar: the link colour once there is something to save. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:color="@color/browser_express_profile_text_meta" android:state_enabled="false" />
+    <item android:color="@color/browser_express_edit_profile_link" />
+</selector>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- One of the Profile page's three points (Karma, Taste, Cred). BrowserExpressProfilePreferences
+     gives it its text, colours and icon, and the corner wash, which it draws in the card's
+     background so it never takes part in the layout. The score sits right-aligned at a minimum
+     width with the +N chip to its left, so the chip coming and going never moves it. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:id="@+id/profile_stat_tile"
+            android:layout_width="40dp"
+            android:layout_height="40dp">
+
+            <ImageView
+                android:id="@+id/profile_stat_icon"
+                android:layout_width="21dp"
+                android:layout_height="21dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no"
+                tools:src="@drawable/ic_browser_express_profile_karma" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/profile_stat_eyebrow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:includeFontPadding="false"
+                android:letterSpacing="0.08"
+                android:lineHeight="13sp"
+                android:maxLines="1"
+                android:textAllCaps="true"
+                android:textFontWeight="600"
+                android:textSize="10.5sp"
+                tools:ignore="SmallSp"
+                tools:text="You give" />
+
+            <TextView
+                android:id="@+id/profile_stat_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="1dp"
+                android:fontFamily="sans-serif"
+                android:includeFontPadding="false"
+                android:letterSpacing="-0.01"
+                android:lineHeight="20sp"
+                android:maxLines="1"
+                android:textColor="@color/browser_express_profile_text_primary"
+                android:textFontWeight="600"
+                android:textSize="16sp"
+                tools:text="Karma" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/profile_stat_gain"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_marginStart="8dp"
+            android:fontFamily="sans-serif"
+            android:fontFeatureSettings="tnum"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:maxLines="1"
+            android:paddingHorizontal="7dp"
+            android:textFontWeight="600"
+            android:textSize="11sp"
+            android:visibility="gone"
+            tools:text="+6"
+            tools:visibility="visible" />
+
+        <FrameLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:minWidth="40dp">
+
+            <TextView
+                android:id="@+id/profile_stat_score"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end|center_vertical"
+                android:fontFamily="sans-serif"
+                android:fontFeatureSettings="tnum"
+                android:gravity="end"
+                android:includeFontPadding="false"
+                android:lineHeight="24sp"
+                android:maxLines="1"
+                android:minWidth="40dp"
+                android:textColor="@color/browser_express_profile_text_primary"
+                android:textFontWeight="600"
+                android:textSize="20sp"
+                android:visibility="invisible"
+                tools:text="320"
+                tools:visibility="visible" />
+
+            <!-- Until /v1/user/me answers: a neutral bar where the number goes. -->
+            <View
+                android:id="@+id/profile_stat_score_placeholder"
+                android:layout_width="36dp"
+                android:layout_height="14dp"
+                android:layout_gravity="end|center_vertical"
+                android:background="@drawable/browser_express_profile_score_placeholder" />
+        </FrameLayout>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/profile_stat_description"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:fontFamily="sans-serif"
+        android:lineHeight="18sp"
+        android:paddingStart="54dp"
+        android:textColor="@color/browser_express_profile_text_secondary"
+        android:textSize="13sp"
+        tools:ignore="RtlSymmetry"
+        tools:text="You like others' posts." />
+</LinearLayout>

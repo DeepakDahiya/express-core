@@ -5,99 +5,147 @@
 
 package org.chromium.chrome.browser.settings;
 
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
+import android.animation.ValueAnimator;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.ColorFilter;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.PixelFormat;
+import android.graphics.RadialGradient;
+import android.graphics.Rect;
+import android.graphics.Shader;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.LayerDrawable;
+import android.os.Bundle;
+import android.os.SystemClock;
+import android.text.TextUtils;
+import android.util.Base64;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.DecelerateInterpolator;
+import android.view.animation.Interpolator;
+import android.view.animation.LinearInterpolator;
+import android.widget.ImageView;
+import android.widget.PopupMenu;
+import android.widget.TextView;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.content.res.AppCompatResources;
+import androidx.core.content.ContextCompat;
+import androidx.preference.Preference;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.UnsupportedEncodingException;
-import android.content.Intent;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
-import android.content.SharedPreferences;
-import android.graphics.PorterDuff;
-import android.graphics.PorterDuffColorFilter;
-import android.os.Bundle;
-import android.util.Base64;
-import android.view.Gravity;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import org.chromium.base.task.AsyncTask;
-import android.graphics.drawable.Drawable;
-import com.bumptech.glide.request.target.Target;
-import android.content.Context;
-import android.app.Activity;
-
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
-import androidx.appcompat.widget.SwitchCompat;
-import androidx.core.content.ContextCompat;
-
-import com.airbnb.lottie.LottieAnimationView;
-import com.airbnb.lottie.LottieProperty;
-import com.airbnb.lottie.model.KeyPath;
-
-import org.chromium.base.BravePreferenceKeys;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.task.PostTask;
-import org.chromium.base.task.TaskTraits;
-import org.chromium.brave_news.mojom.BraveNewsController;
-import org.chromium.brave_news.mojom.Channel;
-import org.chromium.brave_news.mojom.Publisher;
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.app.BraveActivity;
-import org.chromium.chrome.browser.brave_news.BraveNewsControllerFactory;
-import org.chromium.chrome.browser.brave_news.BraveNewsUtils;
-import org.chromium.chrome.browser.customtabs.CustomTabActivity;
-import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
-import org.chromium.chrome.browser.preferences.BravePrefServiceBridge;
-import org.chromium.base.shared_preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
-import org.chromium.chrome.browser.util.BraveConstants;
-import org.chromium.chrome.browser.util.BraveTouchUtils;
-import org.chromium.chrome.browser.youtube_premium.YouTubePremiumBottomSheetFragment;
-import org.chromium.mojo.bindings.ConnectionErrorHandler;
-import org.chromium.mojo.system.MojoException;
-import com.bumptech.glide.Glide;
-import android.widget.ImageView;
-import org.chromium.chrome.browser.app.helpers.ImageLoader;
-import androidx.preference.Preference;
-import androidx.annotation.NonNull;
-
-import java.util.List;
-import java.util.Locale;
-import android.content.pm.PackageInfo;
-
-import org.chromium.chrome.browser.util.TabUtils;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import org.chromium.base.task.AsyncTask;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.app.BraveActivity;
+import org.chromium.chrome.browser.app.helpers.ProfileAvatar;
+import org.chromium.chrome.browser.util.TabUtils;
+import org.chromium.chrome.browser.youtube_premium.YouTubePremiumBottomSheetFragment;
 
+import java.nio.charset.StandardCharsets;
+import java.text.NumberFormat;
+import java.util.Arrays;
+
+/**
+ * The reader's own Profile (design handoff "Profile page"): who they are, their three points —
+ * Karma ("you give"), Taste ("you spot it first") and Cred ("you create") — and a short menu.
+ *
+ * <p>When they come back and a point has grown since the page last showed it, that card counts up
+ * from the old value with a "+N" chip beside it, one card after another, and the page then rests
+ * exactly as it would have without the animation. What was shown goes back to the server
+ * ({@link BrowserExpressProfileApi#markScoresSeen}) as soon as the numbers arrive, so leaving
+ * mid-animation still counts as seen. The first visit, and any visit with nothing new, just shows
+ * the numbers; with animations off the chips only blink in and out.
+ */
 public class BrowserExpressProfilePreferences extends BravePreferenceFragment
         implements Preference.OnPreferenceChangeListener {
-    private static final String BE_PROFILE_PREF = "BE_PROFILE_PREFS";
+    private static final String TAG = "ExpressProfile";
+    private static final String YOUTUBE_SIGN_IN_URL =
+            "https://accounts.google.com/ServiceLogin?service=youtube&amp;uilel=3&amp;passive=true"
+                    + "&amp;continue=https%3A%2F%2Fm.youtube.com%2Fsignin%3Faction_handle_signin"
+                    + "%3Dtrue%26app%3Dm%26hl%3Den-GB%26next%3D%252F&amp;hl=en-GB";
 
-    private LinearLayout mParentLayout;
-    private ImageView mAvatarImage;
-    private TextView mUsernameText;
-    private TextView mFullNameText;
-    private Button mBtnYoutubePremium;
-    private Button mReferralButton;
+    // The return visit, in ms (tokens.json → motion.returnVisit). Card i starts at
+    // FIRST_CARD + i × STAGGER whether or not it has anything to count.
+    private static final float FIRST_CARD_MS = 300f;
+    private static final float STAGGER_MS = 260f;
+    private static final float CHIP_IN_MS = 250f;
+    private static final float COUNT_DELAY_MS = 120f;
+    private static final float COUNT_MS = 750f;
+    private static final float CHIP_OUT_START_MS = 2600f;
+    private static final float CHIP_OUT_STAGGER_MS = 120f;
+    private static final float CHIP_OUT_MS = 400f;
+    private static final long TOTAL_MS = 3240;
+    /** With animations off the chips show for this long. */
+    private static final long REDUCED_CHIP_MS = 1500;
 
-    // private Button mDeleteButton;
-    private Button mLogoutButton;
-    private Button mEditProfileButton;
+    // "Profile updated" after Edit profile saves (design handoff "Edit profile" §7): in over the
+    // first 12% (rising 8dp), held to 85%, then out (sinking 4dp).
+    private static final long UPDATED_TOAST_MS = 2400;
+    private static final float UPDATED_TOAST_IN = 0.12f;
+    private static final float UPDATED_TOAST_OUT = 0.85f;
+    private static final float UPDATED_TOAST_RISE_DP = 8f;
+    private static final float UPDATED_TOAST_SINK_DP = 4f;
+    /** A save older than this was not the reason the page is showing. */
+    private static final long UPDATED_TOAST_FRESH_MS = 10000;
 
-    private TextView mViewsText;
-    private TextView mLikesReceivedText;
-    private TextView mLikesGivenText;
-    private TextView mAppVersionText;
+    /** The design's ease-out, per stretch of the toast. */
+    private static final Interpolator DECELERATE = new DecelerateInterpolator();
 
-    private Activity mActivity;
+    /** When Edit profile last saved (elapsedRealtime), until the page has said so. */
+    private static long sProfileUpdatedAtMs;
+
+    /** Per point, in BrowserExpressProfileApi.SCORE_KEYS order: its card and how it looks. */
+    private static final int[][] STATS = {
+        {R.id.profile_karma, R.drawable.ic_browser_express_profile_karma,
+            R.string.browser_express_profile_karma_eyebrow,
+            R.string.browser_express_profile_karma_label,
+            R.string.browser_express_profile_karma_description,
+            R.color.browser_express_profile_karma_accent,
+            R.color.browser_express_profile_karma_tint,
+            R.color.browser_express_profile_karma_wash},
+        {R.id.profile_taste, R.drawable.ic_browser_express_profile_taste,
+            R.string.browser_express_profile_taste_eyebrow,
+            R.string.browser_express_profile_taste_label,
+            R.string.browser_express_profile_taste_description,
+            R.color.browser_express_profile_taste_accent,
+            R.color.browser_express_profile_taste_tint,
+            R.color.browser_express_profile_taste_wash},
+        {R.id.profile_cred, R.drawable.ic_browser_express_profile_cred,
+            R.string.browser_express_profile_cred_eyebrow,
+            R.string.browser_express_profile_cred_label,
+            R.string.browser_express_profile_cred_description,
+            R.color.browser_express_profile_cred_accent,
+            R.color.browser_express_profile_cred_tint,
+            R.color.browser_express_profile_cred_wash},
+    };
 
     private final ObservableSupplierImpl<String> mPageTitle = new ObservableSupplierImpl<>();
+    private final NumberFormat mNumbers = NumberFormat.getIntegerInstance();
+    private StatCard[] mCards = new StatCard[0];
+    private ImageView mAvatar;
+    private TextView mName;
+    private TextView mHandle;
+    /** What the cards show once the numbers have arrived; null until then. */
+    private @Nullable int[] mShownScores;
+    private @Nullable ValueAnimator mReturnVisit;
+    private TextView mUpdatedToast;
+    private @Nullable ValueAnimator mUpdatedToastAnimator;
 
     @Override
     public ObservableSupplier<String> getPageTitle() {
@@ -115,245 +163,425 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
     public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {}
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
-        mActivity = getActivity();
-
-        super.onActivityCreated(savedInstanceState);
-
-        View view = getView();
-        if (view != null) {
-            mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
-            mUsernameText = (TextView) view.findViewById(R.id.browser_express_username);
-            mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image_2);
-            mFullNameText = (TextView) view.findViewById(R.id.browser_express_full_name);
-            mBtnYoutubePremium = (Button) view.findViewById(R.id.youtube_premium_button);
-            mReferralButton = (Button) view.findViewById(R.id.referral_button);
-
-            // mDeleteButton = (Button) view.findViewById(R.id.delete_button);
-            mLogoutButton = (Button) view.findViewById(R.id.logout_button);
-            mEditProfileButton = (Button) view.findViewById(R.id.edit_profile_button);
-
-            mViewsText = (TextView) view.findViewById(R.id.be_views);
-            mLikesReceivedText = (TextView) view.findViewById(R.id.be_likes_received);
-            mLikesGivenText = (TextView) view.findViewById(R.id.be_likes_given);
-            mAppVersionText = (TextView) view.findViewById(R.id.app_version);
-
-            // String vc = "8.4K";
-            // String lc = "3.6K";
-            // String gc = "6.4K";
-            // mViewsText.setText(vc);
-            // mLikesReceivedText.setText(lc);
-            // mLikesGivenText.setText(gc);
-
-            try {
-                BraveActivity activity = BraveActivity.getBraveActivity();
-
-                mLogoutButton.setOnClickListener(view2 -> {
-                    activity.logout();
-                });
-
-                mEditProfileButton.setOnClickListener(view2 -> {
-                    activity.openBrowserExpressEditProfileSettings();
-                });
-
-                String pInfo = activity.getCurrentAppVersion();
-                mAppVersionText.setText(pInfo);
-
-                Context context = ContextUtils.getApplicationContext();
-                SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
-                String avatar = prefs.getString("avatar_url", null);
-                String views = prefs.getString("views", "-");
-                String likesGiven = prefs.getString("likes_given", "-");
-                String likesReceived = prefs.getString("likes_received", "-");
-
-                String accessToken = activity.getAccessToken();
-                JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
-
-                mBtnYoutubePremium.setOnClickListener(view2 -> {
-                    if (mActivity != null || getActivity() != null) {
-                        if(decodedAccessTokenObj != null) {
-                            JSONObject payload = new JSONObject();
-                            try {
-                                payload.put("app_version", pInfo);
-                                PostHogUtil.PostHogWorkerTask postHogWorkerTask =
-                                    new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.YTP_PREMIUM_CLICKED_ON_QUICKLINK, decodedAccessTokenObj.getString("_id"), payload);
-                                postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                            } catch (JSONException e) {
-                                Log.e("Express Browser", "Error creating JSON payload", e);
-                            }
-                        }
-
-                        TabUtils.openUrlInSameTab("https://accounts.google.com/ServiceLogin?service=youtube&amp;uilel=3&amp;passive=true&amp;continue=https%3A%2F%2Fm.youtube.com%2Fsignin%3Faction_handle_signin%3Dtrue%26app%3Dm%26hl%3Den-GB%26next%3D%252F&amp;hl=en-GB");
-                        Intent intent = new Intent(mActivity != null ? mActivity : getActivity(), ChromeTabbedActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                        intent.setAction(Intent.ACTION_VIEW);
-                        startActivity(intent);
-                    }
-                });
-
-                mReferralButton.setOnClickListener(view2 -> {
-                    if (mActivity != null || getActivity() != null) {
-                        JSONObject payload = new JSONObject();
-                        try {
-                            payload.put("app_version", pInfo);
-                            PostHogUtil.PostHogWorkerTask postHogWorkerTask =
-                                new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.REFERRAL_CLICKED_IN_PROFILE, decodedAccessTokenObj.getString("_id"), payload);
-                            postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                        } catch (JSONException e) {
-                            Log.e("Express Browser", "Error creating JSON payload", e);
-                        }
-
-                        // Open permanent bottom sheet
-                        YouTubePremiumBottomSheetFragment.showByUserAction(getParentFragmentManager());
-                    }
-                });
-
-                if (views != null) mViewsText.setText(views);
-                if (likesGiven != null) mLikesGivenText.setText(likesGiven);
-                if (likesReceived != null) mLikesReceivedText.setText(likesReceived);
-                if (getContext() != null) {
-                    if (avatar != null) {
-                        ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mAvatarImage, null);
-                    } else {
-                        ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mAvatarImage, null);
-                    }
-                }
-                
-                mUsernameText.setText(decodedAccessTokenObj.getString("username"));
-                if (decodedAccessTokenObj.has("name") && !decodedAccessTokenObj.isNull("name")) {
-                    mFullNameText.setText(decodedAccessTokenObj.getString("name"));
-                } else {
-                    mFullNameText.setText(""); // Set default or placeholder
-                    Log.e("Express Browser", "Name not found in token.");
-                }
-
-                JSONObject payload = new JSONObject();
-                try {
-                    payload.put("app_version", pInfo);
-                    PostHogUtil.PostHogWorkerTask postHogWorkerTask =
-                        new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.PROFILE_VIEWED, decodedAccessTokenObj.getString("_id"), payload);
-                    postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                } catch (JSONException e) {
-                    Log.e("Express Browser", "Error creating JSON payload", e);
-                }
-
-                Log.e("Express Browser", "GETTING USER PROFILE 1");
-                BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask =
-                    new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
-                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-            } catch (BraveActivity.BraveActivityNotFoundException e) {
-            } catch (JSONException e) {
-                Log.e("Express Browser Access Token", e.getMessage());
-            }catch(Exception ex){
-                Log.e("Express Browser Access Token", ex.getMessage());
-            }
-        }
-    }
-
-    @Override
     public boolean onPreferenceChange(@NonNull Preference preference, Object o) {
         return true;
     }
 
-    private final BrowserExpressGetProfilePreferencesUtil.GetProfileCallback getProfileCallback =
-            new BrowserExpressGetProfilePreferencesUtil.GetProfileCallback() {
-                @Override
-                public void getProfileSuccessful(String avatar, String xp, String lg, String lr) {
-                    try {
-                        if (getActivity() == null || !isAdded() || getContext() == null) {
-                            return; 
-                        }
+    @Override
+    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+        mAvatar = view.findViewById(R.id.profile_avatar);
+        mName = view.findViewById(R.id.profile_name);
+        mHandle = view.findViewById(R.id.profile_handle);
+        mUpdatedToast = view.findViewById(R.id.profile_updated_toast);
+        mCards = new StatCard[STATS.length];
+        for (int i = 0; i < STATS.length; i++) {
+            mCards[i] = new StatCard(view.findViewById(STATS[i][0]), STATS[i]);
+        }
+        View menu = view.findViewById(R.id.profile_menu);
+        menu.setClipToOutline(true);
 
-                        if (getContext() == null) return;
+        view.findViewById(R.id.profile_back).setOnClickListener(
+                v -> requireActivity().getOnBackPressedDispatcher().onBackPressed());
+        view.findViewById(R.id.profile_more).setOnClickListener(this::showOverflowMenu);
 
-                        BraveActivity activity = BraveActivity.getBraveActivity();
-                        if (activity == null) {
-                            Log.e("Express Browser", "BraveActivity is null");
-                            return;
-                        }
+        BraveActivity activity;
+        try {
+            activity = BraveActivity.getBraveActivity();
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+            Log.e(TAG, "No browser activity for the profile", e);
+            return;
+        }
+        String accessToken = activity.getAccessToken();
+        JSONObject token = decodeToken(accessToken);
+        String appVersion = activity.getCurrentAppVersion();
 
-                        String accessToken = activity.getAccessToken();
+        view.findViewById(R.id.profile_edit)
+                .setOnClickListener(v -> activity.openBrowserExpressEditProfileSettings());
+        view.findViewById(R.id.profile_menu_logout).setOnClickListener(v -> activity.logout());
+        view.findViewById(R.id.profile_menu_youtube).setOnClickListener(v -> {
+            track(PostHogEventKeys.YTP_PREMIUM_CLICKED_ON_QUICKLINK, token, appVersion, null);
+            TabUtils.openUrlInSameTab(YOUTUBE_SIGN_IN_URL);
+            Intent intent = new Intent(requireActivity(), ChromeTabbedActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            intent.setAction(Intent.ACTION_VIEW);
+            startActivity(intent);
+        });
+        view.findViewById(R.id.profile_menu_referral).setOnClickListener(v -> {
+            track(PostHogEventKeys.REFERRAL_CLICKED_IN_PROFILE, token, appVersion,
+                    token != null ? token.optString("referralCode", "") : "");
+            YouTubePremiumBottomSheetFragment.showByUserAction(getParentFragmentManager());
+        });
 
-                        Context context = ContextUtils.getApplicationContext();
-                        SharedPreferences sharedPref = context.getSharedPreferences(BE_PROFILE_PREF, 0);
-                        SharedPreferences.Editor editor = sharedPref.edit();
+        // Who they are, from the session at once; /v1/user/me refreshes it.
+        ProfileAvatar.loadSelf(mAvatar, accessToken);
+        if (token != null) bindIdentity(textOf(token, "name"), textOf(token, "username"));
+        track(PostHogEventKeys.PROFILE_VIEWED, token, appVersion, null);
+    }
 
-                        if(avatar != null && avatar.length() > 0){
-                            editor.putString("avatar_url", avatar);
-                            ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mAvatarImage, null);
-                        }
+    @Override
+    public void onResume() {
+        super.onResume();
+        if (sProfileUpdatedAtMs != 0) {
+            boolean fresh =
+                    SystemClock.elapsedRealtime() - sProfileUpdatedAtMs < UPDATED_TOAST_FRESH_MS;
+            sProfileUpdatedAtMs = 0;
+            if (fresh) showUpdatedToast();
+        }
+        // Also after Edit, whose changes the page should show on return.
+        String accessToken;
+        try {
+            accessToken = BraveActivity.getBraveActivity().getAccessToken();
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+            return;
+        }
+        if (TextUtils.isEmpty(accessToken)) return;
+        BrowserExpressProfileApi.fetch(accessToken, profile -> {
+            if (profile != null && isAdded() && getView() != null) bind(profile, accessToken);
+        });
+    }
 
-                        if(xp != null && xp.length() > 0){
-                            mViewsText.setText(xp);
-                            editor.putString("views", xp);
-                        }else{
-                            mViewsText.setText("-");
-                            editor.putString("views", "-");
-                        }
+    @Override
+    public void onDestroyView() {
+        // A count cut short rests at its end; the server already has these numbers as seen.
+        if (mReturnVisit != null) mReturnVisit.cancel();
+        if (mUpdatedToastAnimator != null) mUpdatedToastAnimator.cancel();
+        super.onDestroyView();
+    }
 
-                        if(lg != null && lg.length() > 0){
-                            mLikesGivenText.setText(lg);
-                            editor.putString("likes_given", lg);
-                        }else{
-                            mLikesGivenText.setText("-");
-                            editor.putString("likes_given", "-");
-                        }
+    /** Called by Edit profile once it has saved; the Profile says so when it shows again. */
+    static void notifyProfileUpdated() {
+        sProfileUpdatedAtMs = SystemClock.elapsedRealtime();
+    }
 
-                        if(lr != null && lr.length() > 0){
-                            mLikesReceivedText.setText(lr);
-                            editor.putString("likes_received", lr);
-                        }else{
-                            mLikesReceivedText.setText("-");
-                            editor.putString("likes_received", "-");
-                        }
+    /** "✓ Profile updated" for 2.4s; with animations off it shows and goes without moving. */
+    private void showUpdatedToast() {
+        if (mUpdatedToastAnimator != null) mUpdatedToastAnimator.cancel();
+        float dp = getResources().getDisplayMetrics().density;
+        mUpdatedToast.setVisibility(View.VISIBLE);
+        ValueAnimator animator = ValueAnimator.ofFloat(0f, 1f);
+        animator.setDuration(UPDATED_TOAST_MS);
+        animator.setInterpolator(new LinearInterpolator());
+        animator.addUpdateListener(animation -> {
+            float t = animation.getAnimatedFraction();
+            if (t < UPDATED_TOAST_IN) {
+                float in = DECELERATE.getInterpolation(t / UPDATED_TOAST_IN);
+                mUpdatedToast.setAlpha(in);
+                mUpdatedToast.setTranslationY((1f - in) * UPDATED_TOAST_RISE_DP * dp);
+            } else if (t < UPDATED_TOAST_OUT) {
+                mUpdatedToast.setAlpha(1f);
+                mUpdatedToast.setTranslationY(0f);
+            } else {
+                float out = DECELERATE.getInterpolation(
+                        (t - UPDATED_TOAST_OUT) / (1f - UPDATED_TOAST_OUT));
+                mUpdatedToast.setAlpha(1f - out);
+                mUpdatedToast.setTranslationY(out * UPDATED_TOAST_SINK_DP * dp);
+            }
+        });
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (mUpdatedToastAnimator != animation) return;
+                mUpdatedToastAnimator = null;
+                mUpdatedToast.setVisibility(View.GONE);
+            }
+        });
+        mUpdatedToastAnimator = animator;
+        if (ValueAnimator.areAnimatorsEnabled()) {
+            animator.start();
+        } else {
+            mUpdatedToast.setAlpha(1f);
+            mUpdatedToast.setTranslationY(0f);
+            mUpdatedToast.postDelayed(() -> {
+                if (mUpdatedToastAnimator != animator) return;
+                mUpdatedToastAnimator = null;
+                mUpdatedToast.setVisibility(View.GONE);
+            }, UPDATED_TOAST_MS);
+        }
+    }
 
-                        editor.apply();
-                    } catch (BraveActivity.BraveActivityNotFoundException e) {
-                    }
-                }
+    private void bind(BrowserExpressProfileApi.Profile profile, String accessToken) {
+        bindIdentity(profile.name, profile.username);
+        if (profile.avatarUrl != null) ProfileAvatar.load(mAvatar, profile.avatarUrl, null);
 
-                @Override
-                public void getProfileFailed(String error) {
-                    Log.e("Express Browser LOGIN", "GET PROFILE FAILED");
-                }
+        // The first answer counts up from the last visit; a later one (back from Edit) from
+        // what is on screen. With no last visit there is nothing to count from.
+        int[] from = mShownScores != null ? mShownScores : profile.scoresSeen;
+        int[] to = profile.scores;
+        if (!Arrays.equals(profile.scoresSeen, to)) {
+            BrowserExpressProfileApi.markScoresSeen(accessToken, to);
+        }
+        if (mReturnVisit != null) return; // Still counting the first answer.
+        mShownScores = to.clone();
+        if (from == null || !anyGain(from, to)) {
+            for (int i = 0; i < mCards.length; i++) mCards[i].rest(to[i]);
+            return;
+        }
+        playReturnVisit(from, to);
+    }
 
-                private JSONObject getDecodedToken(String accessToken){
-                    try{
-                        String[] split_string = accessToken.split("\\.");
-                        String base64EncodedBody = split_string[1];
+    private void bindIdentity(@Nullable String name, @Nullable String username) {
+        if (username != null) {
+            mHandle.setText(getString(R.string.browser_express_profile_handle, username));
+        }
+        mName.setText(name != null ? name : username != null ? username : "");
+    }
 
-                        byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
-                        String decodedString = new String(data, "UTF-8");
-                        JSONObject jsonObj = new JSONObject(decodedString.toString());
-                        return jsonObj;
-                    }catch(JSONException e){
-                        Log.e("Express Browser Access Token", e.getMessage());
-                        return null;
-                    }catch(UnsupportedEncodingException e){
-                        Log.e("Express Browser Access Token", e.getMessage());
-                        return null;
-                    }
-                    
-                }
-            };
+    private void playReturnVisit(int[] from, int[] to) {
+        for (int i = 0; i < mCards.length; i++) mCards[i].prepare(from[i], to[i]);
+        if (!ValueAnimator.areAnimatorsEnabled()) {
+            // Reduced motion: the final numbers at once, the chips only while they hold.
+            for (int i = 0; i < mCards.length; i++) mCards[i].blinkChip(REDUCED_CHIP_MS);
+            return;
+        }
+        ValueAnimator animator = ValueAnimator.ofFloat(0f, TOTAL_MS);
+        animator.setDuration(TOTAL_MS);
+        animator.setInterpolator(new LinearInterpolator());
+        animator.addUpdateListener(animation -> {
+            float t = (float) animation.getAnimatedValue();
+            for (int i = 0; i < mCards.length; i++) mCards[i].pose(t, i);
+        });
+        animator.addListener(new AnimatorListenerAdapter() {
+            @Override
+            public void onAnimationEnd(Animator animation) {
+                if (mReturnVisit != animation) return;
+                mReturnVisit = null;
+                for (int i = 0; i < mCards.length; i++) mCards[i].rest(to[i]);
+            }
+        });
+        mReturnVisit = animator;
+        animator.start();
+    }
 
-    private JSONObject getDecodedToken(String accessToken){
-        try{
-            String[] split_string = accessToken.split("\\.");
-            String base64EncodedBody = split_string[1];
+    private void showOverflowMenu(View anchor) {
+        PopupMenu menu = new PopupMenu(requireContext(), anchor);
+        final int settings = 1;
+        menu.getMenu().add(Menu.NONE, settings, Menu.NONE,
+                R.string.browser_express_profile_menu_settings);
+        try {
+            String version = BraveActivity.getBraveActivity().getCurrentAppVersion();
+            menu.getMenu()
+                    .add(getString(R.string.browser_express_profile_menu_version, version))
+                    .setEnabled(false);
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+            // No version line then.
+        }
+        menu.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() != settings) return false;
+            SettingsNavigationFactory.createSettingsNavigation().startSettings(requireContext());
+            return true;
+        });
+        menu.show();
+    }
 
-            byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
-            String decodedString = new String(data, "UTF-8");
-            JSONObject jsonObj = new JSONObject(decodedString.toString());
-            return jsonObj;
-        }catch(JSONException e){
-            Log.e("Express Browser Access Token", e.getMessage());
-            return null;
-        }catch(UnsupportedEncodingException e){
-            Log.e("Express Browser Access Token", e.getMessage());
+    /** One point's card. */
+    private final class StatCard {
+        private final View mTile;
+        private final TextView mGain;
+        private final TextView mScore;
+        private final View mPlaceholder;
+        private final WashDrawable mWash;
+        private final float mDp;
+        private int mFrom;
+        private int mTo;
+
+        StatCard(View card, int[] stat) {
+            Context context = card.getContext();
+            mDp = context.getResources().getDisplayMetrics().density;
+            int accent = ContextCompat.getColor(context, stat[5]);
+            int tint = ContextCompat.getColor(context, stat[6]);
+
+            mWash = new WashDrawable(ContextCompat.getColor(context, stat[7]), mDp);
+            Drawable shape =
+                    AppCompatResources.getDrawable(context, R.drawable.browser_express_profile_card_bg);
+            card.setBackground(new LayerDrawable(new Drawable[] {shape, mWash}));
+            card.setClipToOutline(true);
+
+            mTile = card.findViewById(R.id.profile_stat_tile);
+            mTile.setBackground(rounded(tint, 12 * mDp));
+            ImageView icon = card.findViewById(R.id.profile_stat_icon);
+            icon.setImageResource(stat[1]);
+            icon.setColorFilter(accent);
+            TextView eyebrow = card.findViewById(R.id.profile_stat_eyebrow);
+            eyebrow.setText(stat[2]);
+            eyebrow.setTextColor(accent);
+            ((TextView) card.findViewById(R.id.profile_stat_label)).setText(stat[3]);
+            ((TextView) card.findViewById(R.id.profile_stat_description)).setText(stat[4]);
+            mGain = card.findViewById(R.id.profile_stat_gain);
+            mGain.setBackground(rounded(tint, 10 * mDp));
+            mGain.setTextColor(accent);
+            mScore = card.findViewById(R.id.profile_stat_score);
+            mPlaceholder = card.findViewById(R.id.profile_stat_score_placeholder);
+        }
+
+        /** At rest: the number, no chip, no pulse. */
+        void rest(int score) {
+            showScore(score);
+            mGain.setVisibility(View.GONE);
+            mTile.setScaleX(1f);
+            mTile.setScaleY(1f);
+            mWash.setPulse(0f);
+        }
+
+        void prepare(int from, int to) {
+            mFrom = from;
+            mTo = to;
+            int gain = Math.max(0, to - from);
+            mGain.setText(getString(R.string.browser_express_profile_gain, mNumbers.format(gain)));
+            showScore(gain > 0 ? from : to);
+        }
+
+        /**
+         * Card {@code index}'s pose {@code t} ms into the return visit: the chip rises in at its
+         * start, the number counts up 120ms later while the tile and wash pulse once, and from
+         * 2.6s the chip lifts away. A card with nothing to count keeps its slot and stays still.
+         */
+        void pose(float t, int index) {
+            int gain = mTo - mFrom;
+            if (gain <= 0) return;
+            float start = FIRST_CARD_MS + STAGGER_MS * index;
+            float in = easeOut(ramp(t, start, CHIP_IN_MS));
+            float out = easeOut(ramp(t, CHIP_OUT_START_MS + CHIP_OUT_STAGGER_MS * index,
+                    CHIP_OUT_MS));
+            boolean chipShown = t > start - 1 && out < 1;
+            if (chipShown != (mGain.getVisibility() == View.VISIBLE)) {
+                mGain.setVisibility(chipShown ? View.VISIBLE : View.GONE);
+            }
+            mGain.setAlpha(in * (1 - out));
+            float chipScale = out > 0 ? 1 - 0.1f * out : 0.85f + 0.15f * in;
+            mGain.setScaleX(chipScale);
+            mGain.setScaleY(chipScale);
+            mGain.setTranslationY((out > 0 ? -out : 1 - in) * 6 * mDp);
+
+            float count = ramp(t, start + COUNT_DELAY_MS, COUNT_MS);
+            mScore.setText(mNumbers.format(Math.round(mFrom + gain * easeOut(count))));
+            float pulse = (float) Math.sin(Math.PI * count);
+            mTile.setScaleX(1 + 0.08f * pulse);
+            mTile.setScaleY(1 + 0.08f * pulse);
+            mWash.setPulse(pulse);
+        }
+
+        void blinkChip(long holdMs) {
+            if (mTo - mFrom <= 0) return;
+            mGain.setAlpha(1f);
+            mGain.setVisibility(View.VISIBLE);
+            mGain.postDelayed(() -> mGain.setVisibility(View.GONE), holdMs);
+        }
+
+        private void showScore(int score) {
+            mScore.setText(mNumbers.format(score));
+            mScore.setVisibility(View.VISIBLE);
+            mPlaceholder.setVisibility(View.GONE);
+        }
+    }
+
+    /**
+     * A card's decorative corner wash: a 240dp circle of its point's colour fading out by 65%
+     * of the way to its farthest corner, centred 40dp in from the card's right edge and 10dp
+     * below its top, at 70% at rest. A pulse grows it 12% and brings it to full strength.
+     */
+    private static final class WashDrawable extends Drawable {
+        private static final float RADIUS_DP = 120f;
+        /** CSS's 65%, of the farthest-corner distance of the 240dp box (120√2), over 120. */
+        private static final float FADE_END = 0.65f * 1.41421f;
+
+        private final Paint mPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        private final Matrix mMatrix = new Matrix();
+        private final float mDp;
+        private float mPulse;
+
+        WashDrawable(int color, float dp) {
+            mDp = dp;
+            mPaint.setShader(new RadialGradient(0, 0, RADIUS_DP * FADE_END * dp,
+                    color, Color.TRANSPARENT, Shader.TileMode.CLAMP));
+        }
+
+        /** 0 at rest, 1 at the pulse's peak. */
+        void setPulse(float pulse) {
+            if (pulse == mPulse) return;
+            mPulse = pulse;
+            invalidateSelf();
+        }
+
+        @Override
+        public void draw(@NonNull Canvas canvas) {
+            Rect bounds = getBounds();
+            float cx = bounds.right - 40 * mDp;
+            float cy = bounds.top + 10 * mDp;
+            float scale = 1 + 0.12f * mPulse;
+            mMatrix.setScale(scale, scale);
+            mMatrix.postTranslate(cx, cy);
+            mPaint.getShader().setLocalMatrix(mMatrix);
+            mPaint.setAlpha(Math.round(255 * (0.7f + 0.3f * mPulse)));
+            canvas.drawCircle(cx, cy, RADIUS_DP * mDp * scale, mPaint);
+        }
+
+        @Override
+        public void setAlpha(int alpha) {}
+
+        @Override
+        public void setColorFilter(@Nullable ColorFilter colorFilter) {}
+
+        @Override
+        @SuppressWarnings("deprecation")
+        public int getOpacity() {
+            return PixelFormat.TRANSLUCENT;
+        }
+    }
+
+    private static GradientDrawable rounded(int color, float radiusPx) {
+        GradientDrawable drawable = new GradientDrawable();
+        drawable.setColor(color);
+        drawable.setCornerRadius(radiusPx);
+        return drawable;
+    }
+
+    private static boolean anyGain(int[] from, int[] to) {
+        for (int i = 0; i < to.length; i++) {
+            if (to[i] > from[i]) return true;
+        }
+        return false;
+    }
+
+    private static float ramp(float t, float start, float length) {
+        return Math.max(0f, Math.min(1f, (t - start) / length));
+    }
+
+    private static float easeOut(float t) {
+        return 1 - (float) Math.pow(1 - t, 3);
+    }
+
+    private static @Nullable String textOf(JSONObject json, String key) {
+        String value = json.isNull(key) ? null : json.optString(key, null);
+        return TextUtils.isEmpty(value) ? null : value;
+    }
+
+    /** The session's claims (id, name, username, referral code); null when it can't be read. */
+    private static @Nullable JSONObject decodeToken(@Nullable String accessToken) {
+        if (TextUtils.isEmpty(accessToken)) return null;
+        String[] parts = accessToken.split("\\.");
+        if (parts.length < 2) return null;
+        try {
+            byte[] payload = Base64.decode(
+                    parts[1], Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
+            return new JSONObject(new String(payload, StandardCharsets.UTF_8));
+        } catch (IllegalArgumentException | JSONException e) {
+            Log.e(TAG, "Unreadable session token", e);
             return null;
         }
-        
+    }
+
+    private static void track(String event, @Nullable JSONObject token, String appVersion,
+            @Nullable String referralCode) {
+        if (token == null) return;
+        try {
+            JSONObject payload = new JSONObject();
+            payload.put("app_version", appVersion);
+            if (referralCode != null) payload.put("referral_code", referralCode);
+            new PostHogUtil.PostHogWorkerTask(event, token.getString("_id"), payload)
+                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } catch (JSONException e) {
+            Log.e(TAG, "PostHog payload", e);
+        }
     }
 }

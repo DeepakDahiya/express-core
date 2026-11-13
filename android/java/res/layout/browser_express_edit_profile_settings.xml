@@ -1,149 +1,379 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView android:id="@+id/browser_express_edit_profile_settings"
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- Edit profile (design handoff "Edit profile"): Cancel / title / Save, the photo, then the name
+     and username in one card with a helper line under it. BrowserExpressEditProfilePreferences
+     runs it; the photo sheet, crop stage and discard dialog are their own windows. -->
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/be_background_black"
-    android:layout_width="match_parent">
+    android:background="@color/browser_express_profile_page_bg">
 
     <LinearLayout
-        android:id="@+id/layout_parent"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:paddingHorizontal="8dp">
+
+            <TextView
+                android:id="@+id/edit_profile_cancel"
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:layout_gravity="start|center_vertical"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:fontFamily="sans-serif"
+                android:gravity="center"
+                android:paddingHorizontal="12dp"
+                android:text="@string/browser_express_edit_profile_cancel"
+                android:textColor="@color/browser_express_profile_text_primary"
+                android:textFontWeight="500"
+                android:textSize="15sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:accessibilityHeading="true"
+                android:fontFamily="sans-serif"
+                android:text="@string/browser_express_edit_profile_title"
+                android:textColor="@color/browser_express_profile_text_primary"
+                android:textFontWeight="600"
+                android:textSize="16sp" />
+
+            <!-- Save, or the spinner in its place while saving. -->
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="44dp"
+                android:layout_gravity="end|center_vertical"
+                android:minWidth="58dp">
+
+                <TextView
+                    android:id="@+id/edit_profile_save"
+                    android:layout_width="wrap_content"
+                    android:layout_height="44dp"
+                    android:layout_gravity="end"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:enabled="false"
+                    android:fontFamily="sans-serif"
+                    android:gravity="center"
+                    android:paddingHorizontal="12dp"
+                    android:text="@string/browser_express_edit_profile_save"
+                    android:textColor="@color/browser_express_edit_profile_save"
+                    android:textFontWeight="600"
+                    android:textSize="15sp" />
+
+                <org.chromium.chrome.browser.settings.EditProfileSpinner
+                    android:id="@+id/edit_profile_saving"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_gravity="center"
+                    android:contentDescription="@string/browser_express_edit_profile_saving"
+                    android:visibility="gone" />
+            </FrameLayout>
+        </FrameLayout>
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="24dp">
+
+                <!-- The 96dp photo with its 1dp ring, and the camera badge 2dp past its corner:
+                     the frame is 2dp wider each way than the photo. -->
+                <FrameLayout
+                    android:id="@+id/edit_profile_photo"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="18dp"
+                    android:contentDescription="@string/browser_express_edit_profile_photo">
+
+                    <View
+                        android:layout_width="98dp"
+                        android:layout_height="98dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/browser_express_profile_avatar_ring" />
+
+                    <ImageView
+                        android:id="@+id/edit_profile_avatar"
+                        android:layout_width="96dp"
+                        android:layout_height="96dp"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/browser_express_post_avatar_placeholder" />
+
+                    <FrameLayout
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:layout_gravity="bottom|end"
+                        android:background="@drawable/browser_express_edit_profile_badge"
+                        android:importantForAccessibility="no">
+
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:layout_gravity="center"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_browser_express_edit_profile_badge" />
+                    </FrameLayout>
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/edit_profile_photo_cta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="32dp"
+                    android:layout_gravity="center_horizontal"
+                    android:layout_marginTop="10dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:fontFamily="sans-serif"
+                    android:gravity="center"
+                    android:paddingHorizontal="8dp"
+                    android:text="@string/browser_express_edit_profile_change_photo"
+                    android:textColor="@color/browser_express_edit_profile_link"
+                    android:textFontWeight="600"
+                    android:textSize="14sp" />
+
+                <LinearLayout
+                    android:id="@+id/edit_profile_fields"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginTop="20dp"
+                    android:background="@drawable/browser_express_profile_card_bg"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="16dp"
+                        android:paddingVertical="12dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="sans-serif"
+                                android:lineHeight="16sp"
+                                android:text="@string/browser_express_edit_profile_name"
+                                android:textColor="@color/browser_express_profile_text_meta"
+                                android:textFontWeight="500"
+                                android:textSize="12sp" />
+
+                            <TextView
+                                android:id="@+id/edit_profile_name_count"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="sans-serif"
+                                android:fontFeatureSettings="tnum"
+                                android:lineHeight="16sp"
+                                android:textColor="@color/browser_express_profile_text_meta"
+                                android:textFontWeight="500"
+                                android:textSize="12sp"
+                                tools:text="11/30" />
+                        </LinearLayout>
+
+                        <EditText
+                            android:id="@+id/edit_profile_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="24dp"
+                            android:layout_marginTop="4dp"
+                            android:background="@null"
+                            android:fontFamily="sans-serif"
+                            android:hint="@string/browser_express_edit_profile_name_hint"
+                            android:imeOptions="actionNext"
+                            android:importantForAutofill="no"
+                            android:inputType="textPersonName|textCapWords"
+                            android:maxLines="1"
+                            android:padding="0dp"
+                            android:textColor="@color/browser_express_profile_text_primary"
+                            android:textColorHint="@color/browser_express_profile_text_meta"
+                            android:textCursorDrawable="@drawable/browser_express_edit_profile_caret"
+                            android:textFontWeight="500"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginStart="16dp"
+                        android:background="@color/browser_express_profile_divider" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="16dp"
+                        android:paddingVertical="12dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif"
+                            android:lineHeight="16sp"
+                            android:text="@string/browser_express_edit_profile_username"
+                            android:textColor="@color/browser_express_profile_text_meta"
+                            android:textFontWeight="500"
+                            android:textSize="12sp" />
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="24dp"
+                            android:layout_marginTop="4dp"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="sans-serif"
+                                android:importantForAccessibility="no"
+                                android:text="@string/browser_express_edit_profile_at"
+                                android:textColor="@color/browser_express_profile_text_meta"
+                                android:textFontWeight="500"
+                                android:textSize="16sp" />
+
+                            <EditText
+                                android:id="@+id/edit_profile_username"
+                                android:layout_width="0dp"
+                                android:layout_height="24dp"
+                                android:layout_marginStart="2dp"
+                                android:layout_weight="1"
+                                android:background="@null"
+                                android:fontFamily="sans-serif"
+                                android:hint="@string/browser_express_edit_profile_username_hint"
+                                android:imeOptions="actionDone"
+                                android:importantForAutofill="no"
+                                android:inputType="textNoSuggestions|textVisiblePassword"
+                                android:maxLines="1"
+                                android:padding="0dp"
+                                android:textColor="@color/browser_express_profile_text_primary"
+                                android:textColorHint="@color/browser_express_profile_text_meta"
+                                android:textCursorDrawable="@drawable/browser_express_edit_profile_caret"
+                                android:textFontWeight="500"
+                                android:textSize="16sp" />
+
+                            <!-- Spinner while checking, ✓ when free, ✕ when not. -->
+                            <FrameLayout
+                                android:layout_width="18dp"
+                                android:layout_height="18dp"
+                                android:layout_marginStart="8dp">
+
+                                <org.chromium.chrome.browser.settings.EditProfileSpinner
+                                    android:id="@+id/edit_profile_username_checking"
+                                    android:layout_width="16dp"
+                                    android:layout_height="16dp"
+                                    android:layout_gravity="center"
+                                    android:importantForAccessibility="no"
+                                    android:visibility="gone" />
+
+                                <ImageView
+                                    android:id="@+id/edit_profile_username_ok"
+                                    android:layout_width="18dp"
+                                    android:layout_height="18dp"
+                                    android:importantForAccessibility="no"
+                                    android:src="@drawable/ic_browser_express_edit_profile_check"
+                                    android:visibility="gone"
+                                    app:tint="@color/browser_express_edit_profile_success" />
+
+                                <ImageView
+                                    android:id="@+id/edit_profile_username_bad"
+                                    android:layout_width="18dp"
+                                    android:layout_height="18dp"
+                                    android:importantForAccessibility="no"
+                                    android:src="@drawable/ic_browser_express_edit_profile_invalid"
+                                    android:visibility="gone"
+                                    app:tint="@color/browser_express_profile_danger" />
+                            </FrameLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/edit_profile_helper"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="32dp"
+                    android:layout_marginTop="8dp"
+                    android:accessibilityLiveRegion="polite"
+                    android:fontFamily="sans-serif"
+                    android:lineHeight="18sp"
+                    android:text="@string/browser_express_edit_profile_username_idle"
+                    android:textColor="@color/browser_express_profile_text_secondary"
+                    android:textSize="12.5sp" />
+            </LinearLayout>
+        </ScrollView>
+    </LinearLayout>
+
+    <!-- A failed save, in the shape of the comments' publishing banner. -->
+    <LinearLayout
+        android:id="@+id/edit_profile_error"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:visibility="visible">
+        android:layout_gravity="top"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginTop="54dp"
+        android:accessibilityLiveRegion="polite"
+        android:background="@drawable/browser_express_edit_profile_banner_bg"
+        android:elevation="8dp"
+        android:gravity="center_vertical"
+        android:minHeight="56dp"
+        android:orientation="horizontal"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="11dp"
+        android:visibility="gone">
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/profile_image_button"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:layout_constraintDimensionRatio="1"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent">
+        <View
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="@drawable/browser_express_edit_profile_banner_dot" />
 
-            <ImageView
-                android:id="@+id/avatar_image_1"
-                android:src="@drawable/btn_toolbar_profile"
-                android:layout_width="120dp"
-                app:layout_constraintEnd_toEndOf="@+id/profile_image_button"
-                app:layout_constraintStart_toStartOf="@+id/profile_image_button"
-                app:layout_constraintTop_toTopOf="@+id/profile_image_button"
-                android:layout_height="120dp"
-                android:scaleType="centerCrop"
-                android:layout_marginTop="15dp"
-                android:layout_gravity="center"
-                android:adjustViewBounds="true"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-                android:background="@drawable/circular_background" />
-            <ImageView
-                android:id="@+id/edit_icon"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:src="@drawable/edit_image"
-                android:layout_gravity="bottom|end"
-                app:layout_constraintBottom_toBottomOf="@id/avatar_image_1"
-                app:layout_constraintEnd_toEndOf="@id/avatar_image_1"
-                android:layout_margin="6dp"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-                android:background="@drawable/circular_background_edit_icon" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <EditText
-            android:id="@+id/be_username"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:drawableStart="@drawable/person"
-            android:drawablePadding="10dp"
-            android:background="@drawable/rounded_wallet_edittext"
-            android:hint="@string/enter_your_username"
-            android:importantForAutofill="no"
-            android:inputType="text"
-            android:paddingEnd="18dp"
-            android:paddingStart="18dp"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:textCursorDrawable="@null"
-            android:textSize="14sp"
-            android:textColor="@color/wallet_text_color"
-            android:textColorHint="@color/brave_theme_hint_text" />
-
-        <EditText
-            android:id="@+id/be_name"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:drawableStart="@drawable/person"
-            android:drawablePadding="10dp"
-            android:background="@drawable/rounded_wallet_edittext"
-            android:hint="@string/enter_your_name"
-            android:importantForAutofill="no"
-            android:inputType="text"
-            android:paddingEnd="18dp"
-            android:paddingStart="18dp"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:textCursorDrawable="@null"
-            android:textSize="14sp"
-            android:textColor="@color/wallet_text_color"
-            android:textColorHint="@color/brave_theme_hint_text" />
-
-        <EditText
-            android:id="@+id/be_email"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_marginTop="20dp"
-            android:layout_marginBottom="40dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:drawableStart="@drawable/mail"
-            android:drawablePadding="10dp"
-            android:background="@drawable/rounded_wallet_edittext"
-            android:hint="@string/enter_your_email"
-            android:importantForAutofill="no"
-            android:inputType="textEmailAddress"
-            android:paddingEnd="18dp"
-            android:paddingStart="18dp"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:textCursorDrawable="@null"
-            android:textSize="14sp"
-            android:textColor="@color/wallet_text_color"
-            android:textColorHint="@color/brave_theme_hint_text" />
-
-        <Button
-            android:id="@+id/btn_edit_1"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginTop="10dp"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:background="@drawable/orange_rounded_bg"
-            app:backgroundTint="@null"
-            android:text="@string/browser_express_edit_profile_button_title"
-            android:textAllCaps="false"
-            android:textColor="@android:color/black"
-            android:textSize="16sp"
-            android:paddingVertical="4dp"
-            android:paddingHorizontal="20dp"
-            style="?android:attr/borderlessButtonStyle"/>
-
-        <TextView
-            android:id="@+id/error_message"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:layout_gravity="center_horizontal"
-            android:text=""
-            android:textColor="@color/browser_express_error_color"
-            android:textSize="12sp"
-            android:textStyle="normal"
-            android:visibility="visible"/>
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:lineHeight="18sp"
+                android:text="@string/browser_express_edit_profile_save_failed"
+                android:textColor="@color/browser_express_profile_text_primary"
+                android:textFontWeight="600"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/edit_profile_error_detail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:lineHeight="16sp"
+                android:textColor="@color/browser_express_profile_text_meta"
+                android:textSize="12sp" />
+        </LinearLayout>
     </LinearLayout>
-</ScrollView>
+</FrameLayout>

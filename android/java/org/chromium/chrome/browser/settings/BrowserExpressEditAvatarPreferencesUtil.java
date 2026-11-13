@@ -35,12 +35,20 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import androidx.exifinterface.media.ExifInterface;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
 public class BrowserExpressEditAvatarPreferencesUtil {
     private static final String TAG = "Edit_Avatar_Browser_Express";
     private static final String EDIT_AVATAR_URL = "https://api.browser.express/v1/user/avatar";
+    /** Avatars show at 120dp at most: 512px is sharp on any screen. */
+    private static final int AVATAR_SIZE_PX = 512;
+    private static final int AVATAR_JPEG_QUALITY = 90;
 
     public interface EditAvatarCallback {
         void editAvatarSuccessful();
@@ -98,10 +106,7 @@ public class BrowserExpressEditAvatarPreferencesUtil {
         HttpURLConnection urlConnection = null;
         StringBuilder sb = new StringBuilder();
         try {
-            Bitmap originalBitmap = BitmapFactory.decodeStream(imageStream);
-            ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
-            originalBitmap.compress(Bitmap.CompressFormat.PNG, 100, pngOutputStream);
-            InputStream pngInputStream = new ByteArrayInputStream(pngOutputStream.toByteArray());
+            InputStream avatarInputStream = new ByteArrayInputStream(toAvatarJpeg(readAll(imageStream)));
 
             URL url = new URL(EDIT_AVATAR_URL);
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
@@ -129,17 +134,17 @@ public class BrowserExpressEditAvatarPreferencesUtil {
 
             long epochTime = System.currentTimeMillis();
             int randomNum = (int) (Math.random() * 1000); // Random number between 0 and 999
-            String name = "avatar_" + epochTime + "_" + randomNum + ".png";
+            String name = "avatar_" + epochTime + "_" + randomNum + ".jpg";
 
             outputStream.write(("--" + boundary + LINE_FEED).getBytes());
             outputStream.write(("Content-Disposition: form-data; name=\"reports\"; filename=\"" + name + "\"" + LINE_FEED).getBytes());
-            outputStream.write(("Content-Type: image/png" + LINE_FEED + LINE_FEED).getBytes());
+            outputStream.write(("Content-Type: image/jpeg" + LINE_FEED + LINE_FEED).getBytes());
             byte[] buffer = new byte[4096];
             int bytesRead;
-            while ((bytesRead = pngInputStream.read(buffer)) != -1) {
+            while ((bytesRead = avatarInputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, bytesRead);
             }
-            pngInputStream.close();
+            avatarInputStream.close();
             outputStream.write(LINE_FEED.getBytes());
 
             // End of multipart
@@ -180,5 +185,86 @@ public class BrowserExpressEditAvatarPreferencesUtil {
         } finally {
             if (urlConnection != null) urlConnection.disconnect();
         }
+    }
+
+    private static byte[] readAll(InputStream in) throws IOException {
+        try (InputStream stream = in) {
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] buffer = new byte[16384];
+            int read;
+            while ((read = stream.read(buffer)) != -1) out.write(buffer, 0, read);
+            return out.toByteArray();
+        }
+    }
+
+    /**
+     * The picked photo as the avatar the server keeps: upright, cropped to its centre square,
+     * at most 512px, JPEG. It used to upload the full-size photo as a lossless PNG, megabytes
+     * that every comment row showing the avatar then downloaded.
+     */
+    private static byte[] toAvatarJpeg(byte[] photo) throws IOException {
+        BitmapFactory.Options bounds = new BitmapFactory.Options();
+        bounds.inJustDecodeBounds = true;
+        BitmapFactory.decodeByteArray(photo, 0, photo.length, bounds);
+        int shortSide = Math.min(bounds.outWidth, bounds.outHeight);
+        if (shortSide <= 0) throw new IOException("Not an image");
+
+        // Decode no larger than needed: a 50MP photo would not fit in memory otherwise.
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 1;
+        while (shortSide / (options.inSampleSize * 2) >= AVATAR_SIZE_PX) {
+            options.inSampleSize *= 2;
+        }
+        Bitmap decoded = BitmapFactory.decodeByteArray(photo, 0, photo.length, options);
+        if (decoded == null) throw new IOException("Not an image");
+
+        int crop = Math.min(decoded.getWidth(), decoded.getHeight());
+        int size = Math.min(crop, AVATAR_SIZE_PX);
+        float centre = size / 2f;
+        Matrix matrix = new Matrix();
+        matrix.postTranslate(-(decoded.getWidth() - crop) / 2f, -(decoded.getHeight() - crop) / 2f);
+        matrix.postScale((float) size / crop, (float) size / crop);
+        // Cameras store pixels as the sensor saw them and say in EXIF how to turn them upright.
+        int orientation = new ExifInterface(new ByteArrayInputStream(photo))
+                .getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+        switch (orientation) {
+            case ExifInterface.ORIENTATION_FLIP_HORIZONTAL:
+                matrix.postScale(-1, 1, centre, centre);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_180:
+                matrix.postRotate(180, centre, centre);
+                break;
+            case ExifInterface.ORIENTATION_FLIP_VERTICAL:
+                matrix.postRotate(180, centre, centre);
+                matrix.postScale(-1, 1, centre, centre);
+                break;
+            case ExifInterface.ORIENTATION_TRANSPOSE:
+                matrix.postRotate(90, centre, centre);
+                matrix.postScale(-1, 1, centre, centre);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_90:
+                matrix.postRotate(90, centre, centre);
+                break;
+            case ExifInterface.ORIENTATION_TRANSVERSE:
+                matrix.postRotate(-90, centre, centre);
+                matrix.postScale(-1, 1, centre, centre);
+                break;
+            case ExifInterface.ORIENTATION_ROTATE_270:
+                matrix.postRotate(-90, centre, centre);
+                break;
+            default:
+                break;
+        }
+
+        Bitmap avatar = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(avatar);
+        canvas.drawColor(Color.WHITE); // JPEG has no transparency.
+        canvas.drawBitmap(decoded, matrix, new Paint(Paint.FILTER_BITMAP_FLAG));
+        decoded.recycle();
+
+        ByteArrayOutputStream jpeg = new ByteArrayOutputStream();
+        avatar.compress(Bitmap.CompressFormat.JPEG, AVATAR_JPEG_QUALITY, jpeg);
+        avatar.recycle();
+        return jpeg.toByteArray();
     }
 }

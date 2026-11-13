@@ -1,442 +1,346 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView 
-    android:id="@+id/browser_express_profile_settings"
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- The reader's own Profile (design handoff "Profile page"): a nav bar, who they are, their
+     three points and a short menu. BrowserExpressProfilePreferences fills it in and plays the
+     return-visit count-up. -->
+<FrameLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:background="@color/be_background_black"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/browser_express_profile_page_bg">
 
-    <LinearLayout
-        android:id="@+id/layout_parent"
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:visibility="visible"
-        android:paddingHorizontal="18sp"
-        android:paddingVertical="4sp">
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
-        <FrameLayout
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="24dp">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:paddingHorizontal="12dp">
+
+                <ImageButton
+                    android:id="@+id/profile_back"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_gravity="start|center_vertical"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/browser_express_profile_back"
+                    android:src="@drawable/ic_browser_express_profile_back"
+                    app:tint="@color/browser_express_profile_text_primary" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:accessibilityHeading="true"
+                    android:fontFamily="sans-serif"
+                    android:text="@string/browser_express_profile_nav_title"
+                    android:textColor="@color/browser_express_profile_text_primary"
+                    android:textFontWeight="600"
+                    android:textSize="16sp" />
+
+                <ImageButton
+                    android:id="@+id/profile_more"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_gravity="end|center_vertical"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/browser_express_profile_more"
+                    android:src="@drawable/ic_browser_express_profile_more"
+                    app:tint="@color/browser_express_profile_text_primary" />
+            </FrameLayout>
 
             <LinearLayout
-                android:background="@drawable/profile_bg"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="60dp">
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="8dp"
+                android:baselineAligned="false"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <!-- The ring lies just outside the 64dp picture, as the design's shadow does, so its
+                     frame overhangs the row by its width. -->
+                <FrameLayout
+                    android:layout_width="66dp"
+                    android:layout_height="66dp"
+                    android:layout_margin="-1dp"
+                    android:background="@drawable/browser_express_profile_avatar_ring">
+
+                    <ImageView
+                        android:id="@+id/profile_avatar"
+                        android:layout_width="64dp"
+                        android:layout_height="64dp"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/browser_express_post_avatar_placeholder" />
+                </FrameLayout>
 
                 <LinearLayout
-                    android:id="@+id/linearLayout"
-                    android:layout_width="match_parent"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:paddingTop="60dp"
-                    android:paddingBottom="10dp"
-                    android:baselineAligned="false">
+                    android:layout_marginStart="14dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/browser_express_username"
-                        android:layout_width="match_parent"
+                        android:id="@+id/profile_name"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:textColor="@color/content_color"
-                        android:textSize="18sp"
-                        android:paddingTop="8dp"
-                        android:textStyle="bold" />
+                        android:ellipsize="end"
+                        android:fontFamily="sans-serif"
+                        android:includeFontPadding="false"
+                        android:letterSpacing="-0.02"
+                        android:lineHeight="25sp"
+                        android:maxLines="1"
+                        android:textColor="@color/browser_express_profile_text_primary"
+                        android:textFontWeight="700"
+                        android:textSize="21sp"
+                        tools:text="Arjun Mehta" />
 
                     <TextView
-                        android:id="@+id/browser_express_full_name"
-                        android:layout_width="match_parent"
+                        android:id="@+id/profile_handle"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:textColor="@color/content_color"
+                        android:layout_marginTop="3dp"
+                        android:ellipsize="end"
+                        android:fontFamily="sans-serif"
+                        android:includeFontPadding="false"
+                        android:lineHeight="18sp"
+                        android:maxLines="1"
+                        android:textColor="@color/browser_express_profile_text_meta"
                         android:textSize="14sp"
-                        android:paddingVertical="8dp" />
+                        tools:text="\@arjunmehta" />
+                </LinearLayout>
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                <LinearLayout
+                    android:id="@+id/profile_edit"
+                    android:layout_width="wrap_content"
+                    android:layout_height="34dp"
+                    android:layout_marginStart="14dp"
+                    android:background="@drawable/browser_express_profile_edit_pill_bg"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="14dp">
+
+                    <ImageView
+                        android:layout_width="13dp"
+                        android:layout_height="13dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_browser_express_profile_edit"
+                        app:tint="@color/browser_express_profile_text_primary" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:gravity="center">
-                        <TextView
-                            android:id="@+id/be_views"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:textColor="@color/gold_color"
-                            android:paddingBottom="32dp"
-                            android:drawablePadding="4dp"
-                            android:textSize="36sp"
-                            app:drawableEndCompat="@drawable/xp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
+                        android:layout_marginStart="6dp"
+                        android:fontFamily="sans-serif"
+                        android:text="@string/browser_express_profile_edit"
+                        android:textColor="@color/browser_express_profile_text_primary"
+                        android:textFontWeight="600"
+                        android:textSize="13sp" />
                 </LinearLayout>
             </LinearLayout>
 
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/profile_image_button"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal">
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="28dp"
+                android:orientation="vertical">
 
-                 <ImageView
-                    android:id="@+id/avatar_image_2"
-                    android:src="@drawable/btn_toolbar_profile"
-                    android:layout_width="100dp"
-                    app:layout_constraintEnd_toEndOf="@+id/profile_image_button"
-                    app:layout_constraintStart_toStartOf="@+id/profile_image_button"
-                    app:layout_constraintTop_toTopOf="@+id/profile_image_button"
-                    android:layout_height="100dp"
-                    android:scaleType="centerCrop"
-                    android:layout_marginTop="15dp"
-                    android:layout_gravity="center"
-                    android:adjustViewBounds="true"
-                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-                    android:background="@drawable/circular_background" />
+                <include
+                    android:id="@+id/profile_karma"
+                    layout="@layout/browser_express_profile_stat_card"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
 
-                <!-- <ImageView
-                    android:id="@+id/edit_icon"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:src="@drawable/edit_image"
-                    android:layout_gravity="bottom|end"
-                    app:layout_constraintBottom_toBottomOf="@id/avatar_image_2"
-                    app:layout_constraintEnd_toEndOf="@id/avatar_image_2"
-                    android:layout_margin="6dp"
-                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-                    android:background="@drawable/circular_background_edit_icon" /> -->
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-        </FrameLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="12dp"
-            android:background="@drawable/profile_sub_bg"
-            android:layout_marginTop="20dp"
-            android:gravity="center_vertical">
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center">
-
-                <TextView
-                    android:id="@+id/be_likes_received"
-                    android:layout_width="wrap_content"
+                <include
+                    android:id="@+id/profile_taste"
+                    layout="@layout/browser_express_profile_stat_card"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:drawablePadding="8dp"
-                    app:drawableStartCompat="@drawable/fire"
-                    android:gravity="center"
-                    android:textColor="@color/content_color"
-                    android:textSize="18sp"
-                    android:textStyle="bold"/>
+                    android:layout_marginTop="8dp" />
 
-                <TextView
-                    android:id="@+id/textView5"
-                    android:layout_width="wrap_content"
+                <include
+                    android:id="@+id/profile_cred"
+                    layout="@layout/browser_express_profile_stat_card"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="@string/likes_received"
-                    android:textColor="@color/content_color"
-                    android:textSize="12sp"/>
+                    android:layout_marginTop="8dp" />
             </LinearLayout>
 
-            <View
-                android:layout_width="1dp"
-                android:layout_height="match_parent"
-                android:background="#CCCCCC"
-                android:layout_marginHorizontal="8dp" />
-
             <LinearLayout
-                android:layout_width="0dp"
+                android:id="@+id/profile_menu"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:gravity="center">
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/browser_express_profile_card_bg"
+                android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/be_likes_given"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    app:drawableStartCompat="@drawable/gold"
-                    android:drawablePadding="8dp"
-                    android:gravity="center"
-                    android:textColor="@color/content_color"
-                    android:textSize="18sp"
-                    android:textStyle="bold"/>
+                <LinearLayout
+                    android:id="@+id/profile_menu_youtube"
+                    android:layout_width="match_parent"
+                    android:layout_height="54dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp">
 
-                <TextView
-                    android:id="@+id/textView6"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:lineSpacingExtra="6sp"
-                    android:text="@string/likes_given"
-                    android:textColor="@color/content_color"
-                    android:textSize="12sp" />
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_browser_express_profile_youtube"
+                        app:tint="@color/browser_express_profile_menu_icon" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:layout_weight="1"
+                        android:fontFamily="sans-serif-medium"
+                        android:maxLines="1"
+                        android:text="@string/browser_express_profile_menu_youtube"
+                        android:textColor="@color/browser_express_profile_text_primary"
+                        android:textSize="15sp" />
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_browser_express_profile_chevron"
+                        app:tint="@color/browser_express_profile_chevron" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="56dp"
+                    android:background="@color/browser_express_profile_divider" />
+
+                <LinearLayout
+                    android:id="@+id/profile_menu_referral"
+                    android:layout_width="match_parent"
+                    android:layout_height="54dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_browser_express_profile_referral"
+                        app:tint="@color/browser_express_profile_menu_icon" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:layout_weight="1"
+                        android:fontFamily="sans-serif-medium"
+                        android:maxLines="1"
+                        android:text="@string/be_referral"
+                        android:textColor="@color/browser_express_profile_text_primary"
+                        android:textSize="15sp" />
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_browser_express_profile_chevron"
+                        app:tint="@color/browser_express_profile_chevron" />
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginStart="56dp"
+                    android:background="@color/browser_express_profile_divider" />
+
+                <LinearLayout
+                    android:id="@+id/profile_menu_logout"
+                    android:layout_width="match_parent"
+                    android:layout_height="54dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp">
+
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_browser_express_profile_logout"
+                        app:tint="@color/browser_express_profile_danger" />
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:layout_weight="1"
+                        android:fontFamily="sans-serif-medium"
+                        android:maxLines="1"
+                        android:text="@string/be_logout"
+                        android:textColor="@color/browser_express_profile_danger"
+                        android:textSize="15sp" />
+
+                    <ImageView
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_browser_express_profile_chevron"
+                        app:tint="@color/browser_express_profile_chevron" />
+                </LinearLayout>
             </LinearLayout>
-
         </LinearLayout>
+    </ScrollView>
 
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:orientation="horizontal"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="4dp">
-
-            <ImageView
-                android:background="@drawable/edit_profile"
-                android:layout_height="24sp"
-                android:layout_width="24sp"
-                android:layout_gravity="center"
-                android:visibility="visible"
-                android:layout_marginEnd="2sp"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-            <Button
-                android:id="@+id/edit_profile_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAllCaps="false"
-                android:background="@android:color/transparent"
-                android:gravity="start|center_vertical"
-                android:textColor="@color/content_color"
-                android:drawableTint="@color/content_color"
-                android:text="@string/be_edit_profile" />
-
-        </LinearLayout>
-
-        <!-- <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:orientation="horizontal"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="4dp">
-
-            <ImageView
-                android:background="@drawable/activity_feed"
-                android:layout_height="24sp"
-                android:layout_width="24sp"
-                android:layout_gravity="center"
-                android:visibility="visible"
-                android:layout_marginEnd="2sp"
-                android:layout_marginStart="4sp"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-            <Button
-                android:id="@+id/activity_feed_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAllCaps="false"
-                android:background="@android:color/transparent"
-                android:gravity="start|center_vertical"
-                android:textColor="@color/content_color"
-                android:drawableTint="@color/content_color"
-                android:text="@string/be_activity_feed" />
-
-        </LinearLayout> -->
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:orientation="horizontal"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="4dp">
-
-            <ImageView
-                android:background="@drawable/golden_youtube_icon"
-                android:layout_height="24sp"
-                android:layout_width="24sp"
-                android:layout_gravity="center"
-                android:visibility="visible"
-                android:layout_marginEnd="2sp"
-                android:layout_marginStart="4sp"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-            <Button
-                android:id="@+id/youtube_premium_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAllCaps="false"
-                android:background="@android:color/transparent"
-                android:gravity="start|center_vertical"
-                android:textColor="@color/content_color"
-                android:drawableTint="@color/content_color"
-                android:text="@string/be_youtube" />
-
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:orientation="horizontal"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="4dp">
-
-            <ImageView
-                android:background="@drawable/celebration"
-                android:layout_height="24sp"
-                android:layout_width="24sp"
-                android:layout_gravity="center"
-                android:visibility="visible"
-                android:layout_marginEnd="2sp"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-            <Button
-                android:id="@+id/referral_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAllCaps="false"
-                android:background="@android:color/transparent"
-                android:gravity="start|center_vertical"
-                android:textColor="@color/content_color"
-                android:drawableTint="@color/content_color"
-                android:text="@string/be_referral" />
-
-        </LinearLayout>
-
-        <!-- <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:orientation="horizontal"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="4dp">
-
-            <ImageView
-                android:background="@drawable/notifications"
-                android:layout_height="24sp"
-                android:layout_width="24sp"
-                android:layout_gravity="center"
-                android:visibility="visible"
-                android:layout_marginEnd="2sp"
-                android:layout_marginStart="4sp"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-            <Button
-                android:id="@+id/notifications_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAllCaps="false"
-                android:background="@android:color/transparent"
-                android:gravity="start|center_vertical"
-                android:textColor="@color/content_color"
-                android:drawableTint="@color/content_color"
-                android:text="@string/be_notifications" />
-
-        </LinearLayout> -->
-
-        <!-- <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:orientation="horizontal"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="4dp">
-
-            <ImageView
-                android:background="@drawable/settings"
-                android:layout_height="24sp"
-                android:layout_width="24sp"
-                android:layout_gravity="center"
-                android:visibility="visible"
-                android:layout_marginEnd="2sp"
-                android:layout_marginStart="4sp"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-            <Button
-                android:id="@+id/settings_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAllCaps="false"
-                android:background="@android:color/transparent"
-                android:gravity="start|center_vertical"
-                android:textColor="@color/content_color"
-                android:drawableTint="@color/content_color"
-                android:text="@string/be_settings" />
-
-        </LinearLayout> -->
-
-        <!-- <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:orientation="horizontal"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="4dp">
-
-            <ImageView
-                android:background="@drawable/delete"
-                android:layout_height="24sp"
-                android:layout_width="24sp"
-                android:layout_gravity="center"
-                android:visibility="visible"
-                android:layout_marginEnd="2sp"
-                android:layout_marginStart="4sp"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-            <Button
-                android:id="@+id/delete_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAllCaps="false"
-                android:background="@android:color/transparent"
-                android:gravity="start|center_vertical"
-                android:textColor="@color/content_color"
-                android:drawableTint="@color/content_color"
-                android:text="@string/be_delete_account" />
-
-        </LinearLayout> -->
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center_vertical"
-            android:orientation="horizontal"
-            android:layout_marginTop="4dp"
-            android:layout_marginBottom="4dp">
-
-            <ImageView
-                android:background="@drawable/logout"
-                android:layout_height="24sp"
-                android:layout_width="24sp"
-                android:layout_gravity="center"
-                android:visibility="visible"
-                android:layout_marginEnd="2sp"
-                android:layout_marginStart="4sp"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-            <Button
-                android:id="@+id/logout_button"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textAllCaps="false"
-                android:background="@android:color/transparent"
-                android:gravity="start|center_vertical"
-                android:textColor="@color/content_color"
-                android:drawableTint="@color/content_color"
-                android:text="@string/be_logout" />
-
-        </LinearLayout>
-        <TextView
-            android:id="@+id/app_version"
-            style="@style/TextAppearance.Material3.LabelSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="bottom|center_horizontal"
-            android:layout_marginBottom="4dp"
-            android:textColor="@color/content_color"
-            app:layout_anchorGravity="bottom"/>
-    </LinearLayout>
-</ScrollView>
+    <!-- "✓ Profile updated", back from a save in Edit profile (design handoff "Edit profile"
+         §7): 36dp above the bottom for 2.4s. -->
+    <TextView
+        android:id="@+id/profile_updated_toast"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:layout_gravity="bottom|center_horizontal"
+        android:layout_marginBottom="36dp"
+        android:accessibilityLiveRegion="polite"
+        android:background="@drawable/browser_express_edit_profile_toast_bg"
+        android:drawablePadding="8dp"
+        android:elevation="6dp"
+        android:fontFamily="sans-serif"
+        android:gravity="center_vertical"
+        android:paddingHorizontal="16dp"
+        android:text="@string/browser_express_edit_profile_saved"
+        android:textColor="@color/browser_express_edit_profile_toast_ink"
+        android:textFontWeight="500"
+        android:textSize="14sp"
+        android:visibility="gone"
+        app:drawableStartCompat="@drawable/ic_browser_express_edit_profile_toast_check"
+        app:drawableTint="@color/browser_express_edit_profile_toast_check" />
+</FrameLayout>

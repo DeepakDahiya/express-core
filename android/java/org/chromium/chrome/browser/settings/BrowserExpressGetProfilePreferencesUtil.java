@@ -20,6 +20,8 @@ import org.chromium.chrome.browser.about_settings.AboutChromeSettings;
 import org.chromium.chrome.browser.about_settings.AboutSettingsBridge;
 import org.chromium.chrome.browser.ntp_background_images.NTPBackgroundImagesBridge;
 import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.app.helpers.ProfileAvatar;
+import org.chromium.chrome.browser.browser_express_comments.KarmaEarned;
 import org.chromium.net.ChromiumNetworkAdapter;
 import org.chromium.net.NetworkTrafficAnnotationTag;
 
@@ -36,6 +38,8 @@ import java.lang.Integer;
 public class BrowserExpressGetProfilePreferencesUtil {
     private static final String TAG = "Get_Profile_Browser_Express";
     private static final String GET_PROFILE_URL = "https://api.browser.express/v1/user/me";
+    private static final int CONNECT_TIMEOUT_MS = 15000;
+    private static final int READ_TIMEOUT_MS = 20000;
 
     public interface GetProfileCallback {
         void getProfileSuccessful(String avatar, String xp, String lg, String lr);
@@ -104,6 +108,8 @@ public class BrowserExpressGetProfilePreferencesUtil {
             URL url = new URL(GET_PROFILE_URL);
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
+            urlConnection.setConnectTimeout(CONNECT_TIMEOUT_MS);
+            urlConnection.setReadTimeout(READ_TIMEOUT_MS);
 
             urlConnection.setRequestMethod("GET");
             urlConnection.setUseCaches(false);
@@ -128,7 +134,13 @@ public class BrowserExpressGetProfilePreferencesUtil {
                 if(responseObject.getBoolean("success")){
                     GetProfileWorkerTask.setGetProfileSuccessStatus(true);
                     JSONObject userObject = responseObject.getJSONObject("user");
-                    String avatar = userObject.optString("avatar", "https://api.dicebear.com/9.x/fun-emoji/png?seed=123&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile");
+                    // Remembered for this account, then handed back resolved: the upload, else
+                    // the account's default face.
+                    ProfileAvatar.saveSelf(accessToken,
+                            userObject.isNull("avatar") ? null : userObject.optString("avatar"));
+                    String avatar = ProfileAvatar.selfUrl(accessToken);
+                    KarmaEarned.syncLabelSeen(
+                            accessToken, userObject.optBoolean("hasSeenKarmaLabel", false));
 
                     int xp = userObject.optInt("xp", 0); // Default to 0 if key is missing
                     int likesReceived = userObject.optInt("likesReceived", 0);
@@ -150,18 +162,30 @@ public class BrowserExpressGetProfilePreferencesUtil {
                 }
                 br.close();
             } else {
-                Log.e(TAG, urlConnection.getResponseMessage());
+                String error = urlConnection.getResponseMessage();
+                if (error == null) error = "HTTP " + HttpResult;
+                GetProfileWorkerTask.setErrorMessage(error);
+                Log.e(TAG, error);
             }
         } catch (MalformedURLException e) {
+            GetProfileWorkerTask.setErrorMessage(getErrorMessage(e));
             Log.e(TAG, e.getMessage());
         } catch (IOException e) {
+            GetProfileWorkerTask.setErrorMessage(getErrorMessage(e));
             Log.e(TAG, e.getMessage());
         } catch (JSONException e) {
+            GetProfileWorkerTask.setErrorMessage(getErrorMessage(e));
             Log.e(TAG, e.getMessage());
         } catch (Exception e) {
+            GetProfileWorkerTask.setErrorMessage(getErrorMessage(e));
             Log.e(TAG, e.getMessage());
         } finally {
             if (urlConnection != null) urlConnection.disconnect();
         }
+    }
+
+    private static String getErrorMessage(Exception e) {
+        String message = e.getMessage();
+        return message != null ? message : e.getClass().getSimpleName();
     }
 }

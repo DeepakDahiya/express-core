@@ -855,4 +855,18 @@
         <item name="android:importantForAccessibility">no</item>
     </style>
 
+    <!-- Edit profile's photo options sheet (design handoff "Edit profile" §3): a 56dp row, its
+         22dp outline icon (the vector's own size) 14dp before a 16sp label. -->
+    <style name="BrowserExpressEditProfileSheetRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:drawablePadding">14dp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">18dp</item>
+        <item name="android:paddingEnd">18dp</item>
+        <item name="android:textFontWeight">500</item>
+        <item name="android:textSize">16sp</item>
+    </style>
 </resources>

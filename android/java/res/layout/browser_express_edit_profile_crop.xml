@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- Edit profile's "Move and scale" (design handoff "Edit profile" §4): full-screen black, Cancel /
+     title / Choose, the photo under its round mask, and a zoom slider. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/edit_profile_overlay_insets"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/browser_express_edit_profile_crop_bg"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:paddingHorizontal="8dp">
+
+        <TextView
+            android:id="@+id/edit_profile_crop_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:layout_gravity="start|center_vertical"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:fontFamily="sans-serif"
+            android:gravity="center"
+            android:paddingHorizontal="12dp"
+            android:text="@string/browser_express_edit_profile_cancel"
+            android:textColor="@color/browser_express_edit_profile_crop_text"
+            android:textFontWeight="500"
+            android:textSize="15sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:accessibilityHeading="true"
+            android:fontFamily="sans-serif"
+            android:text="@string/browser_express_edit_profile_crop_title"
+            android:textColor="@color/browser_express_edit_profile_crop_text"
+            android:textFontWeight="600"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/edit_profile_crop_choose"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:layout_gravity="end|center_vertical"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:enabled="false"
+            android:fontFamily="sans-serif"
+            android:gravity="center"
+            android:paddingHorizontal="12dp"
+            android:text="@string/browser_express_edit_profile_crop_choose"
+            android:textColor="@color/browser_express_edit_profile_crop_action"
+            android:textFontWeight="600"
+            android:textSize="15sp" />
+    </FrameLayout>
+
+    <org.chromium.chrome.browser.settings.EditProfileCropView
+        android:id="@+id/edit_profile_crop_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="32dp"
+        android:paddingTop="20dp"
+        android:paddingBottom="32dp">
+
+        <ImageView
+            android:layout_width="16dp"
+            android:layout_height="16dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_browser_express_edit_profile_zoom_out"
+            app:tint="@color/browser_express_edit_profile_crop_slider_icon" />
+
+        <SeekBar
+            android:id="@+id/edit_profile_crop_zoom"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="14dp"
+            android:layout_weight="1"
+            android:contentDescription="@string/browser_express_edit_profile_crop_zoom"
+            android:max="100"
+            android:progressBackgroundTint="@color/browser_express_edit_profile_crop_text"
+            android:progressTint="@color/browser_express_edit_profile_brand"
+            android:thumbTint="@color/browser_express_edit_profile_brand" />
+
+        <ImageView
+            android:layout_width="22dp"
+            android:layout_height="22dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_browser_express_edit_profile_zoom_in"
+            app:tint="@color/browser_express_edit_profile_crop_slider_icon" />
+    </LinearLayout>
+</LinearLayout>

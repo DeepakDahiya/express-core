@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- Cred: a crown on a base line (design handoff "Profile page", icons/). Tinted where it is used. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="21dp"
+    android:height="21dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M11.562,3.266a0.5,0.5 0,0 1,0.876 0L15.39,8.87a1,1 0,0 0,1.516 0.294L21.183,5.5a0.5,0.5 0,0 1,0.798 0.519l-2.834,10.246a1,1 0,0 1,-0.956 0.734H5.81a1,1 0,0 1,-0.957 -0.734L2.02,6.02a0.5,0.5 0,0 1,0.798 -0.519l4.276,3.664a1,1 0,0 0,1.516 -0.294z"
+        android:strokeWidth="1.8"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M5,21h14"
+        android:strokeWidth="1.8"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>
