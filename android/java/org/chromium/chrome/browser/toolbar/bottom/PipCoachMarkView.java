@@ -10,7 +10,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.ValueAnimator;
 import android.content.Context;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffXfermode;
@@ -41,7 +40,7 @@ public class PipCoachMarkView extends FrameLayout {
 
     // Overlay background colour — 60 % opaque black (background still visible through it)
     private static final int OVERLAY_COLOR = 0x99000000;
-    // Gold colour matching the button tint
+    // Gold of the spotlight ring; it is drawn over the dim overlay, which is dark in both themes
     private static final int GOLD_COLOR = 0xFFD4AF37;
     // Extra padding around the spotlight circle
     private static final float SPOTLIGHT_PADDING_DP = 14f;
@@ -207,7 +206,8 @@ public class PipCoachMarkView extends FrameLayout {
         FrameLayout card = new FrameLayout(getContext());
 
         GradientDrawable bg = new GradientDrawable();
-        bg.setColor(0xFF1A1A2E); // Dark navy background
+        bg.setColor(getContext().getColor(
+                org.chromium.chrome.R.color.browser_express_coach_mark_background));
         bg.setCornerRadius(dpToPx(16f));
         bg.setStroke(dpToPxi(1), 0x55D4AF37); // Subtle gold border
         card.setBackground(bg);
@@ -219,14 +219,16 @@ public class PipCoachMarkView extends FrameLayout {
         TextView titleView = new TextView(getContext());
         titleView.setText(getContext().getString(
                 org.chromium.chrome.R.string.pip_intro_banner_title));
-        titleView.setTextColor(0xFFD4AF37); // Gold
+        titleView.setTextColor(
+                getContext().getColor(org.chromium.chrome.R.color.browser_express_gold));
         titleView.setTextSize(15f);
         titleView.setTypeface(null, Typeface.BOLD);
 
         TextView bodyView = new TextView(getContext());
         bodyView.setText(getContext().getString(
                 org.chromium.chrome.R.string.pip_intro_banner_body));
-        bodyView.setTextColor(Color.WHITE);
+        bodyView.setTextColor(
+                getContext().getColor(org.chromium.chrome.R.color.browser_express_text_primary));
         bodyView.setTextSize(13f);
         bodyView.setLineSpacing(dpToPx(2f), 1f);
         LinearLayout.LayoutParams bodyLp = new LinearLayout.LayoutParams(

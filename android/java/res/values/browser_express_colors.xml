@@ -1,0 +1,431 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- Browser Express palette. The app follows the system / in-app theme setting, so every colour
+     that differs between themes has its light value here and its dark value in
+     values-night/browser_express_colors.xml. The dark values are the ones the app shipped with
+     while it was dark-only; change them there, not here. -->
+<resources>
+    <!-- Brand accents: identical in both themes. -->
+    <color name="browser_express_orange_color">#FF9000</color>
+    <color name="browser_express_blue_color">#39B1F6</color>
+    <color name="browser_express_error_color">#FF0000</color>
+    <color name="upvote_stroke_color">#39B1F6</color>
+
+    <!-- Page surfaces, text and icons. -->
+    <color name="browser_express_background">#FFFFFF</color>
+    <color name="browser_express_text_primary">#202124</color>
+    <!-- Tint for the white-on-transparent icon assets, so they stay visible on light surfaces. -->
+    <color name="browser_express_icon_tint">#202124</color>
+    <!-- The avatar placeholder glyph (btn_toolbar_profile) shown until a photo loads. -->
+    <color name="browser_express_avatar_placeholder">#000000</color>
+    <color name="content_color">#212529</color>
+    <color name="username_color">#777777</color>
+    <!-- Accent gold for the PiP control and the tutorial coach marks. -->
+    <color name="browser_express_gold">#A67C00</color>
+    <color name="browser_express_coach_mark_background">#FFFFFF</color>
+    <color name="browser_express_ticker_background">#F1F3F4</color>
+
+    <!-- Video and media screens (reels, media viewer, image crop) stay dark in both themes, like
+         YouTube and TikTok do, so these have no night override. -->
+    <color name="browser_express_media_background">#202124</color>
+
+    <!-- The lightning glyph's gold. -->
+    <color name="gold_color">#8D6708</color>
+
+    <!-- Sheets and cards shared by the auth screens and the background-play rating dialog. -->
+    <color name="browser_express_sheet_fill">#F2FFFFFF</color>
+    <color name="browser_express_sheet_stroke">#D5DFEA</color>
+
+    <!-- Login / signup / OTP screens. -->
+    <color name="browser_express_auth_screen_bg_edge">#F5F9FD</color>
+    <color name="browser_express_auth_screen_bg_center">#E3EDF8</color>
+    <color name="browser_express_auth_field_fill">#F2F6FA</color>
+    <color name="browser_express_auth_field_stroke">#CBD7E4</color>
+    <color name="browser_express_auth_field_divider">#CBD7E4</color>
+    <color name="browser_express_auth_proof_card_fill">#F2F6FA</color>
+    <color name="browser_express_auth_icon_tile_fill">#E6EEF7</color>
+    <color name="browser_express_auth_icon_tile_stroke">#C8D6E5</color>
+
+    <!-- Sign-in flow (details → verify code → all set), from the Express AI handoff design. -->
+    <color name="browser_express_signin_background">#FAFAFF</color>
+    <color name="browser_express_signin_text_primary">#171A2B</color>
+    <color name="browser_express_signin_text_secondary">#6E7385</color>
+    <color name="browser_express_signin_accent">#577DFF</color>
+    <color name="browser_express_signin_on_accent">#FFFFFF</color>
+    <!-- Fields, code boxes and the close button. -->
+    <color name="browser_express_signin_surface">#FFFFFF</color>
+    <color name="browser_express_signin_field_stroke">#DBE0ED</color>
+    <color name="browser_express_signin_field_divider">#DBE0ED</color>
+    <color name="browser_express_signin_close_icon">#747480</color>
+    <!-- Feature cards and the success mark. -->
+    <color name="browser_express_signin_card">#F0F2FF</color>
+    <color name="browser_express_signin_code_row_background">#FAFAFF</color>
+    <color name="browser_express_signin_error">#B82933</color>
+
+    <!-- Floating comments bar (bottom toolbar), from the Express AI handoff "edge rail". -->
+    <!-- The reel icon and "Join" gradients are the same in both themes. -->
+
+    <!-- Floating bottom bar (Home | reels comments), Express AI handoff "edge rail" 283:12314.
+         It floats over the page as a translucent pill, so it is the same in both themes. -->
+    <color name="browser_express_bottom_bar_background">#CC666666</color>
+    <color name="browser_express_bottom_bar_icon">#FFFFFF</color>
+    <color name="browser_express_bottom_bar_divider">#33FFFFFF</color>
+    <color name="browser_express_bottom_bar_tile">#FFFFFF</color>
+    <color name="browser_express_bottom_bar_accent">#577DFF</color>
+    <color name="browser_express_bottom_bar_count_background">#FF3B3B</color>
+    <color name="browser_express_bottom_bar_count_stroke">#858585</color>
+    <color name="browser_express_bottom_bar_count_text">#FFFFFF</color>
+    <color name="browser_express_bottom_bar_join_stroke">#797A7A</color>
+
+    <!-- Golden YouTube home-screen shortcut sheet. -->
+    <color name="golden_youtube_shortcut_sheet_fill">#FFFFFF</color>
+    <color name="golden_youtube_shortcut_sheet_stroke">#E4E5E9</color>
+    <color name="golden_youtube_shortcut_feature_fill">#F6F7F9</color>
+    <color name="golden_youtube_shortcut_feature_stroke">#E4E5E9</color>
+    <color name="golden_youtube_shortcut_badge_red">#FFE8E8</color>
+    <color name="golden_youtube_shortcut_badge_purple">#F3E8FF</color>
+    <color name="golden_youtube_shortcut_title_text">#202124</color>
+    <color name="golden_youtube_shortcut_body_text">#5F6368</color>
+    <color name="golden_youtube_shortcut_secondary_text">#5F6368</color>
+    <color name="golden_youtube_shortcut_later_text">#5F6368</color>
+
+    <!-- In-app update dialog. -->
+    <color name="update_dialog_background">#FFFFFF</color>
+    <color name="update_dialog_title_color">#1F1F1F</color>
+    <color name="update_dialog_subtitle_color">#5F6368</color>
+    <color name="update_dialog_version_color">#1A73E8</color>
+    <color name="update_dialog_message_color">#3C4043</color>
+    <color name="update_dialog_divider_color">#E8EAED</color>
+    <color name="security_badge_background">#FEF7E0</color>
+    <color name="security_badge_text_color">#B06000</color>
+    <color name="security_icon_color">#B06000</color>
+    <color name="update_button_primary">#1A73E8</color>
+    <color name="update_button_secondary">#5F6368</color>
+
+    <!-- Feed post cards (Figma "Express/Post Card"); the feed background is the new tab page's. -->
+    <color name="browser_express_feed_background">#E8E7EF</color>
+    <color name="browser_express_post_card">#FFFFFF</color>
+    <color name="browser_express_post_author">#676767</color>
+    <color name="browser_express_post_time">#999999</color>
+    <color name="browser_express_post_caption">#111111</color>
+    <color name="browser_express_post_more">#1A6EFF</color>
+    <color name="browser_express_post_avatar_placeholder">#CEC6FF</color>
+    <color name="browser_express_post_rail">#F6F6F6</color>
+    <color name="browser_express_post_rail_text">#FA666666</color>
+    <color name="browser_express_post_rail_chevron">#666666</color>
+    <color name="browser_express_post_rail_xp">#B8747480</color>
+    <color name="browser_express_post_audio_stroke">#E7E7E7</color>
+    <color name="browser_express_post_audio_accent">#577DFF</color>
+    <color name="browser_express_post_audio_time">#747480</color>
+    <!-- The reaction rail laid over photos and videos: the same in both themes, like media. -->
+    <color name="browser_express_post_media_scrim_start">#005E6479</color>
+    <color name="browser_express_post_media_scrim_center">#3D474A54</color>
+    <color name="browser_express_post_media_scrim_end">#8506080B</color>
+    <color name="browser_express_post_media_rail_text">#FAFFFFFF</color>
+    <color name="browser_express_post_media_rail_xp">#B8FFFFFF</color>
+    <color name="browser_express_post_media_open">#F5FFFFFF</color>
+    <color name="browser_express_post_media_open_stroke">#FFFFFF</color>
+    <color name="browser_express_post_media_open_chevron">#FFFFFF</color>
+    <!-- The feed card's tint under the rail (338:2254); the same in both themes. -->
+    <color name="browser_express_post_media_tint_start">#00111111</color>
+    <color name="browser_express_post_media_tint_center">#E8111111</color>
+    <color name="browser_express_post_media_tint_end">#06080B</color>
+    <!-- "12 new takes" on a card (design_handoff_new_takes). The callout sits on the media, so it
+         is the same in both themes; only the text post's panel has a night override. -->
+    <color name="browser_express_post_new_takes_dim">#990A0C16</color>
+    <color name="browser_express_post_new_takes_vignette">#470A0C16</color>
+    <color name="browser_express_post_new_takes_fade_start">#0006080B</color>
+    <color name="browser_express_post_new_takes_fade_end">#5906080B</color>
+    <!-- The feed background (#E8E7EF) under the dim at 60%, flattened. -->
+    <color name="browser_express_post_new_takes_panel">#63646D</color>
+    <color name="browser_express_new_takes_sub">#C7FFFFFF</color>
+    <color name="browser_express_new_takes_chip">#29FFFFFF</color>
+    <color name="browser_express_new_takes_chip_ring">#4DFFFFFF</color>
+    <color name="browser_express_new_takes_quality">#E6FFFFFF</color>
+    <!-- NEW on a take the reader hasn't seen; the same in both themes. -->
+    <color name="browser_express_comment_new_tag">#577DFF</color>
+
+    <!-- Full-screen post video (Figma "Express/Full-screen Video"): dark in both themes. -->
+    <color name="browser_express_video_viewer_background">#06080A</color>
+    <color name="browser_express_video_viewer_text">#FFFFFFFF</color>
+    <color name="browser_express_video_viewer_caption">#E0FFFFFF</color>
+    <color name="browser_express_video_viewer_time">#DBFFFFFF</color>
+    <color name="browser_express_video_viewer_track">#47FFFFFF</color>
+    <color name="browser_express_video_viewer_buffered">#4DFFFFFF</color>
+    <color name="browser_express_video_viewer_scrim">#B3000000</color>
+    <color name="browser_express_video_viewer_rail_line">#3A3A3A</color>
+    <color name="browser_express_video_viewer_open_stroke">#CCFFFFFF</color>
+    <color name="browser_express_video_viewer_open_chevron">#CC666666</color>
+
+    <!-- YouTube free-access sheet (Figma "Extend · Light" 1:8670 / "Extend · Dark" 1:8589). The
+         logo glow only shows in the dark design, so it is transparent here. -->
+    <color name="browser_express_yt_premium_sheet">#FFFFFF</color>
+    <color name="browser_express_yt_premium_handle">#D1D1D9</color>
+    <color name="browser_express_yt_premium_text">#0F0F12</color>
+    <color name="browser_express_yt_premium_muted">#6B6E78</color>
+    <color name="browser_express_yt_premium_card">#F5F5F8</color>
+    <color name="browser_express_yt_premium_card_stroke">#E5E5ED</color>
+    <color name="browser_express_yt_premium_accent">#E21D2E</color>
+    <color name="browser_express_yt_premium_button">#0F0F12</color>
+    <color name="browser_express_yt_premium_button_text">#FFFFFF</color>
+    <color name="browser_express_yt_premium_ring_track">#E0E0E8</color>
+    <color name="browser_express_yt_premium_star">#C78F1F</color>
+    <color name="browser_express_yt_premium_glow_start">#00FF1A59</color>
+    <color name="browser_express_yt_premium_glow_center">#00C72EC7</color>
+    <color name="browser_express_yt_premium_glow_end">#007D3BED</color>
+
+    <!-- New tab page header (Figma "light-mode" 24:2692 / "dark-mode" 1:8351). -->
+    <color name="browser_express_ntp_field">#D0D3E2</color>
+    <color name="browser_express_ntp_on_field">#1A1B20</color>
+    <color name="browser_express_ntp_sites_card">#F9F8FE</color>
+    <color name="browser_express_ntp_site_tile">#EEEDF3</color>
+    <color name="browser_express_ntp_site_label">#808080</color>
+
+    <!-- Comments page (Figma "Emoji flow" 1:1204 / 3:954, empty state 1:4252 / 3:3406,
+         attachment picker 36:1069). Cards reuse the feed post card's colours. -->
+    <color name="browser_express_comments_title">#333333</color>
+    <color name="browser_express_comments_back">#000000</color>
+    <color name="browser_express_comments_depth_track">#C7C7DB</color>
+    <color name="browser_express_comments_accent">#577DFF</color>
+    <color name="browser_express_comments_position">#63667A</color>
+    <color name="browser_express_comments_chip_fill">#E8E7EF</color>
+    <color name="browser_express_comments_chip_stroke">#C9C9C9</color>
+    <color name="browser_express_comments_chip_thumb">#BFE3FA</color>
+    <color name="browser_express_comments_chip_audio_time">#8B8B8B</color>
+    <color name="browser_express_comment_replies">#999999</color>
+    <color name="browser_express_comment_reaction_stroke">#CACACA</color>
+    <color name="browser_express_comment_reaction_count">#80808C</color>
+    <color name="browser_express_comment_reaction_selected_fill">#EBF0FF</color>
+    <color name="browser_express_comment_reaction_selected_stroke">#8C577DFF</color>
+    <color name="browser_express_comment_reaction_selected_count">#000000</color>
+    <!-- Message box. -->
+    <color name="browser_express_comment_box_bar">#EAEDF7</color>
+    <color name="browser_express_comment_box_field">#FFFFFF</color>
+    <color name="browser_express_comment_box_stroke">#DEDEDE</color>
+    <color name="browser_express_comment_box_hint">#999999</color>
+    <color name="browser_express_comment_box_text">#111111</color>
+    <color name="browser_express_comment_box_recording">#E5484D</color>
+
+    <!-- Comment box states and outgoing comments (Figma "Comments · Complete Attachment & Upload
+         Flow", 498:2056). -->
+    <color name="browser_express_composer_count">#14171F</color>
+    <color name="browser_express_composer_media_scrim">#80000000</color>
+    <color name="browser_express_composer_action_shadow">#4D577DFF</color>
+    <color name="browser_express_composer_voice_stroke">#E5E5EB</color>
+    <color name="browser_express_composer_meta">#747480</color>
+    <color name="browser_express_comment_duration_badge">#C2121318</color>
+    <color name="browser_express_comment_duration_badge_text">#FFFFFF</color>
+    <color name="browser_express_comment_tile_stroke">#D9DBE8</color>
+    <color name="browser_express_comment_tile_document">#F2F5FC</color>
+    <color name="browser_express_comment_tile_document_size">#737585</color>
+    <color name="browser_express_comment_upload_retry">#F5E5E8</color>
+    <color name="browser_express_comment_upload_retry_text">#D13840</color>
+    <color name="browser_express_comment_upload_cancel">#EEF0F6</color>
+    <color name="browser_express_comment_upload_cancel_text">#61667A</color>
+    <color name="browser_express_comment_outgoing_stroke">#B8BAC7</color>
+    <color name="browser_express_comment_outgoing_failed">#E05961</color>
+    <color name="browser_express_comment_outgoing_meta">#61667A</color>
+    <color name="browser_express_comment_outgoing_status">#9499A8</color>
+    <color name="browser_express_comment_outgoing_author">#6B6B7A</color>
+    <color name="browser_express_comment_upload_track">#DBDEE5</color>
+    <color name="browser_express_comment_cancelled_stroke">#D1D4E0</color>
+    <!-- Reaction, emoji and attachment sheets. -->
+    <color name="browser_express_comment_sheet">#FFFFFF</color>
+    <color name="browser_express_comment_sheet_handle">#CCCFD9</color>
+    <color name="browser_express_comment_sheet_title">#1F212E</color>
+    <color name="browser_express_comment_sheet_subtitle">#747480</color>
+    <color name="browser_express_comment_sheet_close">#747480</color>
+    <color name="browser_express_comment_sheet_close_fill">#F2F3F6</color>
+    <color name="browser_express_comment_sheet_label">#2D303A</color>
+    <color name="browser_express_comment_sheet_footnote">#9296A1</color>
+    <color name="browser_express_comment_sheet_search">#F2F3F6</color>
+    <color name="browser_express_comment_picker_option">#F5F7FA</color>
+    <color name="browser_express_comment_picker_option_stroke">#E0E3EB</color>
+    <color name="browser_express_comment_picker_count">#40454F</color>
+    <color name="browser_express_comment_picker_selected">#E5F2FF</color>
+    <color name="browser_express_comment_picker_selected_stroke">#61A1F5</color>
+    <color name="browser_express_comment_picker_selected_count">#145CC7</color>
+    <color name="browser_express_comment_picker_divider">#E5E7EB</color>
+    <color name="browser_express_comment_picker_close">#B4B8C4</color>
+    <color name="browser_express_comment_picker_tab_selected">#E5F2FF</color>
+    <color name="browser_express_comment_attach_photo">#EEF4FF</color>
+    <color name="browser_express_comment_attach_camera">#F1EDFF</color>
+    <color name="browser_express_comment_attach_video">#FFF0F5</color>
+    <color name="browser_express_comment_attach_voice">#EAF8F2</color>
+    <color name="browser_express_comment_attach_gif">#FFF5DE</color>
+    <color name="browser_express_comment_attach_document">#F0F2F5</color>
+    <!-- Empty state card. -->
+    <color name="browser_express_comments_empty_card">#F5FBFBFE</color>
+    <color name="browser_express_comments_empty_stroke">#CCD4D6E8</color>
+    <color name="browser_express_comments_empty_overline">#5E6685</color>
+    <color name="browser_express_comments_empty_title">#1A1C26</color>
+    <color name="browser_express_comments_empty_body">#5C6175</color>
+    <color name="browser_express_comments_empty_cue">#D16E738A</color>
+    <color name="browser_express_comments_empty_footnote">#BD7A8096</color>
+    <color name="browser_express_comments_empty_participant_1">#94B8BDD1</color>
+    <color name="browser_express_comments_empty_participant_2">#94C7BDDB</color>
+    <color name="browser_express_comments_empty_participant_3">#94ADC7BF</color>
+    <color name="browser_express_comments_empty_participant_stroke">#FBFBFE</color>
+    <!-- The same in both themes. -->
+    <color name="browser_express_comments_empty_icon_start">#E5EDFF</color>
+    <color name="browser_express_comments_empty_icon_end">#F0E8FF</color>
+    <color name="browser_express_comments_cta_start">#4066F2</color>
+    <color name="browser_express_comments_cta_end">#6E54F0</color>
+
+    <!-- Full-page video comment (Figma "Reel motion / Plus → Add your take bubble", 598:4043).
+         Media stays dark in both themes, so none of these has a night override. -->
+    <color name="browser_express_reel_top_scrim_start">#02111111</color>
+    <color name="browser_express_reel_top_scrim_center">#29111111</color>
+    <color name="browser_express_reel_top_scrim_end">#52111111</color>
+    <color name="browser_express_reel_bottom_scrim_start">#009B9B9B</color>
+    <color name="browser_express_reel_bottom_scrim_center">#40111111</color>
+    <color name="browser_express_reel_bottom_scrim_end">#B3111111</color>
+    <color name="browser_express_reel_header_text">#B3FFFFFF</color>
+    <!-- The stream position that fades in under the hashtag (design_handoff_video_progress). -->
+    <color name="browser_express_reel_stream_track">#47FFFFFF</color>
+    <color name="browser_express_reel_stream_fill">#EBFFFFFF</color>
+    <color name="browser_express_reel_stream_counter">#E6FFFFFF</color>
+    <color name="browser_express_reel_stream_shadow">#59000000</color>
+    <color name="browser_express_reel_text">#F5FFFFFF</color>
+    <color name="browser_express_reel_author">#EBFFFFFF</color>
+    <color name="browser_express_reel_time">#A8FFFFFF</color>
+    <!-- The rail down the right edge: reactions, then replies, share and more. -->
+    <color name="browser_express_reel_reaction_stroke">#4DFFFFFF</color>
+    <color name="browser_express_reel_reaction_count">#B3FFFFFF</color>
+    <color name="browser_express_reel_reaction_selected_fill">#33577DFF</color>
+    <color name="browser_express_reel_reaction_selected_stroke">#577DFF</color>
+    <color name="browser_express_reel_reaction_selected_count">#FFFFFF</color>
+    <color name="browser_express_reel_rail_divider">#CCFFFFFF</color>
+    <color name="browser_express_reel_rail_label">#FFFFFF</color>
+    <!-- "Add your take", top right. -->
+    <color name="browser_express_reel_take_fill">#661E2026</color>
+    <color name="browser_express_reel_take_stroke">#38FFFFFF</color>
+    <color name="browser_express_reel_take_label">#FFFFFF</color>
+    <color name="browser_express_reel_take_circle">#FFFFFF</color>
+    <color name="browser_express_reel_take_plus">#1B1B22</color>
+    <!-- "Karma earned" over a reel: the same in both themes. -->
+    <color name="browser_express_karma_on_video">#FF7A92</color>
+    <color name="browser_express_karma_on_video_glow">#8CFF7A92</color>
+    <color name="browser_express_karma_on_video_edge">#E6FFFFFF</color>
+    <color name="browser_express_karma_on_video_shadow">#59000000</color>
+    <color name="browser_express_karma_on_video_label_shadow">#80000000</color>
+    <color name="browser_express_reel_progress_track">#47FFFFFF</color>
+    <color name="browser_express_reel_progress">#EBFFFFFF</color>
+
+    <!-- Privacy & Security settings (Figma "Trust/Privacy settings", light 1:5268 / dark 1:5381). -->
+    <color name="browser_express_privacy_background">#F2F5F7</color>
+    <color name="browser_express_privacy_title">#0A1730</color>
+    <color name="browser_express_privacy_section">#6D7686</color>
+    <color name="browser_express_privacy_caption">#858C99</color>
+    <color name="browser_express_privacy_divider">#0A1730</color>
+    <color name="browser_express_privacy_icon">#577DFF</color>
+    <color name="browser_express_privacy_chevron">#8A93A2</color>
+    <!-- The same in both themes. -->
+    <color name="browser_express_privacy_summary_start">#577DFF</color>
+    <color name="browser_express_privacy_summary_end">#6F3BED</color>
+    <color name="browser_express_privacy_toggle_on">#577DFF</color>
+    <color name="browser_express_privacy_toggle_off">#CCD1DB</color>
+
+    <!-- Site trust sheet (Figma "Trust/Site sheet" 1:5063). The status colours are the same in
+         both themes. -->
+    <color name="browser_express_trust_sheet">#FFFFFF</color>
+    <color name="browser_express_trust_handle">#D1D1D9</color>
+    <color name="browser_express_trust_host">#0F0F12</color>
+    <color name="browser_express_trust_count">#333333</color>
+    <color name="browser_express_trust_divider">#E5E7EB</color>
+    <color name="browser_express_trust_advanced">#F3F3F3</color>
+    <color name="browser_express_trust_advanced_text">#000000</color>
+    <color name="browser_express_trust_advanced_chevron">#7D8591</color>
+    <color name="browser_express_trust_secure">#21B948</color>
+    <color name="browser_express_trust_dangerous">#D63031</color>
+    <color name="browser_express_trust_warning">#B97A12</color>
+    <!-- The trust marker's scan glyphs (Figma "Trust Marker" 161:1379). -->
+    <color name="browser_express_trust_marker_glyph">#666666</color>
+
+    <!-- "Karma earned" on the comment bar's picture (design handoff "Karma earned"). -->
+    <color name="browser_express_karma_label">#D93A5A</color>
+    <color name="browser_express_karma_ring">#FF5C7A</color>
+    <color name="browser_express_karma_glow">#73FF5C7A</color>
+
+    <!-- The Profile page (design handoff "Profile page"). The stat accents are darker than their
+         base colours in light so the small eyebrow text keeps its contrast on white. -->
+    <color name="browser_express_profile_page_bg">#E8E7EF</color>
+    <color name="browser_express_profile_card_bg">#FFFFFF</color>
+    <color name="browser_express_profile_card_edge">#B3DBE0EF</color>
+    <color name="browser_express_profile_avatar_ring">#DBE0EF</color>
+    <color name="browser_express_profile_edit_pill">#FFFFFF</color>
+    <color name="browser_express_profile_text_primary">#1F212E</color>
+    <color name="browser_express_profile_text_secondary">#676767</color>
+    <color name="browser_express_profile_text_meta">#80808C</color>
+    <color name="browser_express_profile_menu_icon">#676767</color>
+    <color name="browser_express_profile_divider">#EEF0F8</color>
+    <color name="browser_express_profile_chevron">#C7C7DB</color>
+    <color name="browser_express_profile_danger">#E61A33</color>
+    <color name="browser_express_profile_karma_accent">#D93A5A</color>
+    <color name="browser_express_profile_karma_tint">#24FF5C7A</color>
+    <color name="browser_express_profile_karma_wash">#1AFF5C7A</color>
+    <color name="browser_express_profile_taste_accent">#946800</color>
+    <color name="browser_express_profile_taste_tint">#24F2B227</color>
+    <color name="browser_express_profile_taste_wash">#1AF2B227</color>
+    <color name="browser_express_profile_cred_accent">#4A6FF0</color>
+    <color name="browser_express_profile_cred_tint">#24577DFF</color>
+    <color name="browser_express_profile_cred_wash">#1A577DFF</color>
+    <!-- Edit profile (design handoff "Edit profile"); the page, card, text and divider are the
+         Profile's. -->
+    <color name="browser_express_edit_profile_brand">#577DFF</color>
+    <color name="browser_express_edit_profile_link">#4A6FF0</color>
+    <color name="browser_express_edit_profile_success">#1E8E50</color>
+    <color name="browser_express_edit_profile_danger_tint">#14E61A33</color>
+    <color name="browser_express_edit_profile_scrim">#66111111</color>
+    <color name="browser_express_edit_profile_secondary_button">#EEF0F8</color>
+    <color name="browser_express_edit_profile_toast_bg">#1F212E</color>
+    <color name="browser_express_edit_profile_toast_ink">#FFFFFF</color>
+    <color name="browser_express_edit_profile_toast_check">#4CC38A</color>
+    <!-- Move and scale: black in both themes, like the other media screens. -->
+    <color name="browser_express_edit_profile_crop_bg">#000000</color>
+    <color name="browser_express_edit_profile_crop_text">#FFFFFF</color>
+    <color name="browser_express_edit_profile_crop_action">#6EA8FF</color>
+    <color name="browser_express_edit_profile_crop_mask">#9E000000</color>
+    <color name="browser_express_edit_profile_crop_mask_edge">#99FFFFFF</color>
+    <color name="browser_express_edit_profile_crop_slider_icon">#A8ABB5</color>
+
+    <!-- "Add your take" (design handoff "Add your take"): the composer sheet over the comments,
+         its topic card, the attachment picker in the keyboard's place and the publishing banner. -->
+    <color name="browser_express_take_backdrop">#4D000000</color>
+    <color name="browser_express_take_backdrop_reel">#59121318</color>
+    <color name="browser_express_take_sheet">#FFFFFF</color>
+    <color name="browser_express_take_handle">#CCCFD9</color>
+    <color name="browser_express_take_title">#1F212E</color>
+    <color name="browser_express_take_meta">#80808C</color>
+    <color name="browser_express_take_border">#DBE0EF</color>
+    <color name="browser_express_take_close_bg">#EEF0F8</color>
+    <color name="browser_express_take_close_icon">#747480</color>
+    <color name="browser_express_take_topic_bg">#F4F5FA</color>
+    <color name="browser_express_take_stats_number">#111111</color>
+    <color name="browser_express_take_stats_dot">#C7C7DB</color>
+    <color name="browser_express_take_stream_ring">#E6FFFFFF</color>
+    <color name="browser_express_take_banner_bg">#FFFFFF</color>
+    <color name="browser_express_take_banner_action">#577DFF</color>
+    <color name="browser_express_take_progress_track">#E6EAF5</color>
+    <color name="browser_express_take_progress">#577DFF</color>
+    <color name="browser_express_take_status_uploading">#577DFF</color>
+    <color name="browser_express_take_status_posted">#2FBF71</color>
+    <color name="browser_express_take_status_failed">#E61A33</color>
+    <!-- Picker tiles: the colour, and its 14% (dark 22%) tint behind the icon. -->
+    <color name="browser_express_take_tile_photos">#5B7CFF</color>
+    <color name="browser_express_take_tile_photos_bg">#245B7CFF</color>
+    <color name="browser_express_take_tile_camera">#A26BFF</color>
+    <color name="browser_express_take_tile_camera_bg">#24A26BFF</color>
+    <color name="browser_express_take_tile_video">#FF5C7A</color>
+    <color name="browser_express_take_tile_video_bg">#24FF5C7A</color>
+    <color name="browser_express_take_tile_voice">#2FBF71</color>
+    <color name="browser_express_take_tile_voice_bg">#242FBF71</color>
+    <color name="browser_express_take_tile_gif">#F2B227</color>
+    <color name="browser_express_take_tile_gif_bg">#24F2B227</color>
+    <color name="browser_express_take_tile_document">#3AA3E8</color>
+    <color name="browser_express_take_tile_document_bg">#243AA3E8</color>
+</resources>

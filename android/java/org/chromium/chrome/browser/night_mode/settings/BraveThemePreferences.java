@@ -23,6 +23,8 @@ import org.chromium.chrome.browser.ntp_background_images.NTPBackgroundImagesBrid
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
+import org.chromium.chrome.browser.settings.PostHogEventKeys;
+import org.chromium.chrome.browser.settings.PostHogUtil;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
 
 public class BraveThemePreferences extends ThemeSettingsFragment {
@@ -82,6 +84,12 @@ public class BraveThemePreferences extends ThemeSettingsFragment {
                         }
                     }
                     int theme = (int) newValue;
+                    if (theme != sharedPreferencesManager.readInt(UI_THEME_SETTING, theme)) {
+                        PostHogUtil.capture(
+                                PostHogEventKeys.THEME_CHANGED,
+                                "theme",
+                                PostHogUtil.themeSettingName(theme));
+                    }
                     sharedPreferencesManager.writeInt(UI_THEME_SETTING, theme);
                     return true;
                 });

@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.brave_leo.BraveLeoPrefUtils;
 import org.chromium.chrome.browser.customtabs.BraveAccountCustomTabActivity;
 import org.chromium.chrome.browser.flags.ChromeFeatureList;
 import org.chromium.chrome.browser.homepage.settings.BraveHomepageSettings;
+import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.notifications.BraveNotificationWarningDialog;
 import org.chromium.chrome.browser.notifications.BravePermissionUtils;
 import org.chromium.chrome.browser.notifications.permissions.BraveNotificationPermissionRationaleDialog;
@@ -85,6 +86,9 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
     private static final String PREF_TABS = "tabs";
     // private static final String PREF_MEDIA = "media";
     // private static final String PREF_APPEARANCE = "appearance";
+    // Not Chromium's "ui_theme" key: updateBravePreferences() strips that one from this screen.
+    private static final String PREF_BROWSER_EXPRESS_THEME = "browser_express_theme";
+    private static final String PREF_BROWSER_EXPRESS_PRIVACY = "browser_express_privacy";
     // private static final String PREF_NEW_TAB_PAGE = "background_images";
     private static final String PREF_ACCESSIBILITY = "accessibility";
     private static final String PREF_CONTENT_SETTINGS = "content_settings";
@@ -319,6 +323,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
 
         int generalOrder = featuresSectionOrder;
         setPreferenceOrder(PREF_GENERAL_SECTION, ++generalOrder);
+        setPreferenceOrder(PREF_BROWSER_EXPRESS_PRIVACY, ++generalOrder);
 
         // setPreferenceOrder(PREF_BRAVE_SEARCH_ENGINES, ++generalOrder);
         // Preference preference = findPreference(MainSettings.PREF_HOMEPAGE);
@@ -350,6 +355,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         int displaySectionOrder = generalOrder;
         setPreferenceOrder(PREF_DISPLAY_SECTION, ++displaySectionOrder);
 
+        updateThemePreference(++displaySectionOrder);
         setPreferenceOrder(PREF_TABS, ++displaySectionOrder);
         // setPreferenceOrder(PREF_MEDIA, ++displaySectionOrder);
         // setPreferenceOrder(PREF_APPEARANCE, ++displaySectionOrder);
@@ -395,6 +401,23 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         removePreferenceIfPresent(PREF_NOTIFICATIONS);
         removePreferenceIfPresent(PREF_ABOUT_SECTION);
         // removePreferenceIfPresent(MainSettings.PREF_DEVELOPER);
+    }
+
+    /**
+     * Places the app theme entry (System default / Light / Dark) and shows the current choice as
+     * its summary. Runs on every resume so the summary is fresh after returning from the picker.
+     */
+    private void updateThemePreference(int order) {
+        if (!NightModeUtils.isNightModeSupported()) {
+            removePreferenceIfPresent(PREF_BROWSER_EXPRESS_THEME);
+            return;
+        }
+        Preference themePreference = findPreference(PREF_BROWSER_EXPRESS_THEME);
+        if (themePreference == null) return;
+        themePreference.setOrder(order);
+        themePreference.setSummary(
+                NightModeUtils.getThemeSettingTitle(
+                        requireContext(), NightModeUtils.getThemeSetting()));
     }
 
     // A wrapper to suppress NullAway warning for the prefs which always present

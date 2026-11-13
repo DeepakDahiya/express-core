@@ -290,15 +290,4 @@
     <color name="empty_state_icon_tabswitcher_bg_color">#000B89</color>
     <color name="empty_state_tab_border_color">#828CFF</color>
     <color name="empty_state_tab_group_border_color">#828CFF</color>
-
-    <color name="browser_express_grey">#282c2f</color>
-
-    <color name="vote_stroke_color">#EAEAEA</color>
-    <color name="downvote_stroke_color">#ffffff</color>
-
-    <color name="username_color">#A4A4A4</color>
-
-    <color name="content_color">#DCDCDC</color>
-    <color name="profile_sub_bg_color">#323639</color>
-    <color name="circle_border">#dddddd</color>
 </resources>

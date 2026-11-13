@@ -65,8 +65,8 @@ public class NtpTickerView extends FrameLayout {
         mTextContainer = findViewById(R.id.ntp_ticker_text_container);
         mTextView = findViewById(R.id.ntp_ticker_text);
         mCloseButton = findViewById(R.id.ntp_ticker_close);
-        // Dark background and a subtle ripple so the whole bar feels tappable.
-        setBackgroundColor(0xFF1A1A1A);
+        // A shade off the page background so the bar reads as a separate strip in either theme.
+        setBackgroundColor(context.getColor(R.color.browser_express_ticker_background));
         setClickable(true);
         setFocusable(true);
         setOnClickListener(v -> {
