@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- Remove the photo or video previewed above the comment box (Figma "Remove video", 660:8931):
+     a 28dp dark disc with a small cross, centred in its 44dp touch target. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="44dp"
+    android:height="44dp"
+    android:viewportWidth="44"
+    android:viewportHeight="44">
+    <path
+        android:fillColor="#F01E212B"
+        android:pathData="M8,22a14,14 0,1 0,28 0a14,14 0,1 0,-28 0Z" />
+    <path
+        android:pathData="M19,19L25,25M25,19L19,25"
+        android:strokeWidth="1.6"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round" />
+</vector>

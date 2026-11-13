@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="52dp"
+    android:height="52dp"
+    android:viewportWidth="52"
+    android:viewportHeight="52">
+    <path
+        android:fillColor="@color/browser_express_comment_attach_document"
+        android:pathData="M26,0a26,26 0,1 0,0 52a26,26 0,1 0,0 -52z" />
+    <path
+        android:pathData="M21.0,14.9H31A2.1,2.1 0,0 1,33.1,17.0V34.0A2.1,2.1 0,0 1,31,36.1H21.0A2.1,2.1 0,0 1,18.9,34.0V17.0A2.1,2.1 0,0 1,21.0,14.9Z"
+        android:strokeWidth="1.8"
+        android:strokeColor="#FF606571" />
+    <path
+        android:fillColor="#FF606571"
+        android:pathData="M22,22H30A1,1 0,0 1,31,23V23A1,1 0,0 1,30,24H22A1,1 0,0 1,21,23V23A1,1 0,0 1,22,22Z" />
+    <path
+        android:fillColor="#FF606571"
+        android:pathData="M22,27H30A1,1 0,0 1,31,28V28A1,1 0,0 1,30,29H22A1,1 0,0 1,21,28V28A1,1 0,0 1,22,27Z" />
+    <path
+        android:fillColor="#FF606571"
+        android:pathData="M22,32H27A1,1 0,0 1,28,33V33A1,1 0,0 1,27,34H22A1,1 0,0 1,21,33V33A1,1 0,0 1,22,32Z" />
+</vector>

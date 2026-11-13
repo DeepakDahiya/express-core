@@ -9,6 +9,32 @@
     <string name="browser_express_blazingly_fast_subtitle">Engineered for speed</string>
     <string name="browser_express_close">Close</string>
 
+    <!-- Voice-note comments -->
+    <string name="be_audio_play">Play voice message</string>
+    <string name="be_audio_pause">Pause voice message</string>
+    <string name="be_recording_cancelled">Recording cancelled</string>
+    <string name="be_recording_too_short">Hold the mic to record</string>
+    <string name="be_mic_permission_required">Microphone access is needed to record a voice message</string>
+    <string name="be_mic_unavailable">Microphone is unavailable right now</string>
+
+    <!-- Image crop (staged between picking an image and composing the comment) -->
+    <string name="be_crop_title">Crop photo</string>
+    <string name="be_crop_rotate">Rotate</string>
+    <string name="be_crop_reset">Reset</string>
+    <string name="be_crop_next">Next</string>
+    <string name="be_crop_failed">Couldn\'t crop the photo</string>
+
+    <!-- Reel pager -->
+    <string name="be_next_reel_peek">Preview of the video on the next page</string>
+
+    <!-- Full-page video comment -->
+    <string name="browser_express_reel_add_your_take">Add your take</string>
+    <!-- "Karma earned": drifts off the reader's picture after they react. The first time it
+         names the points, after that it is just the number. -->
+    <string name="browser_express_karma_earned_first">+1 Karma</string>
+    <string name="browser_express_karma_earned" translatable="false">+1</string>
+    <string name="browser_express_youtube_pip">Play in picture-in-picture</string>
+
     <!-- The feed's last row when a page of posts failed to load; tapping it tries again. -->
     <string name="browser_express_feed_load_failed">Couldn’t load posts</string>
     <string name="browser_express_feed_retry">Tap to try again</string>
@@ -76,6 +102,9 @@
     </plurals>
     <!-- Read out for the whole callout: "12 new takes since you last looked, 5 videos, 3 photos". -->
     <string name="browser_express_new_takes_description">%1$s %2$s, %3$s</string>
+
+    <!-- On a take in the stream posted since the reader last opened it. -->
+    <string name="browser_express_comment_new_tag">NEW</string>
 
     <!-- New tab page header -->
     <string name="browser_express_ntp_search_hint">Search Google or type url</string>
@@ -152,6 +181,144 @@
     <string name="browser_express_signin_start_browsing">Start browsing</string>
     <string name="browser_express_signin_choice_title">Your privacy, your choice.</string>
     <string name="browser_express_signin_choice_description">Manage protection from the address bar.</string>
+
+    <!-- Comments page: header and cards -->
+    <!-- %1$d: the page (or comment) being read, %2$d: how many there are. -->
+    <string name="browser_express_comments_position">%1$d / %2$d</string>
+    <!-- Under a full-page video's hashtag, briefly: %1$s is the take being watched, %2$s how many
+         takes there are, both already formatted with thousands separators ("6 / 1,284"). -->
+    <string name="browser_express_reel_stream_position">%1$s / %2$s</string>
+    <string name="browser_express_comments_back">Back</string>
+    <string name="browser_express_comment_reply">Reply</string>
+    <plurals name="browser_express_comment_replies">
+        <item quantity="one">%1$d Reply</item>
+        <item quantity="other">%1$d Replies</item>
+    </plurals>
+    <string name="browser_express_comment_add_reaction">Add a reaction</string>
+    <!-- Sections of the reaction picker's emoji list. -->
+    <string name="browser_express_emoji_recents">Recents</string>
+    <string name="browser_express_emoji_smileys_people">Smileys &amp; People</string>
+    <string name="browser_express_emoji_animals_nature">Animals &amp; Nature</string>
+    <string name="browser_express_emoji_food_drink">Food &amp; Drink</string>
+    <string name="browser_express_emoji_activity">Activity</string>
+    <string name="browser_express_emoji_travel_places">Travel &amp; Places</string>
+    <string name="browser_express_emoji_objects">Objects</string>
+    <string name="browser_express_emoji_symbols">Symbols</string>
+    <string name="browser_express_emoji_flags">Flags</string>
+    <string name="browser_express_comment_more">More options</string>
+    <!-- %1$d: reactions not shown as chips. -->
+    <string name="browser_express_comment_reactions_more">+%1$d</string>
+    <string name="browser_express_comment_menu_share">Share</string>
+    <string name="browser_express_comment_menu_copy">Copy text</string>
+    <string name="browser_express_comment_copied">Comment copied</string>
+    <string name="browser_express_comment_reaction_failed">Couldn’t save your reaction</string>
+    <string name="browser_express_comment_open_document">Open document</string>
+
+    <!-- Comments page: message box -->
+    <string name="browser_express_comment_hint">Add a comment</string>
+    <string name="browser_express_comment_hint_first">Write the first comment…</string>
+    <string name="browser_express_comment_emoji">Add emoji</string>
+    <string name="browser_express_comment_attach">Add attachment</string>
+    <string name="browser_express_comment_send">Send</string>
+    <string name="browser_express_comment_recording_discard">Discard voice note</string>
+    <string name="browser_express_comment_recording_send">Keep voice note</string>
+
+    <!-- Comments page: reaction and emoji sheets -->
+    <string name="browser_express_comment_close">Close</string>
+    <string name="browser_express_comment_emoji_title">Add an emoji</string>
+    <string name="browser_express_comment_emoji_popular">Popular</string>
+    <string name="browser_express_comment_emoji_more">More emoji</string>
+    <string name="browser_express_comment_emoji_footnote">Tap an emoji to add it to your comment.</string>
+
+    <!-- Comments page: empty state -->
+    <string name="browser_express_comments_empty_overline">No comments yet</string>
+    <string name="browser_express_comments_empty_title">Start the conversation</string>
+    <string name="browser_express_comments_empty_body">Be the first to share a thought, question or reaction to this post.</string>
+    <string name="browser_express_comments_empty_body_page">Be the first to share a thought, question or reaction to this page.</string>
+    <string name="browser_express_comments_empty_cue">Your voice starts the thread</string>
+    <string name="browser_express_comments_empty_cta">Write the first comment</string>
+    <string name="browser_express_comments_empty_footnote">Your comment will appear here instantly.</string>
+
+    <!-- Replies page: empty state (the comments page's card, worded for replies) -->
+    <string name="browser_express_replies_empty_overline">No replies yet</string>
+    <string name="browser_express_replies_empty_body">Be the first to reply to this comment.</string>
+    <string name="browser_express_replies_empty_cta">Write the first reply</string>
+    <string name="browser_express_replies_empty_footnote">Your reply will appear here instantly.</string>
+
+    <!-- Source chip: what the comments are on -->
+    <string name="browser_express_comments_source_open_photo">Open photo</string>
+    <string name="browser_express_comments_source_open_video">Play video</string>
+
+    <!-- Comments page: attachment sheet -->
+    <string name="browser_express_attach_title">Add to comment</string>
+    <string name="browser_express_attach_subtitle">Choose what you want to share</string>
+    <string name="browser_express_attach_photo">Photo</string>
+    <string name="browser_express_attach_camera">Camera</string>
+    <string name="browser_express_attach_video">Video</string>
+    <string name="browser_express_attach_voice">Voice note</string>
+    <string name="browser_express_attach_gif">GIF</string>
+    <string name="browser_express_attach_document">Document</string>
+    <string name="browser_express_attach_footnote">You can add multiple photos, documents, voice notes and reels.</string>
+    <plurals name="browser_express_attach_too_many">
+        <item quantity="one">A comment can carry up to %1$d file.</item>
+        <item quantity="other">A comment can carry up to %1$d files.</item>
+    </plurals>
+    <string name="browser_express_attach_failed">Couldn’t add that file.</string>
+    <string name="browser_express_attach_too_large">That file is too large to attach.</string>
+
+    <!-- Comment box states (Figma "Express/Comment composer · Attachment flow") -->
+    <string name="browser_express_comment_caption_hint">Add a caption…</string>
+    <string name="browser_express_composer_record">Record a voice note</string>
+    <string name="browser_express_composer_edit_files">Edit attached files</string>
+    <string name="browser_express_composer_remove_voice">Remove voice note</string>
+    <string name="browser_express_composer_remove_video">Remove video</string>
+    <string name="browser_express_composer_remove_photo">Remove photo</string>
+    <string name="browser_express_composer_remove_gif">Remove GIF</string>
+    <string name="browser_express_composer_remove_file">Remove %1$s</string>
+    <string name="browser_express_composer_remove_all">Remove all</string>
+    <string name="browser_express_composer_uploads_on_send">Uploads when you tap send</string>
+    <!-- Under a photo or GIF previewed above the comment box. -->
+    <string name="browser_express_composer_ready_to_post">Ready to post</string>
+    <!-- A picked video's length and size, e.g. "00:24 · 18.6 MB". -->
+    <string name="browser_express_composer_video_meta">%1$s · %2$s</string>
+    <plurals name="browser_express_composer_file_count">
+        <item quantity="one">%d file attached</item>
+        <item quantity="other">%d files attached</item>
+    </plurals>
+    <string name="browser_express_composer_photo">Photo</string>
+    <string name="browser_express_composer_gif">GIF</string>
+    <string name="browser_express_composer_video">Video</string>
+    <string name="browser_express_composer_voice">Voice note</string>
+    <string name="browser_express_composer_document">Document</string>
+
+    <!-- A comment this reader is sending (Figma "Outgoing comment morph") -->
+    <string name="browser_express_comment_you">You</string>
+    <string name="browser_express_comment_status_sending">Sending…</string>
+    <string name="browser_express_comment_status_uploading">Uploading…</string>
+    <string name="browser_express_comment_status_uploading_percent">Uploading %1$d%%</string>
+    <string name="browser_express_comment_status_failed">Upload failed</string>
+    <string name="browser_express_comment_status_now">now</string>
+    <string name="browser_express_comment_upload_retry">Retry</string>
+    <string name="browser_express_comment_upload_cancel">Cancel</string>
+    <string name="browser_express_comment_kind_reel">Reel</string>
+    <string name="browser_express_comment_kind_video">Video</string>
+    <!-- A sending video's size and kind, e.g. "18.6 MB · Reel". -->
+    <string name="browser_express_comment_video_meta">%1$s · %2$s</string>
+    <string name="browser_express_comment_upload_cancelled_inline">Upload cancelled · video kept in draft</string>
+
+    <string name="browser_express_attach_camera_permission">Allow camera access to take a photo.</string>
+    <string name="browser_express_attach_camera_unavailable">Couldn’t open the camera.</string>
+    <string name="browser_express_attach_document_too_large">Documents can be up to 20 MB.</string>
+    <string name="browser_express_attach_document_unsupported">This file type can’t be attached.</string>
+
+    <!-- Comments page: GIF picker -->
+    <string name="browser_express_gif_title">GIFs</string>
+    <string name="browser_express_gif_search_hint">Search GIFs</string>
+    <string name="browser_express_gif_unavailable">GIF search isn’t available right now.</string>
+    <string name="browser_express_gif_empty">No GIFs found.</string>
+    <string name="browser_express_gif_failed">Couldn’t load that GIF.</string>
+    <!-- %1$s: the GIF provider, e.g. GIPHY. -->
+    <string name="browser_express_gif_attribution">Powered by %1$s</string>
 
     <!-- Privacy & Security settings -->
     <string name="browser_express_privacy_title">Privacy &amp; Security</string>
@@ -266,4 +433,44 @@
     <string name="browser_express_edit_profile_save_failed_retry">Check your connection and try again.</string>
     <string name="browser_express_edit_profile_photo_failed">Couldn\'t open that photo</string>
 
+    <!-- "Add your take" (design handoff "Add your take"): a new take on the post or page the
+         comments are about, as opposed to a reply to one comment. Copy as the design has it. -->
+    <string name="browser_express_take_title">Add your take</string>
+    <string name="browser_express_take_hint">Add your take…</string>
+    <string name="browser_express_take_open_on">Add your take to %1$s</string>
+    <string name="browser_express_take_close">Close</string>
+    <!-- The topic card's line under the hashtag: its comments, called reactions, and every
+         emoji given to them, called emotes. -->
+    <plurals name="browser_express_take_stats_reactions">
+        <item quantity="one">%1$s reaction</item>
+        <item quantity="other">%1$s reactions</item>
+    </plurals>
+    <plurals name="browser_express_take_stats_emotes">
+        <item quantity="one">%1$s emote</item>
+        <item quantity="other">%1$s emotes</item>
+    </plurals>
+    <string name="browser_express_take_picker_title">Add to your take</string>
+    <string name="browser_express_take_picker_subtitle">Choose what you want to share</string>
+    <string name="browser_express_take_picker_photos">Photos</string>
+    <string name="browser_express_take_picker_camera">Camera</string>
+    <string name="browser_express_take_picker_video">Video</string>
+    <string name="browser_express_take_picker_voice">Voice note</string>
+    <string name="browser_express_take_picker_gif">GIF</string>
+    <string name="browser_express_take_picker_document">Document</string>
+    <string name="browser_express_take_discard_title">Discard your take?</string>
+    <string name="browser_express_take_discard">Discard</string>
+    <string name="browser_express_take_keep_editing">Keep editing</string>
+    <!-- The publishing banner at the top of the comments. -->
+    <string name="browser_express_take_uploading_reel">Uploading your reel</string>
+    <string name="browser_express_take_uploading_photo">Uploading your photo</string>
+    <string name="browser_express_take_uploading_progress">%1$d%% · You can keep scrolling</string>
+    <string name="browser_express_take_posted_reel">Reel posted</string>
+    <string name="browser_express_take_posted_comment">Comment posted</string>
+    <string name="browser_express_take_posted_to">Added to %1$s</string>
+    <string name="browser_express_take_posted_reply">Your reply is now in the thread</string>
+    <string name="browser_express_take_view">View</string>
+    <string name="browser_express_take_dismiss">Dismiss</string>
+    <string name="browser_express_take_failed">Couldn\'t post your take</string>
+    <string name="browser_express_take_failed_body">Tap to retry</string>
+    <string name="browser_express_take_retry">Retry</string>
 </resources>

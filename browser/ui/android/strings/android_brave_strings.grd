@@ -4326,35 +4326,8 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_BE_LOGOUT" desc="Brave wallet password hint text">
       Logout
     </message>
-    <message name="IDS_BE_REPLY" desc="Brave wallet password hint text">
-      Reply
-    </message>
-    <message name="IDS_BE_READ_MORE" desc="Brave wallet password hint text">
-      read more
-    </message>
     <message name="IDS_BROWSER_EXPRESS_HOME_TITLE" desc="Sign in with Brave Wallet Request ID label">
       Home
-    </message>
-    <message name="IDS_BROWSER_EXPRESS_FEED_TITLE" desc="Sign in with Brave Wallet Request ID label">
-      Discover Feed
-    </message>
-    <message name="IDS_LOL" desc="Lol emoji">
-      😂
-    </message>
-    <message name="IDS_HEART" desc="Lol emoji">
-      ❤️
-    </message>
-    <message name="IDS_CRY" desc="Lol emoji">
-      😭
-    </message>
-    <message name="IDS_FIRE" desc="Lol emoji">
-      🔥
-    </message>
-    <message name="IDS_LOVE" desc="Lol emoji">
-      😍
-    </message>
-    <message name="IDS_CLAP" desc="Lol emoji">
-      👏
     </message>
     <message name="IDS_IN_APP_UPDATE_TEXT" desc="Text for in app update snackbar">
       Update is downloaded.

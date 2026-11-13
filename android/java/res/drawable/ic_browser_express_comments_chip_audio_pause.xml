@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- The source chip's compact audio player: the pause glyph on its blue button. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="10dp"
+    android:height="10dp"
+    android:viewportWidth="10"
+    android:viewportHeight="10">
+    <path
+        android:pathData="M7.50029,1.25H6.25014C6.02,1.25 5.83343,1.43655 5.83343,1.66667V8.33333C5.83343,8.56345 6.02,8.75 6.25014,8.75H7.50029C7.73043,8.75 7.917,8.56345 7.917,8.33333V1.66667C7.917,1.43655 7.73043,1.25 7.50029,1.25Z"
+        android:strokeWidth="2"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M3.74986,1.25H2.49971C2.26957,1.25 2.083,1.43655 2.083,1.66667V8.33333C2.083,8.56345 2.26957,8.75 2.49971,8.75H3.74986C3.98,8.75 4.16657,8.56345 4.16657,8.33333V1.66667C4.16657,1.43655 3.98,1.25 3.74986,1.25Z"
+        android:strokeWidth="2"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round" />
+</vector>

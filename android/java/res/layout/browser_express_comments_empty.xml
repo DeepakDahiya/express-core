@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- No comments yet (Figma "Empty comments invitation", 1:4285 / 3:3439): an invitation card with
+     a button that puts the reader in the message box. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="28dp"
+    android:layout_marginTop="8dp"
+    android:background="@drawable/browser_express_comments_empty_card_bg"
+    android:gravity="center"
+    android:minHeight="374dp"
+    android:orientation="vertical"
+    android:paddingHorizontal="28dp"
+    android:paddingTop="28dp"
+    android:paddingBottom="24dp">
+
+    <FrameLayout
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:background="@drawable/browser_express_comments_empty_icon_bg">
+
+        <ImageView
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:layout_gravity="center"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_browser_express_comments_empty_add" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/comments_empty_overline"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:fontFamily="sans-serif-medium"
+        android:letterSpacing="0.08"
+        android:text="@string/browser_express_comments_empty_overline"
+        android:textAllCaps="true"
+        android:textColor="@color/browser_express_comments_empty_overline"
+        android:textSize="10sp"
+        tools:ignore="SmallSp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:fontFamily="sans-serif-medium"
+        android:gravity="center"
+        android:text="@string/browser_express_comments_empty_title"
+        android:textColor="@color/browser_express_comments_empty_title"
+        android:textSize="20sp" />
+
+    <TextView
+        android:id="@+id/comments_empty_body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:fontFamily="sans-serif"
+        android:gravity="center"
+        android:lineHeight="19sp"
+        android:text="@string/browser_express_comments_empty_body"
+        android:textColor="@color/browser_express_comments_empty_body"
+        android:textSize="13sp" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        tools:ignore="UseCompoundDrawables">
+
+        <ImageView
+            android:layout_width="44dp"
+            android:layout_height="18dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/browser_express_comments_empty_participants" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/browser_express_comments_empty_cue"
+            android:textColor="@color/browser_express_comments_empty_cue"
+            android:textSize="11sp" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/comments_empty_cta"
+        android:layout_width="230dp"
+        android:layout_height="44dp"
+        android:layout_marginTop="12dp"
+        android:background="@drawable/browser_express_comments_cta_bg"
+        android:clickable="true"
+        android:elevation="3dp"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        android:gravity="center"
+        android:orientation="horizontal"
+        tools:ignore="UseCompoundDrawables">
+
+        <ImageView
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_browser_express_comments_write" />
+
+        <TextView
+            android:id="@+id/comments_empty_cta_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/browser_express_comments_empty_cta"
+            android:textColor="#FFFFFFFF"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/comments_empty_footnote"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:fontFamily="sans-serif"
+        android:gravity="center"
+        android:text="@string/browser_express_comments_empty_footnote"
+        android:textColor="@color/browser_express_comments_empty_footnote"
+        android:textSize="10sp"
+        tools:ignore="SmallSp" />
+</LinearLayout>

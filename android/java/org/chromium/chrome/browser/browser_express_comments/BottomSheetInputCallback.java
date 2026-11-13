@@ -60,8 +60,7 @@ import org.chromium.chrome.browser.app.helpers.ImageLoader;
 public interface BottomSheetInputCallback {
     EditText getInputEditText();
     void setInputEnabled(boolean enabled);
-    Button getSendButton();
-    Button getEmojiButton(String type);
+    View getSendButton();
     void updateAvatar(String avatarUrl, BraveActivity activity);
 
     @Nullable

@@ -4,6 +4,16 @@
      License, v. 2.0. If a copy of the MPL was not distributed with this file,
      You can obtain one at https://mozilla.org/MPL/2.0/.
 -->
+<!-- The comments sheet: whichever comments or replies page is showing, over the comment box
+     (Figma "Express/Comment composer · Attachment flow", 500:2215): the reader's avatar — or the
+     picked files' thumbnail and a pencil — the text field with the attach clip, and a round
+     action that records a voice note while the box is empty and sends once there is text or a
+     file. A picked voice note or single video previews above the box. While a voice note records,
+     the recording bar takes the box's place. Toasts about sending float over the comments.
+
+     The box floats over the bottom of the page area rather than below it, so a full-page video
+     can run under it while the box slides away (CommentReelFragment); the sheet pads every other
+     page by the box's height. -->
 <LinearLayout
     android:id="@+id/comment_bottomsheet_layout"
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -11,303 +21,496 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingStart="10dp"
-    android:paddingEnd="10dp"
     android:orientation="vertical"
     app:behavior_fitToContents="false"
-    android:background="@color/be_background_black"
+    android:background="@color/browser_express_feed_background"
     tools:context=".BrowserExpressCommentsBottomSheetFragment">
 
     <View
         android:id="@+id/sheet_title"
-        android:layout_width="30dp"
+        android:layout_width="36dp"
         android:layout_height="4dp"
         android:layout_gravity="center"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="8dp"
-        android:background="@color/content_color"/>
+        android:layout_marginTop="10dp"
+        android:background="@drawable/browser_express_comment_sheet_handle"/>
 
     <FrameLayout
-        android:id="@+id/bottom_sheet_container"
+        android:id="@+id/comment_sheet_body"
         android:layout_width="match_parent"
-        android:layout_weight="1"
         android:layout_height="0dp"
-        android:layout_marginBottom="8dp" />
-
-    <LinearLayout
-        android:id="@+id/sheet_button"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:padding="5sp"
-        android:orientation="vertical"
-        android:background="@drawable/sheet_button_top_border">
-
-        <LinearLayout
-            android:id="@+id/reaction_buttons_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:paddingTop="0dp"
-            android:paddingBottom="4dp"
-            android:paddingStart="0dp"
-            android:paddingEnd="0dp"
-            android:weightSum="6"
-            android:visibility="visible">
-
-            <Button
-                android:id="@+id/lol_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/lol"
-                android:background="@android:color/transparent"
-                style="?android:attr/borderlessButtonStyle"
-                android:textSize="20sp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:paddingVertical="0sp"
-                android:paddingHorizontal="0dp"
-                android:layout_weight="1"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-            <Button
-                android:id="@+id/heart_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/heart"
-                android:background="@android:color/transparent"
-                style="?android:attr/borderlessButtonStyle"
-                android:textSize="20sp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:paddingVertical="0sp"
-                android:paddingHorizontal="0dp"
-                android:layout_weight="1"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-            <Button
-                android:id="@+id/cry_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/cry"
-                android:background="@android:color/transparent"
-                style="?android:attr/borderlessButtonStyle"
-                android:textSize="20sp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:paddingVertical="0sp"
-                android:paddingHorizontal="0dp"
-                android:layout_weight="1"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-            <Button
-                android:id="@+id/fire_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/fire"
-                android:background="@android:color/transparent"
-                style="?android:attr/borderlessButtonStyle"
-                android:textSize="20sp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:paddingVertical="0sp"
-                android:paddingHorizontal="0dp"
-                android:layout_weight="1"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-            <Button
-                android:id="@+id/love_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/love"
-                android:background="@android:color/transparent"
-                style="?android:attr/borderlessButtonStyle"
-                android:textSize="20sp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:paddingVertical="0sp"
-                android:paddingHorizontal="0dp"
-                android:layout_weight="1"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-            <Button
-                android:id="@+id/clap_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/clap"
-                android:background="@android:color/transparent"
-                style="?android:attr/borderlessButtonStyle"
-                android:textSize="20sp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:paddingVertical="0sp"
-                android:paddingHorizontal="0dp"
-                android:layout_weight="1"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-        </LinearLayout>
-        <LinearLayout
-            android:id="@+id/post_info_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
-            android:layout_marginBottom="4dp"
-            android:padding="4sp">
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-                <ImageView
-                    android:id="@+id/post_avatar"
-                    android:src="@drawable/btn_toolbar_profile"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
-                    android:scaleType="centerCrop"
-                    android:layout_marginEnd="8sp"
-                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-                    android:adjustViewBounds="true" />
-                <TextView
-                    android:id="@+id/post_username"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/username_color"
-                    android:textSize="14sp"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textStyle="bold" />
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/post_content"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:layout_marginBottom="6dp"
-                android:textColor="@color/content_color"
-                android:textSize="13sp"
-                android:maxLines="3"
-                android:ellipsize="end" />
-        </LinearLayout>
+        android:layout_weight="1">
 
         <FrameLayout
-            android:id="@+id/attachment_preview_container"
+            android:id="@+id/bottom_sheet_container"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:layout_gravity="start"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
-            android:padding="2dp">
+            android:layout_height="match_parent" />
 
-            <ImageView
-                android:id="@+id/attachment_preview_image"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:adjustViewBounds="true"
-                android:scaleType="fitCenter"
-                tools:src="@tools:sample/backgrounds/scenic"
-                android:background="@drawable/comment_attachment_preview_border"
-                android:padding="1dp"
-                android:layout_gravity="start"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
+        <!-- Dims the comments while "Add your take" is open (TakeComposer); tapping it closes. -->
+        <View
+            android:id="@+id/take_scrim"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no"
+            android:visibility="gone" />
 
-            <ImageButton
-                android:id="@+id/button_remove_attachment"
-                style="@style/ToolbarButton"
-                android:layout_width="16dp"
-                android:layout_height="16dp"
-                android:src="@drawable/close"
-                android:padding="4dp"
-                android:layout_gravity="top|end"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-        </FrameLayout>
-
+        <!-- The inline status, the comment box under it and the take picker under that. -->
         <LinearLayout
-            android:id="@+id/input_bar_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingTop="5dp"
-            android:paddingBottom="5dp"
-            android:paddingStart="0dp"
-            android:paddingEnd="0dp"
-            android:background="@color/be_background_black">
+            android:layout_gravity="bottom"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:orientation="vertical">
 
-            <ImageView
-                android:id="@+id/avatar_image"
-                android:src="@drawable/btn_toolbar_profile"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:scaleType="centerCrop"
-                android:adjustViewBounds="true"
-                android:layout_marginEnd="8dp"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
 
-            <EditText
-                android:id="@+id/comment_content_input"
-                android:layout_width="0dp"
-                android:layout_weight="1"
+                <!-- "Upload cancelled · video kept in draft" (Figma "Inline upload status"). -->
+                <TextView
+                    android:id="@+id/comment_inline_status"
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_gravity="bottom"
+                    android:layout_marginHorizontal="28dp"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/browser_express_comment_inline_status_bg"
+                    android:fontFamily="sans-serif-medium"
+                    android:gravity="center_vertical"
+                    android:maxLines="1"
+                    android:paddingHorizontal="13dp"
+                    android:textColor="@color/browser_express_comment_upload_cancel_text"
+                    android:textSize="11sp"
+                    android:visibility="gone" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:id="@+id/sheet_button"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textImeMultiLine|textMultiLine"
-                android:paddingEnd="18dp"
-                android:paddingStart="18dp"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp"
-                android:maxLines="6"
-                android:textSize="14sp"
-                android:textColor="@color/wallet_text_color"
-                android:textColorHint="@color/brave_theme_hint_text"
-                android:hint="@string/type_your_comment"
-                android:background="@drawable/rounded_edittext"
-                android:layout_marginEnd="8dp"
-                tools:ignore="Autofill" />
+                android:background="@color/browser_express_comment_box_bar"
+                android:clipChildren="false"
+                android:clipToPadding="false"
+                android:elevation="4dp"
+                android:orientation="vertical"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="8dp">
 
+                <!-- "Add your take": the sheet's top, shown while the box is the take sheet. -->
+                <include layout="@layout/browser_express_take_header" />
+
+                <!-- Legacy composer pieces the sheet still binds; never shown. -->
+                <LinearLayout
+                    android:id="@+id/post_info_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:id="@+id/post_avatar"
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:importantForAccessibility="no" />
+
+                    <TextView
+                        android:id="@+id/post_username"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content" />
+
+                    <TextView
+                        android:id="@+id/post_content"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </LinearLayout>
+
+                <FrameLayout
+                    android:id="@+id/attachment_preview_container"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:id="@+id/attachment_preview_image"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:importantForAccessibility="no" />
+
+                    <ImageButton
+                        android:id="@+id/button_remove_attachment"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_gravity="top|end"
+                        android:background="@null"
+                        android:contentDescription="@string/browser_express_comment_close" />
+                </FrameLayout>
+
+                <!-- A picked voice note, playable before it is sent (Figma "Voice note preview"). -->
+                <FrameLayout
+                    android:id="@+id/composer_voice_preview"
+                    android:layout_width="match_parent"
+                    android:layout_height="72dp"
+                    android:layout_marginBottom="8dp"
+                    android:background="@drawable/browser_express_composer_voice_bg"
+                    android:visibility="gone">
+
+                    <!-- The player is 24dp short of the card's end; the remove disc sits over its
+                         top-right corner (660:9021). -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="64dp"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginEnd="24dp"
+                        android:background="@drawable/browser_express_post_audio_bg"
+                        android:baselineAligned="false"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="12dp">
+
+                        <ImageButton
+                            android:id="@+id/composer_voice_play"
+                            android:layout_width="43dp"
+                            android:layout_height="43dp"
+                            android:background="@null"
+                            android:contentDescription="@string/be_audio_play"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/ic_browser_express_post_audio_play" />
+
+                        <SeekBar
+                            android:id="@+id/composer_voice_seek"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="10dp"
+                            android:layout_weight="1"
+                            android:maxHeight="4dp"
+                            android:minHeight="4dp"
+                            android:paddingStart="8dp"
+                            android:paddingEnd="8dp"
+                            android:progressDrawable="@drawable/browser_express_post_audio_progress"
+                            android:splitTrack="false"
+                            android:thumb="@drawable/browser_express_post_audio_thumb" />
+
+                        <TextView
+                            android:id="@+id/composer_voice_timer"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="sans-serif"
+                            android:lineHeight="16sp"
+                            android:textColor="@color/browser_express_post_audio_time"
+                            android:textFontWeight="600"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <ImageButton
+                        android:id="@+id/composer_voice_remove"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:layout_gravity="top|end"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/browser_express_composer_remove_voice"
+                        android:scaleType="center"
+                        android:src="@drawable/ic_browser_express_composer_media_remove" />
+                </FrameLayout>
+
+                <!-- A lone picked photo, GIF or video, uploaded only once sent (Figma "Universal
+                     reply composer / Video" 660:8947); a photo has no play mark. -->
+                <LinearLayout
+                    android:id="@+id/composer_video_preview"
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:layout_marginBottom="8dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <FrameLayout
+                        android:id="@+id/composer_video_frame"
+                        android:layout_width="154dp"
+                        android:layout_height="154dp"
+                        android:background="@drawable/browser_express_composer_video_bg">
+
+                        <ImageView
+                            android:id="@+id/composer_video_thumb"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:importantForAccessibility="no"
+                            android:scaleType="centerCrop" />
+
+                        <ImageView
+                            android:id="@+id/composer_video_play"
+                            android:layout_width="36dp"
+                            android:layout_height="36dp"
+                            android:layout_gravity="center"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_browser_express_composer_media_play" />
+
+                        <!-- 28dp disc in a 44dp target on the thumbnail's corner (660:8931). -->
+                        <ImageButton
+                            android:id="@+id/composer_video_remove"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:layout_gravity="top|end"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/browser_express_composer_remove_video"
+                            android:scaleType="center"
+                            android:src="@drawable/ic_browser_express_composer_media_remove" />
+                    </FrameLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="16dp"
+                        android:layout_marginTop="18dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/composer_video_name"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:ellipsize="middle"
+                            android:fontFamily="sans-serif"
+                            android:maxLines="1"
+                            android:textColor="@color/browser_express_comment_box_text"
+                            android:textFontWeight="600"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:id="@+id/composer_video_meta"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:maxLines="1"
+                            android:textColor="@color/browser_express_composer_meta"
+                            android:textSize="11sp" />
+
+                        <TextView
+                            android:id="@+id/composer_video_status"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="11dp"
+                            android:maxLines="1"
+                            android:text="@string/browser_express_composer_uploads_on_send"
+                            android:textColor="@color/browser_express_comment_box_text"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/input_bar_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    android:gravity="bottom"
+                    android:orientation="horizontal">
+
+                    <FrameLayout
+                        android:layout_width="44dp"
+                        android:layout_height="44dp">
+
+                        <ImageView
+                            android:id="@+id/avatar_image"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:importantForAccessibility="no"
+                            android:scaleType="centerCrop"
+                            android:src="@drawable/browser_express_post_avatar_placeholder" />
+
+                        <!-- The picked files: the first one's picture, darkened, under a pencil. -->
+                        <FrameLayout
+                            android:id="@+id/composer_media"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/browser_express_composer_media_bg"
+                            android:contentDescription="@string/browser_express_composer_edit_files"
+                            android:foreground="?attr/selectableItemBackground"
+                            android:visibility="gone">
+
+                            <ImageView
+                                android:id="@+id/composer_media_thumb"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:importantForAccessibility="no"
+                                android:scaleType="centerCrop" />
+
+                            <View
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="@color/browser_express_composer_media_scrim" />
+
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:layout_gravity="center"
+                                android:importantForAccessibility="no"
+                                android:src="@drawable/ic_browser_express_composer_edit" />
+                        </FrameLayout>
+                    </FrameLayout>
+
+                    <!-- The text field, with the attach clip at its end over the text's padding. -->
+                    <FrameLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="8dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/browser_express_comment_box_field_bg"
+                        android:minHeight="44dp"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="9dp">
+
+                        <EditText
+                            android:id="@+id/comment_content_input"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:background="@null"
+                            android:fontFamily="sans-serif"
+                            android:hint="@string/browser_express_comment_hint"
+                            android:inputType="textCapSentences|textMultiLine"
+                            android:maxLines="5"
+                            android:minHeight="42dp"
+                            android:paddingVertical="10dp"
+                            android:paddingEnd="32dp"
+                            android:textColor="@color/browser_express_comment_box_text"
+                            android:textColorHint="@color/browser_express_comment_box_hint"
+                            android:textSize="15sp"
+                            tools:ignore="Autofill" />
+
+                        <ImageButton
+                            android:id="@+id/button_attach"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:layout_gravity="bottom|end"
+                            android:layout_marginBottom="9dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/browser_express_comment_attach"
+                            android:src="@drawable/ic_browser_express_composer_clip" />
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:clipChildren="false"
+                        android:clipToPadding="false">
+
+                        <!-- Records a voice note while the box is empty, sends once it is not. -->
+                        <ImageButton
+                            android:id="@+id/composer_action"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:background="@drawable/browser_express_composer_action_bg"
+                            android:contentDescription="@string/browser_express_composer_record"
+                            android:elevation="3dp"
+                            android:outlineAmbientShadowColor="@color/browser_express_composer_action_shadow"
+                            android:outlineSpotShadowColor="@color/browser_express_composer_action_shadow"
+                            android:scaleType="center"
+                            android:src="@drawable/ic_browser_express_composer_mic" />
+
+                        <TextView
+                            android:id="@+id/composer_count"
+                            android:layout_width="wrap_content"
+                            android:layout_height="18dp"
+                            android:layout_gravity="top|end"
+                            android:background="@drawable/browser_express_composer_count_bg"
+                            android:elevation="4dp"
+                            android:fontFamily="sans-serif-medium"
+                            android:gravity="center"
+                            android:importantForAccessibility="no"
+                            android:includeFontPadding="false"
+                            android:minWidth="18dp"
+                            android:paddingHorizontal="4dp"
+                            android:textColor="@color/browser_express_comment_duration_badge_text"
+                            android:textSize="10dp"
+                            android:translationY="-2dp"
+                            android:visibility="gone"
+                            tools:ignore="SpUsage" />
+                    </FrameLayout>
+
+                    <!-- The send the comments pages bind their text posting to; the round action above
+                         forwards to it. Never shown. -->
+                    <ImageButton
+                        android:id="@+id/button_send"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:background="@null"
+                        android:contentDescription="@string/browser_express_comment_send"
+                        android:visibility="gone" />
+
+                    <!-- The emoji sheet's button, which this design leaves out. Never shown. -->
+                    <ImageButton
+                        android:id="@+id/button_emoji"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:background="@null"
+                        android:contentDescription="@string/browser_express_comment_emoji"
+                        android:visibility="gone" />
+                </LinearLayout>
+
+                <!-- Takes the comment box's place while a voice note records: the tick keeps the take
+                     (it then previews above the box), the cross throws it away. -->
+                <LinearLayout
+                    android:id="@+id/recording_bar_layout"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/browser_express_comment_box_field_bg"
+                    android:baselineAligned="false"
+                    android:gravity="center_vertical"
+                    android:minHeight="44dp"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="8dp"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <View
+                        android:id="@+id/recording_dot"
+                        android:layout_width="10dp"
+                        android:layout_height="10dp"
+                        android:background="@drawable/browser_express_comment_recording_dot" />
+
+                    <TextView
+                        android:id="@+id/recording_timer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:fontFamily="sans-serif-medium"
+                        android:minWidth="40dp"
+                        android:textColor="@color/browser_express_comment_box_text"
+                        android:textSize="13sp" />
+
+                    <org.chromium.chrome.browser.browser_express_comments.AudioWaveformView
+                        android:id="@+id/recording_waveform"
+                        android:layout_width="0dp"
+                        android:layout_height="28dp"
+                        android:layout_marginHorizontal="10dp"
+                        android:layout_weight="1" />
+
+                    <ImageButton
+                        android:id="@+id/button_recording_discard"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/browser_express_comment_recording_discard"
+                        android:padding="6dp"
+                        android:src="@drawable/ic_browser_express_comment_sheet_close" />
+
+                    <ImageButton
+                        android:id="@+id/button_recording_send"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/browser_express_comment_recording_send"
+                        android:padding="4dp"
+                        android:src="@drawable/ic_browser_express_comment_send" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <!-- "Add to your take": the take sheet's attachment picker, where the keyboard was. -->
+            <include layout="@layout/browser_express_take_picker" />
         </LinearLayout>
-        <LinearLayout
-            android:id="@+id/attachment_button_container"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:paddingTop="5dp"
-            android:paddingBottom="5dp"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:background="@color/be_background_black">
 
-            <ImageButton
-                android:id="@+id/button_attach"
-                style="@style/ToolbarButton"
-                android:src="@drawable/attach"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
-
-            <View
-                android:layout_width="0dp"
-                android:layout_height="0dp"
-                android:layout_weight="1" />
-
-            <Button
-                android:id="@+id/button_send"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/post"
-                android:textAllCaps="false"
-                android:textColor="@android:color/white"
-                android:background="@drawable/rounded_button_background"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:paddingTop="4dp"
-                android:paddingBottom="4dp"
-                android:minHeight="0dp"
-                android:minWidth="0dp"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:backgroundTint="@null"
-                app:backgroundTint="@null"/>
-
-        </LinearLayout>
-    </LinearLayout>
+        <!-- Uploading / posted / failed, at the top while the reader keeps scrolling. -->
+        <include layout="@layout/browser_express_take_banner" />
+    </FrameLayout>
 </LinearLayout>

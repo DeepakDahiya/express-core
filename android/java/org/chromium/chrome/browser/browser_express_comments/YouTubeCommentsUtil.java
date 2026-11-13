@@ -253,6 +253,7 @@ public class YouTubeCommentsUtil {
                 Comment comment = new Comment(id, text, likeCount, 0, 0,
                         null, null, parentId, user, null, null, null, null, null, null);
                 comment.setTrendingScore(likeCount);
+                comment.setCreatedAt(snippet.optString("publishedAt", null));
                 comment.setYoutubeId(id);
                 comment.setYoutubeAuthorName(authorName);
                 comment.setYoutubeAvatarUrl(avatarUrl);
@@ -457,6 +458,7 @@ public class YouTubeCommentsUtil {
             Comment comment = new Comment(id, text, likeCount, 0, totalReplyCount,
                     null, null, null, user, null, null, null, null, null, null);
             comment.setTrendingScore(likeCount);
+            comment.setCreatedAt(snippet.optString("publishedAt", null));
             comment.setYoutubeId(id);
             comment.setYoutubeAuthorName(authorName);
             comment.setYoutubeAvatarUrl(avatarUrl);

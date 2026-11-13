@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/be_background_black"
+    android:background="@color/browser_express_background"
     tools:context=".BrowserExpressReplyWithAttachmentBottomSheetFragment">
 
     <LinearLayout
@@ -229,6 +229,64 @@
                     android:visibility="visible"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
             </FrameLayout>
+
+            <!-- A document attachment: its icon, name and size, like the card will show it. -->
+            <LinearLayout
+                android:id="@+id/document_preview_container"
+                android:layout_width="match_parent"
+                android:layout_height="64dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/browser_express_post_audio_bg"
+                android:baselineAligned="false"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="12dp"
+                android:paddingEnd="4dp"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_browser_express_attach_document" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/document_preview_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="middle"
+                        android:fontFamily="sans-serif-medium"
+                        android:maxLines="1"
+                        android:textColor="@color/browser_express_post_caption"
+                        android:textSize="13sp" />
+
+                    <TextView
+                        android:id="@+id/document_preview_meta"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:maxLines="1"
+                        android:textColor="@color/browser_express_post_time"
+                        android:textSize="11sp" />
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/button_remove_document"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="@string/browser_express_comment_close"
+                    android:src="@drawable/ic_browser_express_comment_sheet_close" />
+            </LinearLayout>
 
         </LinearLayout>
 

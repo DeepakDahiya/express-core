@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- One of the comment's reactions in the picker (Figma 483:3264): the emoji and its count.
+     Selected is the reader's reaction. Smaller than the design's 48dp chip, with the grid's
+     20dp emoji, so the classic six fit one row on a phone. The emoji's colour is opaque, as in
+     the grid: emoji are drawn at the text colour's alpha. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="36dp"
+    android:background="@drawable/browser_express_comment_picker_option_bg"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="10dp">
+
+    <TextView
+        android:id="@+id/reaction_option_emoji"
+        android:layout_width="wrap_content"
+        android:layout_height="24dp"
+        android:gravity="center"
+        android:importantForAccessibility="no"
+        android:includeFontPadding="false"
+        android:textColor="@color/browser_express_comment_sheet_title"
+        android:textSize="20dp"
+        tools:ignore="SpUsage" />
+
+    <TextView
+        android:id="@+id/reaction_option_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="4dp"
+        android:fontFamily="sans-serif-medium"
+        android:importantForAccessibility="no"
+        android:textColor="@color/browser_express_comment_picker_count_state"
+        android:textSize="14sp" />
+</LinearLayout>

@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- The reaction picker (Figma "Express / Emoji picker", 483:3250): under the title, the
+     comment's reactions with their counts (the reader's own highlighted), then every emoji in
+     sections, Recents first, over a bar of the sections' icons to jump between them.
+     CommentReactionSheet fills the list and the bar, and sets the sheet's height (half the
+     screen); the list takes what the title and the bar leave, and scrolls. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <View
+        android:layout_width="36dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/browser_express_comment_sheet_handle" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="44dp"
+        android:layout_marginHorizontal="31dp"
+        android:layout_marginTop="10dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif"
+            android:text="@string/browser_express_comment_add_reaction"
+            android:textColor="@color/browser_express_comment_sheet_title"
+            android:textSize="20sp" />
+
+        <ImageButton
+            android:id="@+id/sheet_close"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/browser_express_comment_close"
+            android:src="@drawable/ic_browser_express_reaction_picker_close" />
+    </LinearLayout>
+
+    <!-- The chips, the line under them and the emoji sections, scrolling together. Horizontal
+         padding is set by CommentReactionSheet to spread eight columns the way the design's
+         space-between rows do. -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/reaction_picker_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        android:paddingBottom="8dp" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/browser_express_comment_picker_divider" />
+
+    <!-- Jumps between the sections, WhatsApp style; filled by CommentReactionSheet. -->
+    <LinearLayout
+        android:id="@+id/reaction_picker_tabs"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="12dp"
+        android:paddingVertical="6dp" />
+</LinearLayout>

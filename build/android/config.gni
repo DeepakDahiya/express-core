@@ -76,6 +76,13 @@ brave_chrome_java_deps = [
   "//third_party/androidx:androidx_lifecycle_lifecycle_livedata_core_java",
   "//third_party/androidx:androidx_lifecycle_lifecycle_livedata_java",
   "//third_party/androidx:androidx_lifecycle_lifecycle_viewmodel_java",
+
+  # CommentMediaCache reads playback bytes through media3's disk cache; the
+  # cache classes live in the datasource module and its SQLite index in the
+  # database module. Both are already transitive deps of media3_exoplayer —
+  # the direct entries are for the strict classpath check.
+  "//third_party/androidx:androidx_media3_media3_database_java",
+  "//third_party/androidx:androidx_media3_media3_datasource_java",
   "//ui/android:java_enums_srcjar",
   "//url/mojom:url_mojom_origin_java",
 ]

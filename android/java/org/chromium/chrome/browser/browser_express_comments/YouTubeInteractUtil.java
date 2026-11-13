@@ -38,6 +38,12 @@ public class YouTubeInteractUtil {
         void onSuccess(Map<String, String> resolvedIds, String targetId,
                 int upvoteCount, int downvoteCount, int commentCount, Vote didVote);
         void onFailure(String error);
+
+        /**
+         * For a "reaction" interaction: the server's reaction state for the target comment
+         * (reactions, reactionCount, myReaction). Called just before {@link #onSuccess}.
+         */
+        default void onReactionState(JSONObject response) {}
     }
 
     public static class Task extends AsyncTask<Void> {
@@ -47,6 +53,9 @@ public class YouTubeInteractUtil {
         private final String mReplyContent;
         private final String mAccessToken;
         private final Callback mCallback;
+        /** The emoji of a "reaction" interaction; null removes the reader's reaction. */
+        private String mEmoji;
+        private JSONObject mResponse;
 
         private Map<String, String> mResolvedIds;
         private String mTargetId;
@@ -64,6 +73,12 @@ public class YouTubeInteractUtil {
             mReplyContent = replyContent;
             mAccessToken = accessToken;
             mCallback = callback;
+        }
+
+        /** Sets the emoji a "reaction" interaction applies (null removes the reaction). */
+        public Task withEmoji(String emoji) {
+            mEmoji = emoji;
+            return this;
         }
 
         @Override
@@ -86,6 +101,9 @@ public class YouTubeInteractUtil {
                 body.put("pageUrl", mPageUrl);
                 body.put("interactionType", mInteractionType);
                 if (mReplyContent != null) body.put("replyContent", mReplyContent);
+                if ("reaction".equals(mInteractionType)) {
+                    body.put("emoji", mEmoji != null ? mEmoji : JSONObject.NULL);
+                }
 
                 JSONArray ancestorsArray = new JSONArray();
                 for (Comment ancestor : mAncestors) {
@@ -133,6 +151,7 @@ public class YouTubeInteractUtil {
                     return null;
                 }
 
+                mResponse = resp;
                 mResolvedIds = new HashMap<>();
                 JSONObject resolvedIdsObj = resp.optJSONObject("resolvedIds");
                 if (resolvedIdsObj != null) {
@@ -167,6 +186,9 @@ public class YouTubeInteractUtil {
             if (mError != null) {
                 mCallback.onFailure(mError);
             } else {
+                if ("reaction".equals(mInteractionType) && mResponse != null) {
+                    mCallback.onReactionState(mResponse);
+                }
                 mCallback.onSuccess(mResolvedIds, mTargetId,
                         mUpvoteCount, mDownvoteCount, mCommentCount, mDidVote);
             }

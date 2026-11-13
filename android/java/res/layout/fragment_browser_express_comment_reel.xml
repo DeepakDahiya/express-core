@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/.
+-->
+<!-- Content view for CommentReelFragment. Drops into the same container the flat
+     CommentListFragment uses, so the host keeps owning the input bar and navigation.
+
+     The pager fills the whole page and the comments header floats over it. Pages of comment
+     cards start below the header (CommentSlideAdapter pads them by its height); a full-page
+     video (Figma "Full-screen Reel", 24:2490) runs under it, and the header steps aside while
+     one is showing so the reel's own white header reads over the video. The sheet's comment
+     box floats over the bottom the same way: text pages, and this overlay, stop above it; a reel
+     runs under it while it slides away. -->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/browser_express_feed_background">
+
+    <!-- Its measured height is what CommentSlidePacker packs pages against. -->
+    <androidx.viewpager2.widget.ViewPager2
+        android:id="@+id/comment_reel_pager"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical" />
+
+    <LinearLayout
+        android:id="@+id/comments_reel_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/comments_page_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/browser_express_feed_background"
+            android:clickable="true"
+            android:focusable="false"
+            android:orientation="vertical">
+
+            <include layout="@layout/browser_express_comment_toolbar" />
+
+            <include layout="@layout/browser_express_comments_header" />
+        </LinearLayout>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1">
+
+            <org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout
+                android:id="@+id/skeleton_shimmer"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/browser_express_feed_background">
+
+                <LinearLayout
+                    android:id="@+id/shimmer_items"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical" />
+            </org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout>
+
+            <LinearLayout
+                android:id="@+id/empty_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <include layout="@layout/browser_express_comments_empty" />
+            </LinearLayout>
+        </FrameLayout>
+    </LinearLayout>
+
+</FrameLayout>

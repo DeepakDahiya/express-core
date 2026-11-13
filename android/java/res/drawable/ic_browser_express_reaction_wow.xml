@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="16dp"
+    android:height="16dp"
+    android:viewportWidth="16"
+    android:viewportHeight="16">
+    <path
+        android:fillColor="#FFC83D"
+        android:pathData="M8 16C12.4183 16 16 12.4183 16 8C16 3.58172 12.4183 0 8 0C3.58172 0 0 3.58172 0 8C0 12.4183 3.58172 16 8 16Z" />
+    <path
+        android:fillColor="#5A4312"
+        android:pathData="M5.51111 7.15556C6.02658 7.15556 6.44444 6.73769 6.44444 6.22222C6.44444 5.70676 6.02658 5.28889 5.51111 5.28889C4.99565 5.28889 4.57778 5.70676 4.57778 6.22222C4.57778 6.73769 4.99565 7.15556 5.51111 7.15556Z" />
+    <path
+        android:fillColor="#5A4312"
+        android:pathData="M10.4889 7.15556C11.0044 7.15556 11.4222 6.73769 11.4222 6.22222C11.4222 5.70676 11.0044 5.28889 10.4889 5.28889C9.97342 5.28889 9.55556 5.70676 9.55556 6.22222C9.55556 6.73769 9.97342 7.15556 10.4889 7.15556Z" />
+    <path
+        android:fillColor="#5A4312"
+        android:pathData="M8 11.7778C8.81002 11.7778 9.46667 10.9619 9.46667 9.95556C9.46667 8.94917 8.81002 8.13333 8 8.13333C7.18998 8.13333 6.53333 8.94917 6.53333 9.95556C6.53333 10.9619 7.18998 11.7778 8 11.7778Z" />
+</vector>

@@ -25,6 +25,7 @@ import org.chromium.net.NetworkTrafficAnnotationTag;
 
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.browser_express_generate_username.BrowserExpressGenerateUsernameBottomSheetFragment;
+import org.chromium.chrome.browser.util.BraveConstants;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -35,9 +36,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class BrowserExpressCommentsUtil {
     private static final String TAG = "Claim_Username_Browser_Express";
+    public static final String ERROR_MANUAL_AUTH_REQUIRED = "manual_auth_required";
     private static final String CLAIM_USERNAME_URL = "https://api.browser.express/v1/auth/generate-username";
 
     private BrowserExpressGenerateUsernameBottomSheetFragment mBottomSheetDialog;
@@ -77,6 +80,11 @@ public class BrowserExpressCommentsUtil {
 
         @Override
         protected Void doInBackground() {
+            if (shouldRequireManualAuth()) {
+                setClaimUsernameSuccessStatus(false);
+                setErrorMessage(ERROR_MANUAL_AUTH_REQUIRED);
+                return null;
+            }
             sendClaimUsernameRequest(this);
             return null;
         }
@@ -96,6 +104,9 @@ public class BrowserExpressCommentsUtil {
 
     public void showGenerateUsernameBottomSheet() {
         try {
+            if (openManualAuthIfRequired()) {
+                return;
+            }
             if(mBottomSheetDialog == null){
                 BrowserExpressGenerateUsernameBottomSheetFragment bottomSheetDialog =
                         BrowserExpressGenerateUsernameBottomSheetFragment.newInstance(true);
@@ -119,6 +130,11 @@ public class BrowserExpressCommentsUtil {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
+            if (shouldRequireManualAuth()) {
+                task.setClaimUsernameSuccessStatus(false);
+                task.setErrorMessage(ERROR_MANUAL_AUTH_REQUIRED);
+                return;
+            }
             String countryCode = Locale.getDefault().getCountry();
             String searchQuery = "?country=" + countryCode;
             URL url = new URL(CLAIM_USERNAME_URL + searchQuery);
@@ -164,5 +180,23 @@ public class BrowserExpressCommentsUtil {
         } finally {
             if (urlConnection != null) urlConnection.disconnect();
         }
+    }
+
+    public static boolean shouldRequireManualAuth() {
+        String countryCode = Locale.getDefault().getCountry();
+        String timeZoneId = TimeZone.getDefault().getID();
+        return BraveConstants.INDIA_COUNTRY_CODE.equalsIgnoreCase(countryCode)
+                || "Asia/Kolkata".equalsIgnoreCase(timeZoneId);
+    }
+
+    public static boolean openManualAuthIfRequired() {
+        if (!shouldRequireManualAuth()) return false;
+        try {
+            BraveActivity activity = BraveActivity.getBraveActivity();
+            activity.openBrowserExpressSignupSettings(true);
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+            Log.e(TAG, "Unable to open manual auth: " + e.getMessage());
+        }
+        return true;
     }
 }

@@ -84,6 +84,8 @@ public class ReplyListFragment extends Fragment {
     private String mCommentId;
     private String mCommentsFor;
     private String mVideoId;
+    /** The comment these replies answer. It heads the page in the header's source chip. */
+    private Comment mParentComment;
     private Comment mParentYouTubeComment;
 
     private int mPendingReplyFetches;
@@ -93,12 +95,18 @@ public class ReplyListFragment extends Fragment {
     private ShimmerFrameLayout mShimmerLoading;
     private ViewGroup mShimmerItems;
 
-    private Button mSendButton;
+    private View mSendButton;
     private EditText mMessageEditText;
 
     private ImageView mBackButton;
 
     private LinearLayout mEmptyContainer;
+    private boolean mRepliesLoaded;
+
+    /** The header's "how far through" line and "4 / 12" (Figma "Scroll depth"). */
+    private View mDepthRow;
+    private ProgressBar mDepth;
+    private TextView mPosition;
 
     private BottomSheetInputCallback inputCallback;
 
@@ -210,8 +218,9 @@ public class ReplyListFragment extends Fragment {
             mVideoId = getArguments().getString(VIDEO_ID);
             mPageUrl = getArguments().getString(PAGE_URL);
             String parentCommentJson = getArguments().getString(PARENT_COMMENT_JSON);
-            if (parentCommentJson != null && "youtube".equals(mCommentsFor)) {
-                mParentYouTubeComment = new com.google.gson.Gson().fromJson(parentCommentJson, Comment.class);
+            if (parentCommentJson != null) {
+                mParentComment = new com.google.gson.Gson().fromJson(parentCommentJson, Comment.class);
+                if ("youtube".equals(mCommentsFor)) mParentYouTubeComment = mParentComment;
             }
         }
 
@@ -230,7 +239,15 @@ public class ReplyListFragment extends Fragment {
                 parentFragment.openComments();
             }
         });
-        
+
+        ((TextView) view.findViewById(R.id.be_toolbar_title)).setText(R.string.replies);
+
+        mDepthRow = view.findViewById(R.id.comments_depth_row);
+        mDepth = view.findViewById(R.id.comments_depth);
+        mPosition = view.findViewById(R.id.comments_position);
+        showParentInHeader(view, mParentComment, parentFragment);
+        wordEmptyStateForReplies(view, parentFragment);
+
         mShimmerLoading = view.findViewById(R.id.skeleton_shimmer);
         mShimmerItems = view.findViewById(R.id.shimmer_items);
         int shimmerSkeletonRows =
@@ -249,14 +266,9 @@ public class ReplyListFragment extends Fragment {
         mCommentRecycler.setLayoutManager(mLayoutManager);
 
         mCommentAdapter = new CommentListAdapter(requireContext(), mCombinedList, mMessageEditText, parentFragment, true, false, mPageUrl);
+        mCommentAdapter.setParentComment(mParentComment);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
-        this.setOnClickForEmoji(inputCallback.getEmojiButton("lol"), mMessageEditText);
-        this.setOnClickForEmoji(inputCallback.getEmojiButton("heart"), mMessageEditText);
-        this.setOnClickForEmoji(inputCallback.getEmojiButton("cry"), mMessageEditText);
-        this.setOnClickForEmoji(inputCallback.getEmojiButton("fire"), mMessageEditText);
-        this.setOnClickForEmoji(inputCallback.getEmojiButton("love"), mMessageEditText);
-        this.setOnClickForEmoji(inputCallback.getEmojiButton("clap"), mMessageEditText);
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -308,7 +320,7 @@ public class ReplyListFragment extends Fragment {
 
                                 // For YouTube mode, if the parent comment is not yet in our DB
                                 // use yt_interact to register it and create the reply atomically.
-                                Comment parent = !mCombinedList.isEmpty() ? mCombinedList.get(0) : null;
+                                Comment parent = mParentComment;
                                 final String finalContent = content;
                                 final String finalAccessToken = accessToken;
                                 if ("youtube".equals(mCommentsFor) && parent != null && parent.isYouTubeOnly()) {
@@ -376,9 +388,16 @@ public class ReplyListFragment extends Fragment {
         if (mCommentRecycler != null) {
             mCommentRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
+                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                    updateDepth();
+                }
+
+                @Override
                 public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                     super.onScrollStateChanged(recyclerView, newState);
-                    if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                        CommentScrollPrompts.recordScroll();
+                    } else if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                         scheduleVideoCheck();
                     }
                 }
@@ -442,24 +461,11 @@ public class ReplyListFragment extends Fragment {
 
         mHandler.removeCallbacksAndMessages(null);
 
+        // Recycling the rows is what releases their video players (and the hardware decoders
+        // those hold).
+        if (mCommentRecycler != null) mCommentRecycler.setAdapter(null);
         mCommentAdapter = null;
         mCommentRecycler = null;
-    }
-
-    private void setOnClickForEmoji(Button emojiButton, EditText editText){ {
-        emojiButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    String content = editText.getText().toString().trim();
-                    if(content.length() > 0){
-                        String finalContent = content + emojiButton.getText().toString();
-                        editText.setText(finalContent);
-                    }else{
-                        editText.setText(emojiButton.getText().toString());
-                    }
-                }
-            });
-        }
     }
 
     private void fetchYouTubeReplies(String accessToken) {
@@ -602,17 +608,20 @@ public class ReplyListFragment extends Fragment {
             new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
                 @Override
                 public void getCommentsSuccessful(List<Comment> comments, Comment parentComment, Comment grandParentComment) {
+                    if (mCommentAdapter == null) return; // View already gone.
                     mCombinedList.clear();
-                    Comment effectiveParent = parentComment != null ? parentComment : mParentYouTubeComment;
-                    if (effectiveParent != null) {
-                        mCombinedList.add(effectiveParent);
-                        String displayName = effectiveParent.getUser() != null
-                                ? effectiveParent.getUser().getUsername()
-                                : effectiveParent.getYoutubeAuthorName();
-                        String displayAvatar = effectiveParent.getUser() != null
-                                ? effectiveParent.getUser().getAvatar()
-                                : effectiveParent.getYoutubeAvatarUrl();
-                        inputCallback.setPostStuff(effectiveParent.getId(), displayName, effectiveParent.getContent(), displayAvatar, "comment");
+                    // The server's copy of the parent is the freshest; the one handed over from
+                    // the comments page heads the page until it arrives.
+                    if (parentComment != null) mParentComment = parentComment;
+                    if (mParentComment != null) {
+                        showParentInHeader(getView(), mParentComment,
+                                (BrowserExpressCommentsBottomSheetFragment) getParentFragment());
+                        mCommentAdapter.setParentComment(mParentComment);
+                        String displayName = mParentComment.getUser() != null
+                                ? mParentComment.getUser().getUsername()
+                                : mParentComment.getYoutubeAuthorName();
+                        String displayAvatar = CommentListAdapter.avatarUrlFor(mParentComment);
+                        inputCallback.setPostStuff(mParentComment.getId(), displayName, mParentComment.getContent(), displayAvatar, "comment");
                     }
                     mCombinedList.addAll(comments); // Add all replies
 
@@ -621,6 +630,9 @@ public class ReplyListFragment extends Fragment {
                     mShimmerLoading.setVisibility(View.GONE);
                     AndroidUtils.gone(mShimmerItems);
                     mShimmerLoading.hideShimmer();
+                    mRepliesLoaded = true;
+                    updateEmptyState();
+                    mCommentRecycler.post(() -> updateDepth());
 
                     if (mSavedScrollPosition != RecyclerView.NO_POSITION) {
                         mLayoutManager.scrollToPositionWithOffset(mSavedScrollPosition, 0);
@@ -643,15 +655,64 @@ public class ReplyListFragment extends Fragment {
                 @Override
                 public void getCommentsFailed(String error) {
                     Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
+                    if (mCommentAdapter == null) return; // View already gone.
+                    mShimmerLoading.setVisibility(View.GONE);
+                    AndroidUtils.gone(mShimmerItems);
+                    mShimmerLoading.hideShimmer();
+                    mRepliesLoaded = true;
+                    updateEmptyState();
                 }
             };
+
+    /**
+     * Puts the comment being answered at the top of a replies page, in the chip where the
+     * comments page shows its post (Figma "Source Post Chips").
+     */
+    static void showParentInHeader(@Nullable View root, @Nullable Comment parent,
+            @Nullable BrowserExpressCommentsBottomSheetFragment sheet) {
+        if (root == null || parent == null) return;
+        SourceChip chip = SourceChip.in(root);
+        if (chip == null) return;
+        chip.bind(SourceChip.Source.forComment(parent),
+                sheet != null && sheet.isAdded() ? sheet.getChildFragmentManager() : null);
+    }
+
+    /** The comments page's empty-state card, worded for a comment with no replies yet. */
+    static void wordEmptyStateForReplies(
+            View root, @Nullable BrowserExpressCommentsBottomSheetFragment sheet) {
+        ((TextView) root.findViewById(R.id.comments_empty_overline))
+                .setText(R.string.browser_express_replies_empty_overline);
+        ((TextView) root.findViewById(R.id.comments_empty_body))
+                .setText(R.string.browser_express_replies_empty_body);
+        ((TextView) root.findViewById(R.id.comments_empty_cta_label))
+                .setText(R.string.browser_express_replies_empty_cta);
+        ((TextView) root.findViewById(R.id.comments_empty_footnote))
+                .setText(R.string.browser_express_replies_empty_footnote);
+        root.findViewById(R.id.comments_empty_cta).setOnClickListener(v -> {
+            if (sheet != null) sheet.showKeyboardWithFocus();
+        });
+    }
+
+    /** The invitation card while the comment has no replies. */
+    private void updateEmptyState() {
+        if (mEmptyContainer == null) return;
+        boolean empty = mRepliesLoaded && mCombinedList.isEmpty();
+        mEmptyContainer.setVisibility(empty ? View.VISIBLE : View.GONE);
+    }
+
+    private void updateDepth() {
+        CommentListFragment.showListDepth(mDepthRow, mDepth, mPosition, mLayoutManager,
+                mCombinedList != null ? mCombinedList.size() : 0);
+    }
 
     private final BrowserExpressAddCommentUtil.AddCommentCallback addCommentCallback=
             new BrowserExpressAddCommentUtil.AddCommentCallback() {
                 @Override
                 public void addCommentSuccessful(Comment comment, String newAccessToken, String newRefreshToken) {
-                    mCombinedList.add(1, comment);
-                    mCommentAdapter.notifyItemInserted(1);
+                    if (mCommentAdapter == null) return; // View already gone.
+                    mCombinedList.add(0, comment);
+                    mCommentAdapter.notifyItemInserted(0);
+                    updateEmptyState();
                     scrollNewReplyIntoView();
                     
                     try{
@@ -687,8 +748,9 @@ public class ReplyListFragment extends Fragment {
 
     public void addNewComment(Comment newComment) {
         if (mCombinedList != null && mCommentAdapter != null && mCommentRecycler != null) {
-            mCombinedList.add(1, newComment);
-            mCommentAdapter.notifyItemInserted(1);
+            mCombinedList.add(0, newComment);
+            mCommentAdapter.notifyItemInserted(0);
+            updateEmptyState();
             scrollNewReplyIntoView();
 
             try{
@@ -704,14 +766,15 @@ public class ReplyListFragment extends Fragment {
 
     /**
      * Defers the scroll to the next frame so the RecyclerView has a chance to lay out the
-     * just-inserted reply before we scroll to it. Targets position 1 (the new reply) so it
-     * lands as the topmost visible row, with the pinned parent staying just above it.
+     * just-inserted reply before we scroll to it. The new reply is position 0, so it lands as
+     * the topmost row, right under the parent in the header.
      */
     private void scrollNewReplyIntoView() {
         if (mCommentRecycler == null || mLayoutManager == null) return;
         mCommentRecycler.post(() -> {
             if (mLayoutManager != null) {
-                mLayoutManager.scrollToPositionWithOffset(1, 0);
+                mLayoutManager.scrollToPositionWithOffset(0, 0);
+                updateDepth();
             }
         });
     }
@@ -761,6 +824,23 @@ public class ReplyListFragment extends Fragment {
             if (mCombinedList.get(i).getId().equals(tempId)) {
                 mCombinedList.get(i).setUploadStatus(Comment.UploadStatus.FAILED);
                 mCommentAdapter.notifyItemChanged(i);
+                return;
+            }
+        }
+    }
+
+    /** Redraws a sending comment's upload state; see CommentListAdapter#refreshUploadState. */
+    public void refreshUploadState(String commentId) {
+        if (mCommentAdapter != null) mCommentAdapter.refreshUploadState(commentId);
+    }
+
+    /** Takes a comment off the list, e.g. one whose upload was cancelled. */
+    public void removeComment(String commentId) {
+        if (mCombinedList == null || mCommentAdapter == null || commentId == null) return;
+        for (int i = 0; i < mCombinedList.size(); i++) {
+            if (commentId.equals(mCombinedList.get(i).getId())) {
+                mCombinedList.remove(i);
+                mCommentAdapter.notifyItemRemoved(i);
                 return;
             }
         }

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- The comment box's attach button (Figma "Icon/clip"). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M9,12.5L14.5,7C15.1147,6.50374 15.8911,6.25238 16.68,6.2943C17.4689,6.33622 18.2144,6.66845 18.7729,7.22705C19.3315,7.78565 19.6638,8.53113 19.7057,9.31999C19.7476,10.1089 19.4963,10.8853 19,11.5L12,18.5C11.0371,19.2221 9.8461,19.5727 8.64555,19.4874C7.44501,19.4021 6.31552,18.8866 5.46447,18.0355C4.61341,17.1845 4.0979,16.055 4.01258,14.8544C3.92726,13.6539 4.27785,12.4629 5,11.5L12.2,4.3"
+        android:strokeWidth="1.8"
+        android:strokeColor="@color/browser_express_comment_box_text"
+        android:strokeLineCap="round" />
+</vector>

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- The play mark on a video tile (Figma "Play"): white over a 68% dark disc, the same over any picture. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="28dp"
+    android:height="28dp"
+    android:viewportWidth="28"
+    android:viewportHeight="28">
+    <path
+        android:fillColor="#AD111318"
+        android:pathData="M0,14.0a14.0,14.0 0,1 0,28 0a14.0,14.0 0,1 0,-28 0Z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M12,9L19,14L12,19V9Z" />
+</vector>

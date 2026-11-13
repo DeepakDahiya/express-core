@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- Reaction picker category: Flags. Material Design icon "flag" (Apache 2.0), as in
+     chrome/browser/resources/chromeos/emoji_picker/icons.html. Tinted by the tab. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp"
+    android:height="22dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M 14.4,6 L 14,4 H 5 v 17 h 2 v -7 h 5.6 l .4,2 h 7 V 6 z" />
+</vector>

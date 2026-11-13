@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- Send: a paper plane in the accent circle (Phosphor "PaperPlaneTilt"). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@color/browser_express_comments_accent"
+        android:pathData="M12,0a12,12 0,1 0,0 24a12,12 0,1 0,0 -24z" />
+    <group
+        android:translateX="4"
+        android:translateY="4">
+        <path
+            android:fillColor="#FFFFFFFF"
+            android:pathData="M14.2075,1.7925C14.0818,1.66683 13.9248,1.57696 13.7527,1.53214C13.5807,1.48732 13.3998,1.48917 13.2287,1.5375H13.2194L1.22312,5.1775C1.02837,5.23363 0.855271,5.34761 0.726762,5.50434C0.598252,5.66107 0.520401,5.85315 0.503525,6.05512C0.486648,6.2571 0.531543,6.45944 0.632261,6.63532C0.732978,6.8112 0.884762,6.95233 1.0675,7.04L6.375,9.625L8.95625,14.9294C9.03654,15.1007 9.16418,15.2455 9.3241,15.3466C9.48402,15.4477 9.66955,15.5009 9.85875,15.5C9.8875,15.5 9.91625,15.4987 9.945,15.4962C10.1468,15.4799 10.3388,15.4022 10.4952,15.2736C10.6516,15.1451 10.7649,14.9717 10.82,14.7769L14.4575,2.78062C14.4575,2.7775 14.4575,2.77437 14.4575,2.77125C14.5065,2.6006 14.5091,2.42 14.4652,2.24799C14.4212,2.07598 14.3323,1.91876 14.2075,1.7925ZM9.86437,14.4906L9.86125,14.4994V14.495L7.3575,9.35125L10.3575,6.35125C10.4473,6.25672 10.4966,6.13084 10.495,6.00046C10.4933,5.87008 10.4408,5.74551 10.3486,5.65331C10.2564,5.56111 10.1318,5.50857 10.0014,5.5069C9.87103,5.50524 9.74516,5.55456 9.65062,5.64437L6.65063,8.64437L1.505,6.14062H1.50063H1.50937L13.5,2.5L9.86437,14.4906Z" />
+    </group>
+</vector>

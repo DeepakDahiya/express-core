@@ -25,7 +25,6 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 import android.view.WindowManager;
-import android.content.SharedPreferences;
 import android.view.inputmethod.InputMethodManager;
 import android.content.Context;
 import android.widget.ProgressBar;
@@ -61,11 +60,12 @@ import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 
 import com.bumptech.glide.Glide;
 import android.widget.ImageView;
-import org.chromium.chrome.browser.app.helpers.ImageLoader;
+import org.chromium.chrome.browser.app.helpers.ProfileAvatar;
 
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.target.DrawableImageViewTarget;
 import com.bumptech.glide.request.transition.Transition;
 
 import org.chromium.base.ContextUtils;
@@ -78,7 +78,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.PickVisualMediaRequest;
 import androidx.activity.result.contract.ActivityResultContracts;
 
-public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends DialogFragment implements MediaViewerFragment.OnViewerDismissedListener {
+public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends DialogFragment implements MediaViewerFragment.OnViewerDismissedListener, ImageCropDialogFragment.OnImageCroppedListener {
     public static final String IS_FROM_MENU = "is_from_menu";
     public static final String COMMENTS_FOR = "comments_for";
     public static final String POST_ID = "post_id";
@@ -86,7 +86,11 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
     public static final String POST_CONTENT = "post_content";
     public static final String POST_AVATAR_URL = "post_avatar_url";
     public static final String ATTACHMENT_URI = "attachment_uri";
-    private static final String BE_PROFILE_PREF = "BE_PROFILE_PREFS";
+    private static final String STATE_MEDIA_URI = "state_media_uri";
+    private static final String STATE_MEDIA_TYPE = "state_media_type";
+    private static final String STATE_INITIAL_MEDIA_STAGED = "state_initial_media_staged";
+    private static final String STATE_CROP_IS_INITIAL = "state_crop_is_initial";
+    private static final String MIME_TYPE_GIF = "image/gif";
 
     private String mCommentsFor;
     private String mPostId;
@@ -106,10 +110,18 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
     private ImageView mAttachmentPreviewImage;
     private ImageButton mRemoveAttachmentButton;
     private ImageView mVideoPlayButton;
+    /** A document attachment's card: its name and size instead of a picture. */
+    private View mDocumentPreviewContainer;
+    private TextView mDocumentPreviewName;
+    private TextView mDocumentPreviewMeta;
     private Uri mSelectedMediaUri;
     private String mSelectedMediaType;
 
     private Uri mTempSelectedMediaUri;
+    /** Guards against staging the launch attachment twice when the composer is recreated. */
+    private boolean mInitialMediaStaged;
+    /** True while cropping the image the composer was opened for; see {@link #onCropCancelled}. */
+    private boolean mCropIsForInitialAttachment;
 
     private ImageView mAvatarImage;
     private EditText mMessageEditText;
@@ -173,12 +185,29 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                 new ActivityResultContracts.PickVisualMedia(),
                 uri -> {
                     if (uri != null) {
-                        processSelectedMedia(uri);
-                        showKeyboardWithFocus();
+                        stageSelectedMedia(uri, false);
                     }
                 }
             );
         }
+
+        if (savedInstanceState != null) {
+            mSelectedMediaUri = savedInstanceState.getParcelable(STATE_MEDIA_URI);
+            mSelectedMediaType = savedInstanceState.getString(STATE_MEDIA_TYPE);
+            mInitialMediaStaged = savedInstanceState.getBoolean(STATE_INITIAL_MEDIA_STAGED);
+            mCropIsForInitialAttachment = savedInstanceState.getBoolean(STATE_CROP_IS_INITIAL);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        // The attachment only lives in memory — cropping happens before the composer ever shows
+        // it — so recreation has to carry it over, or the crop stage would run a second time.
+        outState.putParcelable(STATE_MEDIA_URI, mSelectedMediaUri);
+        outState.putString(STATE_MEDIA_TYPE, mSelectedMediaType);
+        outState.putBoolean(STATE_INITIAL_MEDIA_STAGED, mInitialMediaStaged);
+        outState.putBoolean(STATE_CROP_IS_INITIAL, mCropIsForInitialAttachment);
     }
 
     @Override
@@ -208,16 +237,35 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
         mAttachmentPreviewImage = view.findViewById(R.id.attachment_preview_image);
         mRemoveAttachmentButton = view.findViewById(R.id.button_remove_attachment);
         mVideoPlayButton = view.findViewById(R.id.video_play_button);
+        mDocumentPreviewContainer = view.findViewById(R.id.document_preview_container);
+        mDocumentPreviewName = view.findViewById(R.id.document_preview_name);
+        mDocumentPreviewMeta = view.findViewById(R.id.document_preview_meta);
+        view.findViewById(R.id.button_remove_document).setOnClickListener(v -> removeAttachment());
 
         setupAttachmentListeners();
 
-        showKeyboardWithFocus();
-
-        if (mTempSelectedMediaUri != null) {
-            processSelectedMedia(mTempSelectedMediaUri);
+        if (mSelectedMediaUri != null) {
+            // Restored across recreation; this attachment already cleared the crop stage.
+            if ("video".equals(mSelectedMediaType)) {
+                showVideoPreview(mSelectedMediaUri);
+            } else if ("document".equals(mSelectedMediaType)) {
+                showDocumentPreview(mSelectedMediaUri);
+            } else if ("gif".equals(mSelectedMediaType)) {
+                showGifPreview(mSelectedMediaUri);
+            } else {
+                displayImagePreview();
+            }
+            showKeyboardWithFocus();
+        } else if (mTempSelectedMediaUri != null && !mInitialMediaStaged) {
+            mInitialMediaStaged = true;
+            // Posted so the composer's own window is up before the full-screen crop covers it.
+            // The keyboard is left to whatever staging lands on — raising it here would push it
+            // up over the crop screen instead.
+            view.post(() -> stageSelectedMedia(mTempSelectedMediaUri, true));
         } else {
             mAttachmentPreviewContainer.setVisibility(View.GONE);
             mRemoveAttachmentButton.setVisibility(View.GONE);
+            showKeyboardWithFocus();
         }
 
         return view;
@@ -236,6 +284,9 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        // Keeps the Post button row above the navigation bar on edge-to-edge devices; see
+        // EdgeToEdgeUtil.
+        EdgeToEdgeUtil.padBottomBySystemBars(view);
         view.setFocusableInTouchMode(true);
         view.requestFocus();
         try{
@@ -245,7 +296,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                 return;
             }
             if(mPostAvatar != null && mPostAvatarString != null && !mPostAvatarString.isEmpty()) {
-                ImageLoader.downloadImage(mPostAvatarString, Glide.with(activity), false, 5, mPostAvatar, null);
+                ProfileAvatar.load(mPostAvatar, mPostAvatarString, null);
             }
 
             if(mPostUsernameString != null && !mPostUsernameString.isEmpty()) {
@@ -264,25 +315,26 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
             
             String accessToken = activity.getAccessToken();
             if(accessToken != null){
-                Context context = ContextUtils.getApplicationContext();
-                SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
-                String avatar = prefs.getString("avatar_url", null);
-                JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
-                if (avatar != null) {
-                    updateAvatar(avatar, activity);
-                }else{
-                    updateAvatar("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", activity);
-                }
+                updateAvatar(ProfileAvatar.selfUrl(accessToken), activity);
             }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
-        } catch (JSONException e) {
         }
 
         mCancelButton.setOnClickListener(v -> dismissBottomsheet());
 
-        mPostButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        mPostButton.setOnClickListener(v -> {
+            if (getActivity() == null) return;
+            String content = mMessageEditText.getText().toString().trim();
+            if (content.isEmpty() && mSelectedMediaUri == null) return;
+
+            // Images were already cropped on their way in (see stageSelectedMedia), so what the
+            // composer previews is what gets posted.
+            submitComment();
+        });
+    }
+
+    /** Builds the optimistic comment, hands the upload off, and dismisses the composer. */
+    private void submitComment() {
                 if (getActivity() != null) {
                     String tempId = "temp_" + java.util.UUID.randomUUID().toString();
                     try {
@@ -295,18 +347,16 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                             mPostButton.setEnabled(true);
                             return;
                         }
-                        
+
                         String tempPostParent = mCommentsFor.equals("post") ? mPostId : null;
                         String tempCommentParent = mCommentsFor.equals("comment") ? mPostId : null;
 
                         User user = null;
                         if(accessToken != null) {
                             JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
-                            SharedPreferences prefs = activity.getSharedPreferences(BE_PROFILE_PREF, 0);
-                            String avatar = prefs.getString("avatar_url", null);
-                            user = new User(decodedAccessTokenObj.getString("_id"), decodedAccessTokenObj.getString("username"), avatar != null ? avatar :"https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile");
+                            user = new User(decodedAccessTokenObj.getString("_id"), decodedAccessTokenObj.getString("username"), ProfileAvatar.selfUrl(accessToken));
                         } else {
-                            user = new User(tempId, "guest user", "https://api.dicebear.com/9.x/fun-emoji/png?seed=" + tempId + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile");
+                            user = new User(tempId, "guest user", ProfileAvatar.defaultFace(tempId));
                         }
 
                         Comment optimisticComment = new Comment(
@@ -316,10 +366,20 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                             tempPostParent, tempCommentParent,
                             user,
                             null,
-                            "image".equals(mSelectedMediaType) ? mSelectedMediaUri.toString() : null,
+                            "image".equals(mSelectedMediaType) || "gif".equals(mSelectedMediaType)
+                                    ? mSelectedMediaUri.toString()
+                                    : null,
                             "video".equals(mSelectedMediaType) ? mSelectedMediaUri.toString() : null,
                             null, null, null
                         );
+                        if ("gif".equals(mSelectedMediaType)) {
+                            optimisticComment.setMediaGifUrl(mSelectedMediaUri.toString());
+                        } else if ("document".equals(mSelectedMediaType)) {
+                            String name = CommentDocuments.displayName(activity, mSelectedMediaUri);
+                            optimisticComment.setDocument(mSelectedMediaUri.toString(), name,
+                                    activity.getContentResolver().getType(mSelectedMediaUri),
+                                    CommentDocuments.size(activity, mSelectedMediaUri));
+                        }
                         optimisticComment.setUploadStatus(Comment.UploadStatus.POSTING);
 
                         if (mCommentPostedListener != null) {
@@ -346,8 +406,6 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                         }
                     }
                 }
-            }
-        });
     }
 
     @Override
@@ -365,14 +423,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
     }
 
     public void updateAvatar(String avatarUrl, BraveActivity activity) {
-        ImageLoader.downloadImage(
-            avatarUrl,
-            Glide.with(activity),
-            false,
-            5,
-            mAvatarImage,
-            null
-        );
+        ProfileAvatar.load(mAvatarImage, avatarUrl, null);
     }
 
     private void setupAttachmentListeners() {
@@ -403,6 +454,61 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
         if (mAttachmentPreviewContainer != null) {
             mAttachmentPreviewContainer.setVisibility(View.GONE);
         }
+        if (mDocumentPreviewContainer != null) {
+            mDocumentPreviewContainer.setVisibility(View.GONE);
+        }
+    }
+
+    private void hideDocumentPreview() {
+        if (mDocumentPreviewContainer != null) mDocumentPreviewContainer.setVisibility(View.GONE);
+    }
+
+    /** Previews a document as the file card the comment will show. */
+    private void showDocumentPreview(Uri documentUri) {
+        if (getContext() == null) return;
+        mSelectedMediaUri = documentUri;
+        mSelectedMediaType = "document";
+        mAttachmentPreviewContainer.setVisibility(View.GONE);
+        String name = CommentDocuments.displayName(getContext(), documentUri);
+        mDocumentPreviewName.setText(name != null
+                        ? name
+                        : getString(R.string.browser_express_attach_document));
+        mDocumentPreviewMeta.setText(CommentDocuments.describe(
+                getContext(), name, CommentDocuments.size(getContext(), documentUri)));
+        mDocumentPreviewContainer.setVisibility(View.VISIBLE);
+    }
+
+    /**
+     * The crop stage's Next: the image (cropped or untouched) becomes the composer's attachment,
+     * which is where the user adds the text and hits Post.
+     */
+    @Override
+    public void onImageCropped(Uri croppedImageUri) {
+        mCropIsForInitialAttachment = false;
+        if (croppedImageUri == null) return;
+        processSelectedImage(croppedImageUri);
+        showKeyboardWithFocus();
+    }
+
+    /**
+     * The crop stage was backed out of, so nothing gets attached. If the composer was opened for
+     * that image there is nothing left to compose and it closes with it; otherwise any attachment
+     * that was already staged stays untouched.
+     */
+    @Override
+    public void onCropCancelled() {
+        if (mCropIsForInitialAttachment) {
+            mCropIsForInitialAttachment = false;
+            // Posted so the composer's own teardown doesn't run nested inside the crop dialog's
+            // dismissal.
+            if (getView() != null) {
+                getView().post(this::dismissAllowingStateLoss);
+            } else {
+                dismissAllowingStateLoss();
+            }
+            return;
+        }
+        showKeyboardWithFocus();
     }
 
     private void showKeyboardWithFocus() {
@@ -431,8 +537,16 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
         }
     }
 
-    private void processSelectedMedia(Uri originalUri) {
-        if (getContext() == null) {
+    /**
+     * Entry point for a newly chosen attachment. Images are sent to the crop stage first and only
+     * come back here through {@link #onImageCropped}, so the composer previews — and posts — the
+     * image the user confirmed. Videos and GIFs have no crop stage and attach directly.
+     *
+     * @param isInitialAttachment true when the composer was opened for this image; backing out of
+     *     its crop then closes the composer rather than leaving it empty.
+     */
+    private void stageSelectedMedia(Uri originalUri, boolean isInitialAttachment) {
+        if (originalUri == null || getContext() == null || !isAdded()) {
             removeAttachment();
             return;
         }
@@ -440,20 +554,187 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
         ContentResolver contentResolver = getContext().getContentResolver();
         String mimeType = contentResolver.getType(originalUri);
 
-        if (mimeType != null && mimeType.startsWith("image/")) {
-            ImageProcessor.processImage(getContext(), originalUri,
-                new ImageProcessor.ProcessImageCallback() {
-                    @Override
-                    public void onImageProcessed(@Nullable Uri processedImageUri, @Nullable String finalMimeType) {
-                        if (!isAdded() || getContext() == null || mAttachmentPreviewImage == null || mAttachmentPreviewContainer == null) {
-                            return; // Fragment not attached or views are null
-                        }
+        if (MIME_TYPE_GIF.equals(mimeType)) {
+            // A GIF attaches exactly as it was picked. Both the crop stage and ImageProcessor go
+            // through BitmapFactory, which keeps a single frame — running either would post a
+            // still of the first frame instead of the animation the user chose.
+            showGifPreview(originalUri);
+            showKeyboardWithFocus();
+        } else if (mimeType != null && mimeType.startsWith("image/")) {
+            mCropIsForInitialAttachment = isInitialAttachment;
+            hideKeyboard();
+            // Child manager so the crop dialog resolves this fragment as its parent and
+            // delivers the result through OnImageCroppedListener.
+            ImageCropDialogFragment.newInstance(originalUri)
+                    .show(getChildFragmentManager(),
+                            ImageCropDialogFragment.class.getSimpleName());
+        } else if (mimeType != null && mimeType.startsWith("video/")) {
+            showVideoPreview(originalUri);
+            showKeyboardWithFocus();
+        } else if (CommentDocuments.isSupported(mimeType)) {
+            showDocumentPreview(originalUri);
+            showKeyboardWithFocus();
+        } else {
+            Log.w("CommentBottomSheet", "Unsupported media type: " + mimeType);
+            if (getContext() != null) {
+                Toast.makeText(getContext(), R.string.unsupported_file_type, Toast.LENGTH_SHORT).show();
+            }
+            removeAttachment();
+        }
+    }
 
-                        if (processedImageUri != null) {
-                            mSelectedMediaUri = processedImageUri;
-                            mSelectedMediaType = "image";
+    /**
+     * Normalizes a confirmed image (downscale, re-encode, EXIF) and previews it. The URI is the
+     * crop stage's output: a cache JPEG when the user edited, otherwise the picked image as-is.
+     */
+    private void processSelectedImage(Uri originalUri) {
+        if (getContext() == null) {
+            removeAttachment();
+            return;
+        }
 
+        // Processing is async and nothing is attached until it lands, so Post is held until then
+        // — otherwise a quick tap right out of the crop stage would post the text without it.
+        if (mPostButton != null) mPostButton.setEnabled(false);
+
+        ImageProcessor.processImage(getContext(), originalUri,
+            new ImageProcessor.ProcessImageCallback() {
+                @Override
+                public void onImageProcessed(@Nullable Uri processedImageUri, @Nullable String finalMimeType) {
+                    if (mPostButton != null) mPostButton.setEnabled(true);
+                    if (!isAdded() || getContext() == null || mAttachmentPreviewImage == null || mAttachmentPreviewContainer == null) {
+                        return; // Fragment not attached or views are null
+                    }
+
+                    if (processedImageUri != null) {
+                        mSelectedMediaUri = processedImageUri;
+                        mSelectedMediaType = "image";
+
+                        displayImagePreview();
+                    } else {
+                        Log.e("CommentBottomSheet", "Image processing failed.");
+                        mSelectedMediaUri = originalUri;
+                        mSelectedMediaType = "image";
+                        // The crop stage already delivered an upright image, so the
+                        // unprocessed URI is still safe to attach as-is.
+                        if (mAttachmentPreviewImage != null && mAttachmentPreviewContainer != null) {
                             Glide.with(getContext())
+                                    .load(originalUri)
+                                    .placeholder(R.drawable.ic_image_placeholder_24dp)
+                                    .error(R.drawable.ic_error_placeholder_24dp)
+                                    .into(mAttachmentPreviewImage);
+                            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mAttachmentPreviewImage.getLayoutParams();
+                            params.width = (int) (100 * getResources().getDisplayMetrics().density);
+                            params.height = (int) (100 * getResources().getDisplayMetrics().density);
+                            mAttachmentPreviewImage.setLayoutParams(params);
+                            mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
+                            mRemoveAttachmentButton.setVisibility(View.VISIBLE);
+                            mVideoPlayButton.setVisibility(View.GONE);
+                        }
+                        if(getContext() != null) {
+                            Toast.makeText(getContext(), R.string.image_processing_failed, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+            });
+    }
+
+    /**
+     * Attaches a GIF and renders it playing in the composer. Nothing re-encodes it on the way to
+     * the upload, so what the preview animates is what gets posted.
+     */
+    private void showGifPreview(Uri gifUri) {
+        hideDocumentPreview();
+        mSelectedMediaUri = gifUri;
+        mSelectedMediaType = "gif";
+        if (mAttachmentPreviewImage == null || mAttachmentPreviewContainer == null
+                || getContext() == null) {
+            return;
+        }
+
+        Glide.with(getContext())
+                .load(mSelectedMediaUri)
+                .placeholder(R.drawable.ic_image_placeholder_24dp)
+                .error(R.drawable.ic_error_placeholder_24dp)
+                .into(new DrawableImageViewTarget(mAttachmentPreviewImage) {
+                    @Override
+                    public void onResourceReady(@NonNull Drawable resource,
+                            @Nullable Transition<? super Drawable> transition) {
+                        super.onResourceReady(resource, transition);
+                        if (!isAdded() || mAttachmentPreviewImage == null) return;
+                        sizeAttachmentPreview(resource.getIntrinsicWidth(),
+                                resource.getIntrinsicHeight());
+                        mAttachmentPreviewImage.post(() -> showKeyboardWithFocus());
+                    }
+                });
+
+        mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
+        mRemoveAttachmentButton.setVisibility(View.VISIBLE);
+        mVideoPlayButton.setVisibility(View.GONE);
+    }
+
+    /**
+     * Fits the attachment preview to the media's own shape within the composer's width. Shared
+     * by the still-image and GIF previews so both are laid out identically.
+     */
+    private void sizeAttachmentPreview(int mediaWidth, int mediaHeight) {
+        if (!isAdded() || mAttachmentPreviewImage == null || mAttachmentPreviewContainer == null) {
+            return;
+        }
+
+        int screenWidth = getResources().getDisplayMetrics().widthPixels;
+        int parentActualWidth = ((View) mAttachmentPreviewContainer.getParent()).getWidth();
+        int containerPaddingHorizontal = mAttachmentPreviewContainer.getPaddingLeft()
+                + mAttachmentPreviewContainer.getPaddingRight();
+        int availableWidth = parentActualWidth > 0
+                ? parentActualWidth - containerPaddingHorizontal
+                : screenWidth - (int) (getResources().getDisplayMetrics().density * 40);
+
+        float aspectRatio = (mediaHeight <= 0 || mediaWidth <= 0)
+                ? 1.0f
+                : (float) mediaWidth / (float) mediaHeight;
+
+        FrameLayout.LayoutParams params =
+                (FrameLayout.LayoutParams) mAttachmentPreviewImage.getLayoutParams();
+        if (aspectRatio > 1) { // Horizontal media
+            params.width = availableWidth;
+            params.height = (int) (availableWidth / aspectRatio);
+        } else { // Vertical or square media
+            params.width = (int) (availableWidth / 1.05);
+            params.height = (int) ((availableWidth / 1.05) / aspectRatio);
+        }
+        mAttachmentPreviewImage.setLayoutParams(params);
+    }
+
+    /** Attaches a video and renders its preview; videos never go through the crop stage. */
+    private void showVideoPreview(Uri videoUri) {
+        hideDocumentPreview();
+        mSelectedMediaUri = videoUri;
+        mSelectedMediaType = "video";
+        if (mAttachmentPreviewImage != null && mAttachmentPreviewContainer != null && getContext() != null) {
+            Glide.with(getContext())
+                    .load(mSelectedMediaUri)
+                    .placeholder(R.drawable.ic_image_placeholder_24dp)
+                    .error(R.drawable.ic_error_placeholder_24dp)
+                    .into(mAttachmentPreviewImage);
+
+            setVideoPreviewSize(mSelectedMediaUri);
+
+            mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
+            mVideoPlayButton.setVisibility(View.VISIBLE);
+            mRemoveAttachmentButton.setVisibility(View.VISIBLE);
+        }
+    }
+
+    /** Renders {@code mSelectedMediaUri} as the sized image preview with its remove control. */
+    private void displayImagePreview() {
+        hideDocumentPreview();
+        if (!isAdded() || getContext() == null || mAttachmentPreviewImage == null
+                || mAttachmentPreviewContainer == null) {
+            return;
+        }
+
+        Glide.with(getContext())
                                     .asBitmap()
                                     .load(mSelectedMediaUri)
                                     .placeholder(R.drawable.ic_image_placeholder_24dp)
@@ -463,29 +744,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                                         public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
                                             if (!isAdded() || mAttachmentPreviewImage == null) return;
 
-                                            int screenWidth = getResources().getDisplayMetrics().widthPixels;
-                                            int parentActualWidth = ((View)mAttachmentPreviewContainer.getParent()).getWidth();
-                                            int containerPaddingHorizontal = mAttachmentPreviewContainer.getPaddingLeft() + mAttachmentPreviewContainer.getPaddingRight();
-                                            int availableWidth = parentActualWidth > 0 ? parentActualWidth - containerPaddingHorizontal
-                                                                  : screenWidth - (int) (getResources().getDisplayMetrics().density * 40);
-
-
-                                            int imageWidth = resource.getWidth();
-                                            int imageHeight = resource.getHeight();
-                                            float aspectRatio = (imageHeight == 0) ? 1.0f : (float) imageWidth / (float) imageHeight;
-
-
-                                            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mAttachmentPreviewImage.getLayoutParams();
-
-                                            if (aspectRatio > 1) { // Horizontal image
-                                                params.width = availableWidth;
-                                                params.height = (aspectRatio == 0) ? (int) (availableWidth * 0.9f) : (int) (availableWidth / aspectRatio) ;
-                                            } else { // Vertical or square image
-                                                params.width = (int) (availableWidth / 1.05);
-                                                params.height = (aspectRatio == 0) ? (int) ((availableWidth/1.05) * 1.33f) : (int) ((availableWidth / 1.05) / aspectRatio) ;
-                                            }
-
-                                            mAttachmentPreviewImage.setLayoutParams(params);
+                                            sizeAttachmentPreview(resource.getWidth(), resource.getHeight());
                                             mAttachmentPreviewImage.setImageBitmap(resource);
 
                                             mAttachmentPreviewImage.post(() -> {
@@ -510,56 +769,9 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                                             mAttachmentPreviewImage.setLayoutParams(params);
                                         }
                                     });
-                            mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
-                            mRemoveAttachmentButton.setVisibility(View.VISIBLE);
-                            mVideoPlayButton.setVisibility(View.GONE);
-                        } else {
-                            Log.e("CommentBottomSheet", "Image processing failed.");
-                            mSelectedMediaUri = originalUri;
-                            mSelectedMediaType = "image";
-                            if (mAttachmentPreviewImage != null && mAttachmentPreviewContainer != null) {
-                                Glide.with(getContext())
-                                        .load(originalUri)
-                                        .placeholder(R.drawable.ic_image_placeholder_24dp)
-                                        .error(R.drawable.ic_error_placeholder_24dp)
-                                        .into(mAttachmentPreviewImage);
-                                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mAttachmentPreviewImage.getLayoutParams();
-                                params.width = (int) (100 * getResources().getDisplayMetrics().density);
-                                params.height = (int) (100 * getResources().getDisplayMetrics().density);
-                                mAttachmentPreviewImage.setLayoutParams(params);
-                                mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
-                                mRemoveAttachmentButton.setVisibility(View.VISIBLE);
-                                mVideoPlayButton.setVisibility(View.GONE);
-                            }
-                            if(getContext() != null) {
-                                Toast.makeText(getContext(), R.string.image_processing_failed, Toast.LENGTH_SHORT).show();
-                            }
-                        }
-                    }
-                });
-        } else if (mimeType != null && mimeType.startsWith("video/")) {
-            mSelectedMediaUri = originalUri;
-            mSelectedMediaType = "video";
-            if (mAttachmentPreviewImage != null && mAttachmentPreviewContainer != null && getContext() != null) {
-                Glide.with(getContext())
-                        .load(mSelectedMediaUri)
-                        .placeholder(R.drawable.ic_image_placeholder_24dp)
-                        .error(R.drawable.ic_error_placeholder_24dp)
-                        .into(mAttachmentPreviewImage);
-
-                setVideoPreviewSize(mSelectedMediaUri);
-
-                mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
-                mVideoPlayButton.setVisibility(View.VISIBLE);
-                mRemoveAttachmentButton.setVisibility(View.VISIBLE);
-            }
-        } else {
-            Log.w("CommentBottomSheet", "Unsupported media type: " + mimeType);
-             if(getContext() != null) {
-                Toast.makeText(getContext(), R.string.unsupported_file_type, Toast.LENGTH_SHORT).show();
-            }
-            removeAttachment();
-        }
+        mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
+        mRemoveAttachmentButton.setVisibility(View.VISIBLE);
+        mVideoPlayButton.setVisibility(View.GONE);
     }
 
     private void showMediaFullscreen() {

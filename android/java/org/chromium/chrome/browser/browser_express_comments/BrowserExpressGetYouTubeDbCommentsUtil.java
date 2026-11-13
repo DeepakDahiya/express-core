@@ -238,6 +238,13 @@ public class BrowserExpressGetYouTubeDbCommentsUtil {
                 String youtubeId = obj.isNull("youtubeId") ? null : obj.optString("youtubeId", null);
                 String youtubeAuthorName = obj.isNull("youtubeAuthorName") ? null : obj.optString("youtubeAuthorName", null);
                 String youtubeAvatarUrl = obj.isNull("youtubeAvatarUrl") ? null : obj.optString("youtubeAvatarUrl", null);
+                // Native comments posted on a YouTube page can carry media just like anywhere
+                // else. These were previously dropped here, so the attachment vanished on reload.
+                String mediaImageUrl = obj.isNull("mediaImageUrl") ? null : obj.optString("mediaImageUrl", null);
+                String mediaGifUrl = obj.isNull("mediaGifUrl") ? null : obj.optString("mediaGifUrl", null);
+                String mediaVideoUrl = obj.isNull("mediaVideoUrl") ? null : obj.optString("mediaVideoUrl", null);
+                String mediaAudioUrl = obj.isNull("mediaAudioUrl") ? null : obj.optString("mediaAudioUrl", null);
+                int mediaDurationMs = obj.optInt("mediaDurationMs", 0);
 
                 Vote vote = null;
                 JSONObject didVoteObj = obj.optJSONObject("didVote");
@@ -254,8 +261,12 @@ public class BrowserExpressGetYouTubeDbCommentsUtil {
 
                 Comment c = new Comment(id, content, upvotes, downvotes, commentCount,
                         pageParent, null, commentParent, user, vote,
-                        null, null, null, null, null);
+                        mediaImageUrl, mediaVideoUrl, null, null, null);
                 c.setTrendingScore(trendingScore);
+                c.setMediaGifUrl(mediaGifUrl);
+                c.setMediaAudioUrl(mediaAudioUrl);
+                c.setMediaDurationMs(mediaDurationMs);
+                c.readExtras(obj);
                 if (youtubeId != null) {
                     c.setYoutubeId(youtubeId);
                     c.setYoutubeAuthorName(youtubeAuthorName);

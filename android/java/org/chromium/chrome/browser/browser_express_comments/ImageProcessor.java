@@ -29,6 +29,7 @@ public class ImageProcessor {
     private static final String TAG = "ImageProcessor";
     public static final int DEFAULT_MAX_IMAGE_DIMENSION = 1920;
     public static final int DEFAULT_IMAGE_COMPRESSION_QUALITY = 80;
+    private static final String MIME_TYPE_GIF = "image/gif";
 
     public interface ProcessImageCallback {
         void onImageProcessed(@Nullable Uri processedImageUri, @Nullable String finalMimeType);
@@ -55,87 +56,105 @@ public class ImageProcessor {
         protected Pair<Uri, String> doInBackground() {
             Context context = contextRef.get();
             if (context == null) return null;
-
-            InputStream inputStream = null;
-            OutputStream outputStream = null;
-            File tempFile = null;
-
-            try {
-                inputStream = context.getContentResolver().openInputStream(originalImageUri);
-                if (inputStream == null) return null;
-
-                BitmapFactory.Options options = new BitmapFactory.Options();
-                options.inJustDecodeBounds = true;
-                BitmapFactory.decodeStream(inputStream, null, options);
-                try { inputStream.close(); } catch (IOException ignored) {}
-
-                int originalWidth = options.outWidth;
-                int originalHeight = options.outHeight;
-
-                if (originalWidth <= 0 || originalHeight <= 0) return null;
-
-                options.inSampleSize = 1;
-                if (originalHeight > this.maxDimension || originalWidth > this.maxDimension) {
-                    final int halfHeight = originalHeight / 2;
-                    final int halfWidth = originalWidth / 2;
-                    while ((halfHeight / options.inSampleSize) >= this.maxDimension
-                            && (halfWidth / options.inSampleSize) >= this.maxDimension) {
-                        options.inSampleSize *= 2;
-                    }
-                }
-
-                options.inJustDecodeBounds = false;
-                inputStream = context.getContentResolver().openInputStream(originalImageUri);
-                if (inputStream == null) return null;
-                Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
-                try { inputStream.close(); } catch (IOException ignored) {}
-
-                if (bitmap == null) return null;
-
-                inputStream = context.getContentResolver().openInputStream(originalImageUri);
-                if (inputStream != null) {
-                     ExifInterface exifInterface = new ExifInterface(inputStream);
-                     int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
-                     Matrix matrix = new Matrix();
-                     switch (orientation) {
-                         case ExifInterface.ORIENTATION_ROTATE_90: matrix.postRotate(90); break;
-                         case ExifInterface.ORIENTATION_ROTATE_180: matrix.postRotate(180); break;
-                         case ExifInterface.ORIENTATION_ROTATE_270: matrix.postRotate(270); break;
-                     }
-                     bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
-                     try { inputStream.close(); } catch (IOException ignored) {}
-                }
-
-                String extension = ".jpg";
-                Bitmap.CompressFormat format = Bitmap.CompressFormat.JPEG;
-                String outputMimeType = "image/jpeg";
-
-                tempFile = File.createTempFile("processed_img_", extension, context.getCacheDir());
-                outputStream = new FileOutputStream(tempFile);
-
-                bitmap.compress(format, this.compressionQuality, outputStream);
-                bitmap.recycle();
-
-                return new Pair<>(Uri.fromFile(tempFile), outputMimeType);
-
-            } catch (IOException | OutOfMemoryError e) {
-                Log.e(TAG, "Error during image processing", e);
-                if (tempFile != null && tempFile.exists()) tempFile.delete();
-                return null;
-            } finally {
-                try {
-                    if (inputStream != null) inputStream.close();
-                    if (outputStream != null) outputStream.close();
-                } catch (IOException e) {
-                    Log.e(TAG, "Error closing streams", e);
-                }
-            }
+            return processSync(context, originalImageUri, maxDimension, compressionQuality);
         }
 
         @Override
         protected void onPostExecute(Pair<Uri, String> result) {
             if (callback != null) {
                 callback.onImageProcessed(result != null ? result.first : null, result != null ? result.second : null);
+            }
+        }
+    }
+
+    /**
+     * Scales an image down to {@code maxDimension} on its longer side, upright and as JPEG, on the
+     * calling thread. Returns the new file and its MIME type; a GIF comes back untouched (it would
+     * lose its frames); null when the image could not be read.
+     */
+    public static Pair<Uri, String> processSync(Context context, Uri imageUri, int maxDimension,
+            int compressionQuality) {
+        // A GIF's animation lives in the frames after the first, and everything below runs
+        // through BitmapFactory, which only ever yields one. Hand it back untouched so it
+        // uploads as it was picked; the composer already routes GIFs around this, and this
+        // keeps any other caller from silently flattening one.
+        String sourceMimeType = context.getContentResolver().getType(imageUri);
+        if (MIME_TYPE_GIF.equals(sourceMimeType)) {
+            return new Pair<>(imageUri, sourceMimeType);
+        }
+
+        InputStream inputStream = null;
+        OutputStream outputStream = null;
+        File tempFile = null;
+
+        try {
+            inputStream = context.getContentResolver().openInputStream(imageUri);
+            if (inputStream == null) return null;
+
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(inputStream, null, options);
+            try { inputStream.close(); } catch (IOException ignored) {}
+
+            int originalWidth = options.outWidth;
+            int originalHeight = options.outHeight;
+
+            if (originalWidth <= 0 || originalHeight <= 0) return null;
+
+            options.inSampleSize = 1;
+            if (originalHeight > maxDimension || originalWidth > maxDimension) {
+                final int halfHeight = originalHeight / 2;
+                final int halfWidth = originalWidth / 2;
+                while ((halfHeight / options.inSampleSize) >= maxDimension
+                        && (halfWidth / options.inSampleSize) >= maxDimension) {
+                    options.inSampleSize *= 2;
+                }
+            }
+
+            options.inJustDecodeBounds = false;
+            inputStream = context.getContentResolver().openInputStream(imageUri);
+            if (inputStream == null) return null;
+            Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, options);
+            try { inputStream.close(); } catch (IOException ignored) {}
+
+            if (bitmap == null) return null;
+
+            inputStream = context.getContentResolver().openInputStream(imageUri);
+            if (inputStream != null) {
+                 ExifInterface exifInterface = new ExifInterface(inputStream);
+                 int orientation = exifInterface.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL);
+                 Matrix matrix = new Matrix();
+                 switch (orientation) {
+                     case ExifInterface.ORIENTATION_ROTATE_90: matrix.postRotate(90); break;
+                     case ExifInterface.ORIENTATION_ROTATE_180: matrix.postRotate(180); break;
+                     case ExifInterface.ORIENTATION_ROTATE_270: matrix.postRotate(270); break;
+                 }
+                 bitmap = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
+                 try { inputStream.close(); } catch (IOException ignored) {}
+            }
+
+            String extension = ".jpg";
+            Bitmap.CompressFormat format = Bitmap.CompressFormat.JPEG;
+            String outputMimeType = "image/jpeg";
+
+            tempFile = File.createTempFile("processed_img_", extension, context.getCacheDir());
+            outputStream = new FileOutputStream(tempFile);
+
+            bitmap.compress(format, compressionQuality, outputStream);
+            bitmap.recycle();
+
+            return new Pair<>(Uri.fromFile(tempFile), outputMimeType);
+
+        } catch (IOException | OutOfMemoryError e) {
+            Log.e(TAG, "Error during image processing", e);
+            if (tempFile != null && tempFile.exists()) tempFile.delete();
+            return null;
+        } finally {
+            try {
+                if (inputStream != null) inputStream.close();
+                if (outputStream != null) outputStream.close();
+            } catch (IOException e) {
+                Log.e(TAG, "Error closing streams", e);
             }
         }
     }

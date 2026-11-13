@@ -1,35 +1,14 @@
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/browser_express_feed_background"
     android:orientation="vertical">
 
-    <RelativeLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    <include layout="@layout/browser_express_comment_toolbar" />
 
-        <ImageView
-            android:id="@+id/back_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@null"
-            android:gravity="start|center_vertical"
-            android:padding="16dp"
-            app:srcCompat="@drawable/ic_back"/>
-
-        <TextView
-            android:id="@+id/be_toolbar_title"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
-            android:text="@string/replies"
-            android:textSize="24sp"
-            android:textColor="@color/content_color"
-            android:textStyle="bold"/>
-
-    </RelativeLayout>
+    <include layout="@layout/browser_express_comments_header" />
 
     <FrameLayout
         android:layout_width="match_parent"
@@ -52,15 +31,17 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
+            android:paddingTop="@dimen/be_slide_rows_padding_top"
             android:paddingBottom="8dp"/>
 
         <LinearLayout
             android:id="@+id/empty_container"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:visibility="visible"
-            android:gravity="center"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <include layout="@layout/browser_express_comments_empty" />
         </LinearLayout>
         
     </FrameLayout>

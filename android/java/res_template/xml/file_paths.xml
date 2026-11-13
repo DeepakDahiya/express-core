@@ -15,6 +15,8 @@
     <cache-path name="traces" path="traces/"/>
     <cache-path name="webapk" path="webapks/" />
     <cache-path name="offline-cache" path="Offline Pages/archives/" />
+    <!-- Browser Express: camera captures and downloaded GIFs on their way into a comment. -->
+    <cache-path name="comment-media" path="comment-media/" />
 
     <!-- Note(twellington): This path is included to facilitate creating
          content:// URIs for downloads. This may no longer work if/when users

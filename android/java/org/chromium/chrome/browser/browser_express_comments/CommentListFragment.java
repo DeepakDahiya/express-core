@@ -19,13 +19,11 @@ import org.json.JSONException;
 import java.util.HashMap;
 import java.util.HashSet;
 import android.view.WindowManager;
-import android.content.SharedPreferences;
 import android.view.inputmethod.InputMethodManager;
 import android.content.Context;
 import android.widget.ProgressBar;
 import android.util.Base64;
 import java.io.UnsupportedEncodingException;
-import java.util.Locale;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.widget.EditText;
@@ -49,9 +47,8 @@ import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
-import com.bumptech.glide.Glide;
 import android.widget.ImageView;
-import org.chromium.chrome.browser.app.helpers.ImageLoader;
+import org.chromium.chrome.browser.app.helpers.ProfileAvatar;
 import org.chromium.chrome.browser.crypto_wallet.util.AndroidUtils;
 import org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout;
 import android.content.Intent;
@@ -73,7 +70,6 @@ public class CommentListFragment extends Fragment {
     public static final String POST_ID = "post_id";
     public static final String VIDEO_ID = "video_id";
     public static final String OPEN_KEYBOARD = "open_keyboard";
-    private static final String BE_PROFILE_PREF = "BE_PROFILE_PREFS";
     private RecyclerView mCommentRecycler;
     private CommentListAdapter mCommentAdapter;
     private List<Comment> mComments;
@@ -95,12 +91,16 @@ public class CommentListFragment extends Fragment {
     private ShimmerFrameLayout mShimmerLoading;
     private ViewGroup mShimmerItems;
 
-    private Button mSendButton;
+    private View mSendButton;
     private EditText mMessageEditText;
-    private TextView mCommentsText;
 
     private ImageView mBackButton;
     private TextView mToolbarTitle;
+    /** The header's "how far through" line and "15 / 87" (Figma "Scroll depth"). */
+    private View mDepthRow;
+    private ProgressBar mDepth;
+    private TextView mPosition;
+    private boolean mCommentsLoaded;
 
     private LinearLayout mEmptyContainer;
 
@@ -229,6 +229,20 @@ public class CommentListFragment extends Fragment {
         mToolbarTitle = view.findViewById(R.id.be_toolbar_title);
         mToolbarTitle.setText(R.string.comments);
 
+        mDepthRow = view.findViewById(R.id.comments_depth_row);
+        mDepth = view.findViewById(R.id.comments_depth);
+        mPosition = view.findViewById(R.id.comments_position);
+        if (getParentFragment() instanceof BrowserExpressCommentsBottomSheetFragment) {
+            BrowserExpressCommentsBottomSheetFragment sheet =
+                    (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
+            sheet.bindSourceChip(view);
+            ((TextView) view.findViewById(R.id.comments_empty_body)).setText(sheet.isForPost()
+                            ? R.string.browser_express_comments_empty_body
+                            : R.string.browser_express_comments_empty_body_page);
+            view.findViewById(R.id.comments_empty_cta)
+                    .setOnClickListener(v -> sheet.showKeyboardWithFocus());
+        }
+
         mShimmerLoading = view.findViewById(R.id.skeleton_shimmer);
         mShimmerItems = view.findViewById(R.id.shimmer_items);
         int shimmerSkeletonRows =
@@ -251,12 +265,6 @@ public class CommentListFragment extends Fragment {
         mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mMessageEditText, parentFragment, false, false, mPageUrl);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
-        this.setOnClickForEmoji(inputCallback.getEmojiButton("lol"), mMessageEditText);
-        this.setOnClickForEmoji(inputCallback.getEmojiButton("heart"), mMessageEditText);
-        this.setOnClickForEmoji(inputCallback.getEmojiButton("cry"), mMessageEditText);
-        this.setOnClickForEmoji(inputCallback.getEmojiButton("fire"), mMessageEditText);
-        this.setOnClickForEmoji(inputCallback.getEmojiButton("love"), mMessageEditText);
-        this.setOnClickForEmoji(inputCallback.getEmojiButton("clap"), mMessageEditText);
 
         inputCallback.resetPostStuff();
 
@@ -264,22 +272,12 @@ public class CommentListFragment extends Fragment {
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenHeight = displayMetrics.heightPixels;
 
-        mEmptyContainer.getLayoutParams().height = (int)(screenHeight * 0.7);
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
             String accessToken = activity.getAccessToken();
-            mCommentsText = activity.getCommentCountText();
             if(accessToken != null){
-                Context context = ContextUtils.getApplicationContext();
-                SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
-                String avatar = prefs.getString("avatar_url", null);
-                JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
-                if (avatar != null) {
-                    inputCallback.updateAvatar(avatar, activity);
-                }else{
-                    inputCallback.updateAvatar("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", activity);
-                }
+                inputCallback.updateAvatar(ProfileAvatar.selfUrl(accessToken), activity);
             }
 
             if(mOpenKeyboard){
@@ -433,12 +431,15 @@ public class CommentListFragment extends Fragment {
                 public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                     super.onScrolled(recyclerView, dx, dy);
                     scheduleVideoCheck();
+                    updateDepth();
                 }
                 
                 @Override
                 public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                     super.onScrollStateChanged(recyclerView, newState);
-                    if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
+                        CommentScrollPrompts.recordScroll();
+                    } else if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                         scheduleVideoCheck();
                     }
                 }
@@ -505,9 +506,6 @@ public class CommentListFragment extends Fragment {
             videoScrollListener = null;
         }
 
-        mCommentAdapter = null;
-        mCommentRecycler = null;
-
         if (mLayoutManager != null) {
             int currentPosition = mLayoutManager.findFirstVisibleItemPosition();
             if (currentPosition != RecyclerView.NO_POSITION) {
@@ -516,6 +514,11 @@ public class CommentListFragment extends Fragment {
             }
         }
 
+        // Recycling the rows is what releases their video players; each holds a hardware
+        // decoder, and left alive they starve every later video of one until the app restarts.
+        if (mCommentRecycler != null) mCommentRecycler.setAdapter(null);
+        mCommentAdapter = null;
+        mCommentRecycler = null;
         mLayoutManager = null;
     }
 
@@ -532,22 +535,6 @@ public class CommentListFragment extends Fragment {
         if (videoId != null) args.putString(VIDEO_ID, videoId);
         fragment.setArguments(args);
         return fragment;
-    }
-
-    private void setOnClickForEmoji(Button emojiButton, EditText editText){ {
-        emojiButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    String content = editText.getText().toString().trim();
-                    if(content.length() > 0){
-                        String finalContent = content + emojiButton.getText().toString();
-                        editText.setText(finalContent);
-                    }else{
-                        editText.setText(emojiButton.getText().toString());
-                    }
-                }
-            });
-        }
     }
 
     /**
@@ -604,6 +591,15 @@ public class CommentListFragment extends Fragment {
     private final BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
             new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
                 @Override
+                public void getCommentsTotals(
+                        int commentCount, int emoteCount, @Nullable String hashtag) {
+                    if (getParentFragment() instanceof BrowserExpressCommentsBottomSheetFragment) {
+                        ((BrowserExpressCommentsBottomSheetFragment) getParentFragment())
+                                .onTopicTotals(commentCount, emoteCount, hashtag);
+                    }
+                }
+
+                @Override
                 public void getCommentsSuccessful(List<Comment> comments, Comment parentComment, Comment grandParentComment) {
                     Log.e("YouTubeComments", "[CommentListFragment] getCommentsSuccessful — received " + comments.size() + " comments for mode=" + mCommentsFor);
                     int len = mComments.size();
@@ -612,6 +608,9 @@ public class CommentListFragment extends Fragment {
                     mShimmerLoading.setVisibility(View.GONE);
                     AndroidUtils.gone(mShimmerItems);
                     mShimmerLoading.hideShimmer();
+                    mCommentsLoaded = true;
+                    updateEmptyState();
+                    if (mCommentRecycler != null) mCommentRecycler.post(() -> updateDepth());
 
                     if (mSavedScrollPosition != RecyclerView.NO_POSITION) {
                         mLayoutManager.scrollToPositionWithOffset(mSavedScrollPosition, 0);
@@ -635,43 +634,68 @@ public class CommentListFragment extends Fragment {
                 @Override
                 public void getCommentsFailed(String error) {
                     Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
+                    mShimmerLoading.setVisibility(View.GONE);
+                    AndroidUtils.gone(mShimmerItems);
+                    mShimmerLoading.hideShimmer();
+                    mCommentsLoaded = true;
+                    updateEmptyState();
                 }
             };
+
+    /** The invitation card and the "first comment" hint while there are no comments. */
+    private void updateEmptyState() {
+        boolean empty = mCommentsLoaded && mComments.isEmpty();
+        if (mEmptyContainer != null) mEmptyContainer.setVisibility(empty ? View.VISIBLE : View.GONE);
+        if (mMessageEditText != null) {
+            mMessageEditText.setHint(empty ? R.string.browser_express_comment_hint_first
+                                           : R.string.browser_express_comment_hint);
+        }
+    }
+
+    private void updateDepth() {
+        showListDepth(mDepthRow, mDepth, mPosition, mLayoutManager, mComments.size());
+    }
+
+    /**
+     * "15 / 87" under the comments title: the comments scrolled through so far, the last one on
+     * screen counting. Replies pages wear the same header and count their replies the same way.
+     */
+    static void showListDepth(@Nullable View depthRow, ProgressBar depth, TextView position,
+            @Nullable LinearLayoutManager layoutManager, int total) {
+        if (depthRow == null || layoutManager == null) return;
+        if (total == 0) {
+            depthRow.setVisibility(View.INVISIBLE);
+            return;
+        }
+        int last = layoutManager.findLastVisibleItemPosition();
+        int seen = Math.max(1, Math.min(total, last + 1));
+        position.setText(position.getContext().getString(
+                R.string.browser_express_comments_position, seen, total));
+        depth.setProgress(Math.round(1000f * seen / total));
+        depthRow.setVisibility(View.VISIBLE);
+    }
 
     private final BrowserExpressAddCommentUtil.AddCommentCallback addCommentCallback=
             new BrowserExpressAddCommentUtil.AddCommentCallback() {
                 @Override
                 public void addCommentSuccessful(Comment comment, String newAccessToken, String newRefreshToken) {
                     mComments.add(0, comment);
+                    updateEmptyState();
                     mCommentAdapter.notifyItemRangeInserted(0, 1);
                     LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
                     layoutManager.scrollToPositionWithOffset(0, 0);
 
                     try{
                         BraveActivity activity = BraveActivity.getBraveActivity();
-                        // Updating comment count for bottom toolbar
-                        mCommentsText = activity.getCommentCountText();
+                        // First comment is the moment "someone replied to you" is worth asking for.
+                        org.chromium.chrome.browser.browser_express_push.BrowserExpressPushTokenManager
+                                .maybePromptForPermissionAfterComment(activity);
 
                         mMessageEditText.clearFocus();
                         InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
 
-                        if (mCommentsText != null) {
-                            String currentText = mCommentsText.getText().toString();
-                            int commentCount = 0;
-                            try {
-                                String[] parts = currentText.split(" ");
-                                if (parts.length > 0) {
-                                    commentCount = Integer.parseInt(parts[0]);
-                                }
-                            } catch (NumberFormatException e) {
-                            }
-
-                            // Increment the comment count
-                            commentCount++;
-
-                            mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
-                        }
+                        activity.incrementPageCommentCount();
                         if(newRefreshToken != null && !newRefreshToken.isEmpty()){
                             activity.setAccessToken(newAccessToken);
                             JSONObject decodedAccessTokenObj = getDecodedToken(newAccessToken);
@@ -721,9 +745,15 @@ public class CommentListFragment extends Fragment {
         }
     }
 
+    /** The comments loaded so far, for the "Add your take" topic card. */
+    List<Comment> getLoadedComments() {
+        return mComments != null ? mComments : java.util.Collections.emptyList();
+    }
+
     public void addNewComment(Comment newComment) {
         Log.e("CommentListFragment", "Adding new comment: " + newComment.getId());
         mComments.add(0, newComment);
+        updateEmptyState();
 
         mCommentAdapter.notifyItemRangeInserted(0, 1);
         LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
@@ -731,29 +761,12 @@ public class CommentListFragment extends Fragment {
 
         try{
             BraveActivity activity = BraveActivity.getBraveActivity();
-            // Updating comment count for bottom toolbar
-            mCommentsText = activity.getCommentCountText();
 
             mMessageEditText.clearFocus();
             InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
 
-            if (mCommentsText != null) {
-                String currentText = mCommentsText.getText().toString();
-                int commentCount = 0;
-                try {
-                    String[] parts = currentText.split(" ");
-                    if (parts.length > 0) {
-                        commentCount = Integer.parseInt(parts[0]);
-                    }
-                } catch (NumberFormatException e) {
-                }
-
-                // Increment the comment count
-                commentCount++;
-
-                mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
-            }
+            activity.incrementPageCommentCount();
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             // Log.e("Express Browser Access Token", e.getMessage());
         }
@@ -776,6 +789,23 @@ public class CommentListFragment extends Fragment {
             if (mComments.get(i).getId().equals(tempId)) {
                 mComments.get(i).setUploadStatus(Comment.UploadStatus.FAILED);
                 mCommentAdapter.notifyItemChanged(i);
+                return;
+            }
+        }
+    }
+
+    /** Redraws a sending comment's upload state; see CommentListAdapter#refreshUploadState. */
+    public void refreshUploadState(String commentId) {
+        if (mCommentAdapter != null) mCommentAdapter.refreshUploadState(commentId);
+    }
+
+    /** Takes a comment off the list, e.g. one whose upload was cancelled. */
+    public void removeComment(String commentId) {
+        if (mComments == null || mCommentAdapter == null || commentId == null) return;
+        for (int i = 0; i < mComments.size(); i++) {
+            if (commentId.equals(mComments.get(i).getId())) {
+                mComments.remove(i);
+                mCommentAdapter.notifyItemRemoved(i);
                 return;
             }
         }

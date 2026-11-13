@@ -23,6 +23,24 @@
         app:controller_layout_id="@layout/exo_player_control_view"
         android:visibility="gone" />
 
+    <!-- "2×" while the reader holds the right half of the video. -->
+    <include
+        layout="@layout/browser_express_fast_forward_badge"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:layout_marginTop="76dp" />
+
+    <!-- Shown instead of the close button when the viewer is opened as a page of its own — from
+         a post's video, where back belongs to the comments underneath rather than to a dismiss. -->
+    <include
+        android:id="@+id/media_viewer_header"
+        layout="@layout/browser_express_comment_toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top"
+        android:visibility="gone" />
+
     <ImageButton
         android:id="@+id/close_button_fullscreen"
         android:layout_width="48dp"

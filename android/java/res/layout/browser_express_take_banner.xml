@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- The publishing banner at the top of the comments (TakeBanner): uploading, posted or failed,
+     for takes and replies alike. It stays while the reader swipes pages, and can itself be swiped
+     away in any direction. -->
+<org.chromium.chrome.browser.browser_express_comments.SwipeDismissLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/take_banner"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_gravity="top"
+    android:layout_marginHorizontal="12dp"
+    android:layout_marginTop="6dp"
+    android:accessibilityLiveRegion="polite"
+    android:background="@drawable/browser_express_take_banner_bg"
+    android:elevation="8dp"
+    android:visibility="gone">
+
+    <LinearLayout
+        android:id="@+id/take_banner_body"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:minHeight="56dp"
+        android:orientation="horizontal"
+        android:paddingVertical="11dp"
+        android:paddingStart="14dp"
+        android:paddingEnd="2dp">
+
+        <View
+            android:id="@+id/take_banner_dot"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:background="@drawable/browser_express_take_dot" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/take_banner_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:fontFamily="sans-serif"
+                android:lineHeight="18sp"
+                android:maxLines="1"
+                android:textColor="@color/browser_express_take_title"
+                android:textFontWeight="600"
+                android:textSize="14sp"
+                tools:text="Reel posted" />
+
+            <TextView
+                android:id="@+id/take_banner_sub"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:fontFamily="sans-serif"
+                android:lineHeight="16sp"
+                android:maxLines="2"
+                android:textColor="@color/browser_express_take_meta"
+                android:textSize="12sp"
+                tools:text="Added to #AsianGamesIndia" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/take_banner_action"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:fontFamily="sans-serif"
+            android:gravity="center"
+            android:lineHeight="18sp"
+            android:paddingHorizontal="12dp"
+            android:textColor="@color/browser_express_take_banner_action"
+            android:textFontWeight="600"
+            android:textSize="14sp"
+            tools:text="View" />
+
+        <!-- A 20dp cross with no fill, in a 44dp target; posted banners only. -->
+        <ImageButton
+            android:id="@+id/take_banner_close"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="-4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/browser_express_take_dismiss"
+            android:scaleType="center"
+            android:src="@drawable/ic_browser_express_take_banner_close"
+            app:tint="@color/browser_express_take_meta" />
+    </LinearLayout>
+
+    <ProgressBar
+        android:id="@+id/take_banner_progress"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_gravity="bottom"
+        android:max="1000"
+        android:progressDrawable="@drawable/browser_express_take_banner_progress" />
+</org.chromium.chrome.browser.browser_express_comments.SwipeDismissLayout>

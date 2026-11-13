@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/.
+-->
+<!-- One full-screen reel page for a portrait-video comment (Figma 598:4043; "Add your take" pill
+     and "Karma earned" from the design handoffs of the same names). The list holds exactly one row
+     (browser_express_comment_reel_item.xml); the list is full-height so that row's match_parent
+     height resolves to the whole page. The page runs under the comments header, so it carries
+     its own: "← #Hashtag" ("← Comments" when the post has none) over a scrim, and the "Add your
+     take" pill on the right. -->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/browser_express_media_background">
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/slide_rows"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:nestedScrollingEnabled="false"
+        android:overScrollMode="never" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="93dp"
+        android:background="@drawable/browser_express_reel_top_scrim_bg" />
+
+    <!-- Ends short of the "Add your take" slot (154dp + 12dp) so a long hashtag ellipsizes
+         instead of running under the pill. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginEnd="170dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        tools:ignore="RtlSymmetry,UseCompoundDrawables">
+
+        <ImageView
+            android:id="@+id/reel_back_button"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/browser_express_comments_back"
+            android:src="@drawable/ic_browser_express_reel_back" />
+
+        <TextView
+            android:id="@+id/reel_header_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:ellipsize="end"
+            android:fontFamily="sans-serif"
+            android:lineHeight="20sp"
+            android:maxLines="1"
+            android:text="@string/comments"
+            android:textColor="@color/browser_express_reel_header_text"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <!-- Where the reader is in the stream ("38 / 214", the same numbers as the text pages'
+         header). It fades in under the hashtag each time this page becomes the reader's page and
+         fades out about 2.7s later (ReelStreamProgress; design_handoff_video_progress, option 1b).
+         It spans the title column, from the hashtag's start (16dp padding + 24dp arrow + 8dp gap)
+         to the header's end. Its top is kept 3dp under the hashtag at runtime. It is an overlay,
+         so the header never moves for it, and it takes no touches. -->
+    <org.chromium.chrome.browser.browser_express_comments.ReelStreamProgress
+        android:id="@+id/reel_stream_progress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="48dp"
+        android:layout_marginEnd="170dp"
+        android:alpha="0"
+        android:importantForAccessibility="no" />
+
+    <!-- "Karma earned" on a reel (KarmaEarned): the reader's picture slides out from behind the
+         collapsed bubble, so the layer it draws in sits under the bubble. The anchor is where the
+         30dp picture rests: its right edge 44dp in from the pill's right edge, centred on it. -->
+    <View
+        android:id="@+id/reel_karma_layer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:importantForAccessibility="no" />
+
+    <View
+        android:id="@+id/reel_karma_anchor"
+        android:layout_width="30dp"
+        android:layout_height="30dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="29dp"
+        android:layout_marginEnd="60dp"
+        android:importantForAccessibility="no"
+        android:visibility="invisible" />
+
+    <!-- "Add your take" (ReelTakeBubble): a 36dp pill holding a plus in a white circle, 146dp
+         wide with its label on every third reel and folding to the circle 1.2s after that page
+         settles. The slot is the full pill plus 4dp all round, so the folded pill keeps a 44dp
+         target; the pill is drawn at the current width from the right, and only reel_take_hit,
+         which follows the pill's left edge, takes taps, leaving the rest to the video. -->
+    <FrameLayout
+        android:id="@+id/reel_take_bubble"
+        android:layout_width="154dp"
+        android:layout_height="44dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="22dp"
+        android:layout_marginEnd="12dp">
+
+        <View
+            android:id="@+id/reel_take_outline"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no" />
+
+        <ImageView
+            android:id="@+id/reel_take_plus"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:layout_gravity="start|center_vertical"
+            android:background="@drawable/browser_express_reel_take_circle"
+            android:importantForAccessibility="no"
+            android:scaleType="center"
+            android:src="@drawable/ic_browser_express_reel_take_plus" />
+
+        <TextView
+            android:id="@+id/reel_take_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start|center_vertical"
+            android:fontFamily="sans-serif-medium"
+            android:importantForAccessibility="no"
+            android:includeFontPadding="false"
+            android:lineHeight="17sp"
+            android:maxLines="1"
+            android:text="@string/browser_express_reel_add_your_take"
+            android:textColor="@color/browser_express_reel_take_label"
+            android:textSize="14sp" />
+
+        <View
+            android:id="@+id/reel_take_hit"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:contentDescription="@string/browser_express_reel_add_your_take"
+            android:focusable="true" />
+    </FrameLayout>
+
+</FrameLayout>

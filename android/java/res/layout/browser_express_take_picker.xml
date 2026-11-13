@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- "Add to your take" (TakeComposer): what can go with a take, shown where the keyboard was. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/take_picker"
+    android:layout_width="match_parent"
+    android:layout_height="300dp"
+    android:background="@drawable/browser_express_take_picker_bg"
+    android:clickable="true"
+    android:focusable="false"
+    android:orientation="vertical"
+    android:paddingHorizontal="20dp"
+    android:paddingVertical="18dp"
+    android:visibility="gone">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:accessibilityHeading="true"
+                android:fontFamily="sans-serif"
+                android:lineHeight="20sp"
+                android:text="@string/browser_express_take_picker_title"
+                android:textColor="@color/browser_express_take_title"
+                android:textFontWeight="600"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:lineHeight="16sp"
+                android:text="@string/browser_express_take_picker_subtitle"
+                android:textColor="@color/browser_express_take_meta"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/take_picker_close"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/browser_express_take_close_bg"
+            android:contentDescription="@string/browser_express_take_close"
+            android:scaleType="center"
+            android:src="@drawable/ic_browser_express_take_close"
+            app:tint="@color/browser_express_take_close_icon" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/take_pick_photos"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:background="@drawable/browser_express_take_dot"
+                android:backgroundTint="@color/browser_express_take_tile_photos_bg"
+                android:importantForAccessibility="no"
+                android:scaleType="center"
+                android:src="@drawable/ic_browser_express_take_pick_photo"
+                app:tint="@color/browser_express_take_tile_photos" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:fontFamily="sans-serif-medium"
+                android:lineHeight="16sp"
+                android:text="@string/browser_express_take_picker_photos"
+                android:textColor="@color/browser_express_take_title"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/take_pick_camera"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:background="@drawable/browser_express_take_dot"
+                android:backgroundTint="@color/browser_express_take_tile_camera_bg"
+                android:importantForAccessibility="no"
+                android:scaleType="center"
+                android:src="@drawable/ic_browser_express_take_pick_camera"
+                app:tint="@color/browser_express_take_tile_camera" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:fontFamily="sans-serif-medium"
+                android:lineHeight="16sp"
+                android:text="@string/browser_express_take_picker_camera"
+                android:textColor="@color/browser_express_take_title"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/take_pick_video"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:background="@drawable/browser_express_take_dot"
+                android:backgroundTint="@color/browser_express_take_tile_video_bg"
+                android:importantForAccessibility="no"
+                android:scaleType="center"
+                android:src="@drawable/ic_browser_express_take_pick_video"
+                app:tint="@color/browser_express_take_tile_video" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:fontFamily="sans-serif-medium"
+                android:lineHeight="16sp"
+                android:text="@string/browser_express_take_picker_video"
+                android:textColor="@color/browser_express_take_title"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="18dp"
+        android:baselineAligned="false"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/take_pick_voice"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:background="@drawable/browser_express_take_dot"
+                android:backgroundTint="@color/browser_express_take_tile_voice_bg"
+                android:importantForAccessibility="no"
+                android:scaleType="center"
+                android:src="@drawable/ic_browser_express_take_pick_voice"
+                app:tint="@color/browser_express_take_tile_voice" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:fontFamily="sans-serif-medium"
+                android:lineHeight="16sp"
+                android:text="@string/browser_express_take_picker_voice"
+                android:textColor="@color/browser_express_take_title"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/take_pick_gif"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <!-- The design's GIF tile is the word itself, 13sp at weight 800. -->
+            <TextView
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:background="@drawable/browser_express_take_dot"
+                android:backgroundTint="@color/browser_express_take_tile_gif_bg"
+                android:fontFamily="sans-serif"
+                android:gravity="center"
+                android:importantForAccessibility="no"
+                android:text="@string/browser_express_take_picker_gif"
+                android:textColor="@color/browser_express_take_tile_gif"
+                android:textFontWeight="800"
+                android:textSize="13sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:fontFamily="sans-serif-medium"
+                android:lineHeight="16sp"
+                android:text="@string/browser_express_take_picker_gif"
+                android:textColor="@color/browser_express_take_title"
+                android:textSize="13sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/take_pick_document"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <ImageView
+                android:layout_width="52dp"
+                android:layout_height="52dp"
+                android:background="@drawable/browser_express_take_dot"
+                android:backgroundTint="@color/browser_express_take_tile_document_bg"
+                android:importantForAccessibility="no"
+                android:scaleType="center"
+                android:src="@drawable/ic_browser_express_take_pick_document"
+                app:tint="@color/browser_express_take_tile_document" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:fontFamily="sans-serif-medium"
+                android:lineHeight="16sp"
+                android:text="@string/browser_express_take_picker_document"
+                android:textColor="@color/browser_express_take_title"
+                android:textSize="13sp" />
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

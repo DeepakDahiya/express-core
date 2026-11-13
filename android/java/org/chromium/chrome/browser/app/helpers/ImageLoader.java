@@ -82,6 +82,21 @@ public class ImageLoader {
     private static void downloadImage(String url, final RequestManager requestManager,
             final boolean isCircular, final int roundedCorners, final ImageView imageView,
             final CustomTarget<Drawable> customTarget, final Callback callback) {
+        downloadImage(
+                url,
+                requestManager,
+                isCircular,
+                roundedCorners,
+                imageView,
+                customTarget,
+                callback,
+                /* forceGif= */ false);
+    }
+
+    private static void downloadImage(String url, final RequestManager requestManager,
+            final boolean isCircular, final int roundedCorners, final ImageView imageView,
+            final CustomTarget<Drawable> customTarget, final Callback callback,
+            final boolean forceGif) {
         if (!isValidImgUrl(url)) {
             if (callback != null) callback.onLoadFailed();
             return;
@@ -96,7 +111,8 @@ public class ImageLoader {
             android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
             handler.postDelayed(() -> {
                 // Retry after a short delay
-                downloadImage(url, requestManager, isCircular, roundedCorners, imageView, customTarget, callback);
+                downloadImage(url, requestManager, isCircular, roundedCorners, imageView,
+                        customTarget, callback, forceGif);
             }, 500); // 500ms delay
             return;
         }
@@ -177,12 +193,16 @@ public class ImageLoader {
             ImageFetcher imageFetcher =
                     ImageFetcherFactory.createImageFetcher(
                             ImageFetcherConfig.NETWORK_ONLY, profile.getProfileKey());
-            if (isGif(url)) {
+            if (forceGif || isGif(url)) {
                 imageFetcher.fetchGif(
                         Params.create(new GURL(url), UNUSED_CLIENT_NAME),
                         (ImageDataFetchResult gifImage) -> {
+                            // A gif fetch reports failure as a null result, and loadImage would
+                            // otherwise be handed a facade built from a null dereference.
                             ImageFetcherFacade imageFetcherFacade =
-                                    new ImageFetcherFacade(gifImage.imageData);
+                                    gifImage == null
+                                            ? null
+                                            : new ImageFetcherFacade(gifImage.imageData);
                             loadImage(
                                     imageFetcherFacade,
                                     requestManager,
@@ -245,6 +265,87 @@ public class ImageLoader {
             final boolean isCircular, final int roundedCorners, final ImageView imageView,
             final Callback callback) {
         downloadImage(url, requestManager, isCircular, roundedCorners, imageView, null, callback);
+    }
+
+    /**
+     * Loads an image with Glide's memory and disk caches enabled, straight from the URL.
+     *
+     * The legacy {@link #downloadImage} path routes every request through Chromium's
+     * ImageFetcher configured NETWORK_ONLY and then hands Glide raw bytes with the disk cache
+     * off — so a RecyclerView rebinding a row re-downloads the same image from the origin every
+     * time, and one transient network failure blanks media that loaded fine a scroll ago. This
+     * path is for public, immutable media (comment attachments, avatars): Glide fetches the URL
+     * itself, keeps the bytes on disk, and animates GIFs without being told. SVG and data: URLs
+     * still need the legacy pipeline and are routed back to it.
+     *
+     * @param url URL of the image to load.
+     * @param requestManager Glide request manager for applying transformations.
+     * @param isCircular When {@code true}, a circular transformation will be applied.
+     * @param roundedCorners Radius of the circle used to round the corners in dip. Unused when
+     *         {@code isCircular} is {@code true}.
+     * @param imageView ImageView where the image will be set.
+     * @param callback Callback used to notify if the image has been set correctly. It can be
+     *         {@code null}.
+     */
+    public static void downloadImageCached(String url, final RequestManager requestManager,
+            final boolean isCircular, final int roundedCorners, final ImageView imageView,
+            final Callback callback) {
+        if (!isValidImgUrl(url)) {
+            if (callback != null) callback.onLoadFailed();
+            return;
+        }
+        if (isSvg(url) || URLUtil.isDataUrl(url)) {
+            downloadImage(url, requestManager, isCircular, roundedCorners, imageView, callback);
+            return;
+        }
+
+        requestManager
+                .load(url)
+                .transform(getTransformations(isCircular, roundedCorners))
+                .diskCacheStrategy(DiskCacheStrategy.ALL)
+                .listener(
+                        new RequestListener<Drawable>() {
+                            @Override
+                            public boolean onLoadFailed(
+                                    GlideException glideException,
+                                    Object model,
+                                    Target<Drawable> target,
+                                    boolean isFirstResource) {
+                                return callback != null && callback.onLoadFailed();
+                            }
+
+                            @Override
+                            public boolean onResourceReady(
+                                    Drawable resource,
+                                    Object model,
+                                    Target<Drawable> target,
+                                    DataSource dataSource,
+                                    boolean isFirstResource) {
+                                return callback != null
+                                        && callback.onResourceReady(resource, target);
+                            }
+                        })
+                .into(imageView);
+    }
+
+    /**
+     * Downloads an animated image and plays it, without asking the URL whether it looks like a
+     * GIF. Use this when the source already knows — a comment whose API record says the
+     * attachment is a GIF, for instance, where the URL alone may not say so.
+     * @param url URL of the GIF to download.
+     * @param requestManager Glide request manager for applying transformations.
+     * @param isCircular When {@code true}, a circular transformation will be applied.
+     * @param roundedCorners Radius of the circle used to round the corners in dip. Unused when
+     *         {@code isCircular} is {@code true}.
+     * @param imageView ImageView where the downloaded GIF will be set.
+     * @param callback Callback used to notify if the GIF has been set correctly. It can be {@code
+     *         null}.
+     */
+    public static void downloadGif(String url, final RequestManager requestManager,
+            final boolean isCircular, final int roundedCorners, final ImageView imageView,
+            final Callback callback) {
+        downloadImage(url, requestManager, isCircular, roundedCorners, imageView, null, callback,
+                /* forceGif= */ true);
     }
 
     /**
@@ -447,7 +548,17 @@ public class ImageLoader {
         if (!isValidImgUrl(url)) return false;
         // Converts the URL to lowercase to make the matching case-insensitive.
         url = url.toLowerCase(Locale.ENGLISH);
-        return url.endsWith(".gif") || url.endsWith("=gif");
+        if (url.endsWith(".gif") || url.endsWith("=gif")) return true;
+
+        // A CDN keeps the extension in the path and hangs sizing parameters off the query, so
+        // "…/cat.gif?width=640" has to be read as a GIF too — matching the whole URL misses it
+        // and the image is then decoded to a single still frame.
+        int fragment = url.indexOf('#');
+        if (fragment != -1) url = url.substring(0, fragment);
+        int queryStart = url.indexOf('?');
+        String path = queryStart == -1 ? url : url.substring(0, queryStart);
+        String query = queryStart == -1 ? "" : url.substring(queryStart + 1);
+        return path.endsWith(".gif") || query.endsWith("=gif") || query.contains("=gif&");
     }
 
     public static void fetchFavIcon(String originSpecUrl, WeakReference<Context> context,

@@ -1,1 +1,3 @@
 <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+<!-- Recording voice-note comments. Requested at runtime the first time the mic is tapped. -->
+<uses-permission android:name="android.permission.RECORD_AUDIO" />

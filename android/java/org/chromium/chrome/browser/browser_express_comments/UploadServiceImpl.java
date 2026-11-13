@@ -82,11 +82,12 @@ public class UploadServiceImpl extends UploadService.Impl {
             String pId = intent.getStringExtra(UploadService.EXTRA_POST_ID);
             Uri mediaUri = intent.getParcelableExtra(UploadService.EXTRA_MEDIA_URI);
             String mediaType = intent.getStringExtra(UploadService.EXTRA_MEDIA_TYPE);
+            int mediaDurationMs = intent.getIntExtra(UploadService.EXTRA_MEDIA_DURATION_MS, 0);
             String accessToken = intent.getStringExtra(UploadService.EXTRA_ACCESS_TOKEN);
 
-            BrowserExpressAddCommentUtil.CommentResult result = 
+            BrowserExpressAddCommentUtil.CommentResult result =
                 BrowserExpressAddCommentUtil.uploadSynchronously(
-                    content, pType, url, pId, mediaUri, mediaType, accessToken);
+                    content, pType, url, pId, mediaUri, mediaType, mediaDurationMs, accessToken);
             
             Log.d(TAG, "Upload succeeded: " + tempId);
 

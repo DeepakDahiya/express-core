@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/.
+-->
+<!-- One full-screen page of packed text comments. CommentSlidePacker sizes the rows to
+     fit, so ordinarily there is nothing to scroll and leftover space stays blank. A comment
+     the reader expands with "see more" grows past that, and SlideScrollHost is what lets the
+     page scroll for it — and hands the pager the drag once the page runs out. -->
+<FrameLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/browser_express_feed_background">
+
+    <!-- Bottom margin is set by CommentSlideAdapter to clear the peek strip, so an expanded
+         comment scrolls above the next page's video rather than under it. -->
+    <org.chromium.chrome.browser.browser_express_comments.SlideScrollHost
+        android:id="@+id/slide_scroll_host"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/slide_rows"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:overScrollMode="never"
+            android:paddingTop="@dimen/be_slide_rows_padding_top"
+            android:scrollbars="vertical" />
+
+    </org.chromium.chrome.browser.browser_express_comments.SlideScrollHost>
+
+    <!-- Sneak peek at the reel below, shown only when the next page is a full-page video.
+         Both heights are set by CommentSlideAdapter: the strip takes the bottom slice the
+         packer kept free of rows, while the image inside is laid out at the height of a whole
+         page and clipped to it. Same size and same centre-crop the reel page gives the video,
+         so what shows here is literally the top of the next page.
+
+         The top corners are curved by CommentSlideAdapter's outline provider rather than here,
+         because only an outline can round a container that clips an oversized child. -->
+    <FrameLayout
+        android:id="@+id/next_reel_peek"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="bottom"
+        android:background="@color/browser_express_media_background"
+        android:visibility="gone">
+
+        <ImageView
+            android:id="@+id/next_reel_peek_image"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_gravity="top"
+            android:contentDescription="@string/be_next_reel_peek"
+            android:scaleType="centerCrop" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/be_reel_peek_top_edge" />
+
+    </FrameLayout>
+
+</FrameLayout>

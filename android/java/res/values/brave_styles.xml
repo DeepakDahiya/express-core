@@ -766,6 +766,21 @@
         <item name="android:textColor">@color/news_time_color</item>
     </style>
 
+    <!-- NEW on a take posted since the reader last opened the stream; layouts set its height,
+         padding, size and background (16dp on cards, 20dp on full-screen takes). Starts hidden. -->
+    <style name="BrowserExpressCommentNewTag">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:gravity">center</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:letterSpacing">0.04</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:text">@string/browser_express_comment_new_tag</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textFontWeight">700</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
     <!-- One of the top emoji on the "12 new takes" callout's quality line (14px, overlapping). -->
     <style name="BrowserExpressNewTakesEmoji">
         <item name="android:layout_width">16dp</item>
@@ -811,6 +826,68 @@
         <item name="android:paddingStart">10dp</item>
         <item name="android:paddingEnd">10dp</item>
         <item name="android:visibility">gone</item>
+    </style>
+
+    <!-- One emoji's count on a comment card (Figma "Smiley" chip). The emoji and the count are
+         spans of one text, set by CommentListAdapter; the reader's own reaction swaps in
+         browser_express_comment_reaction_selected_bg. -->
+    <style name="BrowserExpressCommentReactionChip">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/browser_express_comment_reaction_bg</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:gravity">center</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:paddingHorizontal">4dp</item>
+        <item name="android:paddingVertical">2dp</item>
+        <item name="android:textColor">@color/browser_express_comment_reaction_count</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <!-- A reaction on the reel rail (Figma "Emoji · Like + count"): the emoji over its count in a
+         fixed 38.4dp x 39.4dp chip, with fixed colours since media stays dark. The two lines are
+         spans of one text, set by CommentListAdapter; the count is sized in dp so font scaling
+         can't push it out of the chip. -->
+    <style name="BrowserExpressReelRailChip">
+        <item name="android:layout_width">38.4dp</item>
+        <item name="android:layout_height">39.4dp</item>
+        <item name="android:background">@drawable/browser_express_comment_reel_reaction_bg</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:gravity">center</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:textColor">@color/browser_express_reel_reaction_count</item>
+        <item name="android:textSize" tools:ignore="SpUsage">10dp</item>
+    </style>
+
+    <!-- Retry (or Cancel) on a comment that is uploading (Figma "Retry upload"): a 28dp pill.
+         CommentListAdapter swaps the background and colour between the two. -->
+    <style name="BrowserExpressCommentUploadAction">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">28dp</item>
+        <item name="android:background">@drawable/browser_express_comment_upload_retry_bg</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:gravity">center</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:minWidth">72dp</item>
+        <item name="android:paddingHorizontal">16dp</item>
+        <item name="android:textColor">@color/browser_express_comment_upload_retry_text</item>
+        <item name="android:textFontWeight">600</item>
+        <item name="android:textSize">11sp</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
+    <!-- Reaction, emoji, attachment and GIF sheets on the comments page. -->
+    <style name="BrowserExpressCommentSheetTheme"
+           parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/BrowserExpressCommentSheet</item>
+        <item name="android:windowSoftInputMode">adjustResize</item>
+    </style>
+
+    <style name="BrowserExpressCommentSheet" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@drawable/browser_express_comment_sheet_bg</item>
     </style>
 
     <!-- Privacy & Security settings (Figma "Trust/Privacy settings" 1:5268). -->

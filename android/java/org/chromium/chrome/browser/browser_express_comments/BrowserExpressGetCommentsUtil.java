@@ -11,6 +11,8 @@ import android.os.Build;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+import androidx.annotation.Nullable;
+
 import org.json.JSONArray;
 import android.net.Uri;
 import java.util.List;
@@ -50,6 +52,25 @@ public class BrowserExpressGetCommentsUtil {
     public interface GetCommentsCallback {
         void getCommentsSuccessful(List<Comment> comments, Comment parentComment, Comment grandParentComment);
         void getCommentsFailed(String error);
+
+        /**
+         * Just before {@link #getCommentsSuccessful}: the post's or page's totals as the server
+         * gave them, -1 or null for what it left out. {@code commentCount} counts top-level
+         * comments, {@code emoteCount} every emoji on them, and {@code hashtag} is the post's
+         * hashtag (postHashtag), without the "#".
+         */
+        default void getCommentsTotals(int commentCount, int emoteCount, @Nullable String hashtag) {}
+    }
+
+    /**
+     * The post hashtag a server object carries under {@code key} ("hashtag" on a feed post,
+     * "postHashtag" on its comments), without any "#"; null when it is missing, null or empty.
+     */
+    public static @Nullable String hashtagOf(@Nullable JSONObject json, String key) {
+        if (json == null || json.isNull(key)) return null;
+        String hashtag = json.optString(key, "").trim();
+        while (hashtag.startsWith("#")) hashtag = hashtag.substring(1);
+        return hashtag.isEmpty() || hashtag.contains(" ") ? null : hashtag;
     }
 
     public static class GetCommentsWorkerTask extends AsyncTask<Void> {
@@ -65,6 +86,9 @@ public class BrowserExpressGetCommentsUtil {
         private String mAccessToken;
         private Comment mParentComment;
         private Comment mGrandParentComment;
+        private int mTotalComments = -1;
+        private int mTotalEmotes = -1;
+        private @Nullable String mHashtag;
 
         public GetCommentsWorkerTask(String url, String commentId, String postId, int page, int perPage, String accessToken, GetCommentsCallback callback) {
             mCallback = callback;
@@ -97,6 +121,12 @@ public class BrowserExpressGetCommentsUtil {
             getCommentsStatus = status;
         }
 
+        void setTotals(int commentCount, int emoteCount, @Nullable String hashtag) {
+            mTotalComments = commentCount;
+            mTotalEmotes = emoteCount;
+            mHashtag = hashtag;
+        }
+
         public void setErrorMessage(String error){
             mErrorMessage = error;
         }
@@ -112,6 +142,7 @@ public class BrowserExpressGetCommentsUtil {
             assert ThreadUtils.runningOnUiThread();
             if (isCancelled()) return;
             if(getCommentsStatus){
+                mCallback.getCommentsTotals(mTotalComments, mTotalEmotes, mHashtag);
                 mCallback.getCommentsSuccessful(mComments, mParentComment, mGrandParentComment);
             }else{
                 mCallback.getCommentsFailed(mErrorMessage);
@@ -137,7 +168,10 @@ public class BrowserExpressGetCommentsUtil {
             String postParent = obj.isNull("postParent") ? null : obj.optString("postParent", null);
             String commentParent = obj.isNull("commentParent") ? null : obj.optString("commentParent", null);
             String mediaImageUrl = obj.isNull("mediaImageUrl") ? null : obj.optString("mediaImageUrl", null);
+            String mediaGifUrl = obj.isNull("mediaGifUrl") ? null : obj.optString("mediaGifUrl", null);
             String mediaVideoUrl = obj.isNull("mediaVideoUrl") ? null : obj.optString("mediaVideoUrl", null);
+            String mediaAudioUrl = obj.isNull("mediaAudioUrl") ? null : obj.optString("mediaAudioUrl", null);
+            int mediaDurationMs = obj.optInt("mediaDurationMs", 0);
             String youtubeId = obj.isNull("youtubeId") ? null : obj.optString("youtubeId", null);
             String youtubeAuthorName = obj.isNull("youtubeAuthorName") ? null : obj.optString("youtubeAuthorName", null);
             String youtubeAvatarUrl = obj.isNull("youtubeAvatarUrl") ? null : obj.optString("youtubeAvatarUrl", null);
@@ -154,6 +188,14 @@ public class BrowserExpressGetCommentsUtil {
                     pageParent, postParent, commentParent, user, vote,
                     mediaImageUrl, mediaVideoUrl, null, null, null);
             c.setTrendingScore(trendingScore);
+            c.setMediaGifUrl(mediaGifUrl);
+            c.setMediaAudioUrl(mediaAudioUrl);
+            c.setMediaDurationMs(mediaDurationMs);
+            // The API does not send these today; when it starts to, the client-side probe in
+            // CommentVideoDimensions becomes a fallback rather than the source of truth.
+            c.setMediaWidth(obj.optInt("mediaWidth", 0));
+            c.setMediaHeight(obj.optInt("mediaHeight", 0));
+            c.readExtras(obj);
             if (youtubeId != null) {
                 c.setYoutubeId(youtubeId);
                 c.setYoutubeAuthorName(youtubeAuthorName);
@@ -225,6 +267,14 @@ public class BrowserExpressGetCommentsUtil {
                     }
 
                     task.setComments(comments);
+
+                    // A post's totals come as postReactions (newer servers), a page's as
+                    // pageReactions; both are {reactions, reactionCount}.
+                    JSONObject reactions = responseObject.optJSONObject("postReactions");
+                    if (reactions == null) reactions = responseObject.optJSONObject("pageReactions");
+                    task.setTotals(responseObject.optInt("commentCount", -1),
+                            reactions != null ? reactions.optInt("reactionCount", -1) : -1,
+                            hashtagOf(responseObject, "postHashtag"));
                 }else{
                     task.setGetCommentsSuccessStatus(false);
                     task.setErrorMessage(responseObject.getString("error"));

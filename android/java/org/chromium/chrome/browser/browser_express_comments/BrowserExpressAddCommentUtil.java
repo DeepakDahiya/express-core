@@ -38,6 +38,16 @@ public class BrowserExpressAddCommentUtil {
     private static final String ADD_COMMENT_URL_WITH_ATTACHMENT = "https://api.browser.express/v1/comment/with-media";
     private static final String LINE_FEED = "\r\n";
 
+    private static final int CONNECT_TIMEOUT_MS = 15000;
+    private static final int READ_TIMEOUT_MS = 15000;
+    /**
+     * Attachments wait on the server's round trip to S3 as well as its own work, so they get far
+     * longer than a plain text comment before the client concludes the request is lost.
+     */
+    private static final int ATTACHMENT_READ_TIMEOUT_MS = 180000;
+    /** 0 lets HttpURLConnection choose its own chunk size. */
+    private static final int STREAMING_CHUNK_BYTES = 0;
+
     public interface AddCommentCallback {
         void addCommentSuccessful(Comment comment, String newAccessToken, String newRefreshToken);
         void addCommentFailed(String error);
@@ -55,13 +65,27 @@ public class BrowserExpressAddCommentUtil {
         private Comment mComment;
         private Uri mMediaUri;
         private String mMediaType;
+        private int mMediaDurationMs;
         private String mNewAccessToken = "";
         private String mNewRefreshToken = "";
 
         public AddCommentWorkerTask(String content, String parentType, String pageUrl, String parentId,
                                     Uri mediaUri, String mediaType, String accessToken,
                                     AddCommentCallback callback) {
+            this(content, parentType, pageUrl, parentId, mediaUri, mediaType, 0, accessToken,
+                    callback);
+        }
+
+        /**
+         * @param mediaDurationMs length of an audio attachment in milliseconds, or 0 when the
+         *     attachment is not audio. The recorder already knows this, and sending it means the
+         *     server never has to probe the file to answer "how long is this voice note".
+         */
+        public AddCommentWorkerTask(String content, String parentType, String pageUrl, String parentId,
+                                    Uri mediaUri, String mediaType, int mediaDurationMs,
+                                    String accessToken, AddCommentCallback callback) {
             mCallback = callback;
+            mMediaDurationMs = mediaDurationMs;
             addCommentStatus = false;
             mErrorMessage = "";
             mContent = content;
@@ -100,7 +124,8 @@ public class BrowserExpressAddCommentUtil {
 
         @Override
         protected Void doInBackground() {
-            sendAddCommentRequest(this, mContent, mParentType, mParentId, mPageUrl, mMediaUri, mMediaType, mAccessToken);
+            sendAddCommentRequest(this, mContent, mParentType, mParentId, mPageUrl, mMediaUri,
+                    mMediaType, mMediaDurationMs, mAccessToken);
             return null;
         }
 
@@ -147,7 +172,7 @@ public class BrowserExpressAddCommentUtil {
     }
 
     private static void sendAddCommentRequest(AddCommentWorkerTask task, String content, String parentType, String parentId, String pageUrl,
-                                               Uri mediaUri, String mediaType, String accessToken) {
+                                               Uri mediaUri, String mediaType, int mediaDurationMs, String accessToken) {
         Log.e(TAG, "Content: " + content);
         Log.e(TAG, "Parent Type: " + parentType);
         Log.e(TAG, "Parent ID: " + parentId);   
@@ -176,13 +201,27 @@ public class BrowserExpressAddCommentUtil {
                 url = new URL(ADD_COMMENT_URL + searchQuery);
             }
 
+            boolean hasAttachment = mediaUri != null;
+
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
             urlConnection.setDoOutput(true);
             urlConnection.setRequestMethod("POST");
             urlConnection.setUseCaches(false);
-            urlConnection.setConnectTimeout(15000);
-            urlConnection.setReadTimeout(15000);
+            urlConnection.setConnectTimeout(CONNECT_TIMEOUT_MS);
+            // The read timeout covers the wait for the response, which for an attachment starts
+            // only after the whole file has been sent: the server then has to push it to S3 and
+            // write the comment before it answers. Fifteen seconds is comfortably shorter than
+            // that for a video, and the client would give up on an upload that in fact succeeded.
+            urlConnection.setReadTimeout(
+                    hasAttachment ? ATTACHMENT_READ_TIMEOUT_MS : READ_TIMEOUT_MS);
+
+            if (hasAttachment) {
+                // Without a streaming mode HttpURLConnection buffers the entire multipart body in
+                // memory to work out Content-Length, so a large video is held in RAM twice over
+                // and nothing goes out until all of it has been assembled.
+                urlConnection.setChunkedStreamingMode(STREAMING_CHUNK_BYTES);
+            }
 
             if (accessToken != null && !accessToken.isEmpty()) {
                 urlConnection.setRequestProperty("Authorization", accessToken);
@@ -203,11 +242,34 @@ public class BrowserExpressAddCommentUtil {
                 if (parentId != null) addFormField(outputStream, boundary, "parentId", parentId);
                 if (pageUrl != null) addFormField(outputStream, boundary, "url", pageUrl);
                 if (mediaType != null) addFormField(outputStream, boundary, "mediaType", mediaType);
+                if (mediaDurationMs > 0) {
+                    addFormField(outputStream, boundary, "mediaDurationMs",
+                            String.valueOf(mediaDurationMs));
+                }
+                if ("video".equals(mediaType)) {
+                    // Upright dimensions, read from the local file being uploaded. Once the API
+                    // stores and echoes these, no client ever has to probe this video again —
+                    // the reel pager reads them straight off the comment.
+                    int[] dims = CommentVideoDimensions.probeLocalSync(context, mediaUri);
+                    if (dims != null) {
+                        addFormField(outputStream, boundary, "mediaWidth", String.valueOf(dims[0]));
+                        addFormField(
+                                outputStream, boundary, "mediaHeight", String.valueOf(dims[1]));
+                    }
+                }
 
                 String resolvedMimeType = getMimeType(context, mediaUri);
                 String extension = MimeTypeMap.getSingleton().getExtensionFromMimeType(resolvedMimeType);
                 String fileName = "media_" + System.currentTimeMillis() + (extension != null ? "." + extension : "");
-                if (extension == null || fileName.endsWith(".")) {
+                if ("document".equals(mediaType)) {
+                    // A document keeps its own name: the card shows it, and the stored URL
+                    // ends in the right extension for whatever opens it.
+                    String displayName = CommentDocuments.displayName(context, mediaUri);
+                    if (displayName != null) {
+                        addFormField(outputStream, boundary, "mediaFileName", displayName);
+                    }
+                    fileName = CommentDocuments.uploadFileName(displayName);
+                } else if (extension == null || fileName.endsWith(".")) {
                     String path = mediaUri.getPath();
                     if (path != null) {
                         int lastSlash = path.lastIndexOf('/');
@@ -299,43 +361,8 @@ public class BrowserExpressAddCommentUtil {
                 if(responseObject.getBoolean("success")){
                     task.setAddCommentSuccessStatus(true);
 
-                    JSONObject comment = responseObject.getJSONObject("comment");
-                    JSONObject user = comment.getJSONObject("user");
-                    User u = new User(user.getString("_id"), user.getString("username"), user.optString("avatar", null));
-                    Vote v = null;
-                    String pageParent = null;
-                    String postParent = null;
-                    String commentParent = null;
-                    if(comment.has("pageParent")){
-                        pageParent = comment.getString("pageParent");
-                    }
-                    if(comment.has("postParent")){
-                        postParent = comment.getString("postParent");
-                    }
-
-                    if(comment.has("commentParent")){
-                        commentParent = comment.getString("commentParent");
-                    }
-
-                    Log.e(TAG, comment.toString());
-                    Comment newComment = new Comment(
-                        comment.getString("_id"), 
-                        comment.getString("content"),
-                        comment.getInt("upvoteCount"),
-                        comment.getInt("downvoteCount"),
-                        comment.getInt("commentCount"),
-                        pageParent, 
-                        postParent,
-                        commentParent,
-                        u,
-                        v,
-                        comment.optString("mediaImageUrl", null),
-                        comment.optString("mediaVideoUrl", null),
-                        null,
-                        null,
-                        null
-                    );
-                    newComment.setTrendingScore(comment.getInt("trendingScore"));
+                    Comment newComment =
+                            parseCreatedComment(responseObject.getJSONObject("comment"));
                     task.setComment(newComment);
 
                     String accessToken1 = responseObject.optString("accessToken", "");
@@ -375,9 +402,39 @@ public class BrowserExpressAddCommentUtil {
         }
     }
 
+    /** The comment a create-comment response carries (`comment`, its user populated). */
+    static Comment parseCreatedComment(JSONObject comment) throws JSONException {
+        JSONObject user = comment.getJSONObject("user");
+        User u = new User(user.getString("_id"), user.getString("username"),
+                user.optString("avatar", null));
+        String pageParent = comment.has("pageParent") ? comment.getString("pageParent") : null;
+        String postParent = comment.has("postParent") ? comment.getString("postParent") : null;
+        String commentParent =
+                comment.has("commentParent") ? comment.getString("commentParent") : null;
+        Comment newComment = new Comment(comment.getString("_id"),
+                comment.optString("content", ""), comment.optInt("upvoteCount", 0),
+                comment.optInt("downvoteCount", 0), comment.optInt("commentCount", 0),
+                pageParent, postParent, commentParent, u, null,
+                comment.isNull("mediaImageUrl") ? null : comment.optString("mediaImageUrl", null),
+                comment.isNull("mediaVideoUrl") ? null : comment.optString("mediaVideoUrl", null),
+                null, null, null);
+        newComment.setTrendingScore(comment.optInt("trendingScore", 0));
+        newComment.setMediaGifUrl(
+                comment.isNull("mediaGifUrl") ? null : comment.optString("mediaGifUrl", null));
+        newComment.setMediaAudioUrl(
+                comment.isNull("mediaAudioUrl") ? null : comment.optString("mediaAudioUrl", null));
+        newComment.setMediaDurationMs(comment.optInt("mediaDurationMs", 0));
+        newComment.readExtras(comment);
+        return newComment;
+    }
+
     public static CommentResult uploadSynchronously(String content, String pType, String url, String pId, Uri mediaUri, String mediaType, String accessToken) throws Exception {
-        AddCommentWorkerTask task = new AddCommentWorkerTask(content, pType, url, pId, mediaUri, mediaType, accessToken, null);
-        sendAddCommentRequest(task, content, pType, pId, url, mediaUri, mediaType, accessToken);
+        return uploadSynchronously(content, pType, url, pId, mediaUri, mediaType, 0, accessToken);
+    }
+
+    public static CommentResult uploadSynchronously(String content, String pType, String url, String pId, Uri mediaUri, String mediaType, int mediaDurationMs, String accessToken) throws Exception {
+        AddCommentWorkerTask task = new AddCommentWorkerTask(content, pType, url, pId, mediaUri, mediaType, mediaDurationMs, accessToken, null);
+        sendAddCommentRequest(task, content, pType, pId, url, mediaUri, mediaType, mediaDurationMs, accessToken);
 
         if (task.getAddCommentStatus() != null && task.getAddCommentStatus()) {
             return new CommentResult(

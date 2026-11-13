@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- The top of the "Add your take" sheet (TakeComposer): handle, title and close, and the topic
+     card with what the comments are about and its floating stream. It sits in the comment box,
+     above the input row, and shows only while the sheet is open. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/take_header"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="14dp"
+    android:visibility="gone">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="20dp">
+
+        <View
+            android:layout_width="36dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center"
+            android:background="@drawable/browser_express_take_handle" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingTop="4dp"
+        android:paddingBottom="12dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:accessibilityHeading="true"
+            android:fontFamily="sans-serif"
+            android:lineHeight="22sp"
+            android:text="@string/browser_express_take_title"
+            android:textColor="@color/browser_express_take_title"
+            android:textFontWeight="600"
+            android:textSize="17sp" />
+
+        <ImageButton
+            android:id="@+id/take_close"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/browser_express_take_close_bg"
+            android:contentDescription="@string/browser_express_take_close"
+            android:scaleType="center"
+            android:src="@drawable/ic_browser_express_take_close"
+            app:tint="@color/browser_express_take_close_icon" />
+    </LinearLayout>
+
+    <!-- The cover, the handoff's fixed ring artwork (TakeComposer draws it), fills the right 62%
+         and fades out to the left under the hashtag, which keeps 110dp clear of the stream on the
+         right. -->
+    <FrameLayout
+        android:id="@+id/take_topic"
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:background="@drawable/browser_express_take_topic_bg">
+
+        <View
+            android:id="@+id/take_topic_cover"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_gravity="end"
+            android:importantForAccessibility="no" />
+
+        <View
+            android:id="@+id/take_topic_fade"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:importantForAccessibility="no" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|start"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="110dp"
+            android:layout_marginBottom="16dp"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/take_topic_title"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:fontFamily="sans-serif"
+                android:includeFontPadding="false"
+                android:letterSpacing="-0.02"
+                android:lineHeight="29sp"
+                android:maxLines="2"
+                android:textColor="@color/browser_express_take_title"
+                android:textFontWeight="800"
+                android:textSize="26sp"
+                tools:text="#AsianGamesIndia" />
+
+            <TextView
+                android:id="@+id/take_topic_stats"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:fontFamily="sans-serif-medium"
+                android:lineHeight="15sp"
+                android:maxLines="1"
+                android:textColor="@color/browser_express_take_meta"
+                android:textSize="12sp"
+                tools:text="148 reactions · 2.3K emotes" />
+        </LinearLayout>
+
+        <org.chromium.chrome.browser.browser_express_comments.TakeStreamView
+            android:id="@+id/take_stream"
+            android:layout_width="70dp"
+            android:layout_height="140dp"
+            android:layout_gravity="bottom|end"
+            android:layout_marginEnd="14dp"
+            android:layout_marginBottom="14dp"
+            android:importantForAccessibility="no" />
+    </FrameLayout>
+</LinearLayout>

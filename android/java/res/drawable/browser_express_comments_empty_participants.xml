@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- Three placeholder avatars: "your voice starts the thread". -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="44dp"
+    android:height="18dp"
+    android:viewportWidth="44"
+    android:viewportHeight="18">
+    <path
+        android:fillColor="@color/browser_express_comments_empty_participant_1"
+        android:pathData="M9,0.5a8.5,8.5 0,1 0,0 17.0a8.5,8.5 0,1 0,0 -17.0z"
+        android:strokeWidth="1"
+        android:strokeColor="@color/browser_express_comments_empty_participant_stroke" />
+    <path
+        android:fillColor="@color/browser_express_comments_empty_participant_2"
+        android:pathData="M22,0.5a8.5,8.5 0,1 0,0 17.0a8.5,8.5 0,1 0,0 -17.0z"
+        android:strokeWidth="1"
+        android:strokeColor="@color/browser_express_comments_empty_participant_stroke" />
+    <path
+        android:fillColor="@color/browser_express_comments_empty_participant_3"
+        android:pathData="M35,0.5a8.5,8.5 0,1 0,0 17.0a8.5,8.5 0,1 0,0 -17.0z"
+        android:strokeWidth="1"
+        android:strokeColor="@color/browser_express_comments_empty_participant_stroke" />
+</vector>

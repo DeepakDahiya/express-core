@@ -94,6 +94,14 @@
     <dimen name="brave_news_category_group_desc_tablet_textsize">15sp</dimen>
     <dimen name="brave_news_category_group_desc_phone_textsize">11sp</dimen>
 
+    <!-- Reel pager: breathing room above the first comment on a page. CommentReelFragment
+         subtracts this from the pager height when packing, so a page's rows fit the scrollable
+         area exactly and a page that is not expanded has nothing to scroll. -->
+    <dimen name="be_slide_rows_padding_top">8dp</dimen>
+
+    <!-- Reel pager: radius the next-page video preview curves its top corners by. -->
+    <dimen name="be_reel_peek_corner_radius">16dp</dimen>
+
     <!-- Quick Action Search Widget -->
     <dimen name="quick_action_search_widget_small_margin_vertical">12dp</dimen>
 </resources>

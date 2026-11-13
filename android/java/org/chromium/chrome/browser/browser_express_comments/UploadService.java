@@ -34,6 +34,8 @@ public class UploadService extends SplitCompatService {
     public static final String EXTRA_POST_ID = "EXTRA_POST_ID";
     public static final String EXTRA_MEDIA_URI = "EXTRA_MEDIA_URI";
     public static final String EXTRA_MEDIA_TYPE = "EXTRA_MEDIA_TYPE";
+    /** Length of an audio attachment in milliseconds; absent or 0 for image, video and text. */
+    public static final String EXTRA_MEDIA_DURATION_MS = "EXTRA_MEDIA_DURATION_MS";
     public static final String EXTRA_ACCESS_TOKEN = "EXTRA_ACCESS_TOKEN";
     
     // Broadcast Actions & Extras

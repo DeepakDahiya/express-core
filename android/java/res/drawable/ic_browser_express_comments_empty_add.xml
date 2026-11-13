@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- A speech bubble with a plus: the empty state's icon. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="28dp"
+    android:height="28dp"
+    android:viewportWidth="28"
+    android:viewportHeight="28">
+    <path
+        android:pathData="M22.75,13.42C22.75,18.48 18.51,22.25 13.45,22.25C12.08,22.25 10.78,21.97 9.62,21.46L5.25,23L6.52,19.27C5.21464,17.7663 4.49718,15.8412 4.5,13.85C4.5,8.79 8.53,5 13.58,5C18.64,5 22.75,8.37 22.75,13.42Z"
+        android:strokeWidth="2"
+        android:strokeColor="#FF526FF5"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M13.63,9.75V17.25M9.88,13.5H17.38"
+        android:strokeWidth="2"
+        android:strokeColor="#FF526FF5"
+        android:strokeLineCap="round" />
+</vector>

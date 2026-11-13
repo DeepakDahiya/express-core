@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- A section title in the reaction picker ("Recents", "Smileys & People"). The emoji cells
+     below add 6dp of their own, making the design's 8dp gap. -->
+<TextView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="20dp"
+    android:layout_marginBottom="2dp"
+    android:fontFamily="sans-serif-medium"
+    android:includeFontPadding="false"
+    android:maxLines="1"
+    android:textColor="@color/browser_express_comment_sheet_label"
+    android:textSize="12sp" />

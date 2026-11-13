@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="52dp"
+    android:height="52dp"
+    android:viewportWidth="52"
+    android:viewportHeight="52">
+    <path
+        android:fillColor="@color/browser_express_comment_attach_camera"
+        android:pathData="M26,0a26,26 0,1 0,0 52a26,26 0,1 0,0 -52z" />
+    <path
+        android:pathData="M18.0,18.9H34.0A4.1,4.1 0,0 1,38.1,23.0V31A4.1,4.1 0,0 1,34.0,35.1H18.0A4.1,4.1 0,0 1,13.9,31V23.0A4.1,4.1 0,0 1,18.0,18.9Z"
+        android:strokeWidth="1.8"
+        android:strokeColor="#FF7A61FF" />
+    <path
+        android:fillColor="#FF7A61FF"
+        android:pathData="M21,15H27A2,2 0,0 1,29,17V17A2,2 0,0 1,27,19H21A2,2 0,0 1,19,17V17A2,2 0,0 1,21,15Z" />
+    <path
+        android:pathData="M26,22.9a4.1,4.1 0,1 0,0 8.2a4.1,4.1 0,1 0,0 -8.2z"
+        android:strokeWidth="1.8"
+        android:strokeColor="#FF7A61FF" />
+</vector>

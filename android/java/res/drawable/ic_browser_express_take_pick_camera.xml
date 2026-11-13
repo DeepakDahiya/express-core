@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- "Camera" in the take picker (handoff flow-video.jsx I.camera).
+     The tile tints it (app:tint), so it is drawn white. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp"
+    android:height="22dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M4,8.5A1.5,1.5 0,0 1,5.5,7H8l1.5,-2h5L16,7h2.5A1.5,1.5 0,0 1,20,8.5v9a1.5,1.5 0,0 1,-1.5,1.5h-13A1.5,1.5 0,0 1,4,17.5Z"
+        android:strokeWidth="2"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M8.8,13a3.2,3.2 0,1 0,6.4,0a3.2,3.2 0,1 0,-6.4,0Z"
+        android:strokeWidth="2"
+        android:strokeColor="#FFFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>
