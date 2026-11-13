@@ -97,11 +97,9 @@ public class BraveLocationBarQRDialogFragment
         createCameraSource(true, false);
 
         BraveTouchUtils.ensureMinTouchTarget(backImageView);
-
-        try {
-            startCameraSource();
-        } catch (SecurityException exc) {
-        }
+        // The camera starts in onResume, not here. Opened from the camera-permission callback,
+        // this dialog is created while the activity is still paused behind the system
+        // permission prompt, and the camera refuses to open for an app not yet in front.
     }
 
     @SuppressLint("InlinedApi")
@@ -201,7 +199,10 @@ public class BraveLocationBarQRDialogFragment
             mCameraSourcePreview.stop();
             try {
                 startCameraSource();
-            } catch (SecurityException exc) {
+            } catch (SecurityException se) {
+                Log.e(TAG, "Do not have permission to start the camera", se);
+            } catch (RuntimeException e) {
+                Log.e(TAG, "Could not start camera source.", e);
             }
         }
     }

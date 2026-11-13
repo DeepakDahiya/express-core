@@ -81,8 +81,10 @@ public class CameraSourcePreview extends ViewGroup {
     @RequiresPermission("Manifest.permission.CAMERA")
     private void startIfReady() throws IOException, SecurityException {
         if (mStartRequested && mSurfaceAvailable) {
-            mCameraSource.start(mSurfaceView.getHolder());
+            // One attempt per request. Clearing the flag only after a successful start meant a
+            // camera that failed to open was retried on every layout pass, and threw again.
             mStartRequested = false;
+            mCameraSource.start(mSurfaceView.getHolder());
         }
     }
 
@@ -171,6 +173,11 @@ public class CameraSourcePreview extends ViewGroup {
             Log.e(TAG, "Could not start camera source.", e);
         } catch (SecurityException se) {
             Log.e(TAG, "Does not have permission to start the camera.", se);
+        } catch (RuntimeException e) {
+            // Camera.open() failing ("Fail to connect to camera service") is a RuntimeException;
+            // uncaught here it took the app down from inside a layout pass.
+            mCameraExist = false;
+            Log.e(TAG, "Could not start camera source.", e);
         }
     }
 
