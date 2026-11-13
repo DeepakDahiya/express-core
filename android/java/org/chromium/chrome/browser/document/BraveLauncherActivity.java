@@ -54,7 +54,8 @@ public class BraveLauncherActivity extends Activity {
         String host = uri.getHost();
         String path = uri.getPath();
 
-        if ("browser.express".equals(host) && path != null && path.startsWith("/refer")) {
+        if (("browser.express".equals(host) || "www.browser.express".equals(host))
+                && path != null && path.startsWith("/refer")) {
             String referralCode = uri.getQueryParameter("code");
             if (referralCode != null && !referralCode.isEmpty()) {
                 Log.i(TAG, "Received referral deep link with code: " + referralCode);

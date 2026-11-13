@@ -19,12 +19,18 @@
           android:host="brave.com" />
 </intent-filter>
 
-<!-- Deep link for referral system -->
+<!-- Deep link for referral system. Register both the apex and www hosts:
+     browser.express 308-redirects to www.browser.express, and App Links match
+     the tapped URL host literally (redirects are not followed), so share links
+     using either host must match. assetlinks.json must be published (with the
+     real signing-cert SHA-256, not the REPLACE_WITH_* placeholder) on BOTH
+     hosts for autoVerify to succeed. -->
 <intent-filter android:autoVerify="true">
     <action android:name="android.intent.action.VIEW" />
     <category android:name="android.intent.category.DEFAULT" />
     <category android:name="android.intent.category.BROWSABLE" />
-    <data android:scheme="https"
-          android:host="browser.express"
-          android:pathPrefix="/refer" />
+    <data android:scheme="https" />
+    <data android:host="browser.express" />
+    <data android:host="www.browser.express" />
+    <data android:pathPrefix="/refer" />
 </intent-filter>

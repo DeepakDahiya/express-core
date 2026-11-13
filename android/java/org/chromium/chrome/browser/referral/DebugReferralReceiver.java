@@ -44,6 +44,16 @@ public class DebugReferralReceiver extends BroadcastReceiver {
         // Reset the processed flag so it will be processed on next app start
         ChromeSharedPreferences.getInstance()
                 .writeBoolean(BravePreferenceKeys.EXPRESS_REFERRAL_PROCESSED, false);
+        ChromeSharedPreferences.getInstance()
+                .removeKey(BravePreferenceKeys.EXPRESS_REFERRAL_STATE);
+        ChromeSharedPreferences.getInstance()
+                .removeKey(BravePreferenceKeys.EXPRESS_REFERRAL_PENDING_CODE);
+        ChromeSharedPreferences.getInstance()
+                .removeKey(BravePreferenceKeys.EXPRESS_REFERRAL_PENDING_SOURCE);
+        ChromeSharedPreferences.getInstance()
+                .removeKey(BravePreferenceKeys.EXPRESS_REFERRAL_RETRY_COUNT);
+        ChromeSharedPreferences.getInstance()
+                .removeKey(BravePreferenceKeys.EXPRESS_REFERRAL_NEXT_RETRY_MS);
 
         // Store the test referral
         ChromeSharedPreferences.getInstance()

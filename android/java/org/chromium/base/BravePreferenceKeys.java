@@ -118,11 +118,46 @@ public final class BravePreferenceKeys {
     public static final String DEBUG_TEST_REFERRAL = "debug_test_referral";
     public static final String EXPRESS_REFERRAL_ATTEMPT_COUNT = "express_referral_attempt_count";
     public static final String EXPRESS_REFERRAL_LAST_ATTEMPT_MS = "express_referral_last_attempt_ms";
+    public static final String EXPRESS_REFERRAL_DEVICE_ID = "express_referral_device_id";
+    public static final String EXPRESS_REFERRAL_STATE = "express_referral_state";
+    public static final String EXPRESS_REFERRAL_PENDING_CODE = "express_referral_pending_code";
+    public static final String EXPRESS_REFERRAL_PENDING_SOURCE = "express_referral_pending_source";
+    public static final String EXPRESS_REFERRAL_RETRY_COUNT = "express_referral_retry_count";
+    public static final String EXPRESS_REFERRAL_NEXT_RETRY_MS = "express_referral_next_retry_ms";
     public static final String EXPRESS_REFERRAL_FINGERPRINT_TRIED =
             "express_referral_fingerprint_tried";
     public static final String EXPRESS_REFERRAL_CLIPBOARD_TRIED =
             "express_referral_clipboard_tried";
+    public static final String EXPRESS_REFERRAL_FINGERPRINT_ATTEMPT_COUNT =
+            "express_referral_fingerprint_attempt_count";
+    public static final String EXPRESS_REFERRAL_CLIPBOARD_ATTEMPT_COUNT =
+            "express_referral_clipboard_attempt_count";
+    public static final String EXPRESS_REFERRAL_LINK_SENT = "express_referral_link_sent";
+    public static final String EXPRESS_REFERRAL_LINK_ATTEMPTS =
+            "express_referral_link_attempts";
+    public static final String EXPRESS_REFERRAL_IDENTIFY_SENT =
+            "express_referral_identify_sent";
+    // Bumped guard: the device-id format changed (raw ANDROID_ID -> "ssaid-"
+    // prefixed), orphaning anon persons created by older builds. A separate key
+    // re-runs identify once on already-installed devices so they re-stitch.
+    public static final String EXPRESS_REFERRAL_IDENTIFY_SENT_V2 =
+            "express_referral_identify_sent_v2";
     public static final String EXPRESS_REFERRAL_SOURCE = "express_referral_source";
+    // Stage-2 referral usage reporting (ReferralUsageTracker): locally
+    // accumulated feature-usage deltas, the batch currently being sent, and
+    // the flush / retry bookkeeping around them.
+    public static final String EXPRESS_REFERRAL_USAGE_PENDING =
+            "express_referral_usage_pending";
+    public static final String EXPRESS_REFERRAL_USAGE_INFLIGHT =
+            "express_referral_usage_inflight";
+    public static final String EXPRESS_REFERRAL_USAGE_LAST_FLUSH_MS =
+            "express_referral_usage_last_flush_ms";
+    public static final String EXPRESS_REFERRAL_USAGE_NEXT_RETRY_MS =
+            "express_referral_usage_next_retry_ms";
+    public static final String EXPRESS_REFERRAL_USAGE_FAILURES =
+            "express_referral_usage_failures";
+    public static final String EXPRESS_REFERRAL_USAGE_LAST_YT_NAV_MS =
+            "express_referral_usage_last_yt_nav_ms";
 
     public static final String SHOW_UNDO_WHEN_TABS_CLOSED = "show_undo_when_tabs_closed";
 
@@ -169,4 +204,3 @@ public final class BravePreferenceKeys {
         return true;
     }
 }
-
