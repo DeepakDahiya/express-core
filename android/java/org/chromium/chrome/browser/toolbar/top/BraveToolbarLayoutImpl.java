@@ -23,13 +23,13 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import com.bumptech.glide.Glide;
-import org.chromium.chrome.browser.app.helpers.ImageLoader;
+import org.chromium.chrome.browser.app.helpers.ProfileAvatar;
 import org.json.JSONException;
 import org.json.JSONObject;
 import android.util.Base64;
@@ -49,6 +49,8 @@ import com.brave.playlist.model.SnackBarActionModel;
 import com.brave.playlist.util.ConstantUtils;
 import com.brave.playlist.util.PlaylistViewUtils;
 import org.chromium.chrome.browser.browser_express_generate_username.BrowserExpressClaimUsernameUtil;
+import org.chromium.chrome.browser.browser_express_privacy.ExpressShieldsStats;
+import org.chromium.chrome.browser.browser_express_privacy.TrustMarkers;
 
 import org.json.JSONArray;
 
@@ -69,6 +71,8 @@ import org.chromium.chrome.browser.BraveYouTubeScriptInjectorNativeHelper;
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.brave_stats.BraveStatsUtil;
 import org.chromium.chrome.browser.crypto_wallet.controller.DAppsWalletController;
+import org.chromium.chrome.browser.crash.BrowserExpressCrashBreadcrumbs;
+import org.chromium.chrome.browser.crash.BrowserExpressPendingCrashReportStore;
 import org.chromium.chrome.browser.custom_layout.popup_window_tooltip.PopupWindowTooltip;
 import org.chromium.chrome.browser.customtabs.FullScreenCustomTabActivity;
 import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
@@ -146,7 +150,6 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import org.chromium.chrome.browser.toolbar.bottom.BrowserExpressGetFirstCommentsUtil;
 import java.net.MalformedURLException;
@@ -168,6 +171,7 @@ import org.chromium.chrome.browser.settings.BrowserExpressGetProfilePreferencesU
 import org.chromium.chrome.browser.toolbar.BraveHomeButton;
 import org.chromium.chrome.browser.settings.PostHogEventKeys;
 import org.chromium.chrome.browser.settings.PostHogUtil;
+import org.chromium.chrome.browser.youtube_premium.GoldenYouTubeHomeScreenShortcutUtil;
 import org.chromium.chrome.browser.youtube_premium.YouTubePremiumBottomSheetFragment;
 import org.chromium.net.ChromiumNetworkAdapter;
 import org.chromium.net.NetworkTrafficAnnotationTag;
@@ -206,6 +210,14 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
     private ImageButton mBraveWalletButton;
     private ImageButton mBraveShieldsButton;
+    /** The location bar, whose fade on the new tab page the segments beside it follow. */
+    private @Nullable View mLocationBarView;
+    /** Runs before every toolbar frame; see {@link #syncLocationBarSegmentsAlpha}. */
+    private final ViewTreeObserver.OnPreDrawListener mLocationBarSegmentsAlphaSync =
+            () -> {
+                syncLocationBarSegmentsAlpha();
+                return true;
+            };
     private ImageButton mBraveRewardsButton;
     private ImageButton mYouTubePipButton;
     private HomeButton mHomeButton;
@@ -235,9 +247,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     private ImageView mWalletIcon;
     private int mCurrentToolbarColor;
 
-    private TextView mCommentsText;
     // private BraveHomeButton mBottomHomeButton;
-    private ImageButton mBeHomeButton;
 
     private boolean mIsPublisherVerified;
     private String mPublisherId;
@@ -296,8 +306,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             }
         }
 
-        mCommentsText = findViewById(R.id.comments_button1);
-        mBeHomeButton = findViewById(R.id.be_home_button);
         // mBottomHomeButton = findViewById(R.id.bottom_home_button);
 
         // mProfileLayout = (FrameLayout) findViewById(R.id.profile_button_layout);
@@ -307,6 +315,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         mShieldsLayout = findViewById(R.id.brave_shields_button_layout);
         mRewardsLayout = findViewById(R.id.brave_rewards_button_layout);
         mYouTubePipLayout = findViewById(R.id.brave_youtube_pip_layout);
+        mLocationBarView = findViewById(R.id.location_bar);
+        getViewTreeObserver().addOnPreDrawListener(mLocationBarSegmentsAlphaSync);
         mBraveRewardsNotificationsCount = findViewById(R.id.br_notifications_count);
         mBraveRewardsOnboardingIcon = findViewById(R.id.br_rewards_onboarding_icon);
         mBraveWalletButton = findViewById(R.id.brave_wallet_button);
@@ -446,15 +456,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             String accessToken = activity.getAccessToken();
 
             if (accessToken != null) {
-                Context context = ContextUtils.getApplicationContext();
-                SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
-                String avatar = prefs.getString("avatar_url", null);
-                JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
-                if (avatar != null) {
-                    ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mProfileButton, null);
-                }else{
-                    ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mProfileButton, null);
-                }
+                ProfileAvatar.loadSelf(mProfileButton, accessToken);
 
                 BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask1 =
                     new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
@@ -462,8 +464,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e(TAG, "maybeShowWalletPanel " + e);
-        } catch (JSONException e) {
-            Log.e("Express Browser Access Token", e.getMessage());
         }
     }
 
@@ -542,14 +542,11 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
         mBraveShieldsContentSettings = BraveShieldsContentSettings.getInstance();
         mBraveShieldsContentSettings.addObserver(mBraveShieldsContentSettingsObserver);
+        // Starts counting blocks for the site trust sheet and the privacy summary.
+        ExpressShieldsStats.get();
 
         mBraveRewardsNativeWorker = BraveRewardsNativeWorker.getInstance();
-        if (mBraveRewardsNativeWorker != null
-                && mBraveRewardsNativeWorker.isSupported()
-                && NtpUtil.shouldShowRewardsIcon()
-                && mRewardsLayout != null) {
-            mRewardsLayout.setVisibility(View.VISIBLE);
-        }
+        // The rewards group stays hidden (see hideEmptySegment).
         if (mBraveRewardsNativeWorker != null
                 && mBraveRewardsNativeWorker.isRewardsEnabled()
                 && mBraveRewardsNativeWorker.isSupported()
@@ -559,7 +556,10 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         if (mShieldsLayout != null) {
             updateShieldsLayoutBackground(
                     !(mRewardsLayout != null && mRewardsLayout.getVisibility() == View.VISIBLE));
-            mShieldsLayout.setVisibility(View.VISIBLE);
+            // Stays hidden: its button is gone (the URL bar's trust marker took its place), and
+            // brave_toolbar sits at the toolbar's start in this app, so the empty grey end cap
+            // lay under the location bar's rounded start and squared its corners off.
+            mShieldsLayout.setVisibility(View.GONE);
         }
         if (mBraveRewardsNativeWorker != null) {
             mBraveRewardsNativeWorker.addObserver(this);
@@ -624,8 +624,10 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                         showWalletIcon(false, tab);
                         if (getToolbarDataProvider().getTab() == tab) {
                             updateBraveShieldsButtonState(tab);
+                            TrustMarkers.onPageLoadStarted(getToolbarDataProvider());
                         }
                         mBraveShieldsHandler.clearBraveShieldsCount(tab.getId());
+                        ExpressShieldsStats.get().onPageLoadStarted(tab, url);
                         dismissShieldsTooltip();
                         hidePlaylistButton();
                         mPublisherId = "";
@@ -679,31 +681,20 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                         try {
                             BraveActivity activity = BraveActivity.getBraveActivity();
                             String accessToken = activity.getAccessToken();
-                        
-                            if (accessToken != null) {
-                                Context context = ContextUtils.getApplicationContext();
-                                SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
-                                String avatar = prefs.getString("avatar_url", null);
-                                JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
+                            boolean isYouTubeUrl = isYouTubeUrl(mUrl);
 
-                                if(mUrl.contains(YOUTUBE_DOMAIN)){
-                                    String pInfo = activity.getCurrentAppVersion();
-                                    JSONObject payload = new JSONObject();
-                                    payload.put("app_version", pInfo);
-                                    payload.put("url", mUrl);
-                                    PostHogUtil.PostHogWorkerTask postHogWorkerTask =
-                                        new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.YOUTUBE_VISITED, decodedAccessTokenObj.getString("_id"), payload);
-                                    postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                                    
-                                    // Show YouTube premium bottomsheet
-                                    YouTubePremiumBottomSheetFragment.showIfNeeded(
-                                            activity.getSupportFragmentManager());
+                            if (isYouTubeUrl) {
+                                showYouTubePromptsIfEligible(activity, accessToken != null);
+                                // Which kind of YouTube page (and search terms), never the URL.
+                                if (!tab.isIncognito()) {
+                                    PostHogUtil.capture(
+                                            PostHogEventKeys.YOUTUBE_VISITED,
+                                            PostHogUtil.pageProperties(url));
                                 }
-                                if (avatar != null) {
-                                    ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mProfileButton, null);
-                                }else{
-                                    ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mProfileButton, null);
-                                }
+                            }
+
+                            if (accessToken != null) {
+                                ProfileAvatar.loadSelf(mProfileButton, accessToken);
 
                                 long now = System.currentTimeMillis();
                                 if (now - lastProfileFetchTimestamp > PROFILE_FETCH_COOLDOWN_MS) {
@@ -714,11 +705,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                                 }
                             }
 
-                            int commentCount = 0;
-                            mCommentsText = activity.getCommentCountText();
                             // mBottomHomeButton = activity.getBottomHomeButton();
-                            mBeHomeButton = activity.getBeHomeButton();
-                            mBeHomeButton.setVisibility(View.VISIBLE);
 
                             // if(mBottomHomeButton != null) {
                             //     if (mBottomHomeButton.getVisibility() == View.VISIBLE) {
@@ -730,14 +717,10 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                             //     mBeHomeButton.setVisibility(View.VISIBLE);
                             // }
 
-                            if (mCommentsText != null) {
-                                mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
-                            }
-                            
+                            activity.setPageCommentCount(0);
+                            activity.setPageReactions(null);
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                             Log.e(TAG, "BookmarkButton click " + e);
-                        } catch (JSONException e) {
-                            Log.e("Express Browser Access Token", e.getMessage());
                         }
 
                         BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
@@ -754,22 +737,11 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                             BraveActivity activity = BraveActivity.getBraveActivity();
                             String accessToken = activity.getAccessToken();
 
-                            int commentCount = 0;
-                            mCommentsText = activity.getCommentCountText();
-                            if (mCommentsText != null) {
-                                mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
-                            }
+                            activity.setPageCommentCount(0);
+                            activity.setPageReactions(null);
 
                             if (accessToken != null) {
-                                Context context = ContextUtils.getApplicationContext();
-                                SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
-                                String avatar = prefs.getString("avatar_url", null);
-                                JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
-                                if (avatar != null) {
-                                    ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mProfileButton, null);
-                                }else{
-                                    ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mProfileButton, null);
-                                }
+                                ProfileAvatar.loadSelf(mProfileButton, accessToken);
 
                                 long now = System.currentTimeMillis();
                                 if (now - lastProfileFetchTimestamp > PROFILE_FETCH_COOLDOWN_MS) {
@@ -781,8 +753,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                             }
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                             Log.e(TAG, "BookmarkButton click " + e);
-                        } catch (JSONException e) {
-                            Log.e("Express Browser Access Token", e.getMessage());
                         }
 
                         BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
@@ -795,6 +765,9 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
                     @Override
                     public void onPageLoadFinished(final Tab tab, GURL url) {
+                        if (getToolbarDataProvider().getTab() == tab) {
+                            TrustMarkers.onPageLoadFinished(getToolbarDataProvider());
+                        }
                         if (url.getSpec().contains("youtube.com/watch")) {
                             ChromeSharedPreferences.getInstance().writeBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, true);
                         }else{
@@ -848,6 +821,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                             }
                         }.start();
                         mBraveShieldsHandler.removeStat(tab.getId());
+                        ExpressShieldsStats.get().onTabDestroyed(tab.getId());
                         mTabsWithWalletIcon.remove(tab.getId());
                     }
                 };
@@ -863,11 +837,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                             Tab providerTab = getToolbarDataProvider().getTab();
                             if (providerTab != null && providerTab.getId() == tab.getId()) {
                                 showWalletIcon(mTabsWithWalletIcon.contains(tab.getId()));
-                            } else if (mWalletLayout != null) {
-                                mWalletLayout.setVisibility(
-                                        mTabsWithWalletIcon.contains(tab.getId())
-                                                ? View.VISIBLE
-                                                : View.GONE);
+                            } else {
+                                hideEmptySegment(mWalletLayout);
                             }
                         }
                     }
@@ -893,7 +864,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         final boolean available =
                 BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
                         tab.getWebContents());
-        // mYouTubePipLayout.setVisibility(available ? View.VISIBLE : View.GONE);
+        mYouTubePipLayout.setVisibility(available ? View.VISIBLE : View.GONE);
     }
 
     private void hideYouTubePipIcon() {
@@ -1344,12 +1315,11 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             }
         }
         if (show) {
-            mWalletLayout.setVisibility(View.VISIBLE);
             mTabsWithWalletIcon.add(currentTab.getId());
         } else {
-            mWalletLayout.setVisibility(View.GONE);
             mTabsWithWalletIcon.remove(currentTab.getId());
         }
+        hideEmptySegment(mWalletLayout);
     }
 
     public void showWalletIcon(boolean show) {
@@ -1419,15 +1389,22 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         } else if (mBraveWalletButton == v && mBraveWalletButton != null) {
             maybeShowWalletPanel();
         } else if (mYouTubePipButton == v && mYouTubePipButton != null) {
-            Tab currentTab = getToolbarDataProvider().getTab();
-            if (currentTab != null
-                    && BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
-                            currentTab.getWebContents())) {
-                if (!PictureInPicture.isEnabled(getContext())) {
-                    hideYouTubePipIcon();
-                    return;
-                }
-                BraveYouTubeScriptInjectorNativeHelper.setFullscreen(currentTab.getWebContents());
+            // The golden-button PiP. The flow (origin tab, YouTube home after PiP, the
+            // background-play tutorial and analytics) belongs to the bottom toolbar, which
+            // registers it with the activity.
+            if (!PictureInPicture.isEnabled(getContext())) {
+                BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_os_disabled");
+                BrowserExpressPendingCrashReportStore.recordNonFatal(
+                        "youtube", "pip_top_os_disabled", "warning");
+                hideYouTubePipIcon();
+                return;
+            }
+            Activity activity = ContextUtils.activityFromContext(getContext());
+            if (!(activity instanceof BraveActivity)
+                    || !((BraveActivity) activity).requestGoldenPip()) {
+                BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_no_handler");
+                BrowserExpressPendingCrashReportStore.recordNonFatal(
+                        "youtube", "pip_top_no_handler", "warning");
             }
         }
     }
@@ -1566,6 +1543,26 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         }
     }
 
+    /**
+     * The button groups beside the location bar (shields, rewards, wallet, YouTube PiP) are
+     * drawn as segments of the location bar's pill — the shields group stays up as its end cap
+     * even with its button hidden. On the new tab page the location bar fades out until the
+     * page's own search box scrolls under the toolbar, so the segments fade with it; otherwise an
+     * empty half-pill is left hanging in the toolbar where the search bar was.
+     */
+    private void syncLocationBarSegmentsAlpha() {
+        if (mLocationBarView == null) return;
+        float alpha = mLocationBarView.getAlpha();
+        setAlphaIfChanged(mShieldsLayout, alpha);
+        setAlphaIfChanged(mRewardsLayout, alpha);
+        setAlphaIfChanged(mWalletLayout, alpha);
+        setAlphaIfChanged(mYouTubePipLayout, alpha);
+    }
+
+    private static void setAlphaIfChanged(@Nullable View view, float alpha) {
+        if (view != null && view.getAlpha() != alpha) view.setAlpha(alpha);
+    }
+
     @Override
     public void updateModernLocationBarColorImpl(int color) {
         mCurrentToolbarColor = color;
@@ -1600,17 +1597,19 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         mBraveShieldsButton.setImageResource(
                 isShieldsOnForTab(tab) ? R.drawable.btn_brave : R.drawable.btn_brave_off);
 
-        if (mRewardsLayout == null) return;
-        if (isIncognito()) {
-            mRewardsLayout.setVisibility(View.GONE);
-            updateShieldsLayoutBackground(true);
-        } else if (isNativeLibraryReady()
-                && mBraveRewardsNativeWorker != null
-                && mBraveRewardsNativeWorker.isSupported()
-                && NtpUtil.shouldShowRewardsIcon()) {
-            mRewardsLayout.setVisibility(View.VISIBLE);
-            updateShieldsLayoutBackground(false);
-        }
+        hideEmptySegment(mRewardsLayout);
+        updateShieldsLayoutBackground(true);
+    }
+
+    /**
+     * Keeps a button group beside the location bar hidden. This app never shows the rewards or
+     * wallet buttons (they're gone in brave_toolbar.xml), so their groups would only draw their
+     * backgrounds: empty pieces of the location bar's pill. brave_toolbar sits at the toolbar's
+     * start here, so they landed beside the profile button as a stray half-pill (straight left
+     * edge, rounded right) wherever the location bar wasn't covering them, as on the new tab page.
+     */
+    private static void hideEmptySegment(@Nullable View segment) {
+        if (segment != null) segment.setVisibility(View.GONE);
     }
 
     private boolean isShieldsOnForTab(Tab tab) {
@@ -1959,31 +1958,21 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     //     return true;
     // }
 
-    private JSONObject getDecodedToken(String accessToken){
-        if (accessToken == null || accessToken.isEmpty()) return null;
-        try{
-            String[] split_string = accessToken.split("\\.");
-            if (split_string.length < 2) {
-                Log.e(TAG, "Invalid JWT format - token does not have header.payload.signature structure");
-                return null;
-            }
-            String base64EncodedBody = split_string[1];
+    private boolean isYouTubeUrl(@Nullable String url) {
+        return url != null && url.contains(YOUTUBE_DOMAIN);
+    }
 
-            byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
-            String decodedString = new String(data, "UTF-8");
-            JSONObject jsonObj = new JSONObject(decodedString.toString());
-            return jsonObj;
-        }catch(JSONException e){
-            Log.e(TAG, "JSON parsing error: " + e.getMessage());
-            return null;
-        }catch(UnsupportedEncodingException e){
-            Log.e(TAG, "Encoding error: " + e.getMessage());
-            return null;
-        }catch(Exception e){
-            Log.e(TAG, "Unexpected error decoding token: " + e.getMessage());
-            return null;
+    private void showYouTubePromptsIfEligible(BraveActivity activity, boolean canShowPremiumSheet) {
+        if (activity == null) return;
+
+        boolean premiumSheetShown =
+                canShowPremiumSheet
+                        && YouTubePremiumBottomSheetFragment.showIfNeeded(
+                                activity.getSupportFragmentManager());
+        if (!premiumSheetShown) {
+            GoldenYouTubeHomeScreenShortcutUtil.showBackgroundPlaybackPromptsIfEligible(
+                    activity.getSupportFragmentManager(), activity);
         }
-        
     }
 
     @WorkerThread
@@ -2176,15 +2165,13 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     private final BrowserExpressGetFirstCommentsUtil.GetFirstCommentsCallback getFirstCommentsCallback=
         new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsCallback() {
             @Override
-            public void getFirstCommentsSuccessful(JSONArray comments, int commentCount) {
-               
+            public void getFirstCommentsSuccessful(
+                    JSONArray comments, int commentCount, @Nullable JSONObject pageReactions) {
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();
 
-                    mCommentsText = activity.getCommentCountText();
-                    if (mCommentsText != null) {
-                        mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
-                    }
+                    activity.setPageCommentCount(commentCount);
+                    activity.setPageReactions(pageReactions);
 
                     activity.setFirstComments(comments.toString());
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
@@ -2212,9 +2199,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                     SharedPreferences sharedPref = context.getSharedPreferences(BE_PROFILE_PREF, 0);
                     SharedPreferences.Editor editor = sharedPref.edit();
 
-                    if(avatar != null && avatar.length() > 0){
-                        editor.putString("avatar_url", avatar);
-                        ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mProfileButton, null);
+                    if (avatar != null && !avatar.isEmpty()) {
+                        ProfileAvatar.load(mProfileButton, avatar, null);
                     }
 
                     if(xp != null && xp.length() > 0){

@@ -1275,6 +1275,7 @@ brave_java_resources = [
   "java/res/values/brave_ids.xml",
   "java/res/values/brave_styles.xml",
   "java/res/values/browser_express_colors.xml",
+  "java/res/values/browser_express_strings.xml",
   "java/res/values/shimmer_attrs.xml",
   "java/res/xml/background_images_preferences.xml",
   "java/res/xml/brave_appearance_preferences.xml",

@@ -84,6 +84,7 @@ import org.chromium.chrome.browser.toolbar.menu_button.BraveMenuButtonCoordinato
 import org.jni_zero.JNINamespace;
 import org.jni_zero.NativeMethods;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ActivityState;
 import org.chromium.base.BraveFeatureList;
 import org.chromium.base.BravePreferenceKeys;
 import org.chromium.base.BraveReflectionUtil;
@@ -143,6 +144,9 @@ import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
 import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
 import org.chromium.chrome.browser.browsing_data.TimePeriod;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
+import org.chromium.chrome.browser.crash.BrowserExpressCrashBreadcrumbs;
+import org.chromium.chrome.browser.crash.BrowserExpressPendingCrashReportStore;
+import org.chromium.chrome.browser.crash.BrowserExpressTabCrashObserver;
 import org.chromium.chrome.browser.crypto_wallet.AssetRatioServiceFactory;
 import org.chromium.chrome.browser.crypto_wallet.BlockchainRegistryFactory;
 import org.chromium.chrome.browser.crypto_wallet.BraveWalletServiceFactory;
@@ -177,6 +181,7 @@ import org.chromium.chrome.browser.preferences.BravePref;
 import org.chromium.chrome.browser.preferences.BravePrefServiceBridge;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
+import org.chromium.chrome.browser.referral.ReferralUsageTracker;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceUtil;
 import org.chromium.chrome.browser.preferences.website.BraveShieldsContentSettings;
@@ -192,10 +197,15 @@ import org.chromium.chrome.browser.safe_browsing.SafeBrowsingBridge;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingState;
 import org.chromium.chrome.browser.search_engines.TemplateUrlServiceFactory;
 import org.chromium.chrome.browser.set_default_browser.BraveSetDefaultBrowserUtils;
+import org.chromium.chrome.browser.browser_express_generate_username.BrowserExpressClaimUsernameUtil;
 import org.chromium.chrome.browser.browser_express_generate_username.BrowserExpressGenerateUsernameBottomSheetFragment;
 import org.chromium.chrome.browser.browser_express_update_apk.BrowserExpressUpdateApkBottomSheetFragment;
 import org.chromium.chrome.browser.browser_express_comments.BrowserExpressCommentsBottomSheetFragment;
 import org.chromium.chrome.browser.browser_express_comments.BrowserExpressReplyWithAttachmentBottomSheetFragment;
+import org.chromium.chrome.browser.browser_express_comments.CommentScrollPrompts;
+import org.chromium.chrome.browser.browser_express_apps.InstalledAppsManager;
+import org.chromium.chrome.browser.browser_express_push.BrowserExpressPushOpenHandler;
+import org.chromium.chrome.browser.browser_express_push.BrowserExpressPushTokenManager;
 import org.chromium.chrome.browser.settings.BraveNewsPreferencesV2;
 import org.chromium.chrome.browser.settings.BrowserExpressProfilePreferences;
 import org.chromium.chrome.browser.settings.BrowserExpressEditProfilePreferences;
@@ -205,7 +215,10 @@ import org.chromium.chrome.browser.settings.BrowserExpressSignupPreferences;
 import org.chromium.chrome.browser.settings.BrowserExpressOtpVerifyPreferences;
 import org.chromium.chrome.browser.settings.PostHogEventKeys;
 import org.chromium.chrome.browser.settings.PostHogUtil;
+import org.chromium.chrome.browser.night_mode.NightModeUtils;
+import org.chromium.chrome.browser.tab.TabCreationState;
 import org.chromium.chrome.browser.settings.BraveSearchEngineUtils;
+import org.chromium.chrome.browser.settings.BraveSettingsActivity;
 import org.chromium.chrome.browser.settings.BraveWalletPreferences;
 import org.chromium.chrome.browser.settings.SettingsNavigationFactory;
 import org.chromium.chrome.browser.settings.developer.BraveQAPreferences;
@@ -217,6 +230,7 @@ import org.chromium.chrome.browser.site_settings.BraveWalletEthereumConnectedSit
 import org.chromium.chrome.browser.speedreader.BraveSpeedReaderUtils;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tab.TabImportanceManager;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabClosureParams;
@@ -248,6 +262,7 @@ import org.chromium.chrome.browser.vpn.utils.BraveVpnProfileUtils;
 import org.chromium.chrome.browser.vpn.utils.BraveVpnUtils;
 import org.chromium.chrome.browser.vpn.wireguard.WireguardConfigUtils;
 import org.chromium.chrome.browser.widget.quickactionsearchandbookmark.promo.SearchWidgetPromoPanel;
+import org.chromium.chrome.browser.youtube_premium.GoldenYouTubeHomeScreenShortcutUtil;
 import org.chromium.components.browser_ui.settings.SettingsNavigation;
 import org.chromium.components.browser_ui.util.motion.MotionEventInfo;
 import org.chromium.components.embedder_support.util.UrlConstants;
@@ -258,6 +273,7 @@ import org.chromium.components.safe_browsing.BraveSafeBrowsingApiHandler;
 import org.chromium.components.search_engines.TemplateUrl;
 import org.chromium.components.search_engines.TemplateUrlService;
 import org.chromium.components.user_prefs.UserPrefs;
+import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.base.Callback;
 import org.chromium.content_public.browser.MediaSession;
@@ -307,8 +323,8 @@ import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.chrome.browser.util.TabUtils;
+import org.chromium.chrome.browser.app.helpers.ProfileAvatar;
 import org.chromium.url.GURL;
-import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.ui.base.PageTransition;
 
@@ -357,6 +373,10 @@ public abstract class BraveActivity extends ChromeActivity
     public static final String OPEN_URL = "open_url";
     public static final String ACCESS_TOKEN_KEY = "AccessToken";
     public static final String BROWSER_EXPRESS_EMAIL = "BrowserExpressEmail";
+    public static final String BROWSER_EXPRESS_PHONE = "BrowserExpressPhone";
+    public static final String BROWSER_EXPRESS_OTP_PURPOSE = "BrowserExpressOtpPurpose";
+    public static final String BROWSER_EXPRESS_OTP_PURPOSE_SIGNUP = "signup";
+    public static final String BROWSER_EXPRESS_OTP_PURPOSE_LOGIN = "login";
     public static final String BROWSER_EXPRESS_FIRST_COMMENTS = "BrowserExpressFirstComments";
     public static final String BROWSER_EXPRESS_CUSTOM_LIST_SET = "BrowserExpressCustomListSet";
     public static final String BRAVE_WEBCOMPAT_INFO_WIKI_URL =
@@ -376,7 +396,17 @@ public abstract class BraveActivity extends ChromeActivity
     private static final String YOUTUBE_WATCH_PATTERN = "youtube.com/watch";
     private OnBackPressedCallback mYouTubeBackPressedCallback;
     private boolean mIsCallbackSetup;
-    private WebContentsObserver mWebContentsObserver;
+    // Robust active-tab tracking for the YouTube back-press hijack. Uses the
+    // activity-tab supplier + a per-tab EmptyTabObserver (same pattern as
+    // mUrlEnteredTabObserver) so the callback's enabled state is refreshed on
+    // every navigation AND every tab switch -- including a freshly opened tab
+    // whose WebContents wasn't ready when it was created (the golden-button
+    // flow opens m.youtube.com home in a new tab, then the user navigates into
+    // a video there). The old manual WebContentsObserver missed that case and
+    // left the hijack stuck disabled.
+    private EmptyTabObserver mYouTubeBackTabObserver;
+    private Tab mYouTubeBackObservedTab;
+    private Callback<Tab> mYouTubeBackTabSupplierObserver;
     private final Set<Integer> mOurCreatedTabs = new HashSet<>();
     // private static final int MAX_OUR_TABS = 2;
 
@@ -430,6 +460,7 @@ public abstract class BraveActivity extends ChromeActivity
     private BrowserExpressGenerateUsernameBottomSheetFragment mBottomSheetDialog;
     private BrowserExpressUpdateApkBottomSheetFragment mBottomSheetUpdateApkDialog;
     private BrowserExpressCommentsBottomSheetFragment mBottomSheetCommentsDialog;
+    private BrowserExpressTabCrashObserver mBrowserExpressTabCrashObserver;
 
     private DatabaseHelper mDatabaseHelper;
 
@@ -447,6 +478,8 @@ public abstract class BraveActivity extends ChromeActivity
     @Override
     public void onResumeWithNative() {
         super.onResumeWithNative();
+        InstalledAppsManager.syncIfNeeded();
+        maybeShowNtpPrompts();
         BraveActivityJni.get().restartStatsUpdater();
         if (BraveVpnUtils.isVpnFeatureSupported(BraveActivity.this)) {
             BraveVpnNativeWorker.getInstance().addObserver(this);
@@ -479,7 +512,10 @@ public abstract class BraveActivity extends ChromeActivity
             boolean isExternalLink = mIsLaunchedFromExternalIntent;
             mIsLaunchedFromExternalIntent = false;
 
-            if (!isExternalLink) {
+            // Returning from a golden-button PiP session takes precedence over
+            // the background->NTP feed redirect and is NOT gated by the dormant
+            // cooldown, so a short PiP session still restores the watch tab.
+            if (!isExternalLink && !consumePendingPipRestore()) {
                 long backgroundTimestamp =
                         ChromeSharedPreferences.getInstance()
                                 .readLong(
@@ -546,6 +582,7 @@ public abstract class BraveActivity extends ChromeActivity
     public void onPauseWithNative() {
         // Allow screen to turn off when app goes to background
         getWindow().clearFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        scheduleYouTubeBackgroundPlayShortcutEligibilityCheck();
         if (mUsageMonitor != null) {
             mUsageMonitor.stop();
         }
@@ -558,6 +595,9 @@ public abstract class BraveActivity extends ChromeActivity
                 .writeLong(
                         BravePreferenceKeys.BRAVE_APP_BACKGROUND_TIMESTAMP,
                         System.currentTimeMillis());
+
+        // Ship any pending stage-2 usage while the process is still warm.
+        ReferralUsageTracker.flushAsync(getApplicationContext(), "pause");
 
         super.onPauseWithNative();
     }
@@ -585,85 +625,92 @@ public abstract class BraveActivity extends ChromeActivity
                     handleYouTubeBackPress();
                 }
             };
-            
+
             getOnBackPressedDispatcher().addCallback(this, mYouTubeBackPressedCallback);
-            
-            // Update callback state when tab changes
+
+            // Observe the ACTIVE tab (whichever it is) so the hijack's enabled
+            // state is refreshed on every committed navigation, SPA URL rewrite,
+            // and page load -- robustly re-attaching across tab switches.
+            mYouTubeBackTabObserver = new EmptyTabObserver() {
+                @Override
+                public void onDidFinishNavigationInPrimaryMainFrame(
+                        Tab tab, NavigationHandle navigation) {
+                    if (navigation != null && navigation.hasCommitted()) {
+                        recordYouTubeVisitIfNeeded(navigation);
+                    }
+                    updateBackCallbackState();
+                }
+
+                @Override
+                public void onUrlUpdated(Tab tab) {
+                    updateBackCallbackState();
+                }
+
+                @Override
+                public void onPageLoadFinished(Tab tab, GURL url) {
+                    updateBackCallbackState();
+                }
+            };
+            mYouTubeBackTabSupplierObserver = tab -> {
+                attachYouTubeBackObserverTo(tab);
+                updateBackCallbackState();
+            };
+            getActivityTabProvider().addObserver(mYouTubeBackTabSupplierObserver);
+            attachYouTubeBackObserverTo(getActivityTabProvider().get());
+
+            // Preserve the incognito-tab-opened analytics that previously rode
+            // on the tab-model observer.
             if (getTabModelSelector() != null) {
                 getTabModelSelector().addObserver(new TabModelSelectorObserver() {
                     @Override
-                    public void onChange() {
-                        updateBackCallbackState();
-                        setupWebContentsObserver(); // Setup observer for new tab
-                    }
-                    
-                    @Override
                     public void onNewTabCreated(Tab tab, int creationState) {
-                        updateBackCallbackState();
-                        setupWebContentsObserver(); // Setup observer for new tab
-                        if (tab != null && tab.isIncognito()) {
+                        if (tab == null) return;
+                        if (tab.isIncognito()) {
                             firePostHogUserEvent(PostHogEventKeys.INCOGNITO_TAB_OPENED);
                         }
+                        // Tabs brought back from the last run aren't opened by the reader.
+                        if (creationState == TabCreationState.FROZEN_ON_RESTORE) return;
+                        PostHogUtil.capture(
+                                PostHogEventKeys.TAB_OPENED,
+                                "incognito",
+                                tab.isIncognito(),
+                                "background",
+                                creationState != TabCreationState.LIVE_IN_FOREGROUND);
                     }
                 });
             }
-            
-            // Setup observer for current tab
-            setupWebContentsObserver();
-            
+
             mIsCallbackSetup = true;
         } catch (Exception e) {
             Log.e("BraveActivity", "Error setting up YouTube back button handler", e);
         }
     }
 
-    private void setupWebContentsObserver() {
-        // Remove existing observer
-        if (mWebContentsObserver != null) {
-            mWebContentsObserver = null;
+    private void attachYouTubeBackObserverTo(Tab tab) {
+        if (tab == mYouTubeBackObservedTab) return;
+        if (mYouTubeBackObservedTab != null && mYouTubeBackTabObserver != null) {
+            mYouTubeBackObservedTab.removeObserver(mYouTubeBackTabObserver);
         }
-        
-        Tab currentTab = getActivityTab();
-        if (currentTab != null && currentTab.getWebContents() != null) {
-            Log.e("Browser Express", "Setting up WebContents observer for tab");
-            mWebContentsObserver = new WebContentsObserver(currentTab.getWebContents()) {
-                @Override
-                public void didFinishNavigationInPrimaryMainFrame(NavigationHandle navigationHandle) {
-                    Log.e("Browser Express", "Navigation finished: " + navigationHandle.getUrl());
-                    
-                    // Track YouTube visits
-                    String url = navigationHandle.getUrl().getSpec();
-                    if (url != null && (url.contains("youtube.com") || url.contains("youtu.be"))) {
-                         int count = ChromeSharedPreferences.getInstance()
-                                 .readInt(BravePreferenceKeys.BRAVE_YOUTUBE_VISIT_COUNT, 0);
-                         ChromeSharedPreferences.getInstance()
-                                 .writeInt(BravePreferenceKeys.BRAVE_YOUTUBE_VISIT_COUNT, count + 1);
-                    }
+        mYouTubeBackObservedTab = tab;
+        if (tab != null && mYouTubeBackTabObserver != null) {
+            tab.addObserver(mYouTubeBackTabObserver);
+        }
+    }
 
-                    // Small delay to ensure URL is updated in the tab
-                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                        updateBackCallbackState();
-                    }, 200);
-                }
-                
-                @Override
-                public void didStartNavigationInPrimaryMainFrame(NavigationHandle navigationHandle) {
-                    Log.e("Browser Express", "Navigation started: " + navigationHandle.getUrl());
-                }
-                
-                @Override
-                public void didStartLoading(GURL url) {
-                    Log.e("Browser Express", "Started loading: " + url.getSpec());
-                }
-                
-                @Override
-                public void didStopLoading(GURL url, boolean isKnownValid) {
-                    Log.e("Browser Express", "Stopped loading: " + url.getSpec());
-                    // Update callback state when page finishes loading
-                    updateBackCallbackState();
-                }
-            };
+    private void recordYouTubeVisitIfNeeded(NavigationHandle navigation) {
+        if (navigation == null) return;
+        GURL url = navigation.getUrl();
+        if (url == null) return;
+        String spec = url.getSpec();
+        if (spec != null && (spec.contains("youtube.com") || spec.contains("youtu.be"))) {
+            int count = ChromeSharedPreferences.getInstance()
+                    .readInt(BravePreferenceKeys.BRAVE_YOUTUBE_VISIT_COUNT, 0);
+            ChromeSharedPreferences.getInstance()
+                    .writeInt(BravePreferenceKeys.BRAVE_YOUTUBE_VISIT_COUNT, count + 1);
         }
+        // Stage-2 referral signal: YouTube visits / page views, batched to the
+        // backend so "did the people I referred actually use it" is answerable.
+        ReferralUsageTracker.recordYouTubeNavigation(url, navigation.isErrorPage());
     }
 
     private void updateBackCallbackState() {
@@ -678,15 +725,18 @@ public abstract class BraveActivity extends ChromeActivity
             if (currentTab != null && currentTab.getWebContents() != null) {
                 String currentUrl = currentTab.getUrl().getSpec();
                 boolean isYouTubeWatch = isYouTubeWatchPage(currentUrl);
-                boolean canGoBack = currentTab.canGoBack();
-                
-                Log.e("Browser Express", "URL: " + currentUrl);
-                Log.e("Browser Express", "isYouTubeWatch: " + isYouTubeWatch + ", canGoBack: " + canGoBack);
-                
-                // Enable our custom callback only for YouTube watch pages with history
-                boolean shouldEnable = isYouTubeWatch && canGoBack;
-                mYouTubeBackPressedCallback.setEnabled(shouldEnable);
-                Log.e("Browser Express", "Callback enabled: " + shouldEnable);
+
+                // Enable the hijack on ANY YouTube watch page. It routes to
+                // PiP + the m.youtube.com home tab, which needs no back history,
+                // so do NOT gate on canGoBack() -- that used to leave the
+                // callback disabled whenever the video was the first entry in
+                // its tab (e.g. opened from an external link or a fresh tab),
+                // so the back gesture never triggered PiP. If PiP genuinely
+                // can't start, handleYouTubeBackPress falls back to a normal
+                // back press, so enabling here can't dead-end the gesture.
+                mYouTubeBackPressedCallback.setEnabled(isYouTubeWatch);
+                Log.e("Browser Express", "URL: " + currentUrl
+                        + " isYouTubeWatch: " + isYouTubeWatch);
             } else {
                 Log.e("Browser Express", "No current tab or web contents");
                 mYouTubeBackPressedCallback.setEnabled(false);
@@ -701,27 +751,51 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     private void handleYouTubeBackPress() {
+        BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_back");
         Log.e("Browser Express", "=== Handling Youtube Back Press ===");
         Tab currentTab = getActivityTab();
         if (currentTab == null || currentTab.getWebContents() == null) {
+            BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_no_tab");
+            BrowserExpressPendingCrashReportStore.recordNonFatal(
+                    "youtube", "pip_back_no_tab", "warning");
             Log.e("Browser Express", "Current tab is null or has no web contents");
             performDefaultBackPress();
             return;
         }
 
-        Log.e("Browser Express", "Proceeding with PIP and YouTube home flow");
+        // Defensive: only hijack on an actual YouTube watch page. The enabled
+        // state is event-driven and could momentarily lag a fast navigation.
+        if (!isYouTubeWatchPage(currentTab.getUrl().getSpec())) {
+            Log.e("Browser Express", "Not a YouTube watch page; default back");
+            performDefaultBackPress();
+            return;
+        }
+
+        Log.e("Browser Express", "Proceeding with PIP flow");
         Log.e(
                 PIP_DEBUG_TAG,
                 "handleYouTubeBackPress PiP flow tabId="
                         + currentTab.getId()
                         + " url="
                         + currentTab.getUrl().getSpec());
-        // Record the watch tab as the PiP origin before requesting PiP. The
-        // home tab is opened only after the framework confirms PiP entry; doing
-        // it earlier can hide the WebContents while requestPictureInPicture()
-        // is still settling.
+        if (!BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
+                    currentTab.getWebContents())) {
+            BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_unavailable");
+            BrowserExpressPendingCrashReportStore.recordNonFatal(
+                    "youtube", "pip_back_unavailable", "warning");
+            // Nothing PiP-able (no active video / player not ready). Don't
+            // swallow the gesture -- run the normal back navigation so back
+            // still does something sensible.
+            Log.e(PIP_DEBUG_TAG, "handleYouTubeBackPress PiP unavailable; default back");
+            performDefaultBackPress();
+            return;
+        }
+        // Record the watch tab as the PiP origin before requesting PiP, and
+        // pass true so we switch to YouTube home once PiP entry is confirmed
+        // (golden-button flow). Without the second arg the home tab never opens.
         notePipOriginTab(currentTab, true);
         Log.e(PIP_DEBUG_TAG, "handleYouTubeBackPress triggerYouTubePiP tabId=" + currentTab.getId());
+        BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_trigger");
         BraveYouTubeScriptInjectorNativeHelper.triggerYouTubePiP(currentTab.getWebContents());
     }
 
@@ -936,19 +1010,29 @@ public abstract class BraveActivity extends ChromeActivity
         if (ENABLE_IN_APP_UPDATE && mAppUpdateManager != null) {
             mAppUpdateManager.unregisterListener(mInstallStateUpdatedListener);
         }
+        if (mBrowserExpressTabCrashObserver != null) {
+            mBrowserExpressTabCrashObserver.destroy();
+            mBrowserExpressTabCrashObserver = null;
+        }
         super.onDestroyInternal();
         cleanUpWalletNativeServices();
         cleanUpMiscAndroidMetrics();
 
         try {
-            // Clean up WebContents observer
-            if (mWebContentsObserver != null) {
-                mWebContentsObserver = null;
+            // Clean up the YouTube back-press active-tab observers.
+            if (mYouTubeBackTabSupplierObserver != null) {
+                getActivityTabProvider().removeObserver(mYouTubeBackTabSupplierObserver);
+                mYouTubeBackTabSupplierObserver = null;
             }
-            
+            if (mYouTubeBackObservedTab != null && mYouTubeBackTabObserver != null) {
+                mYouTubeBackObservedTab.removeObserver(mYouTubeBackTabObserver);
+            }
+            mYouTubeBackObservedTab = null;
+            mYouTubeBackTabObserver = null;
+
             if (mYouTubeBackPressedCallback != null) {
                 mYouTubeBackPressedCallback.remove();
-                mYouTubeBackPressedCallback = null; 
+                mYouTubeBackPressedCallback = null;
             }
         } catch (Exception e) {
             Log.e("BraveActivity", "Error cleaning up callback", e);
@@ -972,6 +1056,21 @@ public abstract class BraveActivity extends ChromeActivity
     private int mPipOriginTabId = Tab.INVALID_TAB_ID;
     private boolean mOpenYouTubeHomeAfterPipEntered;
     private long mPipRequestTimestampMs;
+    // Runs the golden-button PiP flow. The bottom toolbar owns it (origin tab + YouTube home,
+    // the background-play tutorial, nudge and analytics); the top toolbar's PiP button, which
+    // is the only visible one, reaches it through requestGoldenPip().
+    private @Nullable Runnable mGoldenPipHandler;
+
+    public void setGoldenPipHandler(@Nullable Runnable handler) {
+        mGoldenPipHandler = handler;
+    }
+
+    /** @return whether a golden-PiP handler was registered and ran. */
+    public boolean requestGoldenPip() {
+        if (mGoldenPipHandler == null) return false;
+        mGoldenPipHandler.run();
+        return true;
+    }
 
     /**
      * Record which tab hosts the WebContents that's entering PiP. Call this
@@ -985,7 +1084,13 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     public void notePipOriginTab(Tab originTab, boolean openYouTubeHomeAfterPipEntered) {
+        BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_origin");
         mPipOriginTabId = originTab != null ? originTab.getId() : Tab.INVALID_TAB_ID;
+        if (mPipOriginTabId == Tab.INVALID_TAB_ID) {
+            BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_no_origin");
+            BrowserExpressPendingCrashReportStore.recordNonFatal(
+                    "youtube", "pip_origin_missing", "warning");
+        }
         mOpenYouTubeHomeAfterPipEntered = openYouTubeHomeAfterPipEntered;
         mPipRequestTimestampMs = System.currentTimeMillis();
         ContextUtils.getAppSharedPreferences()
@@ -1015,6 +1120,10 @@ public abstract class BraveActivity extends ChromeActivity
                     .putInt(PIP_ORIGIN_TAB_ID_PREF, mPipOriginTabId)
                     .apply();
         }
+        if (isYouTubeTab(originTab)) {
+            recordYouTubeBackgroundPlayUsed(
+                    PostHogEventKeys.YT_FEATURE_EXPLORED_PIP_BG_PLAY, "pip_initiator_tab");
+        }
         openYouTubeHomeAfterPipEnteredIfNeeded(enteredTabId);
     }
 
@@ -1030,6 +1139,70 @@ public abstract class BraveActivity extends ChromeActivity
         schedulePipOriginRestore(restoreId);
     }
 
+    /**
+     * Single authority for returning to a golden-button PiP "watch" tab when
+     * the browser is foregrounded (warm resume in onResumeWithNative or cold
+     * start in finishNativeInitialization). If a PiP origin tab is pending --
+     * the pref is set on PiP enter (notePipOriginTab/onPipEnteredForOriginTab)
+     * and read here via getPipOriginTabIdForRestore() so it survives a cold
+     * start -- select it, clear the pending state, and return true so the
+     * caller SKIPS the Express background->NTP feed redirect. Returns false
+     * when nothing is pending (normal foreground -> NTP feed as usual).
+     *
+     * This replaces the previously scattered restore triggers (the
+     * dismissActivityIfNeeded hook, the buried-under-cooldown NTP helper) that
+     * fired at the wrong times -- e.g. during PiP ENTER, when Brave opens the
+     * home tab, which also surfaces as reason=NEW_TAB -- and fought both each
+     * other and the NTP redirect over the same pref. Checked once, before the
+     * cooldown gate, so a short PiP session still restores. Idempotent:
+     * restoreToTab no-ops if the origin tab is already current.
+     */
+    private boolean consumePendingPipRestore() {
+        final int restoreId = getPipOriginTabIdForRestore();
+        if (restoreId == Tab.INVALID_TAB_ID) return false;
+
+        // Distinguish the PiP ENTER phase from the user's RETURN. The golden
+        // button records the origin tab AND a pending YouTube-home redirect, then
+        // the fullscreen->PiP transition can fire onResumeWithNative *before* PiP
+        // actually enters. If we restore/clear here we wipe
+        // mOpenYouTubeHomeAfterPipEntered, so openYouTubeHomeAfterPipEnteredIfNeeded
+        // later sees no pending request and the home redirect is lost. While that
+        // redirect is still pending we are entering, not returning: defer (skip the
+        // NTP feed, but keep state and don't restore). The home redirect owns the
+        // destination on enter; the watch-tab restore happens on the next
+        // foreground, by which point the home flag has been consumed.
+        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+        boolean homeRedirectPending =
+                mOpenYouTubeHomeAfterPipEntered
+                        || prefs.getBoolean(PIP_OPEN_YOUTUBE_HOME_AFTER_ENTER_PREF, false);
+        if (homeRedirectPending) {
+            long requestTs =
+                    mPipRequestTimestampMs != 0L
+                            ? mPipRequestTimestampMs
+                            : prefs.getLong(PIP_REQUEST_TIMESTAMP_PREF, 0L);
+            boolean fresh =
+                    requestTs != 0L
+                            && System.currentTimeMillis() - requestTs
+                                    <= PIP_ENTER_PENDING_TIMEOUT_MS;
+            if (fresh) {
+                Log.e(
+                        PIP_DEBUG_TAG,
+                        "consumePendingPipRestore deferring; YouTube-home redirect pending");
+                return true; // skip NTP, preserve state for the home redirect
+            }
+            // Stale pending-enter (e.g. PiP never completed): fall through so we
+            // don't suppress the NTP feed indefinitely.
+            Log.e(PIP_DEBUG_TAG, "consumePendingPipRestore stale pending-enter, proceeding");
+        }
+
+        Log.e(
+                PIP_DEBUG_TAG,
+                "consumePendingPipRestore restoreId=" + restoreId + " (skipping NTP redirect)");
+        clearPipRestoreState();
+        schedulePipOriginRestore(restoreId);
+        return true;
+    }
+
     @Override
     public void onPictureInPictureModeChanged(boolean inPicture, Configuration newConfig) {
         // Wrap everything: a throw here on PiP exit (tab selection race,
@@ -1039,6 +1212,7 @@ public abstract class BraveActivity extends ChromeActivity
         // A lost fullscreen-exit or tab restore is recoverable on the next
         // layout pass; an activity crash isn't.
         try {
+            BrowserExpressCrashBreadcrumbs.recordEvent(inPicture ? "yt_pip_enter" : "yt_pip_exit");
             Tab beforeSuperTab = getActivityTab();
             Log.e(
                     PIP_DEBUG_TAG,
@@ -1083,9 +1257,16 @@ public abstract class BraveActivity extends ChromeActivity
                             "BraveActivity.onPictureInPictureModeChanged fallbackOrigin tabId="
                                     + mPipOriginTabId);
                 }
+                if (mPipOriginTabId == Tab.INVALID_TAB_ID) {
+                    BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_no_origin");
+                    BrowserExpressPendingCrashReportStore.recordNonFatal(
+                            "youtube", "pip_origin_missing", "warning");
+                }
 
-                if (isCurrentTabYouTube()) {
-                    firePostHogUserEvent(PostHogEventKeys.YT_FEATURE_EXPLORED_PIP_BG_PLAY);
+                if (isPipEntryFromYouTube(afterSuperTab)) {
+                    recordYouTubeBackgroundPlayUsed(
+                            PostHogEventKeys.YT_FEATURE_EXPLORED_PIP_BG_PLAY,
+                            "pip_mode_changed");
                 }
                 openYouTubeHomeAfterPipEnteredIfNeeded(mPipOriginTabId);
                 return;
@@ -1101,14 +1282,29 @@ public abstract class BraveActivity extends ChromeActivity
             // field in `finally` made the deferred restore a no-op.
             final int restoreId = getPipOriginTabIdForRestore();
             clearPipRestoreState();
+            if (restoreId == Tab.INVALID_TAB_ID) {
+                BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_restore_miss");
+                BrowserExpressPendingCrashReportStore.recordNonFatal(
+                        "youtube", "pip_restore_missing", "warning");
+            } else {
+                BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_restore");
+            }
 
-            // Restore in a short retry ladder. Android may deliver the PiP
-            // resume intent and the mode-change callback in either order; the
-            // later retries make the watch tab win after Chrome's own tab
-            // selection settles, while restoreToTab no-ops if it is already
-            // current.
-            Log.e(PIP_DEBUG_TAG, "BraveActivity PiP exit scheduling restoreId=" + restoreId);
-            schedulePipOriginRestore(restoreId);
+            // Only restore the watch tab on EXPAND (activity resuming,
+            // !isFinishing). On CLOSE (isFinishing == true) the user dismissed PiP
+            // and wants to stay where they are -- don't drag them onto the old
+            // video tab. Restore uses a short retry ladder because Android may
+            // deliver the PiP resume intent and the mode-change callback in either
+            // order; restoreToTab no-ops if already current (and now also if the
+            // user has moved to a different watch page).
+            if (!isFinishing()) {
+                Log.e(
+                        PIP_DEBUG_TAG,
+                        "BraveActivity PiP exit (expand) scheduling restoreId=" + restoreId);
+                schedulePipOriginRestore(restoreId);
+            } else {
+                Log.e(PIP_DEBUG_TAG, "BraveActivity PiP exit (close) skipping tab restore");
+            }
 
             if (getCurrentWebContents() != null
                     && BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
@@ -1135,6 +1331,9 @@ public abstract class BraveActivity extends ChromeActivity
                 fullscreenManager.exitPersistentFullscreenMode();
             }
         } catch (Exception e) {
+            BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_error");
+            BrowserExpressPendingCrashReportStore.recordNonFatal(
+                    "youtube", "pip_mode_change_error", "error");
             Log.e(PIP_DEBUG_TAG, "BraveActivity.onPictureInPictureModeChanged error: " + e.getMessage());
             Log.e("BraveActivity", "onPictureInPictureModeChanged error: " + e.getMessage());
         }
@@ -1212,13 +1411,51 @@ public abstract class BraveActivity extends ChromeActivity
         mOpenYouTubeHomeAfterPipEntered = false;
         prefs.edit().putBoolean(PIP_OPEN_YOUTUBE_HOME_AFTER_ENTER_PREF, false).apply();
 
-        new Handler(Looper.getMainLooper())
-                .post(
-                        () -> {
-                            if (isFinishing() || isDestroyed()) return;
-                            Log.e(PIP_DEBUG_TAG, "Opening YouTube home after confirmed PiP entry");
-                            openNewOrSelectExistingTab(YOUTUBE_HOME_URL);
-                        });
+        final int originTabId =
+                mPipOriginTabId != Tab.INVALID_TAB_ID ? mPipOriginTabId : enteredTabId;
+        Handler handler = new Handler(Looper.getMainLooper());
+        handler.post(
+                () -> {
+                    if (isFinishing() || isDestroyed()) return;
+                    Log.e(PIP_DEBUG_TAG, "Opening YouTube home after confirmed PiP entry");
+                    openNewOrSelectExistingTab(YOUTUBE_HOME_URL);
+                });
+        // Selecting the home tab demotes the now-hidden watch tab to
+        // ChildProcessImportance.NORMAL (TabImportanceManager.tabShown), which
+        // lets the OS discard its renderer on low-memory devices -- then the
+        // media notification reactivates a discarded tab and the video reloads
+        // from scratch. Re-elevate the watch tab AFTER tabShown(homeTab) runs.
+        // That demotion happens via the home tab's onShown observer, whose
+        // timing is not guaranteed relative to this post, so re-apply on a short
+        // ladder; setImportance is idempotent.
+        for (long delayMs : new long[] {300L, 1200L, 3000L}) {
+            handler.postDelayed(() -> boostPipOriginTabImportance(originTabId), delayMs);
+        }
+    }
+
+    /**
+     * Pin the PiP origin ("watch") tab's renderer to ChildProcessImportance.IMPORTANT while it is
+     * backgrounded behind the YouTube-home feed tab during a golden-button PiP session. Without
+     * this, the hidden tab is demoted to NORMAL and the OS discards its renderer on low-memory
+     * devices; reactivating a discarded tab reloads the page from scratch instead of resuming the
+     * live PiP playback. Uses TabImportanceManager.setImportance (direct, not the sImportantTabs
+     * book-keeping) so a later tabShown() won't immediately demote it; once the tab is restored and
+     * shown, normal importance management takes back over.
+     */
+    private void boostPipOriginTabImportance(int tabId) {
+        try {
+            if (tabId == Tab.INVALID_TAB_ID) return;
+            TabModel model = findTabModelForTab(tabId);
+            if (model == null) return;
+            int index = TabModelUtils.getTabIndexById(model, tabId);
+            if (index == TabModel.INVALID_TAB_INDEX) return;
+            Tab tab = model.getTabAt(index);
+            if (tab == null) return;
+            TabImportanceManager.setImportance(tab, ChildProcessImportance.IMPORTANT);
+            Log.e(PIP_DEBUG_TAG, "boostPipOriginTabImportance IMPORTANT tabId=" + tabId);
+        } catch (Exception e) {
+            Log.e(PIP_DEBUG_TAG, "boostPipOriginTabImportance error: " + e.getMessage());
+        }
     }
 
     private void restoreToTab(int tabId) {
@@ -1246,6 +1483,21 @@ public abstract class BraveActivity extends ChromeActivity
                             + (currentTab != null ? currentTab.getUrl().getSpec() : "null"));
             if (currentTab != null && currentTab.getId() == tabId) {
                 Log.e(PIP_DEBUG_TAG, "restoreToTab already on target tabId=" + tabId);
+                return;
+            }
+
+            // Don't pull the user back to the PiP origin tab if they have moved on
+            // to a DIFFERENT YouTube video. When a new video supersedes the PiP
+            // (e.g. tapping a video on the YouTube home feed, which ends the old
+            // PiP), the old video's exit would otherwise restore its tab and yank
+            // the user off the video they just started. Only an explicit expand
+            // back to the source tab should restore; landing on another watch page
+            // means the user deliberately chose something else.
+            if (currentTab != null && isYouTubeWatchPage(currentTab.getUrl().getSpec())) {
+                Log.e(
+                        PIP_DEBUG_TAG,
+                        "restoreToTab skip; user is on a different YouTube watch page tabId="
+                                + tabId);
                 return;
             }
 
@@ -1304,6 +1556,15 @@ public abstract class BraveActivity extends ChromeActivity
         return null;
     }
 
+    private @Nullable Tab getTabById(int tabId) {
+        if (tabId == Tab.INVALID_TAB_ID) return null;
+        TabModel tabModel = findTabModelForTab(tabId);
+        if (tabModel == null) return null;
+        int index = TabModelUtils.getTabIndexById(tabModel, tabId);
+        if (index == TabModel.INVALID_TAB_INDEX) return null;
+        return tabModel.getTabAt(index);
+    }
+
     /**
      * Gets Wallet model for Brave activity. It may be {@code null} if native initialization has not
      * completed yet.
@@ -1350,8 +1611,13 @@ public abstract class BraveActivity extends ChromeActivity
             .setOngoing(true)
             .setCategory(NotificationCompat.CATEGORY_SERVICE);
 
-        Intent intent = new Intent(context, BraveActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        // BraveActivity is abstract and in no manifest, so an intent for it opened nothing. The
+        // launcher's own intent brings the browser back the way its icon does, on the tab it was
+        // on, rather than starting a new one.
+        Intent intent =
+                context.getPackageManager().getLaunchIntentForPackage(context.getPackageName());
+        if (intent == null) intent = new Intent(context, ChromeTabbedActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent,
             PendingIntent.FLAG_IMMUTABLE);
         builder.setContentIntent(pendingIntent);
@@ -1710,8 +1976,11 @@ public abstract class BraveActivity extends ChromeActivity
         //                     BraveWalletActivity.RESTART_WALLET_ACTIVITY_RESTORE, false));
         // }
 
-        if (!BraveSetDefaultBrowserUtils.isCurrentAppDefaultBrowser(BraveActivity.this)) {
-            BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(BraveActivity.this);
+        // The forced default-browser sheet now waits for the NTP and enough comment
+        // scrolling (CommentScrollPrompts, from maybeShowNtpPrompts). Here we only
+        // report, once, a default that has flipped since.
+        if (BraveSetDefaultBrowserUtils.isCurrentAppDefaultBrowser(BraveActivity.this)) {
+            fireDefaultBrowserConfirmationOnce();
         }
 
         mDatabaseHelper = DatabaseHelper.getInstance();
@@ -1772,6 +2041,7 @@ public abstract class BraveActivity extends ChromeActivity
     @Override
     public void onResume() {
         super.onResume();
+        mBgPlayShortcutEligibilityHandler.removeCallbacks(mBgPlayShortcutEligibilityRetry);
         mBgPlayFiredThisForeground = false;
         // Keep screen on while app is in the foreground
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
@@ -1783,7 +2053,7 @@ public abstract class BraveActivity extends ChromeActivity
         if (BraveSetDefaultBrowserUtils.sReturnedFromDefaultBrowserSettings) {
             BraveSetDefaultBrowserUtils.sReturnedFromDefaultBrowserSettings = false;
             if (BraveSetDefaultBrowserUtils.isCurrentAppDefaultBrowser(this)) {
-                firePostHogUserEvent(PostHogEventKeys.DEFAULT_BROWSER_SELECTED);
+                fireDefaultBrowserConfirmationOnce();
             } else {
                 BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(this);
             }
@@ -1807,6 +2077,7 @@ public abstract class BraveActivity extends ChromeActivity
         if (mUsageMonitor != null) {
             mUsageMonitor.start();
         }
+        mBgPlayShortcutEligibilityHandler.post(this::maybeShowYouTubeBackgroundPlaybackPrompts);
     }
 
     @Override
@@ -1816,17 +2087,15 @@ public abstract class BraveActivity extends ChromeActivity
         createNotificationChannel();
         setupBgPlayTracking();
         setupUrlEnteredTracking();
+        setupBrowserExpressTabCrashTracking();
         PostHogUtil.flushPendingEvents();
+        ReferralUsageTracker.flushAsync(getApplicationContext(), "startup");
     }
 
     @Override
     public void onUserLeaveHint() {
         super.onUserLeaveHint();
-        if (!mIsMediaPlaying || mBgPlayFiredThisForeground) return;
-        if (isInPictureInPictureMode()) return;
-        if (!isCurrentTabYouTube()) return;
-        firePostHogUserEvent(PostHogEventKeys.YT_FEATURE_EXPLORED_BG_PLAY);
-        mBgPlayFiredThisForeground = true;
+        scheduleYouTubeBackgroundPlayShortcutEligibilityCheck();
     }
 
     @Override
@@ -1981,6 +2250,7 @@ public abstract class BraveActivity extends ChromeActivity
 
         initMiscAndroidMetrics();
         checkForNotificationData();
+        BrowserExpressPushOpenHandler.handle(this, getIntent());
 
         if (RateUtils.getInstance().isLastSessionShown()) {
             RateUtils.getInstance().setPrefNextRateDate();
@@ -2066,7 +2336,11 @@ public abstract class BraveActivity extends ChromeActivity
         }
         initWalletNativeServices();
 
+        // Keep this device's FCM token attached to the signed-in Express user.
+        BrowserExpressPushTokenManager.syncIfNeeded("app_start");
+
         mNativeInitialized = true;
+        BrowserExpressPendingCrashReportStore.onNativeInitialized();
 
         // if (countryCode.equals(BraveConstants.INDIA_COUNTRY_CODE)
         //         && ChromeSharedPreferences.getInstance()
@@ -2198,7 +2472,9 @@ public abstract class BraveActivity extends ChromeActivity
 
         if (!mIsLaunchedFromExternalIntent) {
             try {
-                openNewOrSelectExistingTab(UrlConstants.NTP_URL, false);
+                if (!consumePendingPipRestore()) {
+                    openNewOrSelectExistingTab(UrlConstants.NTP_URL, false);
+                }
             } catch (NullPointerException e) {
                 Log.e("BraveActivity", "openNewOrSelectExistingTab NTP on cold start: " + e.getMessage());
             }
@@ -2420,8 +2696,11 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     public void openBrowserExpressLoginSettings() {
-        SettingsNavigation settingsLauncher = SettingsNavigationFactory.createSettingsNavigation();
-        settingsLauncher.startSettings(this, BrowserExpressLoginPreferences.class);
+        openBrowserExpressLoginSettings(false);
+    }
+
+    public void openBrowserExpressLoginSettings(boolean authRequired) {
+        openBrowserExpressSignupSettings(authRequired);
     }
 
     public void openBrowserExpressCommentsSettings() {
@@ -2430,8 +2709,15 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     public void openBrowserExpressSignupSettings() {
+        openBrowserExpressSignupSettings(false);
+    }
+
+    public void openBrowserExpressSignupSettings(boolean authRequired) {
         SettingsNavigation settingsLauncher = SettingsNavigationFactory.createSettingsNavigation();
-        settingsLauncher.startSettings(this, BrowserExpressSignupPreferences.class);
+        settingsLauncher.startSettings(
+                this,
+                BrowserExpressSignupPreferences.class,
+                createBrowserExpressAuthArgs(authRequired));
     }
 
     public void openBrowserExpressEditProfileSettings() {
@@ -2440,8 +2726,22 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     public void openBrowserExpressVerify() {
+        openBrowserExpressVerify(false);
+    }
+
+    public void openBrowserExpressVerify(boolean authRequired) {
         SettingsNavigation settingsLauncher = SettingsNavigationFactory.createSettingsNavigation();
-        settingsLauncher.startSettings(this, BrowserExpressOtpVerifyPreferences.class);
+        settingsLauncher.startSettings(
+                this,
+                BrowserExpressOtpVerifyPreferences.class,
+                createBrowserExpressAuthArgs(authRequired));
+    }
+
+    private Bundle createBrowserExpressAuthArgs(boolean authRequired) {
+        Bundle fragmentArgs = new Bundle();
+        fragmentArgs.putBoolean(
+                BraveSettingsActivity.EXTRA_BROWSER_EXPRESS_AUTH_REQUIRED, authRequired);
+        return fragmentArgs;
     }
 
     public void openBraveContentFilteringSettings() {
@@ -2930,6 +3230,9 @@ public abstract class BraveActivity extends ChromeActivity
 
     public void showGenerateUsernameBottomSheet() {
         try {
+            if (BrowserExpressClaimUsernameUtil.openManualAuthIfRequired()) {
+                return;
+            }
             if(mBottomSheetDialog == null){
                 BrowserExpressGenerateUsernameBottomSheetFragment bottomSheetDialog =
                         BrowserExpressGenerateUsernameBottomSheetFragment.newInstance(true);
@@ -2981,6 +3284,60 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     public void showCommentsBottomSheetFromPost(String postId, String username, String content, String avatarUrl, Boolean openKeyboard) {
+        showCommentsBottomSheetFromPost(postId, username, content, avatarUrl, openKeyboard, null);
+    }
+
+    /**
+     * @param videoUrl when non-null the post's video opens full screen on top of the comments,
+     *     with a back arrow that returns to them. Set when the reader tapped the video itself.
+     */
+    public void showCommentsBottomSheetFromPost(String postId, String username, String content, String avatarUrl, Boolean openKeyboard, String videoUrl) {
+        showCommentsBottomSheetFromPost(postId, username, content, avatarUrl, openKeyboard, videoUrl, null);
+    }
+
+    /** @param targetCommentId comment to scroll to once loaded (push notification tap), or null. */
+    public void showCommentsBottomSheetFromPost(String postId, String username, String content, String avatarUrl, Boolean openKeyboard, String videoUrl, String targetCommentId) {
+        showCommentsBottomSheetFromPost(
+                postId, username, content, avatarUrl, openKeyboard, videoUrl, targetCommentId, null, null);
+    }
+
+    /**
+     * A feed post's comments, the post's photo, video or voice note in the chip at their top.
+     *
+     * @param sourceMedia from
+     *     {@link org.chromium.chrome.browser.browser_express_comments.SourceChip#postMedia}.
+     */
+    public void showPostComments(
+            String postId, String username, String content, String avatarUrl, Bundle sourceMedia) {
+        showPostComments(postId, username, content, avatarUrl, sourceMedia, null);
+    }
+
+    /**
+     * As {@link #showPostComments(String, String, String, String, Bundle)}, opening the stream on
+     * the page holding {@code openAtCommentId}, e.g. the first of a card's "new takes". Null opens
+     * it at the top.
+     */
+    public void showPostComments(String postId, String username, String content, String avatarUrl,
+            Bundle sourceMedia, @Nullable String openAtCommentId) {
+        showCommentsBottomSheetFromPost(postId, username, content, avatarUrl, false, null,
+                openAtCommentId, null, sourceMedia);
+    }
+
+    /**
+     * A feed post's comments with its video playing full screen over them; closing the video
+     * lands the reader on the comments.
+     *
+     * @param videoViewerArgs from
+     *     {@link org.chromium.chrome.browser.ntp.PostVideoViewerFragment#createArguments}.
+     * @param sourceMedia as for {@link #showPostComments}.
+     */
+    public void showPostCommentsWithVideo(String postId, String username, String content,
+            String avatarUrl, Bundle videoViewerArgs, Bundle sourceMedia) {
+        showCommentsBottomSheetFromPost(
+                postId, username, content, avatarUrl, false, null, null, videoViewerArgs, sourceMedia);
+    }
+
+    private void showCommentsBottomSheetFromPost(String postId, String username, String content, String avatarUrl, Boolean openKeyboard, String videoUrl, String targetCommentId, @Nullable Bundle videoViewerArgs, @Nullable Bundle sourceMedia) {
         final String FRAGMENT_TAG = "BrowserExpressCommentsBottomSheetFragment";
         if (getSupportFragmentManager().findFragmentByTag(FRAGMENT_TAG) != null) {
             Log.d("BraveActivity", "Comments bottom sheet is already visible. Ignoring request.");
@@ -2998,7 +3355,17 @@ public abstract class BraveActivity extends ChromeActivity
             fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_CONTENT, content);
             fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_AVATAR_URL, avatarUrl);
             fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.OPEN_KEYBOARD, openKeyboard ? "true" : "false");
+            fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_VIDEO_URL, videoUrl);
+            if (videoViewerArgs != null) {
+                fragmentBundle.putBundle(
+                        BrowserExpressCommentsBottomSheetFragment.POST_VIDEO_VIEWER, videoViewerArgs);
+            }
+            if (sourceMedia != null) {
+                fragmentBundle.putBundle(
+                        BrowserExpressCommentsBottomSheetFragment.POST_SOURCE_MEDIA, sourceMedia);
+            }
             bottomSheetDialog.setArguments(fragmentBundle);
+            bottomSheetDialog.setTargetCommentId(targetCommentId);
 
             bottomSheetDialog.show(getSupportFragmentManager(), FRAGMENT_TAG);
             mBottomSheetCommentsDialog = bottomSheetDialog;
@@ -3028,6 +3395,14 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     public void showCommentsBottomSheet() {
+        showCommentsBottomSheet(null);
+    }
+
+    /**
+     * @param targetCommentId comment to scroll to once the list has loaded (push
+     *     notification tap), or null.
+     */
+    public void showCommentsBottomSheet(String targetCommentId) {
         try {
             Bundle fragmentBundle = new Bundle();
 
@@ -3062,11 +3437,13 @@ public abstract class BraveActivity extends ChromeActivity
                 BrowserExpressCommentsBottomSheetFragment bottomSheetDialog =
                         BrowserExpressCommentsBottomSheetFragment.newInstance(true);
                 bottomSheetDialog.setArguments(fragmentBundle);
+                bottomSheetDialog.setTargetCommentId(targetCommentId);
                 bottomSheetDialog.show(getBraveActivity().getSupportFragmentManager(),
                         "BrowserExpressCommentsBottomSheetFragment");
                 mBottomSheetCommentsDialog = bottomSheetDialog;
             } else {
                 mBottomSheetCommentsDialog.setArguments(fragmentBundle);
+                mBottomSheetCommentsDialog.setTargetCommentId(targetCommentId);
                 mBottomSheetCommentsDialog.show(getBraveActivity().getSupportFragmentManager(),
                         "BrowserExpressCommentsBottomSheetFragment");
             }
@@ -3154,6 +3531,7 @@ public abstract class BraveActivity extends ChromeActivity
         }
         handleReferralDeepLink(intent);
         checkForNotificationData();
+        BrowserExpressPushOpenHandler.handle(this, intent);
     }
 
     @Override
@@ -3176,8 +3554,10 @@ public abstract class BraveActivity extends ChromeActivity
         } else if (requestCode == BraveConstants.DEFAULT_BROWSER_ROLE_REQUEST_CODE) {
             // User returned from the role picker (Android 10+). Re-show the prompt if they
             // still haven't set us as default (covers both RESULT_OK and RESULT_CANCELED).
+            // showBraveSetDefaultBrowserDialog() itself stops re-showing once the
+            // fail-safe cap is reached, so this no longer traps a misreporting OEM.
             if (BraveSetDefaultBrowserUtils.isCurrentAppDefaultBrowser(this)) {
-                firePostHogUserEvent(PostHogEventKeys.DEFAULT_BROWSER_SELECTED);
+                fireDefaultBrowserConfirmationOnce();
             } else {
                 BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(this);
             }
@@ -3205,9 +3585,13 @@ public abstract class BraveActivity extends ChromeActivity
         if (requestCode == BravePermissionUtils.NOTIFICATION_PERMISSION_CODE
                 && permissions.length != 0
                 && android.Manifest.permission.POST_NOTIFICATIONS.equals(permissions[0])
-                && grantResults.length != 0
-                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            firePostHogUserEvent(PostHogEventKeys.NOTIFICATIONS_PERMISSION_GRANTED);
+                && grantResults.length != 0) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                firePostHogUserEvent(PostHogEventKeys.NOTIFICATIONS_PERMISSION_GRANTED);
+                BrowserExpressPushTokenManager.syncIfNeeded("permission_granted");
+            } else {
+                firePostHogUserEvent(PostHogEventKeys.NOTIFICATIONS_PERMISSION_DENIED);
+            }
         }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
@@ -3292,6 +3676,58 @@ public abstract class BraveActivity extends ChromeActivity
         return boolInString;
     }
     
+    /**
+     * The floating comments bar in the bottom toolbar shows the current page's comment count,
+     * and which call to action to offer depends on it (open vs. join), so every writer goes
+     * through setPageCommentCount / incrementPageCommentCount rather than setting the label.
+     */
+    public interface PageCommentCountSink {
+        void setCount(int count);
+
+        int getCount();
+
+        /** The page's {@code pageReactions} from first_load, or null to show none. */
+        void setReactions(@Nullable JSONObject pageReactions);
+
+        /** Refetches the current page's comment count and reactions. */
+        void refresh();
+    }
+
+    private @Nullable PageCommentCountSink mPageCommentCountSink;
+    private boolean mPageReactionsChanged;
+
+    public void setPageCommentCountSink(@Nullable PageCommentCountSink sink) {
+        mPageCommentCountSink = sink;
+    }
+
+    public void setPageCommentCount(int count) {
+        if (mPageCommentCountSink != null) mPageCommentCountSink.setCount(count);
+    }
+
+    /** The bar headlines the page's reaction total and top emoji once it has reactions. */
+    public void setPageReactions(@Nullable JSONObject pageReactions) {
+        if (mPageCommentCountSink != null) mPageCommentCountSink.setReactions(pageReactions);
+    }
+
+    /** A vote was cast in the comments sheet, so the bar's reaction total may be out of date. */
+    public void notePageReactionsChanged() {
+        mPageReactionsChanged = true;
+    }
+
+    /** The comments sheet closed: refetch the bar's numbers if a vote there moved them. */
+    public void refreshPageReactionsIfChanged() {
+        if (!mPageReactionsChanged) return;
+        mPageReactionsChanged = false;
+        if (mPageCommentCountSink != null) mPageCommentCountSink.refresh();
+    }
+
+    /** A comment was just posted on the current page. */
+    public void incrementPageCommentCount() {
+        if (mPageCommentCountSink != null) {
+            mPageCommentCountSink.setCount(mPageCommentCountSink.getCount() + 1);
+        }
+    }
+
     public TextView getCommentCountText() {
         return findViewById(R.id.comments_button1);
     }
@@ -3313,12 +3749,77 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     private static final String POSTHOG_APP_INSTALLED_FIRED_PREF = "ph_app_installed_fired";
+    private static final String BG_PLAY_PROMPT_DEBUG_TAG = "GoldenYouTubeShortcut";
+    private static final long BG_PLAY_SHORTCUT_ELIGIBILITY_RETRY_DELAY_MS = 700L;
 
     private boolean mIsMediaPlaying;
     private boolean mBgPlayFiredThisForeground;
     private MediaSessionObserver mBgPlayMediaSessionObserver;
     private WebContents mBgPlayObservedWebContents;
     private Callback<Tab> mBgPlayTabObserver;
+    private final Handler mBgPlayShortcutEligibilityHandler = new Handler(Looper.getMainLooper());
+    private final Runnable mBgPlayShortcutEligibilityRetry =
+            this::maybeRecordYouTubeBackgroundPlayUsed;
+
+    private void setupBrowserExpressTabCrashTracking() {
+        if (mBrowserExpressTabCrashObserver != null) return;
+        TabModelSelector selector = getTabModelSelector();
+        if (selector == null) return;
+        try {
+            mBrowserExpressTabCrashObserver = new BrowserExpressTabCrashObserver(selector);
+        } catch (Exception e) {
+            Log.e(
+                    "BraveActivity",
+                    "setupBrowserExpressTabCrashTracking error: " + e.getMessage());
+        }
+    }
+
+    private void scheduleYouTubeBackgroundPlayShortcutEligibilityCheck() {
+        if (mBgPlayFiredThisForeground || isInPictureInPictureMode() || !isCurrentTabYouTube()) {
+            return;
+        }
+        mBgPlayShortcutEligibilityHandler.removeCallbacks(mBgPlayShortcutEligibilityRetry);
+        mBgPlayShortcutEligibilityHandler.postDelayed(
+                mBgPlayShortcutEligibilityRetry, BG_PLAY_SHORTCUT_ELIGIBILITY_RETRY_DELAY_MS);
+    }
+
+    private void maybeRecordYouTubeBackgroundPlayUsed() {
+        if (mBgPlayFiredThisForeground) return;
+        if (ApplicationStatus.getStateForActivity(this) == ActivityState.RESUMED) return;
+        if (isInPictureInPictureMode()) return;
+        if (!isCurrentTabYouTube()) return;
+        if (!mIsMediaPlaying && !isCurrentMediaSessionControllable()) return;
+
+        recordYouTubeBackgroundPlayUsed(
+                PostHogEventKeys.YT_FEATURE_EXPLORED_BG_PLAY, "background_media_session");
+    }
+
+    private void maybeShowYouTubeBackgroundPlaybackPrompts() {
+        GoldenYouTubeHomeScreenShortcutUtil.showBackgroundPlaybackPromptsIfEligible(
+                getSupportFragmentManager(), this);
+    }
+
+    private void recordYouTubeBackgroundPlayUsed(String eventKey, String source) {
+        if (mBgPlayFiredThisForeground) {
+            Log.e(BG_PLAY_PROMPT_DEBUG_TAG, "skip duplicate background playback use source=" + source);
+            return;
+        }
+
+        firePostHogUserEvent(eventKey);
+        // Stage-2 referral signal: a confirmed premium-feature use. This is
+        // what activates the referral (and the referrer's payout) server-side.
+        if (PostHogEventKeys.YT_FEATURE_EXPLORED_PIP_BG_PLAY.equals(eventKey)) {
+            ReferralUsageTracker.recordPipUsed(getApplicationContext());
+        } else {
+            ReferralUsageTracker.recordBackgroundPlayUsed(getApplicationContext());
+        }
+        int useCount = GoldenYouTubeHomeScreenShortcutUtil.recordPipBackgroundPlayUsed();
+        mBgPlayFiredThisForeground = true;
+        mBgPlayShortcutEligibilityHandler.removeCallbacks(mBgPlayShortcutEligibilityRetry);
+        Log.e(
+                BG_PLAY_PROMPT_DEBUG_TAG,
+                "recorded background playback source=" + source + " count=" + useCount);
+    }
 
     private void setupBgPlayTracking() {
         if (mBgPlayTabObserver != null) return;
@@ -3346,10 +3847,12 @@ public abstract class BraveActivity extends ChromeActivity
         if (wc == null) return;
         MediaSession ms = MediaSession.fromWebContents(wc);
         if (ms == null) return;
+        mIsMediaPlaying = ms.isControllable();
         mBgPlayMediaSessionObserver = new MediaSessionObserver(ms) {
             @Override
             public void mediaSessionStateChanged(boolean isControllable, boolean isPaused) {
                 mIsMediaPlaying = isControllable && !isPaused;
+                maybeRecordYouTubeBackgroundPlayUsed();
             }
 
             @Override
@@ -3359,10 +3862,47 @@ public abstract class BraveActivity extends ChromeActivity
         };
     }
 
+    private boolean isCurrentMediaSessionControllable() {
+        WebContents wc = getCurrentWebContents();
+        if (wc == null) return false;
+        MediaSession mediaSession = MediaSession.fromWebContents(wc);
+        return mediaSession != null && mediaSession.isControllable();
+    }
+
     private boolean isCurrentTabYouTube() {
         WebContents wc = getCurrentWebContents();
         if (wc == null) return false;
-        GURL url = wc.getLastCommittedUrl();
+        return isYouTubeUrl(wc.getLastCommittedUrl());
+    }
+
+    private boolean isPipEntryFromYouTube(@Nullable Tab fallbackTab) {
+        int originTabId = getPipOriginTabIdForRestore();
+        Tab originTab = getTabById(originTabId);
+        boolean originIsYouTube = isYouTubeTab(originTab);
+        boolean fallbackIsYouTube = isYouTubeTab(fallbackTab);
+        boolean homeRedirectPending =
+                mOpenYouTubeHomeAfterPipEntered
+                        || ContextUtils.getAppSharedPreferences()
+                                .getBoolean(PIP_OPEN_YOUTUBE_HOME_AFTER_ENTER_PREF, false);
+        Log.e(
+                BG_PLAY_PROMPT_DEBUG_TAG,
+                "pip youtube check originTabId="
+                        + originTabId
+                        + " originIsYouTube="
+                        + originIsYouTube
+                        + " fallbackIsYouTube="
+                        + fallbackIsYouTube
+                        + " homeRedirectPending="
+                        + homeRedirectPending);
+        return originIsYouTube || fallbackIsYouTube || homeRedirectPending;
+    }
+
+    private boolean isYouTubeTab(@Nullable Tab tab) {
+        if (tab == null) return false;
+        return isYouTubeUrl(tab.getUrl());
+    }
+
+    private boolean isYouTubeUrl(@Nullable GURL url) {
         if (url == null || !url.isValid()) return false;
         String host = url.getHost();
         return host != null
@@ -3374,26 +3914,19 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     public void firePostHogUserEvent(String eventKey, JSONObject extraProps) {
-        try {
-            String userId = "ANONYMOUS";
-            SharedPreferences tokenPref = getApplicationContext().getSharedPreferences(
-                    BravePreferenceKeys.BROWSER_EXPRESS_ACCESS_TOKEN, 0);
-            String accessToken = tokenPref.getString(ACCESS_TOKEN_KEY, null);
-            if (accessToken != null) {
-                String[] parts = accessToken.split("\\.");
-                if (parts.length >= 2) {
-                    byte[] decoded = Base64.decode(parts[1], Base64.DEFAULT);
-                    JSONObject jwt = new JSONObject(new String(decoded, "UTF-8"));
-                    String id = jwt.optString("_id", "");
-                    if (id.length() > 0) userId = id;
-                }
-            }
-            JSONObject payload = extraProps != null ? extraProps : new JSONObject();
-            payload.put("app_version", getCurrentAppVersion());
-            new PostHogUtil.PostHogWorkerTask(eventKey, userId, payload)
-                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        } catch (Exception e) {
-            Log.e("BraveActivity", "PostHog fire error: " + e.getMessage());
+        PostHogUtil.capture(eventKey, extraProps);
+    }
+
+    /**
+     * Fires the "Default Browser Selected" event to PostHog at most once per install.
+     * Used by every confirmation path (return-from-settings, role-picker result, and
+     * the deferred check that runs after the forced prompt has been bypassed) so the
+     * confirmation is reported even when the user only becomes default later.
+     */
+    private void fireDefaultBrowserConfirmationOnce() {
+        if (!BraveSetDefaultBrowserUtils.isDefaultBrowserConfirmationEventSent()) {
+            BraveSetDefaultBrowserUtils.setDefaultBrowserConfirmationEventSent();
+            firePostHogUserEvent(PostHogEventKeys.DEFAULT_BROWSER_SELECTED);
         }
     }
 
@@ -3417,13 +3950,19 @@ public abstract class BraveActivity extends ChromeActivity
                     return;
                 }
                 int core = navigation.pageTransition() & PageTransition.CORE_MASK;
-                if (core == PageTransition.TYPED || core == PageTransition.GENERATED) {
+                if ((core == PageTransition.TYPED || core == PageTransition.GENERATED)
+                        && !tab.isIncognito()) {
                     fireUrlEnteredEvent(navigation.getUrl());
                 }
                 maybeFireYtIntroTutorialVideoClicked(navigation.getUrl());
             }
         };
-        mUrlEnteredTabSupplierObserver = tab -> attachUrlEnteredObserverTo(tab);
+        mUrlEnteredTabSupplierObserver =
+                tab -> {
+                    attachUrlEnteredObserverTo(tab);
+                    // Switching to a tab that already shows the NTP loads nothing.
+                    maybeShowNtpPrompts();
+                };
         try {
             getActivityTabProvider().addObserver(mUrlEnteredTabSupplierObserver);
             attachUrlEnteredObserverTo(getActivityTabProvider().get());
@@ -3443,6 +3982,37 @@ public abstract class BraveActivity extends ChromeActivity
 
     private String mLastHomeVisitedUrl;
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        // Focus comes back when e.g. the comments sheet closes over the NTP.
+        if (hasFocus) maybeShowNtpPrompts();
+    }
+
+    private final Runnable mNtpPromptsRunnable = this::showNtpPromptsIfOnNtp;
+
+    private void maybeShowNtpPrompts() {
+        // Resume, focus and the NTP load tend to arrive together: check once, after them.
+        View decorView = getWindow().getDecorView();
+        decorView.removeCallbacks(mNtpPromptsRunnable);
+        decorView.post(mNtpPromptsRunnable);
+    }
+
+    /**
+     * The NTP's prompts, one at a time: a dialog takes focus, so the next waits for its close.
+     * The default-browser sheet is checked by its flag, as its window comes up asynchronously.
+     */
+    private void showNtpPromptsIfOnNtp() {
+        Tab tab = getActivityTab();
+        if (!isFinishing() && !isDestroyed() && hasWindowFocus()
+                && !BraveSetDefaultBrowserUtils.isBottomSheetVisible
+                && tab != null && !tab.isIncognito() && tab.getUrl() != null
+                && UrlUtilities.isNtpUrl(tab.getUrl().getSpec())) {
+            if (CommentScrollPrompts.maybeShowOnNtp(this)) return;
+            InstalledAppsManager.maybePrompt(this);
+        }
+    }
+
     private void fireHomeVisitedIfNtp(Tab tab, GURL url) {
         if (url == null || !url.isValid()) return;
         String spec = url.getSpec();
@@ -3451,6 +4021,7 @@ public abstract class BraveActivity extends ChromeActivity
                 || spec.startsWith(UrlConstants.NTP_URL)
                 || spec.startsWith("chrome-native://newtab");
         if (!isNtp) return;
+        if (tab != null && !tab.isIncognito()) maybeShowNtpPrompts();
         if (spec.equals(mLastHomeVisitedUrl)) return;
         mLastHomeVisitedUrl = spec;
         firePostHogUserEvent(PostHogEventKeys.HOME_VISITED);
@@ -3517,55 +4088,53 @@ public abstract class BraveActivity extends ChromeActivity
         return spec.indexOf("/watch", slash) == slash;
     }
 
+    /**
+     * Something typed or spoken into the omnibox: a search of the default engine is "Search
+     * Performed" with its terms, anything else "URL Entered" with the site's domain only.
+     */
     private void fireUrlEnteredEvent(GURL url) {
         if (url == null || !url.isValid()) return;
         String scheme = url.getScheme();
         if (!"http".equals(scheme) && !"https".equals(scheme)) return;
-        String spec = url.getSpec();
-        if (spec == null || spec.isEmpty()) return;
-        try {
-            JSONObject props = new JSONObject();
-            props.put("url", spec);
-            firePostHogUserEvent(PostHogEventKeys.URL_ENTERED, props);
-        } catch (Exception e) {
-            Log.e("BraveActivity", "PostHog URL_ENTERED error: " + e.getMessage());
-        }
+        JSONObject props = PostHogUtil.pageProperties(url);
+        PostHogUtil.capture(
+                props.optBoolean("is_search")
+                        ? PostHogEventKeys.SEARCH_PERFORMED
+                        : PostHogEventKeys.URL_ENTERED,
+                props);
     }
 
     private void firePostHogAppLifecycleEvents() {
         try {
-            String userId = "ANONYMOUS";
-            SharedPreferences tokenPref = getApplicationContext().getSharedPreferences(
-                    BravePreferenceKeys.BROWSER_EXPRESS_ACCESS_TOKEN, 0);
-            String accessToken = tokenPref.getString(ACCESS_TOKEN_KEY, null);
-            if (accessToken != null) {
-                String[] parts = accessToken.split("\\.");
-                if (parts.length >= 2) {
-                    byte[] decoded = Base64.decode(parts[1], Base64.DEFAULT);
-                    JSONObject jwt = new JSONObject(new String(decoded, "UTF-8"));
-                    String id = jwt.optString("_id", "");
-                    if (id.length() > 0) userId = id;
-                }
-            }
-
             String appVersion = getCurrentAppVersion();
 
+            // Who the person is now, kept on their PostHog person for segmenting: refreshed on
+            // every launch, with the first version and launch kept from the first one.
+            JSONObject person = new JSONObject();
+            person.put("app_version", appVersion);
+            person.put(
+                    "theme_setting", PostHogUtil.themeSettingName(NightModeUtils.getThemeSetting()));
+            person.put(
+                    "is_default_browser",
+                    BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(this));
+            person.put(
+                    "notifications_enabled",
+                    NotificationManagerCompat.from(this).areNotificationsEnabled());
+            JSONObject firstSeen = new JSONObject();
+            firstSeen.put("first_app_version", appVersion);
+            firstSeen.put("first_launch_at", System.currentTimeMillis());
             JSONObject launchedPayload = new JSONObject();
-            launchedPayload.put("app_version", appVersion);
-            new PostHogUtil.PostHogWorkerTask(
-                    PostHogEventKeys.APP_LAUNCHED, userId, launchedPayload)
-                    .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            launchedPayload.put("$set", person);
+            launchedPayload.put("$set_once", firstSeen);
+            PostHogUtil.capture(PostHogEventKeys.APP_LAUNCHED, launchedPayload);
 
             SharedPreferences installedPref = getApplicationContext()
                     .getSharedPreferences(POSTHOG_APP_INSTALLED_FIRED_PREF, 0);
             if (!installedPref.getBoolean("fired", false)) {
-                JSONObject installedPayload = new JSONObject();
-                installedPayload.put("app_version", appVersion);
-                new PostHogUtil.PostHogWorkerTask(
-                        PostHogEventKeys.APP_INSTALLED, userId, installedPayload)
-                        .executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                PostHogUtil.capture(PostHogEventKeys.APP_INSTALLED);
                 installedPref.edit().putBoolean("fired", true).apply();
             }
+            PostHogUtil.watchAppVisibility();
         } catch (Exception e) {
             Log.e("BraveActivity", "PostHog app lifecycle error: " + e.getMessage());
         }
@@ -3598,19 +4167,39 @@ public abstract class BraveActivity extends ChromeActivity
 
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 BravePreferenceKeys.BROWSER_EXPRESS_ACCESS_TOKEN, 0);
+        // Detach this device from the account while the session token is still valid.
+        InstalledAppsManager.beforeAccountChange(null);
+        BrowserExpressPushTokenManager.unregisterBeforeLogout();
+
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.remove(ACCESS_TOKEN_KEY);
         editor.apply();
+        // The next account to sign in here must not start out with this one's picture.
+        ProfileAvatar.clearSelf();
 
         getSupportFragmentManager().popBackStack();
     }
 
     public void setAccessToken(String accessToken) {
+        InstalledAppsManager.beforeAccountChange(accessToken);
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 BravePreferenceKeys.BROWSER_EXPRESS_ACCESS_TOKEN, 0);
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(ACCESS_TOKEN_KEY, accessToken);
         editor.apply();
+
+        // A (possibly different) user just signed in on this device: re-attach the push token.
+        BrowserExpressPushTokenManager.syncIfNeeded("login");
+
+        // Bind this install's referral (tracked anonymously at install time) to
+        // the freshly-authenticated user id, so the backend can build the
+        // who-referred-whom graph. No-ops after the first successful link.
+        if (accessToken != null && !accessToken.isEmpty()) {
+            org.chromium.chrome.browser.referral.ReferralHelper
+                    .linkReferralToAccount(getApplicationContext(), accessToken);
+            // Usage recorded before there was a session can go out now.
+            ReferralUsageTracker.flushAsync(getApplicationContext(), "login");
+        }
     }
 
     public String getAccessToken() {
@@ -3628,7 +4217,10 @@ public abstract class BraveActivity extends ChromeActivity
     private boolean isTokenExpired(String token) {
         try {
             String[] parts = token.split("\\.");
-            if (parts.length < 2) return true;
+            // Not a JWT (opaque token) — we can't read an exp, so don't treat it
+            // as expired. Returning true here would make getAccessToken() logout()
+            // and hand back null, bouncing a just-authenticated user to login.
+            if (parts.length < 2) return false;
             byte[] data = Base64.decode(parts[1], Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP);
             JSONObject payload = new JSONObject(new String(data, "UTF-8"));
             if (payload.has("exp")) {
@@ -3639,8 +4231,10 @@ public abstract class BraveActivity extends ChromeActivity
             // No exp claim — treat as valid (long-lived token)
             return false;
         } catch (Exception e) {
-            // If we can't parse, assume expired to be safe
-            return true;
+            // Can't parse — keep the token rather than silently logging the user
+            // out; a genuinely bad token will fail its own API calls.
+            Log.e("BraveActivity", "isTokenExpired parse failed, keeping token: " + e.getMessage());
+            return false;
         }
     }
 
@@ -3696,6 +4290,35 @@ public abstract class BraveActivity extends ChromeActivity
                 BravePreferenceKeys.BROWSER_EXPRESS_EMAIL, 0);
         String browserExpressEmail = sharedPref.getString(BROWSER_EXPRESS_EMAIL, null);
         return browserExpressEmail;
+    }
+
+    public void setBrowserExpressPhoneNumber(String phoneNumber) {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_PHONE, 0);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(BROWSER_EXPRESS_PHONE, phoneNumber);
+        editor.apply();
+    }
+
+    public String getBrowserExpressPhoneNumber() {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_PHONE, 0);
+        return sharedPref.getString(BROWSER_EXPRESS_PHONE, null);
+    }
+
+    public void setBrowserExpressOtpPurpose(String purpose) {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_OTP_PURPOSE, 0);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(BROWSER_EXPRESS_OTP_PURPOSE, purpose);
+        editor.apply();
+    }
+
+    public String getBrowserExpressOtpPurpose() {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_OTP_PURPOSE, 0);
+        return sharedPref.getString(
+                BROWSER_EXPRESS_OTP_PURPOSE, BROWSER_EXPRESS_OTP_PURPOSE_SIGNUP);
     }
 
     public ObservableSupplier<BrowserControlsManager> getBrowserControlsManagerSupplier() {
@@ -4242,7 +4865,8 @@ public abstract class BraveActivity extends ChromeActivity
         if (uri == null) return;
         String host = uri.getHost();
         String path = uri.getPath();
-        if ("browser.express".equals(host) && path != null && path.startsWith("/refer")) {
+        if (("browser.express".equals(host) || "www.browser.express".equals(host))
+                && path != null && path.startsWith("/refer")) {
             String code = uri.getQueryParameter("code");
             if (code != null && !code.isEmpty()) {
                 Log.i("REFERRAL", "Deep link captured in BraveActivity: " + code);
