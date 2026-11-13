@@ -213,6 +213,15 @@ public class TabUtils {
         }
     }
 
+    /** A new incognito tab on its new tab page. */
+    public static void openNewIncognitoTab() {
+        try {
+            openNewTab(BraveActivity.getBraveActivity(), true);
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+            Log.e(TAG, "openNewIncognitoTab " + e);
+        }
+    }
+
     private static void openNewTab(BraveActivity braveActivity, boolean isIncognito) {
         if (braveActivity == null) return;
 

@@ -4,282 +4,315 @@
      License, v. 2.0. If a copy of the MPL was not distributed with this file,
      You can obtain one at https://mozilla.org/MPL/2.0/.
 -->
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- YouTube free-access sheet (Figma "Extend · Light" 1:8670 / "Extend · Dark" 1:8589): the
+     YouTube mark, how long free access lasts, what referrals have earned and the refer button.
+     The sheet surface comes from BrowserExpressYouTubePremiumSheetTheme. -->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:background="@color/be_background_black"
-    android:paddingTop="24dp"
-    android:paddingStart="22dp"
-    android:paddingEnd="22dp"
-    android:paddingBottom="32dp">
+    android:layout_height="wrap_content">
 
-    <!-- Main content -->
+    <!-- Glow behind the logo (dark design only; transparent in light). A 250dp disc squashed to
+         the design's 250 × 140 ellipse, centred on the logo. -->
+    <View
+        android:layout_width="250dp"
+        android:layout_height="250dp"
+        android:background="@drawable/browser_express_yt_premium_glow"
+        android:importantForAccessibility="no"
+        android:scaleY="0.56"
+        android:translationY="-80dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <LinearLayout
         android:id="@+id/content_layout"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toTopOf="parent"
+        android:gravity="center_horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        android:orientation="vertical"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="22dp">
 
-        <!-- Row 1: Icon + Title/Subtitle + Close button -->
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:background="@drawable/browser_express_yt_premium_handle" />
+
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            tools:ignore="UseCompoundDrawables">
-
-            <ImageView
-                android:layout_width="40dp"
-                android:layout_height="40dp"
-                android:src="@drawable/golden_youtube_icon"
-                android:contentDescription="@string/youtube" />
-
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:layout_marginStart="12dp"
-                android:orientation="vertical">
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/youtube_premium_title"
-                    android:textColor="@color/set_default_text_color"
-                    android:textSize="14sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/youtube_premium_subtitle"
-                    android:textColor="@color/set_default_text_color"
-                    android:textSize="12sp" />
-            </LinearLayout>
-
-            <ImageView
-                android:id="@+id/close_button"
-                android:layout_width="32dp"
-                android:layout_height="32dp"
-                android:padding="4dp"
-                android:src="@drawable/btn_close"
-                app:tint="@color/set_default_text_color"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:visibility="gone"
-                android:contentDescription="@string/close" />
-        </LinearLayout>
-
-        <!-- Row 2: DD:HH:MM:SS Timer -->
-        <ProgressBar
-            android:id="@+id/loading_indicator"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
             android:layout_marginTop="16dp"
-            android:visibility="gone" />
-
-        <LinearLayout
-            android:id="@+id/time_layout"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:gravity="center"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
 
-            <!-- Days -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/timer_days"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="01"
-                    android:textColor="@color/brave_theme_color"
-                    android:textSize="32sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/youtube_premium_timer_day"
-                    android:textColor="@color/onboarding_gray"
-                    android:textSize="11sp" />
-            </LinearLayout>
+            <ImageView
+                android:layout_width="36dp"
+                android:layout_height="26dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_browser_express_youtube_logo" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:text="@string/youtube_premium_colon"
-                android:textColor="@color/onboarding_gray"
-                android:textSize="32sp"
-                android:textStyle="bold" />
+                android:fontFamily="sans-serif"
+                android:letterSpacing="-0.02"
+                android:text="@string/youtube_premium_brand"
+                android:textColor="@color/browser_express_yt_premium_text"
+                android:textFontWeight="700"
+                android:textSize="21sp" />
 
-            <!-- Hours -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/timer_hours"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="02"
-                    android:textColor="@color/brave_theme_color"
-                    android:textSize="32sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/youtube_premium_timer_hour"
-                    android:textColor="@color/onboarding_gray"
-                    android:textSize="11sp" />
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+            <ImageView
+                android:layout_width="13dp"
+                android:layout_height="13dp"
                 android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:text="@string/youtube_premium_colon"
-                android:textColor="@color/onboarding_gray"
-                android:textSize="32sp"
-                android:textStyle="bold" />
-
-            <!-- Minutes -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/timer_minutes"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="50"
-                    android:textColor="@color/brave_theme_color"
-                    android:textSize="32sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/youtube_premium_timer_min"
-                    android:textColor="@color/onboarding_gray"
-                    android:textSize="11sp" />
-            </LinearLayout>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_marginEnd="8dp"
-                android:text="@string/youtube_premium_colon"
-                android:textColor="@color/onboarding_gray"
-                android:textSize="32sp"
-                android:textStyle="bold" />
-
-            <!-- Seconds -->
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/timer_seconds"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    tools:text="23"
-                    android:textColor="@color/brave_theme_color"
-                    android:textSize="32sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/youtube_premium_timer_sec"
-                    android:textColor="@color/onboarding_gray"
-                    android:textSize="11sp" />
-            </LinearLayout>
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_browser_express_premium_star" />
         </LinearLayout>
 
-        <!-- Row 3: Referral count -->
         <TextView
-            android:id="@+id/referral_count"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
+            android:layout_marginTop="16dp"
+            android:fontFamily="sans-serif"
             android:gravity="center"
-            tools:text="3 referred"
-            android:textColor="@color/set_default_text_color"
-            android:textSize="24sp"
-            android:textStyle="bold" />
+            android:text="@string/youtube_premium_title"
+            android:textColor="@color/browser_express_yt_premium_text"
+            android:textFontWeight="700"
+            android:textSize="19sp" />
 
-        <!-- Row 4: Backend message -->
         <TextView
             android:id="@+id/premium_message"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="16dp"
+            android:fontFamily="sans-serif-medium"
             android:gravity="center"
-            android:text="@string/youtube_premium_message_default"
-            android:textColor="@color/set_default_text_color"
-            android:textSize="15sp"
-            android:lineSpacingExtra="4dp" />
+            android:textColor="@color/browser_express_yt_premium_muted"
+            android:textSize="13sp" />
 
-        <!-- Row 5: Refer button -->
-        <android.widget.Button
+        <ProgressBar
+            android:id="@+id/loading_indicator"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:indeterminateTint="@color/browser_express_yt_premium_accent"
+            android:visibility="gone" />
+
+        <!-- Countdown card. -->
+        <LinearLayout
+            android:id="@+id/time_layout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/browser_express_yt_premium_card_bg"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="14dp">
+
+            <TextView
+                android:id="@+id/countdown_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif-medium"
+                android:text="@string/youtube_premium_countdown_label"
+                android:textColor="@color/browser_express_yt_premium_muted"
+                android:textSize="12sp" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/timer_days"
+                        style="@style/BrowserExpressYouTubePremiumDigit"
+                        tools:text="29" />
+
+                    <TextView
+                        style="@style/BrowserExpressYouTubePremiumUnit"
+                        android:text="@string/youtube_premium_timer_day" />
+                </LinearLayout>
+
+                <TextView style="@style/BrowserExpressYouTubePremiumColon" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/timer_hours"
+                        style="@style/BrowserExpressYouTubePremiumDigit"
+                        tools:text="15" />
+
+                    <TextView
+                        style="@style/BrowserExpressYouTubePremiumUnit"
+                        android:text="@string/youtube_premium_timer_hour" />
+                </LinearLayout>
+
+                <TextView style="@style/BrowserExpressYouTubePremiumColon" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/timer_minutes"
+                        style="@style/BrowserExpressYouTubePremiumDigit"
+                        tools:text="36" />
+
+                    <TextView
+                        style="@style/BrowserExpressYouTubePremiumUnit"
+                        android:text="@string/youtube_premium_timer_min" />
+                </LinearLayout>
+
+                <TextView style="@style/BrowserExpressYouTubePremiumColon" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/timer_seconds"
+                        style="@style/BrowserExpressYouTubePremiumDigit"
+                        tools:text="49" />
+
+                    <TextView
+                        style="@style/BrowserExpressYouTubePremiumUnit"
+                        android:text="@string/youtube_premium_timer_sec" />
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- What referrals have earned. -->
+        <LinearLayout
+            android:id="@+id/stats_layout"
+            android:layout_width="match_parent"
+            android:layout_height="75dp"
+            android:layout_marginTop="16dp"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/browser_express_yt_premium_card_bg"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="14dp">
+
+                <TextView
+                    android:id="@+id/referral_count"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif"
+                    android:textColor="@color/browser_express_yt_premium_text"
+                    android:textFontWeight="700"
+                    android:textSize="24sp"
+                    tools:text="0" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="@string/youtube_premium_friends_referred"
+                    android:textColor="@color/browser_express_yt_premium_muted"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:background="@drawable/browser_express_yt_premium_card_bg"
+                android:orientation="vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="14dp">
+
+                <TextView
+                    android:id="@+id/days_earned"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif"
+                    android:textColor="@color/browser_express_yt_premium_text"
+                    android:textFontWeight="700"
+                    android:textSize="24sp"
+                    tools:text="0" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:fontFamily="sans-serif-medium"
+                    android:text="@string/youtube_premium_days_earned"
+                    android:textColor="@color/browser_express_yt_premium_muted"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- A TextView rather than a Button: a Button inflates as a MaterialButton here and
+             tints over this background. -->
+        <TextView
             android:id="@+id/btn_refer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:background="@drawable/orange_rounded_button"
-            app:backgroundTint="@null"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/browser_express_yt_premium_button_bg"
+            android:clickable="true"
+            android:focusable="true"
+            android:fontFamily="sans-serif"
+            android:gravity="center"
+            android:paddingVertical="15dp"
             android:text="@string/youtube_premium_refer_button"
-            android:textAllCaps="false"
-            android:textColor="@android:color/white"
-            android:paddingTop="14dp"
-            android:paddingBottom="14dp"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            style="?android:attr/borderlessButtonStyle" />
-
+            android:textColor="@color/browser_express_yt_premium_button_text"
+            android:textFontWeight="700"
+            android:textSize="15sp" />
     </LinearLayout>
 
-    <!-- Confetti View -->
+    <!-- Sized to the content, not the parent: an empty view asked to fill its parent would
+         claim the whole screen and stretch the sheet. -->
     <org.chromium.chrome.browser.youtube_premium.ConfettiView
         android:id="@+id/confetti_view"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintTop_toTopOf="@id/content_layout"
         app:layout_constraintBottom_toBottomOf="@id/content_layout"
+        app:layout_constraintEnd_toEndOf="@id/content_layout"
         app:layout_constraintStart_toStartOf="@id/content_layout"
-        app:layout_constraintEnd_toEndOf="@id/content_layout" />
+        app:layout_constraintTop_toTopOf="@id/content_layout" />
 
-    <!-- Circular timer in top right corner (non-permanent mode only) -->
+    <!-- Auto-close countdown (on YouTube only). -->
     <FrameLayout
         android:id="@+id/timer_container"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="20dp"
         app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="-8dp"
+        app:layout_constraintTop_toTopOf="parent"
         android:visibility="gone">
 
         <ProgressBar
@@ -298,10 +331,26 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            tools:text="10"
-            android:textColor="@color/set_default_text_color"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:fontFamily="sans-serif"
+            android:textColor="@color/browser_express_yt_premium_text"
+            android:textFontWeight="700"
+            android:textSize="12sp"
+            tools:text="10s" />
     </FrameLayout>
 
+    <!-- Close, where the sheet doesn't close itself (new tab page, profile). -->
+    <ImageView
+        android:id="@+id/close_button"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginEnd="20dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/close"
+        android:padding="10dp"
+        android:src="@drawable/btn_close"
+        android:visibility="gone"
+        app:tint="@color/browser_express_yt_premium_muted" />
 </androidx.constraintlayout.widget.ConstraintLayout>

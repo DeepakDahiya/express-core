@@ -8,6 +8,7 @@ package org.chromium.chrome.browser.youtube_premium;
 import android.animation.ObjectAnimator;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.view.LayoutInflater;
@@ -71,10 +72,13 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
     private TextView mTimerSeconds;
     private TextView mPremiumMessage;
     private TextView mReferralCount;
-    private Button mReferButton;
+    private TextView mDaysEarned;
+    private TextView mCountdownLabel;
+    private TextView mReferButton;
     private View mCloseButton;
     private ProgressBar mLoadingIndicator;
     private LinearLayout mTimeLayout;
+    private View mStatsLayout;
     private ConfettiView mConfettiView;
 
     private boolean mIsBlocked = false;
@@ -142,11 +146,11 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
     /**
      * Show the bottomsheet if cooldown has passed.
      */
-    public static void showIfNeeded(FragmentManager fragmentManager) {
-        if (!shouldShowBottomSheet()) return;
+    public static boolean showIfNeeded(FragmentManager fragmentManager) {
+        if (!shouldShowBottomSheet()) return false;
         try {
-            if (fragmentManager.isStateSaved()) return;
-            if (fragmentManager.findFragmentByTag(TAG) != null) return;
+            if (fragmentManager.isStateSaved()) return false;
+            if (fragmentManager.findFragmentByTag(TAG) != null) return true;
             YouTubePremiumBottomSheetFragment fragment = newInstance(false);
             fragment.setReferralSource("popup_on_yt");
             fragment.show(fragmentManager, TAG);
@@ -155,8 +159,10 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
             ChromeSharedPreferences.getInstance()
                     .writeLong(BravePreferenceKeys.YOUTUBE_PREMIUM_BOTTOMSHEET_LAST_SHOWN,
                                System.currentTimeMillis());
+            return true;
         } catch (IllegalStateException e) {
             Log.e(TAG, "Cannot show bottom sheet after onSaveInstanceState: " + e.getMessage());
+            return false;
         }
     }
 
@@ -169,19 +175,21 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
      * Show the bottomsheet permanently (until closed by user).
      * Bypasses cooldown check.
      */
-    public static void showPermanent(FragmentManager fragmentManager, android.app.Activity activity) {
-        if (!shouldShowBottomSheetInNTP(activity)) return;
+    public static boolean showPermanent(FragmentManager fragmentManager, android.app.Activity activity) {
+        if (!shouldShowBottomSheetInNTP(activity)) return false;
         try {
-            if (fragmentManager.isStateSaved()) return;
-            if (fragmentManager.findFragmentByTag(TAG) != null) return;
+            if (fragmentManager.isStateSaved()) return false;
+            if (fragmentManager.findFragmentByTag(TAG) != null) return true;
             YouTubePremiumBottomSheetFragment fragment = newInstance(true);
             fragment.setReferralSource("home_popup");
             fragment.show(fragmentManager, TAG);
             ChromeSharedPreferences.getInstance()
                     .writeLong(BravePreferenceKeys.YOUTUBE_PREMIUM_BOTTOMSHEET_LAST_SHOWN_IN_NTP,
                                System.currentTimeMillis());
+            return true;
         } catch (IllegalStateException e) {
             Log.e(TAG, "Cannot show bottom sheet after onSaveInstanceState: " + e.getMessage());
+            return false;
         }
     }
 
@@ -209,7 +217,19 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         if (getArguments() != null) {
             mIsPermanent = getArguments().getBoolean(ARG_IS_PERMANENT, false);
         }
-        setStyle(STYLE_NORMAL, R.style.AppSetDefaultBottomSheetDialogTheme);
+        setStyle(STYLE_NORMAL, R.style.BrowserExpressYouTubePremiumSheetTheme);
+    }
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        // The design dims the page more under the dark sheet than under the light one.
+        if (getDialog() != null && getDialog().getWindow() != null) {
+            boolean night =
+                    (getResources().getConfiguration().uiMode & Configuration.UI_MODE_NIGHT_MASK)
+                            == Configuration.UI_MODE_NIGHT_YES;
+            getDialog().getWindow().setDimAmount(night ? 0.62f : 0.45f);
+        }
     }
 
     @Override
@@ -238,10 +258,13 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
         mTimerSeconds = view.findViewById(R.id.timer_seconds);
         mPremiumMessage = view.findViewById(R.id.premium_message);
         mReferralCount = view.findViewById(R.id.referral_count);
+        mDaysEarned = view.findViewById(R.id.days_earned);
+        mCountdownLabel = view.findViewById(R.id.countdown_label);
         mReferButton = view.findViewById(R.id.btn_refer);
         mCloseButton = view.findViewById(R.id.close_button);
         mLoadingIndicator = view.findViewById(R.id.loading_indicator);
         mTimeLayout = view.findViewById(R.id.time_layout);
+        mStatsLayout = view.findViewById(R.id.stats_layout);
         mConfettiView = view.findViewById(R.id.confetti_view);
 
         // Configure UI based on mode
@@ -263,6 +286,7 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
     private void fetchPremiumAccessData() {
         mLoadingIndicator.setVisibility(View.VISIBLE);
         mTimeLayout.setVisibility(View.GONE);
+        mStatsLayout.setVisibility(View.GONE);
 
         String accessToken = null;
         try {
@@ -314,7 +338,6 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                                 getDialog().setCanceledOnTouchOutside(false);
                             }
                             mTimerContainer.setVisibility(View.GONE);
-                            mReferralCount.setVisibility(View.GONE);
                             cancelAutoDismiss();
                         } else {
                             // Auto-dismiss after 10 seconds for youtube.com visits
@@ -352,15 +375,13 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
                                 .readBoolean(BravePreferenceKeys.YOUTUBE_PREMIUM_USER_BLOCKED, false);
 
                         PremiumAccessData fallbackData = new PremiumAccessData(
-                                0, cachedSeconds,
-                                getString(R.string.youtube_premium_message_default),
-                                cachedBlocked, null, false);
+                                0, cachedSeconds, null, cachedBlocked, null, false,
+                                YouTubePremiumAccessUtil.DEFAULT_REWARD_DAYS_PER_REFERRAL, 0);
                         updateUI(fallbackData);
 
                         if (cachedBlocked || mIsPermanent) {
                             setCancelable(false);
                             mTimerContainer.setVisibility(View.GONE);
-                            mReferralCount.setVisibility(View.GONE);
                             cancelAutoDismiss();
                         } else {
                             startAutoDismiss();
@@ -373,30 +394,43 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
     private CountDownTimer mPremiumCountdownTimer;
 
     private void updateUI(PremiumAccessData data) {
+        mStatsLayout.setVisibility(View.VISIBLE);
         // Stop existing timer if any
         if (mPremiumCountdownTimer != null) {
             mPremiumCountdownTimer.cancel();
         }
 
-        // Backend message
-        mPremiumMessage.setText(data.message);
+        // "Invite friends — each one adds 30 days", from what a referral is worth on the server.
+        mPremiumMessage.setText(
+                getResources()
+                        .getQuantityString(
+                                R.plurals.youtube_premium_invite_subtitle,
+                                data.rewardDaysPerReferral,
+                                data.rewardDaysPerReferral));
+        mCountdownLabel.setText(
+                data.isBlocked
+                        ? R.string.youtube_premium_countdown_ended
+                        : R.string.youtube_premium_countdown_label);
 
-        // Referral count: "{N} referred"
+        // The stat cards: friends referred and the days they earned.
         if (data.newReferrals) {
-            // Animate count up if new referrals
-            android.animation.ValueAnimator countAnimator = android.animation.ValueAnimator.ofInt(0, data.referralCount);
+            // Count both up to celebrate new referrals.
+            android.animation.ValueAnimator countAnimator =
+                    android.animation.ValueAnimator.ofFloat(0f, 1f);
             countAnimator.setDuration(1500);
             countAnimator.addUpdateListener(animation -> {
-                int val = (int) animation.getAnimatedValue();
-                mReferralCount.setText(getResources().getQuantityString(R.plurals.youtube_premium_referred, val, val));
+                float fraction = (float) animation.getAnimatedValue();
+                mReferralCount.setText(
+                        String.valueOf(Math.round(fraction * data.referralCount)));
+                mDaysEarned.setText(String.valueOf(Math.round(fraction * data.daysEarned)));
             });
             countAnimator.start();
 
             // Start Confetti!
             mConfettiView.post(() -> mConfettiView.startConfetti());
         } else {
-            // Set directly without animation
-            mReferralCount.setText(getResources().getQuantityString(R.plurals.youtube_premium_referred, data.referralCount, data.referralCount));
+            mReferralCount.setText(String.valueOf(data.referralCount));
+            mDaysEarned.setText(String.valueOf(data.daysEarned));
         }
 
         // Start countdown based on milliseconds remaining
@@ -498,18 +532,23 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
             @Override
             public void onTick(long millisUntilFinished) {
                 int secondsRemaining = (int) Math.ceil(millisUntilFinished / 1000.0);
-                mTimerText.setText(String.valueOf(secondsRemaining));
+                mTimerText.setText(autoCloseLabel(secondsRemaining));
             }
 
             @Override
             public void onFinish() {
-                mTimerText.setText("0");
+                mTimerText.setText(autoCloseLabel(0));
                 if (isAdded()) {
                     dismiss();
                 }
             }
         };
         mAutoDismissTimer.start();
+    }
+
+    /** "10s": the seconds before the sheet closes itself. */
+    private String autoCloseLabel(int seconds) {
+        return getResources().getQuantityString(R.plurals.youtube_premium_auto_close, seconds, seconds);
     }
 
     private void cancelAutoDismiss() {
@@ -567,10 +606,14 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
     }
 
     private void doShareReferralLink(String referralCode) {
-        // Routes through the browser.express landing page, which captures a
-        // device fingerprint + writes a clipboard token before redirecting to
-        // Play Store with the same referral code. See docs/referral-landing-page.md.
-        String referralLink = "https://browser.express/refer?code=" + referralCode;
+        // Routes through the landing page, which captures a device fingerprint +
+        // writes a clipboard token before redirecting to Play Store with the same
+        // referral code. See docs/referral-landing-page.md.
+        // NOTE: use the www host. The apex (browser.express) 308-redirects to www,
+        // and Android App Link verification does NOT follow redirects, so an apex
+        // link never verifies against assetlinks.json and would open in a browser
+        // instead of the app. www.browser.express serves assetlinks.json directly.
+        String referralLink = "https://www.browser.express/refer?code=" + referralCode;
 
         String shareText = getString(R.string.youtube_premium_share_text, referralLink);
 
@@ -634,6 +677,10 @@ public class YouTubePremiumBottomSheetFragment extends BottomSheetDialogFragment
 
             JSONObject payload = extraProps != null ? extraProps : new JSONObject();
             payload.put("app_version", activity.getCurrentAppVersion());
+            // Attach the referrer's own code so mongo id <-> referral_code is
+            // joinable from these referrer-side events in PostHog.
+            String referralCode = jwt.optString("referralCode", "");
+            if (!referralCode.isEmpty()) payload.put("referral_code", referralCode);
 
             PostHogUtil.PostHogWorkerTask task =
                     new PostHogUtil.PostHogWorkerTask(eventKey, userId, payload);

@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/background_play_rating_dialog_bg"
+    android:paddingStart="22dp"
+    android:paddingTop="18dp"
+    android:paddingEnd="22dp"
+    android:paddingBottom="24dp">
+
+    <androidx.appcompat.widget.AppCompatImageButton
+        android:id="@+id/btn_background_play_rating_close"
+        android:layout_width="36dp"
+        android:layout_height="36dp"
+        android:layout_gravity="top|end"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/background_play_rating_close"
+        android:padding="8dp"
+        app:srcCompat="@drawable/ic_close"
+        app:tint="@color/username_color" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingTop="28dp">
+
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:contentDescription="@string/background_play_rating_icon_description"
+            android:src="@drawable/ic_background_play_rating_star" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="@string/background_play_rating_title"
+            android:textColor="@color/browser_express_text_primary"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="10dp"
+            android:drawableEnd="@drawable/ic_background_play_rating_heart"
+            android:drawablePadding="4dp"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:text="@string/background_play_rating_body"
+            android:textColor="@color/username_color"
+            android:textSize="12sp" />
+
+        <LinearLayout
+            android:id="@+id/background_play_rating_star_row"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/background_play_rating_star_1"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/background_play_rating_one_star"
+                android:padding="5dp"
+                app:srcCompat="@drawable/ic_background_play_rating_star_outline" />
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/background_play_rating_star_2"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/background_play_rating_two_stars"
+                android:padding="5dp"
+                app:srcCompat="@drawable/ic_background_play_rating_star_outline" />
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/background_play_rating_star_3"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/background_play_rating_three_stars"
+                android:padding="5dp"
+                app:srcCompat="@drawable/ic_background_play_rating_star_outline" />
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/background_play_rating_star_4"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/background_play_rating_four_stars"
+                android:padding="5dp"
+                app:srcCompat="@drawable/ic_background_play_rating_star_outline" />
+
+            <androidx.appcompat.widget.AppCompatImageButton
+                android:id="@+id/background_play_rating_star_5"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_marginStart="4dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/background_play_rating_five_stars"
+                android:padding="5dp"
+                app:srcCompat="@drawable/ic_background_play_rating_star_outline" />
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

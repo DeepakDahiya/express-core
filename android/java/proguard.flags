@@ -105,3 +105,16 @@
 -keep class org.chromium.chrome.browser.media.PictureInPictureActivity {
     *** mInitiatorTab;
 }
+
+# Keep methods exposed to JavaScript through the gin Java bridge
+# (JavascriptInjector.addPossiblyUnsafeInterface with the
+# android.webkit.JavascriptInterface annotation). The bridge resolves each
+# exposed method by its Java name at runtime via reflection, so R8 must not
+# rename or strip these methods or the JS-visible name disappears. Without this,
+# window.BravePiPNavigator.restorePipOriginTab() (see
+# BraveYouTubeScriptInjectorNativeHelper.PiPTabRestorer) is undefined in release
+# (minified) builds and YouTube PiP tab restore silently no-ops, even though it
+# works in unminified debug builds.
+-keepclasseswithmembers,includedescriptorclasses class * {
+    @android.webkit.JavascriptInterface <methods>;
+}

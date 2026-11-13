@@ -10,6 +10,7 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/supports_user_data.h"
 #include "brave/browser/android/youtube_script_injector/brave_youtube_script_injector_native_helper.h"
 #include "brave/browser/android/youtube_script_injector/features.h"
@@ -121,6 +122,12 @@ constexpr char16_t kYoutubeDisableHomeAutoplay[] =
                     this.pause();
                     return Promise.resolve();
                 }
+                // On a watch page, undo the feed's preload='none' that is still
+                // stuck on this (reused) player element -- otherwise the video
+                // stalls for a few seconds before it even starts buffering.
+                if (this.preload === 'none') {
+                    this.preload = 'auto';
+                }
                 return originalPlay.call(this);
             };
 
@@ -166,6 +173,17 @@ constexpr char16_t kYoutubeDisableHomeAutoplay[] =
                     v.autoplay = false;
                     v.preload = 'none';
                     if (!v.paused) v.pause();
+                });
+            } else {
+                // Landing on a watch page: restore the (reused) player so it
+                // buffers and starts right away instead of inheriting the feed's
+                // preload='none' / autoplay=false, which delayed playback by a
+                // few seconds when opening a video from the feed.
+                document.querySelectorAll('video').forEach(v => {
+                    if (v.preload === 'none') {
+                        v.preload = 'auto';
+                    }
+                    v.autoplay = true;
                 });
             }
         });
@@ -673,12 +691,17 @@ constexpr char16_t kYoutubeInAppPIP[] =
                         isOriginalPIPTab = false;
                         setPIPStatus(null, false);
 
-                        // If the video paused as a side effect of the PiP exit,
-                        // resume it. Don't touch document.hidden/visibilityState
-                        // because Chromium owns those and redefining throws on newer
+                        // Only nudge playback back if the tab returned to the
+                        // foreground (EXPAND). On CLOSE (X) the tab stays
+                        // backgrounded, and the kYoutubePipButton handler stops
+                        // the audio -- do NOT resume it here or the background
+                        // music keeps playing after the user dismissed PiP.
+                        // Don't touch document.hidden/visibilityState because
+                        // Chromium owns those and redefining throws on newer
                         // WebView, which used to crash the renderer here.
                         setTimeout(() => {
                             try {
+                                if (!document.hasFocus()) return;
                                 const video = document.querySelector('video');
                                 if (video && video.paused) {
                                     video.play().catch(() => {});
@@ -1609,27 +1632,81 @@ const char16_t kYoutubePipButton[] =
 
             document.addEventListener('leavepictureinpicture', (event) => {
                 console.log('Left PiP mode');
-                // Resume playback unconditionally (we drop the previous
-                // wasPlaying gate. It was only set when PiP was entered via
-                // the in-page gold button, never via the toolbar PiP button,
-                // so the toolbar flow always saw wasPlaying=false and skipped
-                // resume). Retry across ~2s because Samsung One UI takes
-                // longer than other vendors to fully restore the activity
-                // and free the player to accept play().
-                const RETRY_DELAYS_MS = [100, 300, 700, 1200, 2000];
-                let resumed = false;
-                RETRY_DELAYS_MS.forEach((delay) => {
-                    setTimeout(() => {
-                        if (resumed) return;
-                        const video = document.querySelector('video');
-                        if (!video) return;
-                        if (!video.paused) { resumed = true; return; }
-                        const p = video.play();
-                        if (p && typeof p.then === 'function') {
-                            p.then(() => { resumed = true; }).catch(() => {});
-                        }
-                    }, delay);
-                });
+                // Distinguish CLOSE (X button) from EXPAND (tap PiP -> back to
+                // the tab). focused == EXPAND on devices where the native
+                // restore ran and refocused this tab. Unfocused is AMBIGUOUS:
+                // on Android 16 the expand tap skips the mode-change callback,
+                // no native restore runs, and this tab stays backgrounded just
+                // like on CLOSE -- there the discriminator is the video state
+                // Chromium set (CLOSE pauses via should_pause_video, EXPAND
+                // keeps playing). visibilityState is force-pinned to 'visible'
+                // by the background-playback shim and can't be used here.
+                //
+                //   EXPAND (focused)   -> make sure playback continues (Samsung
+                //             One UI can leave the player paused after
+                //             restoring the activity, so retry across ~2s).
+                //   unfocused          -> ambiguous (Android 16 delivers expand
+                //             as a close: video paused, no focus). The native
+                //             onResume expand hook restores the tab on expand,
+                //             so wait for the outcome: focus within ~5s ->
+                //             expand, resume playback; never focused -> close,
+                //             hold the audio paused.
+                const DECIDE_MS = 300;
+                setTimeout(() => {
+                    if (document.hasFocus()) {
+                        const RETRY_DELAYS_MS = [0, 300, 700, 1200, 1800];
+                        let resumed = false;
+                        RETRY_DELAYS_MS.forEach((delay) => {
+                            setTimeout(() => {
+                                if (resumed) return;
+                                const video = document.querySelector('video');
+                                if (!video) return;
+                                if (!video.paused) { resumed = true; return; }
+                                const p = video.play();
+                                if (p && typeof p.then === 'function') {
+                                    p.then(() => { resumed = true; }).catch(() => {});
+                                }
+                            }, delay);
+                        });
+                    } else {
+                        // Unfocused at decide time is AMBIGUOUS: on Android 16
+                        // an EXPAND is delivered exactly like a CLOSE -- the
+                        // mode-change callback is skipped, the teardown falls
+                        // to OverlayWindowAndroid::OnActivityStopped which
+                        // pauses the video (should_pause_video=true), and this
+                        // tab is not yet refocused. The native onResume expand
+                        // hook (BravePictureInPictureActivity) restores the
+                        // watch tab in that case, so discriminate by outcome:
+                        // if focus arrives within ~5s the exit was an EXPAND
+                        // and playback resumes; if it never arrives it was a
+                        // CLOSE and the video is held paused so background
+                        // audio stays stopped.
+                        const SETTLE_DELAYS_MS = [0, 250, 600, 1200, 2000, 3200, 4800];
+                        let settled = false;
+                        SETTLE_DELAYS_MS.forEach((delay) => {
+                            setTimeout(() => {
+                                if (settled) return;
+                                const v = document.querySelector('video');
+                                if (!v) return;
+                                if (document.hasFocus()) {
+                                    // Expand after all: the restore landed and
+                                    // this tab is foreground again.
+                                    settled = true;
+                                    if (v.paused && !v.ended) {
+                                        try {
+                                            const p = v.play();
+                                            if (p && p.catch) p.catch(() => {});
+                                        } catch (e) {}
+                                    }
+                                    return;
+                                }
+                                if (!v.paused) {
+                                    try { v.pause(); } catch (e) {}
+                                }
+                            }, delay);
+                        });
+                    }
+                }, DECIDE_MS);
             });
         }
 
@@ -1823,9 +1900,145 @@ constexpr char16_t kYoutubePipNavigationFix[] =
         if (window.bravePipFixAttached) return;
         window.bravePipFixAttached = true;
 
-        // Tab restore is owned by BraveActivity using the native tab id captured
-        // before PiP entry. URL-based JS restoration races Android's own PiP
-        // resume intent and can select the wrong tab when YouTube rewrites URLs.
+        // Bring the user back to the source (watch) tab when PiP is dismissed.
+        //
+        // On some Android versions, tapping either the PiP expand/fullscreen
+        // button or the close button tears down the PiP overlay activity and
+        // resurfaces the browser on whatever tab is currently selected (the
+        // YouTube home tab we open on PiP entry) WITHOUT delivering
+        // onPictureInPictureModeChanged(false) to the overlay activity. When
+        // that callback is skipped, BraveActivity's native tab restore never
+        // runs and the user is stranded on the home tab while this source tab
+        // keeps playing in the background.
+        //
+        // 'leavepictureinpicture' does fire reliably here, in the source tab's
+        // own document, so use it as the trigger and ask the native side to
+        // select the source tab by the tab id it captured before PiP entry.
+        // Restoring by id (not URL) avoids selecting the wrong tab when YouTube
+        // rewrites the watch URL, which is why the earlier URL-based restore was
+        // removed. The native side is idempotent and no-ops if we are already on
+        // the source tab, so this is safe alongside the native restore path on
+        // devices where the mode-change callback does fire.
+        document.addEventListener('leavepictureinpicture', function(event) {
+            // Only return to the source tab when the user EXPANDS the PiP back
+            // into the page -- in which case the video keeps playing inline. Do
+            // NOT return on the CLOSE (X) button: closing pauses the video
+            // (should_pause_video), so the user is done and wants to stay where
+            // they are, not be dragged onto the old video tab. Check the playback
+            // state a beat later so the pause from a close has settled. The native
+            // bridge additionally skips the restore if the user has moved to a
+            // different YouTube watch page (a new video superseding this PiP).
+            var video = event.target || document.querySelector('video');
+            setTimeout(function() {
+                try {
+                    // Restore the watch tab only when the video is still
+                    // playing (an expand that kept playback alive). On CLOSE
+                    // Chromium pauses it (should_pause_video) and every resume
+                    // handler is focus-gated, so paused videos are never
+                    // restored from here. Do NOT require document.hasFocus():
+                    // focus can lag the restore. NOTE: on Android 16 an expand
+                    // arrives with the video PAUSED too (teardown falls to
+                    // OnActivityStopped) -- that path is handled by the native
+                    // onResume expand hook in BravePictureInPictureActivity,
+                    // not by this bridge.
+                    if (!video || video.paused || video.ended) {
+                        console.warn(
+                            '[BravePiPDebug] leavepictureinpicture not playing; skip restore');
+                        return;
+                    }
+                    if (window.BravePiPNavigator &&
+                        typeof window.BravePiPNavigator.restorePipOriginTab === 'function') {
+                        window.BravePiPNavigator.restorePipOriginTab();
+                    }
+                } catch (e) {
+                    console.warn('[BravePiPDebug] restorePipOriginTab bridge failed', e);
+                }
+            }, 500);
+        });
+    })();
+)";
+
+// Resume the watch position across a PiP-exit reload.
+//
+// When the user returns to the watch tab via the media notification, the page
+// can reload from scratch (the backgrounded ChromeTabbedActivity gets recreated
+// under memory pressure and the tab is restored from its serialized state, or
+// YouTube's SPA re-renders the player). The renderer playing PiP audio is alive,
+// but the tab the user lands on is a fresh load that starts at 0:00.
+//
+// We can't reliably stop that reload, so make it seamless: persist the current
+// time to localStorage (which survives same-origin reloads) while playing, and
+// seek back to it on the next watch-page load. Scoped to an *immediate* reload
+// via a short freshness window so a normal revisit later is unaffected; the
+// saved entry is consumed (removed) once applied.
+constexpr char16_t kYoutubePipResumePosition[] =
+    uR"(
+    (function() {
+        if (window.__bravePipResumeActive) return;
+        window.__bravePipResumeActive = true;
+
+        function videoId() {
+            try { return new URLSearchParams(location.search).get('v'); }
+            catch (e) { return null; }
+        }
+        function storageKey(id) { return 'brave_pip_resume_' + id; }
+
+        function savePosition() {
+            if (location.pathname !== '/watch') return;
+            var v = document.querySelector('video');
+            var id = videoId();
+            if (!v || !id) return;
+            var t = v.currentTime;
+            if (!(t > 0) || !isFinite(t)) return;
+            try {
+                localStorage.setItem(
+                    storageKey(id), JSON.stringify({ t: t, at: Date.now() }));
+            } catch (e) {}
+        }
+
+        function restorePosition() {
+            if (location.pathname !== '/watch') return;
+            var id = videoId();
+            if (!id) return;
+            var raw;
+            try { raw = localStorage.getItem(storageKey(id)); } catch (e) { return; }
+            if (!raw) return;
+            var data;
+            try { data = JSON.parse(raw); } catch (e) { return; }
+            if (!data || !(data.t > 0)) return;
+            // Only resume for a reload that happened right after we were last
+            // playing (PiP exit / accidental refresh), not a later revisit.
+            if (Date.now() - data.at > 60000) {
+                try { localStorage.removeItem(storageKey(id)); } catch (e) {}
+                return;
+            }
+            var tries = 0;
+            var iv = setInterval(function() {
+                tries++;
+                var v = document.querySelector('video');
+                if (v && v.readyState >= 1 && isFinite(v.duration)
+                        && data.t < v.duration - 1) {
+                    if (Math.abs(v.currentTime - data.t) > 1.5) {
+                        try { v.currentTime = data.t; } catch (e) {}
+                    }
+                    try { localStorage.removeItem(storageKey(id)); } catch (e) {}
+                    clearInterval(iv);
+                } else if (tries > 40) {
+                    clearInterval(iv);
+                }
+            }, 250);
+        }
+
+        // Persist while playing (timeupdate is throttled when backgrounded, so
+        // also poll) so a reload right after has the freshest position; capture
+        // the exact time at PiP exit too.
+        document.addEventListener('timeupdate', savePosition, true);
+        document.addEventListener('leavepictureinpicture', savePosition, true);
+        setInterval(savePosition, 1000);
+
+        // Restore on this load and on YouTube SPA navigations to a watch page.
+        restorePosition();
+        window.addEventListener('yt-navigate-finish', restorePosition);
     })();
 )";
 
@@ -1898,53 +2111,80 @@ constexpr char16_t kYoutubeHomeIntroTutorial[] =
                 : (+m[1]) * 60   + (+m[2]);
         }
 
-        // Picks the first home-feed video tile whose duration is >= 60s.
-        // Uses a permissive regex on the tile's text content so YouTube
-        // renaming the badge class doesn't break the lookup.
+        // Reads a tile's video duration (seconds) from its duration badge, NOT
+        // from arbitrary tile text. The old whole-textContent scan matched any
+        // "MM:SS"-looking run (post timestamps, "10:34 AM", nested numbers),
+        // which is how a community photo post or a thumbnail could get picked.
+        function readTileDurationSeconds(tile) {
+            // 1) Dedicated duration-badge elements (the "10:34" overlay).
+            const badges = tile.querySelectorAll(
+                'ytm-thumbnail-overlay-time-status-renderer,' +
+                '[class*="time-status"],[class*="timestamp"],' +
+                '.badge-shape__text,.yt-badge-shape__text');
+            for (let i = 0; i < badges.length; i++) {
+                const d = parseDuration(badges[i].textContent);
+                if (d >= 0) return d;
+            }
+            // 2) Resilient fallback that survives badge-class renames WITHOUT the
+            // old false positives: a LEAF element whose ENTIRE text is a
+            // duration (a post body or channel name is never exactly "MM:SS").
+            const leaves = tile.querySelectorAll('span, div');
+            for (let i = 0; i < leaves.length; i++) {
+                const el = leaves[i];
+                if (el.children.length !== 0) continue;
+                const d = parseDuration(el.textContent);
+                if (d >= 0) return d;
+            }
+            return -1;
+        }
+
+        // Picks the first main-feed tile that is a real long-form (>= 60s)
+        // SINGLE video. Deliberately strict: it must have a /watch?v= link (no
+        // Shorts, no playlist/mix), must not sit inside a horizontal carousel or
+        // a community post ("scrolling photos"/thumbnails), and its duration is
+        // read from the duration badge. This stops the spotlight from landing on
+        // a photo post or a scrolling image row instead of the main video.
         function findLongFormTile() {
-            const selector =
-                'ytm-rich-item-renderer, ytm-video-with-context-renderer, ' +
-                'ytm-compact-video-renderer';
-            let nodes = Array.from(document.querySelectorAll(selector));
-            if (nodes.length === 0) {
-                // Fallback: any anchor pointing to /watch?v= on the page.
-                nodes = Array.from(document.querySelectorAll(
-                    'a[href*="/watch?v="]'
-                )).map(a => a.closest(
-                    'ytm-rich-item-renderer, ytm-video-with-context-renderer, ' +
-                    'ytm-compact-video-renderer, [class*="renderer"]'
-                ) || a.parentElement).filter(Boolean);
-            }
-            for (let i = 0; i < nodes.length; i++) {
-                const tile = nodes[i];
-                if (!tile) continue;
-                // Skip Shorts shelves — they don't lead to /watch.
-                const reelShelf = tile.closest('ytm-reel-shelf-renderer');
-                if (reelShelf) continue;
-                const headedShelf = tile.closest(
-                    'ytm-rich-shelf-renderer, ytm-shelf-renderer'
-                );
-                if (headedShelf) {
-                    const heading = headedShelf.querySelector(
-                        'h2, h3, [role="heading"]');
-                    if (heading && /shorts/i.test(heading.textContent || '')) {
-                        continue;
-                    }
+            const anchors = Array.from(
+                document.querySelectorAll('a[href*="/watch?v="]'));
+            const seen = new Set();
+            for (let i = 0; i < anchors.length; i++) {
+                const a = anchors[i];
+                const href = a.getAttribute('href') || '';
+                // Single video only: exclude Shorts and playlist/mix radios.
+                if (href.indexOf('/shorts/') !== -1) continue;
+                if (/[?&]list=/.test(href)) continue;
+
+                const tile = a.closest(
+                    'ytm-video-with-context-renderer, ytm-compact-video-renderer, ' +
+                    'ytm-media-item, ytm-rich-item-renderer');
+                if (!tile || seen.has(tile)) continue;
+                seen.add(tile);
+
+                // Skip carousels ("scrolling photos"), Shorts shelves, community
+                // posts and playlists — anything that isn't a standalone video.
+                if (tile.closest(
+                        'ytm-reel-shelf-renderer, ytm-horizontal-list-renderer, ' +
+                        'ytm-post-renderer, ytm-backstage-post-renderer, ' +
+                        'ytm-post-base-renderer, ytm-compact-playlist-renderer, ' +
+                        'ytm-playlist-renderer')) {
+                    continue;
                 }
-                // Find any MM:SS or H:MM:SS run anywhere in the tile text.
-                const text = tile.textContent || '';
-                const match = text.match(
-                    /(?:^|[^0-9])(\d{1,2}):(\d{2})(?::(\d{2}))?(?:[^0-9]|$)/);
-                if (!match) continue;
-                const dur = match[3] !== undefined
-                    ? (+match[1]) * 3600 + (+match[2]) * 60 + (+match[3])
-                    : (+match[1]) * 60   + (+match[2]);
-                if (dur >= 60) {
-                    log('picked tile', i, 'duration=' + dur + 's');
-                    return tile;
-                }
+
+                const dur = readTileDurationSeconds(tile);
+                if (dur < 60) continue;
+
+                // Prefer the innermost single-video element so the spotlight
+                // ring hugs one tile, never a wide shelf wrapper.
+                const chosen = a.closest(
+                    'ytm-video-with-context-renderer, ytm-compact-video-renderer, ' +
+                    'ytm-media-item') || tile;
+                const rect = chosen.getBoundingClientRect();
+                if (!rect.width || !rect.height) continue;  // not laid out yet
+                log('picked tile', i, 'duration=' + dur + 's');
+                return chosen;
             }
-            log('no qualifying tile yet, will retry');
+            log('no qualifying long-form video tile yet, will retry');
             return null;
         }
 
@@ -2183,6 +2423,19 @@ constexpr char16_t kYoutubeHomeIntroTutorial[] =
         }
 
         function spotlightTile(tile) {
+            // Synchronous single-document guard: claim the slot the instant we
+            // commit to spotlighting, BEFORE the async scroll/measure/build
+            // below. The yt-navigate-finish re-arm (which resets `attempted`)
+            // can otherwise re-enter and stack a second overlay in the same
+            // document while these rAFs are still pending. The profile pref
+            // (native side) handles the cross-document/cross-visit one-shot;
+            // this flag handles the in-document race.
+            if (window.__braveYtHomeTutorialBuilt ||
+                document.getElementById(ROOT_ID)) {
+                log('overlay already built in this document, skipping');
+                return;
+            }
+            window.__braveYtHomeTutorialBuilt = true;
             log('spotlighting tile');
             scrollTileIntoUpperView(tile);
             // Two rAFs let layout settle after the scroll before we measure.
@@ -2372,11 +2625,39 @@ void YouTubeScriptInjectorTabHelper::PrimaryMainDocumentElementAvailable() {
                      weak_factory_.GetWeakPtr(), kYoutubePipNavigationFix),
       base::Milliseconds(500));
 
-  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&YouTubeScriptInjectorTabHelper::ExecuteJavaScriptIfYouTube,
-                     weak_factory_.GetWeakPtr(), kYoutubeHomeIntroTutorial),
-      base::Milliseconds(300));
+  // Persist/restore the watch position so a PiP-exit reload resumes where the
+  // user left off instead of starting from 0:00. Injected immediately (so the
+  // restore runs as early as possible on a reload) and the script self-guards
+  // against duplicate execution.
+  ExecuteJavaScriptIfYouTube(kYoutubePipResumePosition);
+
+  // First-run YouTube home PiP tutorial — strictly one-shot per profile.
+  // The gate lives in the profile (not page localStorage) so a www.->m.
+  // redirect, a consent-page bounce, an SPA re-render, or a repeat visit can't
+  // show it twice. localStorage was per-origin and the tutorial matches both
+  // www.youtube.com and m.youtube.com, which is what let it fire once per host.
+  // Scoped to the m.youtube.com home (the app's canonical YouTube entry) so a
+  // transient www. document can never consume the one-shot before m. has a
+  // chance to render it.
+  {
+    const GURL& committed_url = contents->GetLastCommittedURL();
+    const auto path = committed_url.path_piece();
+    const bool is_mobile_home =
+        base::EqualsCaseInsensitiveASCII(committed_url.host(),
+                                         "m.youtube.com") &&
+        (path == "/" || path.empty());
+    PrefService* prefs =
+        static_cast<Profile*>(contents->GetBrowserContext())->GetPrefs();
+    if (is_mobile_home && !prefs->GetBoolean(kYoutubeHomeTutorialShown)) {
+      prefs->SetBoolean(kYoutubeHomeTutorialShown, true);
+      base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+          FROM_HERE,
+          base::BindOnce(
+              &YouTubeScriptInjectorTabHelper::ExecuteJavaScriptIfYouTube,
+              weak_factory_.GetWeakPtr(), kYoutubeHomeIntroTutorial),
+          base::Milliseconds(300));
+    }
+  }
 
   // Inject the comment-hiding script immediately and at delayed intervals to
   // handle both fast and slow page loads. The script guards against duplicate

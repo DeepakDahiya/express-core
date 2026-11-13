@@ -27,6 +27,9 @@ public class YouTubePremiumAccessUtil {
     /**
      * Callback interface for premium access data fetch results.
      */
+    /** Premium days a referral adds when the server doesn't say. */
+    public static final int DEFAULT_REWARD_DAYS_PER_REFERRAL = 30;
+
     public interface PremiumAccessCallback {
         void onSuccess(PremiumAccessData data);
         void onError(String error);
@@ -42,15 +45,22 @@ public class YouTubePremiumAccessUtil {
         public final boolean isBlocked;
         public final String referralCode;
         public final boolean newReferrals;
+        /** Premium days each referral adds. */
+        public final int rewardDaysPerReferral;
+        /** Premium days the user's referrals have added in total. */
+        public final int daysEarned;
 
         public PremiumAccessData(int referralCount, long accessRemainingInSeconds,
-                                 String message, boolean isBlocked, String referralCode, boolean newReferrals) {
+                                 String message, boolean isBlocked, String referralCode, boolean newReferrals,
+                                 int rewardDaysPerReferral, int daysEarned) {
             this.referralCount = referralCount;
             this.accessRemainingInSeconds = accessRemainingInSeconds;
             this.message = message;
             this.isBlocked = isBlocked;
             this.referralCode = referralCode;
             this.newReferrals = newReferrals;
+            this.rewardDaysPerReferral = rewardDaysPerReferral;
+            this.daysEarned = daysEarned;
         }
     }
 
@@ -109,8 +119,13 @@ public class YouTubePremiumAccessUtil {
                     String referralCode = jsonResponse.optString("referralCode", null);
                     boolean newReferrals = jsonResponse.optBoolean("newReferrals", false);
 
+                    // Servers before these fields: each referral has always been worth 30 days.
+                    int rewardDays = jsonResponse.optInt(
+                            "rewardDaysPerReferral", DEFAULT_REWARD_DAYS_PER_REFERRAL);
+                    int daysEarned = jsonResponse.optInt("daysEarned", referralCount * rewardDays);
                     return new PremiumAccessData(referralCount, accessRemainingInSeconds,
-                                                 message, isBlocked, referralCode, newReferrals);
+                                                 message, isBlocked, referralCode, newReferrals,
+                                                 rewardDays, daysEarned);
                 } else {
                     mErrorMessage = "Server returned error: " + responseCode;
                     return null;

@@ -7,10 +7,10 @@
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:id="@android:id/background">
         <shape android:shape="ring"
-            android:innerRadiusRatio="2.5"
-            android:thicknessRatio="15"
+            android:innerRadiusRatio="2.2"
+            android:thicknessRatio="22.2"
             android:useLevel="false">
-            <solid android:color="#33FFFFFF" />
+            <solid android:color="@color/browser_express_yt_premium_ring_track" />
         </shape>
     </item>
     <item android:id="@android:id/progress">
@@ -18,10 +18,10 @@
             android:fromDegrees="0"
             android:toDegrees="360">
             <shape android:shape="ring"
-                android:innerRadiusRatio="2.5"
-                android:thicknessRatio="15"
+                android:innerRadiusRatio="2.2"
+                android:thicknessRatio="22.2"
                 android:useLevel="true">
-                <solid android:color="@color/brave_theme_color" />
+                <solid android:color="@color/browser_express_yt_premium_accent" />
             </shape>
         </rotate>
     </item>

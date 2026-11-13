@@ -44,6 +44,47 @@
         <item name="android:background">@drawable/rounded_set_default_top_corners</item>
     </style>
 
+    <!-- The YouTube free-access sheet: its own 28dp-cornered, themed surface. -->
+    <style name="BrowserExpressYouTubePremiumSheetTheme"
+           parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/BrowserExpressYouTubePremiumSheet</item>
+    </style>
+
+    <style name="BrowserExpressYouTubePremiumSheet" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@drawable/browser_express_yt_premium_sheet_bg</item>
+    </style>
+
+    <!-- Countdown pieces of the YouTube free-access sheet. -->
+    <style name="BrowserExpressYouTubePremiumDigit">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/browser_express_yt_premium_accent</item>
+        <item name="android:textFontWeight">700</item>
+        <item name="android:textSize">28sp</item>
+    </style>
+
+    <style name="BrowserExpressYouTubePremiumUnit">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">1dp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/browser_express_yt_premium_muted</item>
+        <item name="android:textSize">10sp</item>
+    </style>
+
+    <style name="BrowserExpressYouTubePremiumColon">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginHorizontal">8dp</item>
+        <item name="android:alpha">0.5</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:text">@string/youtube_premium_colon</item>
+        <item name="android:textColor">@color/browser_express_yt_premium_muted</item>
+        <item name="android:textFontWeight">700</item>
+        <item name="android:textSize">24sp</item>
+    </style>
+
     <!-- Brave Wallet -->
     <style name="BraveWalletTextView" parent="Widget.AppCompat.TextView">
         <item name="android:layout_width">wrap_content</item>
@@ -724,6 +765,7 @@
     <style name="BraveNewsDescTextColor">
         <item name="android:textColor">@color/news_time_color</item>
     </style>
+
     <!-- Privacy & Security settings (Figma "Trust/Privacy settings" 1:5268). -->
     <style name="BrowserExpressPrivacySection">
         <item name="android:layout_width">wrap_content</item>

@@ -37,14 +37,16 @@
         android:layout_height="40dp"
         android:visibility="gone" >
 
+        <!-- The golden-button PiP (moved here from the bottom toolbar). Its layout is shown
+             on YouTube watch pages by BraveToolbarLayoutImpl.showYouTubePipIcon. -->
         <ImageButton android:id="@+id/brave_youtube_pip_button"
             style="@style/ToolbarButton"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:src="@drawable/ic_picture_in_picture"
+            android:tint="@color/browser_express_gold"
             android:layout_gravity="center"
-            android:visibility="gone"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_shields" />
+            android:contentDescription="@string/browser_express_youtube_pip" />
     </FrameLayout>
 
   <FrameLayout android:id="@+id/brave_wallet_button_layout"

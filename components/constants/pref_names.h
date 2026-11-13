@@ -122,6 +122,11 @@ inline constexpr char kPlayYTVideoInBrowserEnabled[] =
     "brave.play_yt_video_in_browser_enabled";
 inline constexpr char kBackgroundVideoPlaybackEnabled[] =
     "brave.background_video_playback";
+// One-shot gate for the YouTube home-feed PiP intro tutorial overlay. Lives in
+// the profile (not page localStorage) so it is decided exactly once per profile
+// regardless of which YouTube origin (www. vs m.) the user lands on.
+inline constexpr char kYoutubeHomeTutorialShown[] =
+    "brave.youtube_home_tutorial_shown";
 inline constexpr char kSafetynetCheckFailed[] = "safetynetcheck.failed";
 inline constexpr char kSafetynetStatus[] = "safetynet.status";
 #endif

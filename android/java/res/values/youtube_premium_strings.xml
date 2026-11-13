@@ -5,33 +5,62 @@
      You can obtain one at https://mozilla.org/MPL/2.0/.
 -->
 <resources>
-    <string name="youtube_premium_title">Free Premium Access</string>
-    <string name="youtube_premium_subtitle">Ad-free . Background play</string>
-    <string name="youtube_premium_message_default">Share our app with friends to extend your premium YouTube access!</string>
-    <plurals name="youtube_premium_referred">
-        <item quantity="one">%d referred</item>
-        <item quantity="other">%d referred</item>
+    <string name="youtube_premium_brand" translatable="false">YouTube</string>
+    <string name="youtube_premium_title">Keep YouTube free for longer</string>
+    <!-- %1$d: premium days each referral adds. -->
+    <plurals name="youtube_premium_invite_subtitle">
+        <item quantity="one">Invite friends — each one adds %1$d day</item>
+        <item quantity="other">Invite friends — each one adds %1$d days</item>
+    </plurals>
+    <string name="youtube_premium_countdown_label">Your free access ends in</string>
+    <string name="youtube_premium_countdown_ended">Your free access has ended</string>
+    <string name="youtube_premium_friends_referred">Friends referred</string>
+    <string name="youtube_premium_days_earned">Days earned</string>
+    <!-- Seconds until the sheet closes itself, e.g. "10s". -->
+    <plurals name="youtube_premium_auto_close">
+        <item quantity="one">%1$ds</item>
+        <item quantity="other">%1$ds</item>
     </plurals>
     <string name="youtube_premium_refer_button">Refer now to extend</string>
     <string name="youtube_premium_refer_button_ntp">Refer to unlock now</string>
     <string name="youtube_premium_share_title">Share App</string>
     <string name="youtube_premium_share_text">Check out this browser with premium YouTube features! Download here: %1$s</string>
-    <string name="youtube_premium_timer_day">day</string>
-    <string name="youtube_premium_timer_hour">hour</string>
-    <string name="youtube_premium_timer_min">min</string>
-    <string name="youtube_premium_timer_sec">sec</string>
+    <string name="youtube_premium_timer_day">DAY</string>
+    <string name="youtube_premium_timer_hour">HRS</string>
+    <string name="youtube_premium_timer_min">MIN</string>
+    <string name="youtube_premium_timer_sec">SEC</string>
     <string name="youtube_premium_colon">:</string>
     <string name="youtube_premium_timer_zero">00</string>
-    <string name="bottom_toolbar_pip_button_label">PP</string>
     <string name="pip_intro_banner_title">Click button for background play 🔥</string>
     <string name="pip_intro_banner_body">Congratulations!</string>
+    <string name="pip_lock_phone_tutorial_title">Go to home</string>
+    <string name="pip_lock_phone_tutorial_body">Enabling background play in %1$d…</string>
+    <string name="pip_lock_phone_tutorial_close">Close</string>
+    <string name="pip_congrats_title">Congratulations</string>
+    <string name="pip_congrats_body">You have unlocked premium background play</string>
     <string name="pip_bg_play_nudge_title">Minimize the app</string>
     <string name="pip_bg_play_nudge_body">Press home or swipe up \u2014 the video keeps playing in the floating window.</string>
-    <string name="view_comments">View comments</string>
-    <plurals name="view_comments_count">
-        <item quantity="one">View %d comment</item>
-        <item quantity="other">View %d comments</item>
-    </plurals>
     <string name="tutorial_video_play">Play tutorial</string>
     <string name="tutorial_video_dismiss">Dismiss</string>
+    <string name="golden_youtube_shortcut_title">You\'ve Unlocked</string>
+    <string name="golden_youtube_shortcut_premium_youtube">Premium YouTube &#10022;</string>
+    <string name="golden_youtube_shortcut_body">Add YouTube Premium to your home screen for a faster, uninterrupted experience.</string>
+    <string name="golden_youtube_shortcut_ads_icon">Ads</string>
+    <string name="golden_youtube_shortcut_ad_free_title">Ad-free</string>
+    <string name="golden_youtube_shortcut_ad_free_body">No interruptions</string>
+    <string name="golden_youtube_shortcut_background_play_title">Background Play</string>
+    <string name="golden_youtube_shortcut_background_play_body">Play while you multitask</string>
+    <string name="golden_youtube_shortcut_add">Add to Home Screen</string>
+    <string name="golden_youtube_shortcut_later">Maybe later</string>
+    <string name="golden_youtube_shortcut_not_supported">Home screen shortcuts are not supported on this launcher.</string>
+    <string name="golden_youtube_shortcut_label">YouTube</string>
+    <string name="background_play_rating_title">Enjoying background playback?</string>
+    <string name="background_play_rating_body">Love it? Let us know with a quick rating!</string>
+    <string name="background_play_rating_close">Close rating prompt</string>
+    <string name="background_play_rating_icon_description">Rating</string>
+    <string name="background_play_rating_one_star">Rate one star</string>
+    <string name="background_play_rating_two_stars">Rate two stars</string>
+    <string name="background_play_rating_three_stars">Rate three stars</string>
+    <string name="background_play_rating_four_stars">Rate four stars</string>
+    <string name="background_play_rating_five_stars">Rate five stars</string>
 </resources>
