@@ -86,6 +86,7 @@ public class BraveClassAdapter {
         chain = new BraveNewTabPageLayoutClassAdapter(chain);
         chain = new BraveNotificationBuilderClassAdapter(chain);
         chain = new BraveNotificationManagerProxyImplClassAdapter(chain);
+        chain = new BraveNotificationPermissionControllerClassAdapter(chain);
         chain = new BraveNotificationPermissionRationaleDialogControllerClassAdapter(chain);
         chain = new BraveNotificationPlatformBridgeClassAdapter(chain);
         chain = new BraveOmniboxResourceProviderClassAdapter(chain);

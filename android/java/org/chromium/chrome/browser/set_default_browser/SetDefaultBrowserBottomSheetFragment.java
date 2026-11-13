@@ -48,6 +48,10 @@ public class SetDefaultBrowserBottomSheetFragment extends BottomSheetDialogFragm
                 new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        // Count each "Next" tap so the fail-safe can stop forcing
+                        // this non-cancelable sheet after a capped number of tries
+                        // (handles OEMs that misreport default-browser status).
+                        BraveSetDefaultBrowserUtils.incrementDefaultBrowserNextClickCounter();
                         BraveSetDefaultBrowserUtils.openDefaultAppsSettings(getActivity());
                         dismiss();
                     }

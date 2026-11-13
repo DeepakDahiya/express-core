@@ -201,6 +201,7 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.MVCListAdapter.ModelList;
 import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.permissions.AndroidPermissionDelegate;
 import org.chromium.url.GURL;
 
 import java.lang.reflect.Constructor;
@@ -1643,6 +1644,12 @@ public class BytecodeTest {
                         Callback.class,
                         LogoCoordinator.VisibilityObserver.class,
                         CachedTintedBitmap.class));
+        Assert.assertTrue(
+                constructorsMatch(
+                        "org/chromium/chrome/browser/notifications/permissions/NotificationPermissionController",
+                        "org/chromium/chrome/browser/notifications/permissions/BraveNotificationPermissionController",
+                        AndroidPermissionDelegate.class,
+                        Supplier.class));
         Assert.assertTrue(
                 constructorsMatch(
                         "org/chromium/chrome/browser/notifications/permissions/NotificationPermissionRationaleDialogController",

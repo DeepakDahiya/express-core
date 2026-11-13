@@ -20,9 +20,9 @@ import android.provider.Settings;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.browser_express_comments.CommentScrollPrompts;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.util.BraveConstants;
-import org.chromium.components.embedder_support.util.UrlConstants;
 
 import java.util.Calendar;
 import java.util.Date;
@@ -39,6 +39,23 @@ public class BraveSetDefaultBrowserUtils {
     public static final String BRAVE_DEFAULT_TIMER_DAY = "brave_default_timer_day";
     public static final String BRAVE_DEFAULT_APP_OPEN_COUNTER = "brave_default_app_open_counter";
     public static final String BRAVE_DEFAULT_SHOW_TIME = "brave_default_show_time";
+
+    // Number of times the user has tapped "Next" on the forced (non-cancelable)
+    // default-browser sheet.
+    public static final String BRAVE_DEFAULT_NEXT_CLICK_COUNTER =
+            "brave_default_next_click_counter";
+    // Set once we have fired the "is now default" confirmation event to PostHog,
+    // so it is reported at most once per install.
+    public static final String BRAVE_DEFAULT_CONFIRMATION_EVENT_SENT =
+            "brave_default_confirmation_event_sent";
+
+    // Fail-safe cap: after the user has tapped "Next" this many times we STOP
+    // blocking them behind the non-cancelable sheet. Some OEMs keep reporting us
+    // as not-default even after the user has actually set us as default, which
+    // would otherwise trap the user behind the forced sheet forever. We keep
+    // silently re-checking default status (without blocking) and fire the
+    // confirmation event if/when it finally flips to default.
+    public static final int MAX_FORCED_DEFAULT_BROWSER_PROMPTS = 2;
 
     public static final int DAYS_NONE = -1;
     public static final int DAYS_7 = 7;
@@ -57,8 +74,10 @@ public class BraveSetDefaultBrowserUtils {
      * @return true if appropriate Brave variant is set as default browser, false otherwise
      */
     public static boolean isBraveSetAsDefaultBrowser(Context context) {
+        // Hosted URL (not a bare "http://") so the held default resolves reliably
+        // across OEMs. See isAppSetAsDefaultBrowser for why a hostless URI fails.
         Intent browserIntent =
-                new Intent(Intent.ACTION_VIEW, Uri.parse(UrlConstants.HTTP_URL_PREFIX));
+                new Intent(Intent.ACTION_VIEW, Uri.parse("https://www.example.com"));
         ResolveInfo resolveInfo =
                 context.getPackageManager()
                         .resolveActivity(browserIntent, PackageManager.MATCH_DEFAULT_ONLY);
@@ -93,12 +112,18 @@ public class BraveSetDefaultBrowserUtils {
      * @return true if this app is set as default browser, false otherwise
      */
     public static boolean isAppSetAsDefaultBrowser(Context context) {
-        // Check HTTP URL
-        if (isDefaultForUrl(context, UrlConstants.HTTP_URL_PREFIX)) {
+        // Use a fully-formed hosted URL, NOT a bare "http://"/"https://". A
+        // hostless URI does not cleanly match a browser's intent filter, so on
+        // several OEMs resolveActivity() returns the system resolver/disambiguation
+        // activity (or null) instead of the actually-held default browser -- which
+        // makes detection report "not default" even after the user set us as
+        // default, so the forced prompt never stops. A real host resolves the
+        // held default reliably.
+        if (isDefaultForUrl(context, "https://www.example.com")) {
             return true;
         }
-        // Also check HTTPS URL as some systems may only set defaults for HTTPS
-        if (isDefaultForUrl(context, "https://")) {
+        // Also check HTTP as some systems may only set defaults for one scheme.
+        if (isDefaultForUrl(context, "http://www.example.com")) {
             return true;
         }
         return false;
@@ -172,6 +197,14 @@ public class BraveSetDefaultBrowserUtils {
      * @throws IllegalStateException if the activity is not in foreground when showing dialog
      */
     public static void showBraveSetDefaultBrowserDialog(AppCompatActivity activity) {
+        // Fail-safe: once the user has tapped "Next" MAX_FORCED_DEFAULT_BROWSER_PROMPTS
+        // times, never force the non-cancelable sheet again so a misreporting OEM
+        // can't trap them. Default status keeps being checked elsewhere (without
+        // blocking) and the confirmation event still fires if it later flips.
+        if (hasReachedForcedPromptLimit()) {
+            Log.i(TAG, "Forced default-browser prompt cap reached; not showing sheet");
+            return;
+        }
         if (!isBottomSheetVisible) {
             isBottomSheetVisible = true;
             try {
@@ -286,14 +319,22 @@ public class BraveSetDefaultBrowserUtils {
      *
      * @param activity The current Activity context
      * @return true if all conditions are met to show the dialog: - Brave is not currently set as
-     *     the default browser - The app has been opened at least 5 times since the last prompt -
+     *     the default browser - The reader has scrolled through comments enough times (see
+     *     CommentScrollPrompts) - The app has been opened at least 5 times since the last prompt -
      *     The configured wait time has elapsed since the last prompt
      */
     public static boolean shouldShowDefaultBrowserDialog(Activity activity) {
         if (!org.chromium.chrome.browser.browser_express_config.BrowserExpressConfigUtil.isDefaultBrowserPromptEnabled()) {
             return false;
         }
-        return !isBraveSetAsDefaultBrowser(activity)
+        // Use the RoleManager-backed check (authoritative on Android 10+), NOT the
+        // intent-resolution-only isBraveSetAsDefaultBrowser(). On OEMs where intent
+        // resolution misreports the default, RoleManager.isRoleHeld() still returns
+        // the truth -- which is what stops the forced prompt from reappearing after
+        // the user has already made us their default browser.
+        return !isCurrentAppDefaultBrowser(activity)
+                && CommentScrollPrompts.getScrollCount()
+                        >= CommentScrollPrompts.DEFAULT_BROWSER_PROMPT_SCROLLS
                 && getBraveDefaultAppOpenCounter() >= 5
                 && System.currentTimeMillis() > getBraveDefaultShowTime();
     }
@@ -397,5 +438,36 @@ public class BraveSetDefaultBrowserUtils {
 
     public static int getBraveDefaultTimerDay() {
         return ChromeSharedPreferences.getInstance().readInt(BRAVE_DEFAULT_TIMER_DAY, DAYS_NONE);
+    }
+
+    /** Records that the user tapped "Next" on the forced default-browser sheet. */
+    public static void incrementDefaultBrowserNextClickCounter() {
+        ChromeSharedPreferences.getInstance()
+                .writeInt(
+                        BRAVE_DEFAULT_NEXT_CLICK_COUNTER,
+                        getDefaultBrowserNextClickCounter() + 1);
+    }
+
+    public static int getDefaultBrowserNextClickCounter() {
+        return ChromeSharedPreferences.getInstance().readInt(BRAVE_DEFAULT_NEXT_CLICK_COUNTER, 0);
+    }
+
+    /**
+     * Returns true once the user has tapped "Next" on the forced sheet at least
+     * {@link #MAX_FORCED_DEFAULT_BROWSER_PROMPTS} times. From then on the sheet is
+     * never force-shown again, so a misreporting OEM cannot trap the user.
+     */
+    public static boolean hasReachedForcedPromptLimit() {
+        return getDefaultBrowserNextClickCounter() >= MAX_FORCED_DEFAULT_BROWSER_PROMPTS;
+    }
+
+    public static boolean isDefaultBrowserConfirmationEventSent() {
+        return ChromeSharedPreferences.getInstance()
+                .readBoolean(BRAVE_DEFAULT_CONFIRMATION_EVENT_SENT, false);
+    }
+
+    public static void setDefaultBrowserConfirmationEventSent() {
+        ChromeSharedPreferences.getInstance()
+                .writeBoolean(BRAVE_DEFAULT_CONFIRMATION_EVENT_SENT, true);
     }
 }
