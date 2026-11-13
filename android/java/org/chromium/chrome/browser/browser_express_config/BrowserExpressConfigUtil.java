@@ -33,6 +33,7 @@ public class BrowserExpressConfigUtil {
     public static final String PREF_NTP_LAUNCH_DELAY = "browser_express_ntp_launch_delay";
     public static final String PREF_YOUTUBE_PREMIUM_COOLDOWN = "browser_express_youtube_premium_cooldown";
     public static final String PREF_LAST_CONFIG_CHECK = "browser_express_last_config_check";
+    public static final String PREF_ENABLE_PUSH_NOTIFICATIONS = "browser_express_enable_push_notifications";
 
     public static void fetchConfigIfNeeded() {
         long lastCheck = ChromeSharedPreferences.getInstance().readLong(PREF_LAST_CONFIG_CHECK, 0);
@@ -72,11 +73,14 @@ public class BrowserExpressConfigUtil {
                     boolean enableYouTubePremium = json.optBoolean("enableYouTubePremium", true);
                     long ntpLaunchDelay = json.optLong("ntpLaunchDelay", 30000);
                     long youtubePremiumCooldown = json.optLong("youtubePremiumCooldown", 30000);
+                    // Off until the server flips it: client-side gate for FCM like/reply pushes.
+                    boolean enablePushNotifications = json.optBoolean("enablePushNotifications", false);
 
                     ChromeSharedPreferences.getInstance().writeBoolean(PREF_ENABLE_DEFAULT_BROWSER, enableDefaultBrowser);
                     ChromeSharedPreferences.getInstance().writeBoolean(PREF_ENABLE_YOUTUBE_PREMIUM, enableYouTubePremium);
                     ChromeSharedPreferences.getInstance().writeLong(PREF_NTP_LAUNCH_DELAY, ntpLaunchDelay);
                     ChromeSharedPreferences.getInstance().writeLong(PREF_YOUTUBE_PREMIUM_COOLDOWN, youtubePremiumCooldown);
+                    ChromeSharedPreferences.getInstance().writeBoolean(PREF_ENABLE_PUSH_NOTIFICATIONS, enablePushNotifications);
                     ChromeSharedPreferences.getInstance().writeLong(PREF_LAST_CONFIG_CHECK, System.currentTimeMillis());
 
                     Log.i(TAG, "Config updated: defaultBrowser=" + enableDefaultBrowser + ", ytPremium=" + enableYouTubePremium);
@@ -105,6 +109,10 @@ public class BrowserExpressConfigUtil {
 
     public static long getNtpLaunchDelay() {
         return ChromeSharedPreferences.getInstance().readLong(PREF_NTP_LAUNCH_DELAY, 30000);
+    }
+
+    public static boolean isPushNotificationsEnabled() {
+        return ChromeSharedPreferences.getInstance().readBoolean(PREF_ENABLE_PUSH_NOTIFICATIONS, false);
     }
 
     public static long getYouTubePremiumCooldown() {

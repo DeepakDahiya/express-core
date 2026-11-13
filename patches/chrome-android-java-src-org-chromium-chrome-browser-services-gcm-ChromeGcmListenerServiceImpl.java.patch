@@ -1,0 +1,24 @@
+diff --git a/chrome/android/java/src/org/chromium/chrome/browser/services/gcm/ChromeGcmListenerServiceImpl.java b/chrome/android/java/src/org/chromium/chrome/browser/services/gcm/ChromeGcmListenerServiceImpl.java
+index ea9452094a5fe2027dbaf4d3addd52476094e1ca..01d4bd3848e7eff10575f5c2b07d93fac884c9f0 100644
+--- a/chrome/android/java/src/org/chromium/chrome/browser/services/gcm/ChromeGcmListenerServiceImpl.java
++++ b/chrome/android/java/src/org/chromium/chrome/browser/services/gcm/ChromeGcmListenerServiceImpl.java
+@@ -37,6 +37,10 @@ public class ChromeGcmListenerServiceImpl extends ChromeGcmListenerService.Impl
+ 
+     @Override
+     public void onMessageReceived(final String from, final Bundle data) {
++        if (org.chromium.chrome.browser.browser_express_push.BrowserExpressPushReceiver
++                .maybeHandle(from, data)) {
++            return;
++        }
+         // Dispatch the message to the GCM Driver for native features.
+         PostTask.runOrPostTask(
+                 TaskTraits.UI_DEFAULT,
+@@ -74,6 +78,8 @@ public class ChromeGcmListenerServiceImpl extends ChromeGcmListenerService.Impl
+ 
+     @Override
+     public void onNewToken(String token) {
++        org.chromium.chrome.browser.browser_express_push.BrowserExpressPushTokenManager
++                .onTokenRotated();
+         // TODO(crbug.com/40725597): Figure out if we can use this method or if
+         // we need another mechanism that supports multiple FirebaseApp
+         // instances.

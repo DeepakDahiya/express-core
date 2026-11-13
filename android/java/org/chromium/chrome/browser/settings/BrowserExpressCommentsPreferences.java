@@ -84,6 +84,7 @@ public class BrowserExpressCommentsPreferences extends BravePreferenceFragment
             mGenerateUsername = (Button) view.findViewById(R.id.btn_generate_username);
 
             onClickViews();
+            setUpNotificationSwitch(view);
         }
     }
 
@@ -96,6 +97,19 @@ public class BrowserExpressCommentsPreferences extends BravePreferenceFragment
                 Log.e("comments", "maybeShowWalletPanel " + e);
             }
         });
+    }
+
+    private void setUpNotificationSwitch(View view) {
+        androidx.appcompat.widget.SwitchCompat notificationSwitch =
+                view.findViewById(R.id.switch_comment_notifications);
+        if (notificationSwitch == null) return;
+        notificationSwitch.setChecked(
+                org.chromium.chrome.browser.browser_express_push.BrowserExpressPushConfig
+                        .isUserEnabled());
+        notificationSwitch.setOnCheckedChangeListener(
+                (button, isChecked) ->
+                        org.chromium.chrome.browser.browser_express_push
+                                .BrowserExpressPushTokenManager.onUserToggled(isChecked));
     }
 
     @Override

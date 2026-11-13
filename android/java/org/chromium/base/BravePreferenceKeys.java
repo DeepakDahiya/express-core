@@ -68,6 +68,22 @@ public final class BravePreferenceKeys {
             "org.chromium.chrome.browser.Browser_Express_First_Comments";
     public static final String BROWSER_EXPRESS_CUSTOM_LIST_SET =
             "org.chromium.chrome.browser.Browser_Express_Custom_List_Set";
+    // Push notifications (likes / replies) — see browser_express_push/.
+    public static final String BROWSER_EXPRESS_PUSH_TOKEN = "browser_express_push_token";
+    public static final String BROWSER_EXPRESS_PUSH_SYNC_KEY = "browser_express_push_sync_key";
+    public static final String BROWSER_EXPRESS_PUSH_LAST_SYNC_MS =
+            "browser_express_push_last_sync_ms";
+    public static final String BROWSER_EXPRESS_PUSH_PERMISSION_PROMPTED =
+            "browser_express_push_permission_prompted";
+    public static final String BROWSER_EXPRESS_PUSH_USER_ENABLED =
+            "browser_express_push_user_enabled";
+    public static final String BROWSER_EXPRESS_PUSH_DEV_FORCE_ENABLED =
+            "browser_express_push_dev_force_enabled";
+    // NTP prompts gated on comment scrolling — see browser_express_comments/CommentScrollPrompts.
+    public static final String BROWSER_EXPRESS_COMMENT_SCROLL_COUNT =
+            "browser_express_comment_scroll_count";
+    public static final String BROWSER_EXPRESS_NTP_NOTIFICATION_PROMPTED =
+            "browser_express_ntp_notification_prompted";
     public static final String BRAVE_IN_APP_UPDATE_TIMING = "in_app_update_timing";
     public static final String BRAVE_CUSTOM_UPDATE_LAST_CHECK = "brave_custom_update_last_check";
     public static final String BRAVE_CLOSE_TABS_ON_EXIT = "close_tabs_on_exit";

@@ -22,6 +22,8 @@ public class BraveChannelDefinitions {
         public static final String BRAVE_ADS = "com.brave.browser.ads";
         public static final String BRAVE_ADS_BACKGROUND = "com.brave.browser.ads.background";
         public static final String BRAVE_BROWSER = "com.brave.browser";
+        /** Express Browser: likes and replies on the user's comments (FCM). */
+        public static final String BROWSER_EXPRESS_COMMENTS = "com.discourse.browser.comments";
     }
 
     public static class ChannelGroupId {
@@ -49,6 +51,15 @@ public class BraveChannelDefinitions {
         //                 NotificationManager.IMPORTANCE_LOW,
         //                 ChannelGroupId.BRAVE_ADS));
         // startup.add(ChannelId.BRAVE_ADS_BACKGROUND);
+
+        map.put(
+                ChannelId.BROWSER_EXPRESS_COMMENTS,
+                PredefinedChannel.create(
+                        ChannelId.BROWSER_EXPRESS_COMMENTS,
+                        R.string.notification_category_comments,
+                        NotificationManager.IMPORTANCE_HIGH,
+                        ChannelGroupId.GENERAL));
+        startup.add(ChannelId.BROWSER_EXPRESS_COMMENTS);
     }
 
     @SuppressLint("NewApi")

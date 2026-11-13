@@ -74,4 +74,10 @@
         android:key="qa_export_rewards_db"
         android:title="Export Rewards Database" />
 
+    <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
+        android:key="qa_force_push_notifications"
+        android:title="Force Express push notifications"
+        android:summary="Register for like/reply pushes even while the remote flag is off"
+        android:defaultValue="false" />
+
 </PreferenceScreen>
