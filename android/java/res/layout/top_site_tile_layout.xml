@@ -1,35 +1,39 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- A shortcut on the new tab page: the site's icon on a 48dp disc, and its name
+     (Figma "homewidgets" in 24:2692 / 1:8351). Built by BraveNewTabPageLayout.createTile. -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/tile_layout"
-    android:layout_width="0dp"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
-    android:layout_weight="1"
-    android:orientation="vertical"
-    android:gravity="center"
-    android:padding="8dp">
+    android:background="?attr/selectableItemBackgroundBorderless"
+    android:gravity="center_horizontal"
+    android:orientation="vertical">
 
-    <LinearLayout
+    <FrameLayout
         android:id="@+id/image_container"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:gravity="center"
-        android:layout_marginBottom="4dp">
+        android:background="@drawable/browser_express_ntp_site_tile_bg">
 
         <ImageView
             android:id="@+id/tile_image"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:scaleType="centerCrop"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
-
-    </LinearLayout>
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="center"
+            android:importantForAccessibility="no"
+            android:scaleType="centerCrop" />
+    </FrameLayout>
 
     <TextView
         android:id="@+id/tile_text"
-        android:layout_width="wrap_content"
+        android:layout_width="65dp"
         android:layout_height="wrap_content"
-        android:textColor="@color/content_color"
+        android:layout_marginTop="8dp"
+        android:ellipsize="end"
+        android:fontFamily="sans-serif-medium"
         android:gravity="center"
-        android:textSize="12sp" />
-
+        android:letterSpacing="-0.02"
+        android:maxLines="1"
+        android:textColor="@color/browser_express_ntp_site_label"
+        android:textSize="13sp" />
 </LinearLayout>

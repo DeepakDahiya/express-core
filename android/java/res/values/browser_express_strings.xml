@@ -9,6 +9,98 @@
     <string name="browser_express_blazingly_fast_subtitle">Engineered for speed</string>
     <string name="browser_express_close">Close</string>
 
+    <!-- The feed's last row when a page of posts failed to load; tapping it tries again. -->
+    <string name="browser_express_feed_load_failed">Couldn’t load posts</string>
+    <string name="browser_express_feed_retry">Tap to try again</string>
+
+    <!-- Feed post cards -->
+    <string name="browser_express_post_more">More</string>
+    <string name="browser_express_post_menu">More options</string>
+    <string name="browser_express_post_not_interested">Not interested</string>
+    <string name="browser_express_post_hidden">Post hidden</string>
+    <string name="browser_express_post_hidden_undo">Undo</string>
+    <string name="browser_express_post_age_now">now</string>
+    <plurals name="browser_express_post_age_minutes">
+        <item quantity="one">%1$dm ago</item>
+        <item quantity="other">%1$dm ago</item>
+    </plurals>
+    <plurals name="browser_express_post_age_hours">
+        <item quantity="one">%1$dh ago</item>
+        <item quantity="other">%1$dh ago</item>
+    </plurals>
+    <plurals name="browser_express_post_age_days">
+        <item quantity="one">%1$dd ago</item>
+        <item quantity="other">%1$dd ago</item>
+    </plurals>
+    <plurals name="browser_express_post_age_weeks">
+        <item quantity="one">%1$dw ago</item>
+        <item quantity="other">%1$dw ago</item>
+    </plurals>
+    <string name="browser_express_post_audio_play">Play audio</string>
+    <string name="browser_express_post_audio_pause">Pause audio</string>
+    <string name="browser_express_post_video_sound">Video sound</string>
+    <!-- A post's XP on its reaction rail, e.g. "1.2K XP"; %1$s is the compact number. -->
+    <string name="browser_express_post_xp">%1$s XP</string>
+
+    <!-- "12 new takes" on a feed card: takes posted since the reader last opened the post. -->
+    <plurals name="browser_express_new_takes_title">
+        <item quantity="one">%1$d new take</item>
+        <item quantity="other">%1$d new takes</item>
+    </plurals>
+    <!-- Over 99 new takes. -->
+    <string name="browser_express_new_takes_title_max">99+ new takes</string>
+    <string name="browser_express_new_takes_since">since you last looked</string>
+    <!-- The format chips under it. -->
+    <plurals name="browser_express_new_takes_videos">
+        <item quantity="one">%1$d video</item>
+        <item quantity="other">%1$d videos</item>
+    </plurals>
+    <plurals name="browser_express_new_takes_photos">
+        <item quantity="one">%1$d photo</item>
+        <item quantity="other">%1$d photos</item>
+    </plurals>
+    <plurals name="browser_express_new_takes_voice">
+        <item quantity="one">%1$d voice</item>
+        <item quantity="other">%1$d voice</item>
+    </plurals>
+    <plurals name="browser_express_new_takes_text">
+        <item quantity="one">%1$d text</item>
+        <item quantity="other">%1$d text</item>
+    </plurals>
+    <!-- The text chip's icon. -->
+    <string name="browser_express_new_takes_text_icon" translatable="false">Aa</string>
+    <!-- %1$s: every reaction on the new takes, compact ("2.4K"). -->
+    <plurals name="browser_express_new_takes_reactions">
+        <item quantity="one">%1$s reaction on these</item>
+        <item quantity="other">%1$s reactions on these</item>
+    </plurals>
+    <!-- Read out for the whole callout: "12 new takes since you last looked, 5 videos, 3 photos". -->
+    <string name="browser_express_new_takes_description">%1$s %2$s, %3$s</string>
+
+    <!-- New tab page header -->
+    <string name="browser_express_ntp_search_hint">Search Google or type url</string>
+
+    <!-- Full-screen post video -->
+    <string name="browser_express_video_viewer_close">Close</string>
+    <string name="browser_express_video_viewer_more">More options</string>
+    <string name="browser_express_video_viewer_play">Play video</string>
+    <string name="browser_express_video_viewer_pause">Pause video</string>
+    <string name="browser_express_video_viewer_mute">Mute</string>
+    <string name="browser_express_video_viewer_unmute">Unmute</string>
+    <!-- %1$s: playback speed, e.g. "1.5". -->
+    <string name="browser_express_video_viewer_speed">%1$s×</string>
+    <string name="browser_express_video_viewer_speed_description">Playback speed</string>
+    <string name="browser_express_video_viewer_fullscreen">Full screen</string>
+    <string name="browser_express_video_viewer_fullscreen_exit">Exit full screen</string>
+    <!-- %1$s: time played, %2$s: video length, e.g. "0:32 / 1:40". -->
+    <string name="browser_express_video_viewer_time">%1$s / %2$s</string>
+    <!-- Accessibility name of a video's timeline, which can be dragged to move through it. -->
+    <string name="browser_express_video_viewer_position">Video position</string>
+    <!-- Badge shown while the reader holds a video to watch it at double speed. -->
+    <string name="browser_express_video_fast_forward">2×</string>
+    <string name="browser_express_video_fast_forward_description">Playing at 2× speed</string>
+    <string name="browser_express_video_viewer_share">Share</string>
+
     <!-- Sign-in flow: details -->
     <string name="browser_express_signin_wordmark">express</string>
     <string name="browser_express_signin_details_eyebrow">Make yourself at home</string>

@@ -1,315 +1,476 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:id="@+id/post_layout"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="8dp"
-    android:layout_marginBottom="12dp"
+<!-- A feed post card (Figma "Express/Post Card", light 1:188/1:209/1:231, dark 3:643/3:664/3:791):
+     author and time, caption, then a photo/video or an audio player, and the reaction rail that
+     opens the post's comments. On a photo or video the rail is laid over the media's bottom edge;
+     otherwise it closes the card. Cards sit 12dp in from the screen edges, 4dp apart, on the feed
+     background. A ⋯ menu over the header's end offers "Not interested", which swaps the card for
+     the slim "Post hidden · Undo" row. PostListAdapter.PostHolder binds it. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/post_layout"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/browser_express_feed_background"
+    android:paddingHorizontal="12dp"
+    android:paddingVertical="2dp">
 
     <LinearLayout
-        android:id="@+id/twitter_post_layout"
+        android:id="@+id/post_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@drawable/browser_express_post_card_bg"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
         android:orientation="vertical"
-        android:layout_marginHorizontal="15dp"
-        android:visibility="gone">
+        android:padding="10dp">
+
+        <!-- Ends short of the ⋯ button laid over the card's top end. -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="center"
-            android:orientation="horizontal">
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingEnd="26dp"
+            tools:ignore="RtlSymmetry">
+
             <ImageView
-                android:id="@+id/twitter_profile_picture"
-                android:src="@drawable/btn_toolbar_profile"
-                android:layout_width="30dp"
-                android:layout_height="30dp"
+                android:id="@+id/post_author_avatar"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:importantForAccessibility="no"
                 android:scaleType="centerCrop"
-                android:layout_gravity="center"
-                android:layout_marginEnd="8sp"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-                android:adjustViewBounds="true" />
-            <LinearLayout
+                android:src="@drawable/browser_express_post_avatar_placeholder" />
+
+            <TextView
+                android:id="@+id/post_author_name"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                android:orientation="vertical">
-                <TextView
-                    android:id="@+id/twitter_username"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/username_color"
-                    android:textSize="14sp"
-                    android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textStyle="bold" />
-            </LinearLayout>
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:textColor="@color/browser_express_post_author"
+                android:textSize="12sp" />
 
-            <ImageButton 
-                android:id="@+id/post_menu_btn"
-                style="@style/ToolbarButton"
-                android:background="@drawable/ic_more_vert_24dp"
-                android:layout_width="20sp"
-                android:layout_height="20sp"
-                android:layout_gravity="center"
-                android:visibility="visible"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+            <TextView
+                android:id="@+id/post_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:maxLines="1"
+                android:textColor="@color/browser_express_post_time"
+                android:textSize="11sp" />
         </LinearLayout>
 
         <TextView
-            android:id="@+id/twitter_content"
+            android:id="@+id/post_caption"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:layout_marginBottom="6dp"
-            android:textColor="@color/content_color"
-            android:textSize="13sp" />
+            android:layout_marginTop="10dp"
+            android:letterSpacing="-0.01"
+            android:textColor="@color/browser_express_post_caption"
+            android:textSize="14sp" />
 
-        <Button
-            android:id="@+id/btn_read_more_post"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/be_read_more"
-            android:background="@android:color/transparent"
-            style="?android:attr/borderlessButtonStyle"
-            android:textColor="@color/set_default_text_color"
-            android:textSize="11sp"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:paddingVertical="2sp"
-            android:paddingHorizontal="0dp"
-            android:textAllCaps="false"
-            android:visibility="gone"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-        <androidx.cardview.widget.CardView
-            android:id="@+id/twitter_media_card"
+        <!-- "12 new takes" on a text post (design_handoff_new_takes §3): a dark panel under the
+             caption. A photo or video post shows the same callout over its media instead. -->
+        <org.chromium.chrome.browser.ntp.NewTakesCallout
+            android:id="@+id/post_new_takes_panel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            app:cardCornerRadius="12dp"
-            app:contentPadding="0sp"
-            android:visibility="gone"
-            android:layout_margin="0dp">
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/twitter_media_container"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content">
+            android:layout_marginTop="10dp"
+            android:background="@drawable/browser_express_post_new_takes_panel_bg"
+            android:paddingStart="12dp"
+            android:paddingTop="16dp"
+            android:paddingEnd="12dp"
+            android:paddingBottom="14dp"
+            android:visibility="gone" />
+
+        <!-- Photo or video, at the media's own aspect ratio (clamped in the adapter). -->
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/post_media"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/browser_express_post_media_bg"
+            android:visibility="gone">
+
+            <Space
+                android:id="@+id/post_media_ratio"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                app:layout_constraintDimensionRatio="H,16:9"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
+            <!-- The photo, or a video's poster frame until the video draws. -->
+            <ImageView
+                android:id="@+id/post_image"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:importantForAccessibility="no"
+                android:scaleType="centerCrop"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@id/post_media_ratio"
+                app:layout_constraintEnd_toEndOf="@id/post_media_ratio"
+                app:layout_constraintStart_toStartOf="@id/post_media_ratio"
+                app:layout_constraintTop_toTopOf="@id/post_media_ratio" />
+
+            <androidx.media3.ui.PlayerView
+                android:id="@+id/post_video"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@id/post_media_ratio"
+                app:layout_constraintEnd_toEndOf="@id/post_media_ratio"
+                app:layout_constraintStart_toStartOf="@id/post_media_ratio"
+                app:layout_constraintTop_toTopOf="@id/post_media_ratio"
+                app:resize_mode="zoom"
+                app:shutter_background_color="@android:color/transparent"
+                app:surface_type="texture_view"
+                app:use_controller="false" />
+
+            <!-- Dims the media under the "new takes" callout (NewTakesCallout.DimDrawable); a
+                 video keeps playing under it. -->
+            <View
+                android:id="@+id/post_new_takes_dim"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:importantForAccessibility="no"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@id/post_media_ratio"
+                app:layout_constraintEnd_toEndOf="@id/post_media_ratio"
+                app:layout_constraintStart_toStartOf="@id/post_media_ratio"
+                app:layout_constraintTop_toTopOf="@id/post_media_ratio" />
+
+            <!-- Shown while the video isn't playing. -->
+            <ImageView
+                android:id="@+id/post_video_play"
+                android:layout_width="64dp"
+                android:layout_height="64dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_browser_express_post_video_play"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@id/post_media_ratio"
+                app:layout_constraintEnd_toEndOf="@id/post_media_ratio"
+                app:layout_constraintStart_toStartOf="@id/post_media_ratio"
+                app:layout_constraintTop_toTopOf="@id/post_media_ratio" />
+
+            <!-- Not in the design: the feed-wide sound switch videos already had. -->
+            <ImageButton
+                android:id="@+id/post_video_mute"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:layout_margin="8dp"
+                android:background="@drawable/circular_button_background"
+                android:contentDescription="@string/browser_express_post_video_sound"
+                android:padding="4dp"
+                android:src="@drawable/volume_off"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@id/post_media_ratio"
+                app:layout_constraintTop_toTopOf="@id/post_media_ratio"
+                app:tint="@android:color/white" />
+
+            <!-- While the "new takes" callout shows, this lighter fade stands in for the rail's
+                 own tint (§2c). -->
+            <View
+                android:id="@+id/post_new_takes_fade"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:background="@drawable/browser_express_post_new_takes_fade"
+                android:importantForAccessibility="no"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@id/post_media_ratio"
+                app:layout_constraintEnd_toEndOf="@id/post_media_ratio"
+                app:layout_constraintStart_toStartOf="@id/post_media_ratio" />
+
+            <!-- "12 new takes since you last looked", centred in the media above its bottom 30dp
+                 (§2b). Taps go through to the card, which opens the stream at the first of them. -->
+            <org.chromium.chrome.browser.ntp.NewTakesCallout
+                android:id="@+id/post_new_takes_callout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="30dp"
+                android:paddingHorizontal="12dp"
+                android:visibility="gone"
+                app:layout_constraintBottom_toBottomOf="@id/post_media_ratio"
+                app:layout_constraintEnd_toEndOf="@id/post_media_ratio"
+                app:layout_constraintStart_toStartOf="@id/post_media_ratio"
+                app:layout_constraintTop_toTopOf="@id/post_media_ratio" />
+
+            <!-- The rail over the media's bottom edge: a 24dp row 3.8dp up from the bottom, over a
+                 black tint (338:2254). The rail is taller than the tint so it is easy to tap. -->
+            <LinearLayout
+                android:id="@+id/post_media_rail"
+                android:layout_width="0dp"
+                android:layout_height="44dp"
+                android:background="@drawable/browser_express_post_media_tint"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="8dp"
+                android:paddingTop="16.2dp"
+                android:paddingEnd="4dp"
+                android:paddingBottom="3.8dp"
+                app:layout_constraintBottom_toBottomOf="@id/post_media_ratio"
+                app:layout_constraintEnd_toEndOf="@id/post_media_ratio"
+                app:layout_constraintStart_toStartOf="@id/post_media_ratio">
+
+                <TextView
+                    android:id="@+id/post_media_rail_headline"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif"
+                    android:maxLines="1"
+                    android:textColor="@color/browser_express_post_media_rail_text"
+                    android:textFontWeight="600"
+                    android:textSize="12sp" />
+
+                <LinearLayout
+                    android:id="@+id/post_media_rail_mix"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:alpha="0.86"
+                    android:importantForAccessibility="noHideDescendants"
+                    android:orientation="horizontal"
+                    android:visibility="gone">
+
+                    <TextView
+                        android:id="@+id/post_media_rail_reaction_1"
+                        style="@style/BrowserExpressCommentsBarReaction" />
+
+                    <TextView
+                        android:id="@+id/post_media_rail_reaction_2"
+                        style="@style/BrowserExpressCommentsBarReaction" />
+
+                    <TextView
+                        android:id="@+id/post_media_rail_reaction_3"
+                        style="@style/BrowserExpressCommentsBarReaction" />
+                </LinearLayout>
+
+                <!-- The post's XP: every emoji given to its comments ("1.2K XP", unit smaller). -->
+                <TextView
+                    android:id="@+id/post_media_rail_xp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:fontFamily="sans-serif"
+                    android:maxLines="1"
+                    android:textColor="@color/browser_express_post_media_rail_xp"
+                    android:textFontWeight="500"
+                    android:textSize="11sp"
+                    android:visibility="gone" />
 
                 <Space
-                    android:id="@+id/media_aspect_ratio_spacer"
                     android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintDimensionRatio="H,16:9" />
+                    android:layout_height="1dp"
+                    android:layout_weight="1" />
 
-                <androidx.media3.ui.PlayerView
-                    android:id="@+id/twitter_video"
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    app:layout_constraintTop_toTopOf="@id/media_aspect_ratio_spacer"
-                    app:layout_constraintBottom_toBottomOf="@id/media_aspect_ratio_spacer"
-                    app:layout_constraintStart_toStartOf="@id/media_aspect_ratio_spacer"
-                    app:layout_constraintEnd_toEndOf="@id/media_aspect_ratio_spacer"
-                    android:visibility="gone"
-                    app:surface_type="texture_view"
-                    app:use_controller="false"
-                    app:resize_mode="fit"/>
+                <!-- The whole rail opens the comments; the ring is its marker. -->
+                <FrameLayout
+                    android:id="@+id/post_media_rail_open"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:alpha="0.7"
+                    android:background="@drawable/browser_express_post_media_open_bg"
+                    android:importantForAccessibility="no">
 
-                <ImageView
-                    android:id="@+id/twitter_image"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    app:layout_constraintTop_toTopOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:src="@drawable/loading_image"
-                    android:visibility="gone"
-                    android:adjustViewBounds="true"
-                    android:scaleType="fitCenter"
-                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
+                    <ImageView
+                        android:layout_width="12dp"
+                        android:layout_height="12dp"
+                        android:layout_gravity="center"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_browser_express_post_chevron"
+                        app:tint="@color/browser_express_post_media_open_chevron" />
+                </FrameLayout>
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <ImageView
-                    android:id="@+id/play_pause_icon"
-                    android:layout_width="64dp"
-                    android:layout_height="64dp"
-                    android:visibility="gone"
-                    app:layout_constraintTop_toTopOf="@id/media_aspect_ratio_spacer"
-                    app:layout_constraintBottom_toBottomOf="@id/media_aspect_ratio_spacer"
-                    app:layout_constraintStart_toStartOf="@id/media_aspect_ratio_spacer"
-                    app:layout_constraintEnd_toEndOf="@id/media_aspect_ratio_spacer"
-                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
+        <!-- Voice post (Figma "Express/Audio player"). -->
+        <LinearLayout
+            android:id="@+id/post_audio"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginTop="12dp"
+            android:background="@drawable/browser_express_post_audio_bg"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="12dp"
+            android:visibility="gone">
 
-                <ProgressBar
-                    android:id="@+id/video_progress"
-                    style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-                    android:layout_width="0dp"
-                    android:layout_height="2dp"
-                    android:visibility="gone"
-                    app:layout_constraintStart_toStartOf="@id/media_aspect_ratio_spacer"
-                    app:layout_constraintEnd_toEndOf="@id/media_aspect_ratio_spacer"
-                    app:layout_constraintBottom_toBottomOf="@id/media_aspect_ratio_spacer"
-                    android:progressTint="@color/browser_express_orange_color"
-                    android:background="@android:color/transparent"/>
+            <ImageButton
+                android:id="@+id/post_audio_play"
+                android:layout_width="43dp"
+                android:layout_height="43dp"
+                android:background="@null"
+                android:contentDescription="@string/browser_express_post_audio_play"
+                android:scaleType="fitCenter"
+                android:src="@drawable/ic_browser_express_post_audio_play" />
 
-                <ImageButton
-                    android:id="@+id/video_mute_button"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:layout_margin="8dp"
-                    android:padding="4dp"
-                    android:background="@drawable/circular_button_background"
-                    android:src="@drawable/volume_off"
-                    app:tint="@android:color/white"
-                    android:visibility="gone"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+            <SeekBar
+                android:id="@+id/post_audio_seek"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="10dp"
+                android:layout_weight="1"
+                android:maxHeight="4dp"
+                android:minHeight="4dp"
+                android:paddingStart="8dp"
+                android:paddingEnd="8dp"
+                android:progressDrawable="@drawable/browser_express_post_audio_progress"
+                android:splitTrack="false"
+                android:thumb="@drawable/browser_express_post_audio_thumb" />
 
-            </androidx.constraintlayout.widget.ConstraintLayout>
-        </androidx.cardview.widget.CardView>
-    </LinearLayout>
-    <androidx.cardview.widget.CardView
-        android:id="@+id/card_view"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/news_settings_title_color"
-        android:layout_marginHorizontal="15dp"
-        android:layout_marginBottom="4sp"
-        app:cardCornerRadius="12dp">
-        <ImageView
-            android:id="@+id/post_image"
-            android:src="@drawable/loading_image"
+            <TextView
+                android:id="@+id/post_audio_time"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:lineHeight="16sp"
+                android:textColor="@color/browser_express_post_audio_time"
+                android:textFontWeight="600"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- Reaction rail for text and voice posts: "N reactions" (the comment count), the top
+             emoji, the post's XP, and a chevron into the comments. -->
+        <LinearLayout
+            android:id="@+id/post_reaction_rail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:scaleType="centerCrop"
-            android:maxHeight="200sp"
-            android:adjustViewBounds="true"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
-    </androidx.cardview.widget.CardView>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginVertical="2sp"
-        android:layout_marginHorizontal="15dp"
-        android:orientation="horizontal">
-        <TextView
-            android:id="@+id/publisher_name"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textColor="@color/news_settings_title_color"
-            android:textSize="11sp"/>
-    </LinearLayout>
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="@color/news_settings_title_color"
-        android:layout_marginVertical="2sp"
-        android:layout_marginHorizontal="15dp"
-        android:textStyle="bold"
-        android:textSize="14sp"/>
-    <TextView
-        android:id="@+id/post_content"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textColor="@color/news_settings_title_color"
-        android:layout_marginTop="4sp"
-        android:layout_marginHorizontal="15dp"
-        android:visibility="gone"
-        android:textSize="11sp"/>
-    <Button
-        android:id="@+id/btn_read_more_post2"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/be_read_more"
-        android:background="@android:color/transparent"
-        style="?android:attr/borderlessButtonStyle"
-        android:textColor="@color/set_default_text_color"
-        android:textSize="11sp"
-        android:minWidth="0dp"
-        android:minHeight="0dp"
-        android:paddingVertical="2sp"
-        android:paddingHorizontal="0dp"
-        android:layout_marginHorizontal="15dp"
-        android:textAllCaps="false"
-        android:visibility="gone"
-        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+            android:layout_marginTop="16dp"
+            android:background="@drawable/browser_express_post_rail_bg"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="10dp"
+            android:paddingTop="4dp"
+            android:paddingEnd="5dp"
+            android:paddingBottom="4dp">
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_top_comments"
-        android:layout_width="match_parent"
-        android:layout_marginHorizontal="15dp"
-        android:layout_weight="1"
-        android:layout_height="0dp"/>
+            <TextView
+                android:id="@+id/post_rail_headline"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:fontFamily="sans-serif"
+                android:maxLines="1"
+                android:textColor="@color/browser_express_post_rail_text"
+                android:textFontWeight="600"
+                android:textSize="12sp" />
 
-    <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginVertical="-10dp"
-        android:layout_marginHorizontal="15dp"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+            <LinearLayout
+                android:id="@+id/post_rail_mix"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:alpha="0.86"
+                android:importantForAccessibility="noHideDescendants"
+                android:orientation="horizontal"
+                android:visibility="gone">
 
-        <ImageView
-            android:id="@+id/comment_count_arrow"
-            android:layout_width="18dp"
-            android:layout_height="18dp"
-            android:src="@drawable/ic_arrow_upward"
-            android:tint="@color/browser_express_blue_color"
-            android:visibility="gone"
-            android:importantForAccessibility="no" />
+                <TextView
+                    android:id="@+id/post_rail_reaction_1"
+                    style="@style/BrowserExpressCommentsBarReaction" />
 
-        <Button
-            android:id="@+id/btn_comment"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            style="?android:attr/borderlessButtonStyle"
-            android:textColor="@color/browser_express_blue_color"
-            android:includeFontPadding="false"
-            android:textSize="16sp"
-            android:fontWeight="600"
-            android:minWidth="0dp"
-            android:minHeight="0dp"
-            android:paddingVertical="-10sp"
-            android:paddingHorizontal="4dp"
-            android:textAllCaps="false"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+                <TextView
+                    android:id="@+id/post_rail_reaction_2"
+                    style="@style/BrowserExpressCommentsBarReaction" />
+
+                <TextView
+                    android:id="@+id/post_rail_reaction_3"
+                    style="@style/BrowserExpressCommentsBarReaction" />
+            </LinearLayout>
+
+            <!-- The post's XP: every emoji given to its comments ("1.2K XP", unit smaller). -->
+            <TextView
+                android:id="@+id/post_rail_xp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:fontFamily="sans-serif"
+                android:maxLines="1"
+                android:textColor="@color/browser_express_post_rail_xp"
+                android:textFontWeight="500"
+                android:textSize="11sp"
+                android:visibility="gone" />
+
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1" />
+
+            <FrameLayout
+                android:id="@+id/post_rail_open"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:alpha="0.9">
+
+                <ImageView
+                    android:id="@+id/post_rail_chevron"
+                    android:layout_width="12dp"
+                    android:layout_height="12dp"
+                    android:layout_gravity="center"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_browser_express_post_chevron"
+                    app:tint="@color/browser_express_post_rail_chevron" />
+            </FrameLayout>
+        </LinearLayout>
     </LinearLayout>
 
+    <!-- The card's ⋯ menu, centred on the header row (2dp root padding + 10dp card padding + half
+         the 16dp row = 20dp down). A sibling of the card so its tap never opens the post. -->
+    <ImageView
+        android:id="@+id/post_menu"
+        android:layout_width="44dp"
+        android:layout_height="40dp"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="-2dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/browser_express_post_menu"
+        android:focusable="true"
+        android:scaleType="center"
+        android:src="@drawable/ic_browser_express_post_more" />
+
+    <!-- In the card's place once the reader picks "Not interested". -->
     <LinearLayout
-        android:id="@+id/edit_text_layout"
+        android:id="@+id/post_hidden"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_gravity="center_vertical"
+        android:background="@drawable/browser_express_post_card_bg"
+        android:gravity="center_vertical"
+        android:minHeight="48dp"
         android:orientation="horizontal"
-        android:paddingEnd="12dp"
-        android:layout_marginHorizontal="15dp"
-        android:layout_marginTop="12dp"
-        android:paddingStart="12dp"
-        android:paddingTop="10dp"
-        android:paddingBottom="10dp"
-        android:background="@drawable/rounded_edittext">
-        <ImageView
-            android:background="@drawable/comments"
-            android:layout_height="14sp"
-            android:layout_width="14sp"
-            android:layout_gravity="center"
-            android:layout_marginEnd="10sp"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+        android:paddingStart="14dp"
+        android:paddingEnd="2dp"
+        android:visibility="gone">
 
         <TextView
-            android:text="@string/type_your_comment"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textColor="@color/brave_theme_hint_text"
-            android:textSize="13sp"/>
-    </LinearLayout>
+            android:layout_weight="1"
+            android:text="@string/browser_express_post_hidden"
+            android:textColor="@color/browser_express_post_author"
+            android:textSize="13sp" />
 
-</LinearLayout>
+        <TextView
+            android:id="@+id/post_hidden_undo"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackground"
+            android:focusable="true"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:paddingHorizontal="12dp"
+            android:text="@string/browser_express_post_hidden_undo"
+            android:textColor="@color/browser_express_post_more"
+            android:textSize="13sp" />
+    </LinearLayout>
+</FrameLayout>

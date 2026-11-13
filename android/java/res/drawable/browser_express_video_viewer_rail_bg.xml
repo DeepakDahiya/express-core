@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- The reaction rail under the controls: the media rail's scrim with a hairline above it. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:drawable="@drawable/browser_express_post_media_rail_bg" />
+    <item
+        android:gravity="top|fill_horizontal"
+        android:height="1dp">
+        <shape android:shape="rectangle">
+            <solid android:color="@color/browser_express_video_viewer_rail_line" />
+        </shape>
+    </item>
+</layer-list>

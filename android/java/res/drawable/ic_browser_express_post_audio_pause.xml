@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- The playing state of the audio player's button. The design only draws "play"; this is the
+     same disc with pause bars. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="43dp"
+    android:height="43dp"
+    android:viewportWidth="43.1492"
+    android:viewportHeight="43.1492">
+    <path
+        android:fillColor="@color/browser_express_post_audio_accent"
+        android:pathData="M21.5746 0a21.5746 21.5746 0 1 0 0 43.1492a21.5746 21.5746 0 1 0 0 -43.1492z" />
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M15.5 14h4.2v15.15h-4.2z M23.45 14h4.2v15.15h-4.2z" />
+</vector>

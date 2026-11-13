@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- The scrim under the reaction rail laid over a photo or video. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="rectangle">
+    <gradient
+        android:angle="270"
+        android:centerY="0.42"
+        android:startColor="@color/browser_express_post_media_scrim_start"
+        android:centerColor="@color/browser_express_post_media_scrim_center"
+        android:endColor="@color/browser_express_post_media_scrim_end"
+        android:type="linear" />
+</shape>

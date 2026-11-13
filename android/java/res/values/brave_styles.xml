@@ -766,6 +766,53 @@
         <item name="android:textColor">@color/news_time_color</item>
     </style>
 
+    <!-- One of the top emoji on the "12 new takes" callout's quality line (14px, overlapping). -->
+    <style name="BrowserExpressNewTakesEmoji">
+        <item name="android:layout_width">16dp</item>
+        <item name="android:layout_height">16dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textSize" tools:ignore="SpUsage">14dp</item>
+    </style>
+
+    <!-- A "new takes" format chip's label (Inter 600 12/14). -->
+    <style name="BrowserExpressNewTakesChipLabel">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:lineHeight">14sp</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textFontWeight">600</item>
+        <item name="android:textSize">12sp</item>
+    </style>
+
+    <!-- A "new takes" chip with an icon (video, photo, voice): one text, the icon 5dp before
+         the label as a compound drawable, on the chip's ground. -->
+    <style name="BrowserExpressNewTakesIconChip" parent="BrowserExpressNewTakesChipLabel">
+        <item name="android:layout_height">28dp</item>
+        <item name="android:background">@drawable/browser_express_new_takes_chip_bg</item>
+        <item name="android:drawablePadding">5dp</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
+    <!-- The text chip ("Aa" and its label): 28dp, 10dp in from each end. -->
+    <style name="BrowserExpressNewTakesChip">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">28dp</item>
+        <item name="android:background">@drawable/browser_express_new_takes_chip_bg</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:paddingStart">10dp</item>
+        <item name="android:paddingEnd">10dp</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
     <!-- Privacy & Security settings (Figma "Trust/Privacy settings" 1:5268). -->
     <style name="BrowserExpressPrivacySection">
         <item name="android:layout_width">wrap_content</item>
@@ -882,6 +929,14 @@
 
     <style name="BrowserExpressTrustSheet" parent="Widget.Design.BottomSheet.Modal">
         <item name="android:background">@android:color/transparent</item>
+    </style>
+
+    <!-- A 44dp touch target around a 24dp icon in the full-screen post video's controls. -->
+    <style name="BrowserExpressVideoViewerButton">
+        <item name="android:layout_width">44dp</item>
+        <item name="android:layout_height">44dp</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:scaleType">center</item>
     </style>
 
     <!-- Browser Express sign-in flow. Sizes and 1.35 line heights follow the handoff design,

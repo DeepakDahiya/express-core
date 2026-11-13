@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- Shown in landscape full screen; the design only draws the enter state, this turns its corners inward. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M3 8H8V3M21 8H16V3M8 21V16H3M16 21V16H21"
+        android:strokeWidth="1.8"
+        android:strokeColor="@color/browser_express_video_viewer_text"
+        android:strokeLineCap="round" />
+</vector>

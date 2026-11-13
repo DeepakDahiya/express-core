@@ -8,6 +8,8 @@ package org.chromium.chrome.browser.ntp;
 import android.app.Activity;
 import android.view.LayoutInflater;
 
+import androidx.core.content.ContextCompat;
+
 import org.chromium.base.jank_tracker.JankTracker;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplier;
@@ -39,6 +41,7 @@ import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.ui.native_page.NativePageHost;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 import org.chromium.components.search_engines.TemplateUrlService;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 
 @NullUnmarked // Waiting for upstream parent class to be NullMarked
@@ -183,5 +186,31 @@ public class BraveNewTabPage extends NewTabPage {
     public void updateSearchProvider() {
         // Search provider logo is not used in Brave's NTP.
         mSearchProviderHasLogo = false;
+    }
+
+    /**
+     * Like Chrome's new tab page with a fake search box: on phones the feed header's search box
+     * stands in for the omnibox, so the toolbar keeps its location bar out of sight until the box
+     * is tapped or scrolled under the toolbar. BraveNewTabPageLayout reports where the box is.
+     */
+    @Override
+    public boolean isLocationBarShownInNtp() {
+        return mNewTabPageLayout != null
+                && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(
+                        mNewTabPageLayout.getContext())
+                && !mNewTabPageLayout.urlFocusAnimationsDisabled();
+    }
+
+    /** The feed's background, which also shows under the see-through toolbar. */
+    @Override
+    public int getBackgroundColor() {
+        if (mNewTabPageLayout == null) return super.getBackgroundColor();
+        return ContextCompat.getColor(
+                mNewTabPageLayout.getContext(), R.color.browser_express_feed_background);
+    }
+
+    @Override
+    public boolean needsToolbarShadow() {
+        return !isLocationBarShownInNtp();
     }
 }

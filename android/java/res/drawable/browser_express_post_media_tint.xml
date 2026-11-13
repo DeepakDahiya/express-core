@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- The black tint along the bottom of a feed photo or video, under its reaction rail (Figma
+     "Media engagement overlay · edge rail", 338:2254), so the rail reads over any picture. It
+     fades in over 20dp and is near-black for the last 9dp; the rail above it stays clear. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:height="29dp"
+        android:gravity="bottom|fill_horizontal">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:centerColor="@color/browser_express_post_media_tint_center"
+                android:centerY="0.69"
+                android:endColor="@color/browser_express_post_media_tint_end"
+                android:startColor="@color/browser_express_post_media_tint_start" />
+        </shape>
+    </item>
+</layer-list>

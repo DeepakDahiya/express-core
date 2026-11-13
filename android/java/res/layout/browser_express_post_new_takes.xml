@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- "12 new takes since you last looked" (design_handoff_new_takes §2b): the title, the format
+     chips and the quality line, centred, 9dp apart. NewTakesCallout inflates it into itself: over
+     a photo or video, and as the panel under a text post's caption. White in both themes, since
+     it always sits on a dark ground. -->
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <TextView
+        android:id="@+id/new_takes_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif"
+        android:includeFontPadding="false"
+        android:letterSpacing="-0.02"
+        android:lineHeight="28sp"
+        android:maxLines="1"
+        android:textColor="@android:color/white"
+        android:textFontWeight="700"
+        android:textSize="24sp"
+        tools:text="12 new takes" />
+
+    <TextView
+        android:id="@+id/new_takes_sub"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="2dp"
+        android:fontFamily="sans-serif"
+        android:includeFontPadding="false"
+        android:lineHeight="16sp"
+        android:maxLines="1"
+        android:text="@string/browser_express_new_takes_since"
+        android:textColor="@color/browser_express_new_takes_sub"
+        android:textFontWeight="500"
+        android:textSize="12sp" />
+
+    <!-- In the order video, photo, voice, text; a format with no takes is left out. -->
+    <LinearLayout
+        android:id="@+id/new_takes_chips"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="9dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/new_takes_chip_video"
+            style="@style/BrowserExpressNewTakesIconChip"
+            android:drawableStart="@drawable/ic_browser_express_new_takes_video" />
+
+        <TextView
+            android:id="@+id/new_takes_chip_photo"
+            style="@style/BrowserExpressNewTakesIconChip"
+            android:drawableStart="@drawable/ic_browser_express_new_takes_photo" />
+
+        <TextView
+            android:id="@+id/new_takes_chip_voice"
+            style="@style/BrowserExpressNewTakesIconChip"
+            android:drawableStart="@drawable/ic_browser_express_new_takes_voice" />
+
+        <LinearLayout
+            android:id="@+id/new_takes_chip_text"
+            style="@style/BrowserExpressNewTakesChip">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="sans-serif"
+                android:importantForAccessibility="no"
+                android:includeFontPadding="false"
+                android:text="@string/browser_express_new_takes_text_icon"
+                android:textColor="@android:color/white"
+                android:textFontWeight="700"
+                android:textSize="10sp"
+                tools:ignore="SmallSp" />
+
+            <TextView
+                android:id="@+id/new_takes_chip_text_label"
+                style="@style/BrowserExpressNewTakesChipLabel"
+                android:layout_marginStart="5dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- The top emoji among the new takes, then "2.4K reactions on these". -->
+    <LinearLayout
+        android:id="@+id/new_takes_quality"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="9dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:id="@+id/new_takes_emoji"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="7dp"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/new_takes_emoji_1"
+                style="@style/BrowserExpressNewTakesEmoji" />
+
+            <TextView
+                android:id="@+id/new_takes_emoji_2"
+                style="@style/BrowserExpressNewTakesEmoji" />
+
+            <TextView
+                android:id="@+id/new_takes_emoji_3"
+                style="@style/BrowserExpressNewTakesEmoji" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/new_takes_quality_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif"
+            android:includeFontPadding="false"
+            android:lineHeight="16sp"
+            android:maxLines="1"
+            android:textColor="@color/browser_express_new_takes_quality"
+            android:textFontWeight="500"
+            android:textSize="12sp" />
+    </LinearLayout>
+</merge>

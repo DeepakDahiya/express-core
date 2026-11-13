@@ -38,7 +38,10 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
+
+import org.chromium.base.MathUtils;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -100,6 +103,7 @@ import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.rate.RateUtils;
 import org.chromium.chrome.browser.settings.BackgroundImagesPreferences;
 import org.chromium.chrome.browser.settings.BraveNewsPreferencesV2;
+import org.chromium.chrome.browser.settings.BrowserExpressGuestLogin;
 import org.chromium.chrome.browser.settings.SettingsNavigationFactory;
 import org.chromium.chrome.browser.suggestions.tile.BraveMostVisitedTilesLayoutBase;
 import org.chromium.chrome.browser.suggestions.tile.TileGroup.Delegate;
@@ -116,7 +120,9 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.url.GURL;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
@@ -138,7 +144,7 @@ import org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout;
 import org.chromium.ui.widget.Toast;
 import org.chromium.chrome.browser.browser_express_generate_username.BrowserExpressClaimUsernameUtil;
 import org.chromium.chrome.browser.settings.BrowserExpressGetProfilePreferencesUtil;
-import org.chromium.chrome.browser.app.helpers.ImageLoader;
+import org.chromium.chrome.browser.app.helpers.ProfileAvatar;
 import org.json.JSONException;
 import org.json.JSONObject;
 import android.widget.ImageButton;
@@ -146,7 +152,6 @@ import java.io.UnsupportedEncodingException;
 import android.util.Base64;
 import org.chromium.chrome.browser.settings.PostHogEventKeys;
 import org.chromium.chrome.browser.settings.PostHogUtil;
-import org.chromium.chrome.browser.youtube_premium.YouTubePremiumBottomSheetFragment;
 import android.content.pm.PackageInfo;
 
 @SuppressWarnings("UseSharedPreferencesManagerFromChromeCheck")
@@ -154,6 +159,12 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
         implements ConnectionErrorHandler, OnBraveNtpListener {
     private static final String TAG = "BraveNewTabPage";
     private static final String BE_PROFILE_PREF = "BE_PROFILE_PREFS";
+
+    /** Posts asked for per feed page. */
+    private static final int FEED_PAGE_SIZE = 20;
+
+    /** The next feed page starts loading once the reader is this many posts from the end. */
+    private static final int FEED_PREFETCH_POSTS = 5;
 
     // private static final int MINIMUM_VISIBLE_HEIGHT_THRESHOLD = 50;
     // private static final int HOUR_MS = 3_600_000;
@@ -201,12 +212,36 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
     private CopyOnWriteArrayList<FeedItemsCard> mNewsItemsFeedCard =
             new CopyOnWriteArrayList<FeedItemsCard>();
     private RecyclerView mRecyclerView;
+
+    // The feed header's search box stands in for Chrome's fake search box: the toolbar keeps its
+    // location bar out of sight while the box is on screen and grows it out of the box when it is
+    // tapped or scrolled under the toolbar (see BraveNewTabPage#isLocationBarShownInNtp).
+    private NewTabPage.OnSearchBoxScrollListener mHeaderSearchBoxScrollListener;
+    private float mUrlFocusPercent;
+    private float mHeaderSearchBoxAlpha = 1f;
     private LinearLayout mNewsSettingsBar;
     private LinearLayout mNewContentLayout;
     private TextView mNewContentText;
     private ProgressBar mNewContentProgressBar;
     private PostListAdapter mPostAdapter;
+    /**
+     * The feed so far. It outlives the adapter: the page builds a fresh adapter each time it is
+     * shown again (see onDetachedFromWindow), over the same posts.
+     */
     private List<Post> mPosts;
+    /** The ids in {@link #mPosts}. A page can repeat posts an earlier page had. */
+    private final Set<String> mPostIds = new HashSet<>();
+    private boolean mPostsRequestInFlight;
+    /** Whether the feed's first page has loaded. */
+    private boolean mPostsLoaded;
+    /** Asks for the page after the last one loaded; null before the first page and after the last. */
+    @Nullable private String mNextPostsCursor;
+    /** Whether the last feed request failed; the feed's last row then offers to try again. */
+    private boolean mPostsLoadFailed;
+    private boolean mLoadMoreCheckPending;
+    private String mPendingPostsRetryAccessToken;
+    private static boolean sNtpClaimUsernameInFlight;
+    private static boolean sNtpManualAuthOpened;
 
     private NTPImage mNtpImageGlobal;
     private BraveNewsController mBraveNewsController;
@@ -320,6 +355,7 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
         }
         // checkAndShowNTPImage(false);
         mNTPBackgroundImagesBridge.addObserver(mNTPBackgroundImageServiceObserver);
+        BrowserExpressGuestLogin.addObserver(mGuestLoginObserver);
 
         if (OnboardingPrefManager.getInstance().isFromNotification() ) {
             ((BraveActivity)mActivity).showOnboardingV2(false);
@@ -346,8 +382,12 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
         try {
             mRecyclerView = findViewById(R.id.recycler_posts);
             
-            mPosts = new ArrayList<Post>();
-            
+            if (mPosts == null) mPosts = new ArrayList<Post>();
+            // Posts hidden last time showed "Post hidden · Undo" in their place; shown again, the
+            // page leaves them out (their ids stay in mPostIds, so they don't come back).
+            mPosts.removeIf(post -> HiddenFeedPosts.isHidden(post.getId()));
+
+            // YouTube (first when present) and the newest other sites.
             List<TopSiteTable> topSites = mDatabaseHelper.getTopSitesForDisplay(4);
             
             mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
@@ -356,25 +396,36 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
             mRecyclerView.setItemViewCacheSize(10);
 
             mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView, topSites, this);
+            mPostAdapter.setFeedRetryAction(this::retryPosts);
+            // Shown again: the posts loaded before are still here, so no skeleton.
+            if (mPostsLoaded) mPostAdapter.setLoading(false);
+            applyFeedFooter();
             
             mRecyclerView.setAdapter(mPostAdapter);
+            mRecyclerView.addOnScrollListener(
+                    new RecyclerView.OnScrollListener() {
+                        @Override
+                        public void onScrolled(
+                                @NonNull RecyclerView recyclerView, int dx, int dy) {
+                            notifyHeaderSearchBoxScrolled();
+                            scheduleLoadMoreCheck();
+                        }
+                    });
+            mRecyclerView.addOnLayoutChangeListener(
+                    (v, left, top, right, bottom, oldLeft, oldTop, oldRight, oldBottom) ->
+                            notifyHeaderSearchBoxScrolled());
 
             mMainLayout = findViewById(R.id.ntp_content);
             
             if (mMainLayout != null) {
-                mMainLayout.setBackgroundColor(ContextCompat.getColor(mActivity, R.color.be_background_black));
+                mMainLayout.setBackgroundColor(
+                        ContextCompat.getColor(mActivity, R.color.browser_express_feed_background));
             }
 
             String accessToken = ((BraveActivity)mActivity).getAccessToken();
+            loadPostsAndProfile(accessToken);
             if(accessToken == null){
-                // Token doesn't exist — claim a username first, then load posts/profile in the callback
-                BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask workerTask =
-                        new BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask(
-                                claimUsernameCallback);
-                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            } else {
-                // Token exists — load posts and profile immediately
-                loadPostsAndProfile(accessToken);
+                startClaimUsernameIfNeeded();
             }
             
             // Fetch tutorial video config from remote
@@ -385,25 +436,141 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                     mPostAdapter.setTutorialMedia(videoUrl, imageUrl);
                 }
             });
-
-            // Show YouTube premium bottomsheet on NTP
-            if (mActivity instanceof BraveActivity) {
-                YouTubePremiumBottomSheetFragment.showPermanent(
-                        ((BraveActivity) mActivity).getSupportFragmentManager(), mActivity);
-                // YouTubePremiumBottomSheetFragment.showIfNeeded(
-                //         ((BraveActivity) mActivity).getSupportFragmentManager());
-            }
         } catch (Exception e) {
             throw e; // Re-throw to see the original crash
         }
     }
 
     private void loadPostsAndProfile(String accessToken) {
-        BrowserExpressGetPostsUtil.GetPostsWorkerTask workerTask =
-            new BrowserExpressGetPostsUtil.GetPostsWorkerTask(1, 20, accessToken, getPostsCallback);
-        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
+        loadPosts(accessToken);
         fetchAndUpdateProfileImage();
+    }
+
+    /** Loads the feed's first page, under the header's skeleton. */
+    private void loadPosts(String accessToken) {
+        if (mPostsRequestInFlight || mPostsLoaded) return;
+        if (mPostAdapter != null) {
+            mPostAdapter.setLoading(true);
+            mPostAdapter.showShimmer();
+        }
+        requestPosts(null, accessToken);
+    }
+
+    /** Loads the feed page {@code cursor} names, or the first page when it is null. */
+    private void requestPosts(@Nullable String cursor, String accessToken) {
+        mPostsRequestInFlight = true;
+        mPostsLoadFailed = false;
+        applyFeedFooter();
+        BrowserExpressGetPostsUtil.GetPostsWorkerTask workerTask =
+                new BrowserExpressGetPostsUtil.GetPostsWorkerTask(
+                        cursor, FEED_PAGE_SIZE, accessToken, getPostsCallback);
+        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    /** The error row's action: asks again for the page that failed. */
+    private void retryPosts() {
+        if (mPostsRequestInFlight) return;
+        if (!mPostsLoaded) {
+            loadPosts(getCurrentAccessToken());
+        } else if (mNextPostsCursor != null) {
+            requestPosts(mNextPostsCursor, getCurrentAccessToken());
+        }
+    }
+
+    /**
+     * Looks, after this frame, whether the reader is near enough the end of the feed for the next
+     * page. Deferred because scroll callbacks can run inside a layout pass, when the adapter must
+     * not change.
+     */
+    private void scheduleLoadMoreCheck() {
+        if (mLoadMoreCheckPending || mRecyclerView == null) return;
+        mLoadMoreCheckPending = true;
+        mRecyclerView.post(
+                () -> {
+                    mLoadMoreCheckPending = false;
+                    maybeLoadMorePosts();
+                });
+    }
+
+    /**
+     * Loads the next feed page once the reader is within {@link #FEED_PREFETCH_POSTS} posts of the
+     * end. A failed page waits for the reader to tap the retry row.
+     */
+    private void maybeLoadMorePosts() {
+        if (!mPostsLoaded || mPostsRequestInFlight || mPostsLoadFailed || mNextPostsCursor == null) {
+            return;
+        }
+        if (mPostAdapter == null || mRecyclerView == null || !mRecyclerView.isAttachedToWindow()) {
+            return;
+        }
+        if (!(mRecyclerView.getLayoutManager() instanceof LinearLayoutManager)) return;
+        int lastVisible =
+                ((LinearLayoutManager) mRecyclerView.getLayoutManager())
+                        .findLastVisibleItemPosition();
+        if (lastVisible == RecyclerView.NO_POSITION) return;
+        int lastPost = mPostAdapter.getPostAdapterOffset() + mPosts.size() - 1;
+        if (lastVisible < lastPost - FEED_PREFETCH_POSTS) return;
+        requestPosts(mNextPostsCursor, getCurrentAccessToken());
+    }
+
+    /** The feed's last row: a spinner while a later page loads, a retry after a failure. */
+    private void applyFeedFooter() {
+        if (mPostAdapter == null) return;
+        int state = PostListAdapter.FOOTER_NONE;
+        if (mPostsLoadFailed) {
+            state = PostListAdapter.FOOTER_ERROR;
+        } else if (mPostsRequestInFlight && mPostsLoaded) {
+            // The first page loads under the header's skeleton instead.
+            state = PostListAdapter.FOOTER_LOADING;
+        }
+        mPostAdapter.setFooterState(state);
+    }
+
+    private void startClaimUsernameIfNeeded() {
+        String accessToken = getCurrentAccessToken();
+        if (accessToken != null) {
+            sNtpClaimUsernameInFlight = false;
+            sNtpManualAuthOpened = false;
+            loadPostsAndProfile(accessToken);
+            return;
+        }
+
+        if (BrowserExpressGuestLogin.isPending()) {
+            // The user closed the sign-in screen, so it stays closed. The guest session closing it
+            // asked for reaches the page through mGuestLoginObserver.
+            BrowserExpressGuestLogin.resumeIfPending();
+            loadPosts(null);
+            return;
+        }
+        if (BrowserExpressClaimUsernameUtil.shouldRequireManualAuth()) {
+            if (!sNtpManualAuthOpened) {
+                sNtpManualAuthOpened = true;
+                try {
+                    BraveActivity activity = BraveActivity.getBraveActivity();
+                    activity.openBrowserExpressSignupSettings(true);
+                } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    Log.e(
+                            TAG,
+                            "Unable to open Browser Express signup: " + e.getMessage());
+                }
+            }
+            loadPosts(null);
+            return;
+        }
+        if (sNtpClaimUsernameInFlight) return;
+        sNtpClaimUsernameInFlight = true;
+        BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask workerTask =
+                new BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask(claimUsernameCallback);
+        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
+    private String getCurrentAccessToken() {
+        try {
+            return BraveActivity.getBraveActivity().getAccessToken();
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+            Log.e(TAG, "Unable to check Browser Express auth state: " + e.getMessage());
+            return null;
+        }
     }
 
     // private void setNtpRecyclerView(LinearLayoutManager linearLayoutManager) {
@@ -955,6 +1122,7 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
             }
         }
         mNTPBackgroundImagesBridge.removeObserver(mNTPBackgroundImageServiceObserver);
+        BrowserExpressGuestLogin.removeObserver(mGuestLoginObserver);
 
         if (mNewsItemsFeedCard != null && mNewsItemsFeedCard.size() > 0) {
             try {
@@ -977,6 +1145,9 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
         if (mPostAdapter != null) {
             mPostAdapter.releaseTutorialPlayer();
         }
+        // Recycles every card, on screen and cached, which releases their video players and
+        // the hardware decoders those hold. Coming back builds a fresh adapter (setNtpViews).
+        mRecyclerView.setAdapter(null);
 
         mRecyclerView.clearOnScrollListeners();
         super.onDetachedFromWindow();
@@ -1197,25 +1368,112 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
         });
     }
 
+    /** The feed header's search box, while the header is laid out. */
+    private @Nullable View headerSearchBox() {
+        if (mRecyclerView == null) return null;
+        RecyclerView.ViewHolder header = mRecyclerView.findViewHolderForAdapterPosition(0);
+        if (header == null || !header.itemView.isAttachedToWindow()) return null;
+        return header.itemView.findViewById(R.id.ntp_search_box);
+    }
+
+    private void notifyHeaderSearchBoxScrolled() {
+        if (mHeaderSearchBoxScrollListener != null) {
+            mHeaderSearchBoxScrollListener.onNtpScrollChanged(getToolbarTransitionPercentage());
+        }
+    }
+
+    /**
+     * How far the toolbar's location bar has taken over from the header's search box: 0 while the
+     * box rests below the toolbar, 1 once it has slid under it (or the header has scrolled away).
+     */
+    @Override
+    float getToolbarTransitionPercentage() {
+        if (mRecyclerView == null || mRecyclerView.getChildCount() == 0) return 0f;
+        View box = headerSearchBox();
+        if (box == null) return 1f;
+        float transitionLength = box.getHeight() / 2f;
+        if (transitionLength <= 0) return 0f;
+        int boxTop = locationInWindowY(box) - locationInWindowY(this);
+        // The layout reserves its top padding for the toolbar.
+        int toolbarBottom = getPaddingTop();
+        return MathUtils.clamp(
+                (toolbarBottom + transitionLength - boxTop) / transitionLength, 0f, 1f);
+    }
+
+    /**
+     * Where the header's search box is within {@code parentView}; the toolbar grows its location
+     * bar out of these bounds. Once the header has scrolled away the bounds sit above the view.
+     *
+     * <p>While the box hands focus to the location bar the bounds rise to the top. Chrome's own
+     * new tab page scrolls its fake box up under the toolbar for that; this box stays put, and
+     * reported where it rests, the toolbar laid the focused location bar out down there, outside
+     * its own bounds: the keyboard came up with no field showing until the feed was scrolled.
+     */
+    @Override
+    void getSearchBoxBounds(Rect bounds, Point translation, View parentView) {
+        translation.set(0, 0);
+        View box = headerSearchBox();
+        if (box == null || parentView == null) {
+            int height = box != null ? box.getHeight() : 0;
+            bounds.set(0, -height, parentView != null ? parentView.getWidth() : 0, 0);
+            return;
+        }
+        int[] boxLocation = new int[2];
+        int[] parentLocation = new int[2];
+        box.getLocationInWindow(boxLocation);
+        parentView.getLocationInWindow(parentLocation);
+        int left = boxLocation[0] - parentLocation[0];
+        int top = boxLocation[1] - parentLocation[1];
+        if (top > 0) top = Math.round(top * (1f - mUrlFocusPercent));
+        bounds.set(left, top, left + box.getWidth(), top + box.getHeight());
+    }
+
+    @Override
+    void setSearchBoxScrollListener(NewTabPage.OnSearchBoxScrollListener listener) {
+        mHeaderSearchBoxScrollListener = listener;
+        notifyHeaderSearchBoxScrolled();
+    }
+
+    /** The header's box fades out while the location bar takes focus from it, and back after. */
+    @Override
+    void setUrlFocusChangeAnimationPercent(float percent) {
+        boolean changed = percent != mUrlFocusPercent;
+        mUrlFocusPercent = percent;
+        applyHeaderSearchBoxAlpha();
+        // The toolbar reads the box's bounds before it hands over the new percent, and a focus
+        // animation can jump straight to its end with no frame after it: have it lay the location
+        // bar out again against the bounds that go with this percent.
+        if (changed) {
+            post(
+                    () -> {
+                        if (isAttachedToWindow()) notifyHeaderSearchBoxScrolled();
+                    });
+        }
+    }
+
+    @Override
+    public void setSearchBoxAlpha(float alpha) {
+        mHeaderSearchBoxAlpha = alpha;
+        applyHeaderSearchBoxAlpha();
+    }
+
+    private void applyHeaderSearchBoxAlpha() {
+        View box = headerSearchBox();
+        if (box != null) box.setAlpha(mHeaderSearchBoxAlpha * (1f - mUrlFocusPercent));
+    }
+
+    private static int locationInWindowY(View view) {
+        int[] location = new int[2];
+        view.getLocationInWindow(location);
+        return location[1];
+    }
+
     public View createTile(Context context, TopSiteTable topSite) {
         View tileView = LayoutInflater.from(context).inflate(R.layout.top_site_tile_layout, null);
 
         // LinearLayout tileLayout = tileView.findViewById(R.id.tile_layout);
         ImageView imageView = tileView.findViewById(R.id.tile_image);
         TextView textView = tileView.findViewById(R.id.tile_text);
-        LinearLayout imageContainer = tileView.findViewById(R.id.image_container);
-
-        // Set background color for image container
-        try {
-            int backgroundColor = android.graphics.Color.parseColor(topSite.getBackgroundColor());
-            GradientDrawable shape = new GradientDrawable();
-            shape.setShape(GradientDrawable.OVAL); // Circular background
-            shape.setColor(backgroundColor);
-            imageContainer.setBackground(shape);
-        } catch (IllegalArgumentException e) {
-            // Handle invalid color string
-            imageContainer.setBackgroundColor(android.graphics.Color.LTGRAY); // Default background
-        }
 
         if (topSite.getImagePath() != null) {
             File imgFile = new File(topSite.getImagePath());
@@ -1238,37 +1496,46 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
         }
         textView.setText(name);
 
-        // Click listener to open website
         tileView.setOnClickListener(v -> {
             if (topSite.getDestinationUrl().contains("youtube")) {
-                try {
-                    BraveActivity activity = BraveActivity.getBraveActivity();
-                    if(activity == null){
-                        return;
-                    }
-                    String accessToken = activity.getAccessToken();
-
-                    if (accessToken != null) {
-                        JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
-                        if (decodedAccessTokenObj != null) {
-                            String pInfo = activity.getCurrentAppVersion();
-                            JSONObject payload = new JSONObject();
-                            payload.put("app_version", pInfo);
-                            PostHogUtil.PostHogWorkerTask postHogWorkerTask =
-                                new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.YTP_PREMIUM_CLICKED_ON_HOME, decodedAccessTokenObj.getString("_id"), payload);
-                            postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                        }
-                    }
-                } catch (BraveActivity.BraveActivityNotFoundException e) {
-                    Log.e(TAG, "maybeShowWalletPanel " + e);
-                } catch (JSONException e) {
-                    Log.e("Express Browser Access Token", e.getMessage());
-                }
+                trackYouTubeOpenedFromHome();
             }
             TabUtils.openUrlInSameTab(topSite.getDestinationUrl());
         });
 
         return tileView;
+    }
+
+    /** The header's YouTube button: YouTube, signed in so its premium features apply. */
+    public void openYouTubeFromHome() {
+        trackYouTubeOpenedFromHome();
+        TabUtils.openUrlInSameTab(DatabaseHelper.DEFAULT_YOUTUBE_URL);
+    }
+
+    private void trackYouTubeOpenedFromHome() {
+        try {
+            BraveActivity activity = BraveActivity.getBraveActivity();
+            if(activity == null){
+                return;
+            }
+            String accessToken = activity.getAccessToken();
+
+            if (accessToken != null) {
+                JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
+                if (decodedAccessTokenObj != null) {
+                    String pInfo = activity.getCurrentAppVersion();
+                    JSONObject payload = new JSONObject();
+                    payload.put("app_version", pInfo);
+                    PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                        new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.YTP_PREMIUM_CLICKED_ON_HOME, decodedAccessTokenObj.getString("_id"), payload);
+                    postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                }
+            }
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+            Log.e(TAG, "maybeShowWalletPanel " + e);
+        } catch (JSONException e) {
+            Log.e("Express Browser Access Token", e.getMessage());
+        }
     }
 
     private BitmapDrawable generateAvatar(Context context, String name) {
@@ -1715,24 +1982,66 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
     private final BrowserExpressGetPostsUtil.GetPostsCallback getPostsCallback=
             new BrowserExpressGetPostsUtil.GetPostsCallback() {
                 @Override
-                public void getPostsSuccessful(List<Post> posts) {
-                    if (mPostAdapter != null) {
-                        mPostAdapter.hideShimmer();
+                public void getPostsSuccessful(List<Post> posts, @Nullable String nextCursor) {
+                    mPostsRequestInFlight = false;
+                    mPostsLoaded = true;
+                    mPostsLoadFailed = false;
+                    mNextPostsCursor = nextCursor;
+                    mPendingPostsRetryAccessToken = null;
+                    if (mPosts == null) mPosts = new ArrayList<Post>();
+
+                    // The server's ranking can move between two pages, repeating a post the
+                    // reader already has; each post shows once. Posts the reader marked "Not
+                    // interested" never show.
+                    List<Post> added = new ArrayList<>();
+                    for (Post post : posts) {
+                        if (mPostIds.add(post.getId()) && !HiddenFeedPosts.isHidden(post.getId())) {
+                            added.add(post);
+                        }
+                    }
+                    int len = mPosts.size();
+                    mPosts.addAll(added);
+                    // A later page with nothing after it: the reader has seen the whole feed.
+                    if (nextCursor == null && len > 0) {
+                        PostHogUtil.capture(
+                                PostHogEventKeys.FEED_END_REACHED, "posts", mPosts.size());
                     }
 
+                    if (mPostAdapter == null) return;
+                    mPostAdapter.hideShimmer();
                     mPostAdapter.setLoading(false);
-
-                    int len = mPosts.size();
-                    mPosts.addAll(posts);
-                    mPostAdapter.notifyItemRangeInserted(
-                            len + mPostAdapter.getPostAdapterOffset(), posts.size());
+                    if (!added.isEmpty()) {
+                        mPostAdapter.notifyItemRangeInserted(
+                                len + mPostAdapter.getPostAdapterOffset(), added.size());
+                    }
+                    applyFeedFooter();
+                    // A short page, or one of repeats only, can leave the end of the feed on
+                    // screen with nothing left to scroll.
+                    scheduleLoadMoreCheck();
                 }
 
                 @Override
                 public void getPostsFailed(String error) {
+                    mPostsRequestInFlight = false;
                     Log.e("BE_GET_POST", error);
-                    mPostAdapter.hideShimmer();
-                    mPostAdapter.setLoading(false);
+                    PostHogUtil.capture(
+                            PostHogEventKeys.FEED_LOAD_FAILED,
+                            "page",
+                            mPostsLoaded ? "next" : "first",
+                            "error",
+                            error);
+                    if (mPostAdapter != null) {
+                        mPostAdapter.hideShimmer();
+                        mPostAdapter.setLoading(false);
+                    }
+                    if (mPendingPostsRetryAccessToken != null && !mPostsLoaded) {
+                        String retryAccessToken = mPendingPostsRetryAccessToken;
+                        mPendingPostsRetryAccessToken = null;
+                        loadPosts(retryAccessToken);
+                        return;
+                    }
+                    mPostsLoadFailed = true;
+                    applyFeedFooter();
                 }
             };
 
@@ -1744,9 +2053,8 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                     SharedPreferences sharedPref = context.getSharedPreferences(BE_PROFILE_PREF, 0);
                     SharedPreferences.Editor editor = sharedPref.edit();
 
-                    if(avatar != null && avatar.length() > 0){
-                        editor.putString("avatar_url", avatar);
-                        ImageLoader.downloadImage(avatar, Glide.with(context), true, 5, mProfileButton, null);
+                    if (avatar != null && !avatar.isEmpty() && mProfileButton != null) {
+                        ProfileAvatar.load(mProfileButton, avatar, null);
                     }
 
                     if(xp != null && xp.length() > 0){
@@ -1776,6 +2084,19 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                 }
             };
 
+    /** A guest session, from closing the sign-in screen, arriving after the page opened. */
+    private final BrowserExpressGuestLogin.Observer mGuestLoginObserver = this::onSessionArrived;
+
+    /** Picks up a session that arrived after the page started out without one. */
+    private void onSessionArrived(String accessToken) {
+        fetchAndUpdateProfileImage();
+        if (mPostsRequestInFlight) {
+            mPendingPostsRetryAccessToken = accessToken;
+        } else if (!mPostsLoaded && (mPosts == null || mPosts.isEmpty())) {
+            loadPosts(accessToken);
+        }
+    }
+
     private static final int MAX_CLAIM_RETRIES = 3;
     private int mClaimRetryCount = 0;
 
@@ -1783,18 +2104,18 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
             new BrowserExpressClaimUsernameUtil.ClaimUsernameCallback() {
                 @Override
                 public void claimUsernameSuccessful(String accessToken, String refreshToken) {
+                    sNtpClaimUsernameInFlight = false;
                     mClaimRetryCount = 0;
+                    String currentAccessToken = getCurrentAccessToken();
+                    if (currentAccessToken != null) {
+                        loadPostsAndProfile(currentAccessToken);
+                        return;
+                    }
                     try {
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         activity.setAccessToken(accessToken);
                         Toast.makeText(activity, "Login Successful", Toast.LENGTH_SHORT).show();
-
-                        BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask1 =
-                            new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
-                        workerTask1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-                        // Now that we have the token, load posts and profile
-                        loadPostsAndProfile(accessToken);
+                        onSessionArrived(accessToken);
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                     }
                 }
@@ -1802,6 +2123,21 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                 @Override
                 public void claimUsernameFailed(String error) {
                     Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED: " + error);
+                    String currentAccessToken = getCurrentAccessToken();
+                    if (currentAccessToken != null) {
+                        sNtpClaimUsernameInFlight = false;
+                        mClaimRetryCount = 0;
+                        loadPostsAndProfile(currentAccessToken);
+                        return;
+                    }
+                    if (BrowserExpressClaimUsernameUtil.ERROR_MANUAL_AUTH_REQUIRED.equals(error)) {
+                        sNtpClaimUsernameInFlight = false;
+                        // Authentication may have completed while this anonymous request was
+                        // running. Re-enter the guarded path so a stale callback cannot put the
+                        // registration activity back on top of the browser.
+                        startClaimUsernameIfNeeded();
+                        return;
+                    }
                     // Retry with backoff
                     if (mClaimRetryCount < MAX_CLAIM_RETRIES) {
                         mClaimRetryCount++;
@@ -1813,9 +2149,10 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                             retryTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                         }, delayMs);
                     } else {
+                        sNtpClaimUsernameInFlight = false;
                         Log.e("Express Browser LOGIN", "Claim username failed after " + MAX_CLAIM_RETRIES + " retries");
                         // Load posts without token as fallback so NTP isn't blank
-                        loadPostsAndProfile(null);
+                        loadPosts(null);
                     }
                 }
             };
@@ -1831,15 +2168,7 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
             mProfileButton = activity.getProfileButton();
 
             if (accessToken != null && mProfileButton != null) {
-                Context context = ContextUtils.getApplicationContext();
-                SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
-                String avatar = prefs.getString("avatar_url", null);
-                JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
-                if (avatar != null) {
-                    ImageLoader.downloadImage(avatar, Glide.with(activity), true, 5, mProfileButton, null);
-                }else if (decodedAccessTokenObj != null) {
-                    ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), true, 5, mProfileButton, null);
-                }
+                ProfileAvatar.loadSelf(mProfileButton, accessToken);
 
                 BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask1 =
                     new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
@@ -1847,8 +2176,6 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
             }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e(TAG, "maybeShowWalletPanel " + e);
-        } catch (JSONException e) {
-            Log.e("Express Browser Access Token", e.getMessage());
         }
     }
 

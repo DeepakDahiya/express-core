@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- Muted state; the design only draws the speaker with sound waves, this swaps them for a cross. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M11 4L6 8H3V16H6L11 20V4Z"
+        android:strokeWidth="1.6"
+        android:strokeColor="@color/browser_express_video_viewer_text"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M15 9L21 15M21 9L15 15"
+        android:strokeWidth="1.6"
+        android:strokeColor="@color/browser_express_video_viewer_text"
+        android:strokeLineCap="round" />
+</vector>

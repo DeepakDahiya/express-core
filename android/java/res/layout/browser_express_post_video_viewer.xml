@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- Full-screen player for a feed post's video (Figma "Express/Full-screen Video", 1:548): a top
+     bar with close and a menu, the video, the post's author and caption, the transport controls
+     and the post's reaction rail. PostVideoViewerFragment binds it. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/browser_express_video_viewer_background">
+
+    <androidx.media3.ui.PlayerView
+        android:id="@+id/post_video_viewer_player"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:resize_mode="fit"
+        app:shutter_background_color="@color/browser_express_video_viewer_background"
+        app:surface_type="texture_view"
+        app:use_controller="false" />
+
+    <!-- Everything drawn over the video. The video runs under the system bars; this layer is
+         padded clear of them (EdgeToEdgeUtil), or the reaction rail at the bottom lands behind
+         the navigation bar on edge-to-edge devices. It handles no touches of its own, so taps
+         and drags between the controls still reach the video. -->
+    <FrameLayout
+        android:id="@+id/post_video_viewer_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/post_video_viewer_top_bar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="6dp"
+            android:paddingTop="16dp">
+
+            <ImageButton
+                android:id="@+id/post_video_viewer_close"
+                style="@style/BrowserExpressVideoViewerButton"
+                android:contentDescription="@string/browser_express_video_viewer_close"
+                android:src="@drawable/ic_browser_express_viewer_close" />
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                android:fontFamily="sans-serif"
+                android:text="@string/video"
+                android:textColor="@color/browser_express_video_viewer_text"
+                android:textSize="16sp" />
+
+            <ImageButton
+                android:id="@+id/post_video_viewer_more"
+                style="@style/BrowserExpressVideoViewerButton"
+                android:contentDescription="@string/browser_express_video_viewer_more"
+                android:src="@drawable/ic_browser_express_viewer_more" />
+        </LinearLayout>
+
+        <!-- "2×" while the reader holds the right half of the video. -->
+        <include
+            layout="@layout/browser_express_fast_forward_badge"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="top|center_horizontal"
+            android:layout_marginTop="72dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="vertical">
+
+            <!-- Post context; hidden in landscape full screen. -->
+            <LinearLayout
+                android:id="@+id/post_video_viewer_context"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="20dp">
+
+                <TextView
+                    android:id="@+id/post_video_viewer_author"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:fontFamily="sans-serif"
+                    android:maxLines="1"
+                    android:textColor="@color/browser_express_video_viewer_text"
+                    android:textSize="14sp" />
+
+                <!-- Two lines; a tap opens all of it, scrolling once it is long (ExpandableCaption). -->
+                <ScrollView
+                    android:id="@+id/post_video_viewer_caption_scroll"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="9dp"
+                    android:fadingEdgeLength="24dp"
+                    android:overScrollMode="never"
+                    android:requiresFadingEdge="vertical"
+                    android:scrollbars="none">
+
+                    <TextView
+                        android:id="@+id/post_video_viewer_caption"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:fontFamily="sans-serif"
+                        android:maxLines="2"
+                        android:textColor="@color/browser_express_video_viewer_caption"
+                        android:textSize="14sp" />
+                </ScrollView>
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="9dp"
+                android:background="@drawable/browser_express_video_viewer_controls_bg"
+                android:orientation="vertical">
+
+                <!-- 32dp tall so the 3dp timeline is easy to catch; the extra height is taken out of
+                     the margins around it, so the line sits where the design puts it. -->
+                <SeekBar
+                    android:id="@+id/post_video_viewer_seek"
+                    android:layout_width="match_parent"
+                    android:layout_height="32dp"
+                    android:contentDescription="@string/browser_express_video_viewer_position"
+                    android:maxHeight="3dp"
+                    android:minHeight="3dp"
+                    android:paddingStart="20dp"
+                    android:paddingEnd="20dp"
+                    android:progressDrawable="@drawable/browser_express_video_viewer_seek"
+                    android:splitTrack="false"
+                    android:thumb="@drawable/browser_express_video_viewer_thumb"
+                    android:thumbOffset="5dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="44dp"
+                    android:layout_marginBottom="10dp"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="8dp">
+
+                    <ImageButton
+                        android:id="@+id/post_video_viewer_play"
+                        style="@style/BrowserExpressVideoViewerButton"
+                        android:contentDescription="@string/browser_express_video_viewer_pause"
+                        android:src="@drawable/ic_browser_express_viewer_pause" />
+
+                    <TextView
+                        android:id="@+id/post_video_viewer_time"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:fontFamily="sans-serif"
+                        android:maxLines="1"
+                        android:textColor="@color/browser_express_video_viewer_time"
+                        android:textSize="13sp" />
+
+                    <ImageButton
+                        android:id="@+id/post_video_viewer_mute"
+                        style="@style/BrowserExpressVideoViewerButton"
+                        android:contentDescription="@string/browser_express_video_viewer_mute"
+                        android:src="@drawable/ic_browser_express_viewer_volume" />
+
+                    <TextView
+                        android:id="@+id/post_video_viewer_speed"
+                        android:layout_width="54dp"
+                        android:layout_height="44dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:fontFamily="sans-serif"
+                        android:gravity="center"
+                        android:textColor="@color/browser_express_video_viewer_text"
+                        android:textSize="14sp" />
+
+                    <ImageButton
+                        android:id="@+id/post_video_viewer_fullscreen"
+                        style="@style/BrowserExpressVideoViewerButton"
+                        android:contentDescription="@string/browser_express_video_viewer_fullscreen"
+                        android:src="@drawable/ic_browser_express_viewer_fullscreen" />
+                </LinearLayout>
+
+                <!-- The post's reaction rail: opens its comments over the paused video. -->
+                <LinearLayout
+                    android:id="@+id/post_video_viewer_rail"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:background="@drawable/browser_express_video_viewer_rail_bg"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="14dp"
+                    android:paddingEnd="10dp">
+
+                    <TextView
+                        android:id="@+id/post_video_viewer_rail_headline"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:fontFamily="sans-serif"
+                        android:maxLines="1"
+                        android:textColor="@color/browser_express_post_media_rail_text"
+                        android:textFontWeight="600"
+                        android:textSize="12sp" />
+
+                    <LinearLayout
+                        android:id="@+id/post_video_viewer_rail_mix"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:alpha="0.86"
+                        android:importantForAccessibility="noHideDescendants"
+                        android:orientation="horizontal"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/post_video_viewer_reaction_1"
+                            style="@style/BrowserExpressCommentsBarReaction" />
+
+                        <TextView
+                            android:id="@+id/post_video_viewer_reaction_2"
+                            style="@style/BrowserExpressCommentsBarReaction" />
+
+                        <TextView
+                            android:id="@+id/post_video_viewer_reaction_3"
+                            style="@style/BrowserExpressCommentsBarReaction" />
+                    </LinearLayout>
+
+                    <!-- The post's XP: every emoji given to its comments ("1.2K XP", unit smaller). -->
+                    <TextView
+                        android:id="@+id/post_video_viewer_rail_xp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:fontFamily="sans-serif"
+                        android:maxLines="1"
+                        android:textColor="@color/browser_express_post_media_rail_xp"
+                        android:textFontWeight="500"
+                        android:textSize="11sp"
+                        android:visibility="gone" />
+
+                    <Space
+                        android:layout_width="0dp"
+                        android:layout_height="1dp"
+                        android:layout_weight="1" />
+
+                    <FrameLayout
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:background="@drawable/browser_express_video_viewer_open_bg"
+                        android:elevation="2dp">
+
+                        <ImageView
+                            android:layout_width="12dp"
+                            android:layout_height="12dp"
+                            android:layout_gravity="center"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_browser_express_post_chevron"
+                            app:tint="@color/browser_express_video_viewer_open_chevron" />
+                    </FrameLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </LinearLayout>
+    </FrameLayout>
+</FrameLayout>
