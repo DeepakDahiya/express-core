@@ -1,0 +1,17 @@
+diff --git a/components/page_info/android/java/src/org/chromium/components/page_info/PageInfoController.java b/components/page_info/android/java/src/org/chromium/components/page_info/PageInfoController.java
+index 713317eb5f3c7a35e19250d8e15056bff95ca123..52de262752df68efc9a2155bc02d32b27072ab5e 100644
+--- a/components/page_info/android/java/src/org/chromium/components/page_info/PageInfoController.java
++++ b/components/page_info/android/java/src/org/chromium/components/page_info/PageInfoController.java
+@@ -241,6 +241,12 @@ public class PageInfoController
+                         /* showCloseButton= */ !isSheet() || mDelegate.isAccessibilityEnabled(),
+                         /* closeButtonClickCallback= */ this::dismiss);
+         mContainer.setParams(containerParams);
++        // An internal page's address (chrome-native://newtab/, chrome://...) names the engine
++        // underneath, so it is left out of the dialog. Only the label is hidden: the URL itself,
++        // navigation and the rest of the dialog are untouched.
++        if (mIsInternalPage) {
++            mContainer.findViewById(R.id.page_info_url_wrapper).setVisibility(View.GONE);
++        }
+ 
+         // Setup View.
+         PageInfoView.Params viewParams = new PageInfoView.Params();

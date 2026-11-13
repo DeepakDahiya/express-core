@@ -59,6 +59,13 @@
         android:key="general_section"
         android:order="5"
         android:title="@string/prefs_section_general"/>
+    <!-- Browser Express's privacy screen: the ad blocker's summary and protections. -->
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
+        android:fragment="org.chromium.chrome.browser.browser_express_privacy.PrivacySettingsFragment"
+        android:key="browser_express_privacy"
+        android:order="6"
+        android:icon="@drawable/ic_browser_express_privacy_shield_logo"
+        android:title="@string/browser_express_privacy_title"/>
     <!-- <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.settings.BraveSearchEnginesPreferences"
         android:key="brave_search_engines"

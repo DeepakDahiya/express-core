@@ -724,6 +724,124 @@
     <style name="BraveNewsDescTextColor">
         <item name="android:textColor">@color/news_time_color</item>
     </style>
+    <!-- Privacy & Security settings (Figma "Trust/Privacy settings" 1:5268). -->
+    <style name="BrowserExpressPrivacySection">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">16dp</item>
+        <item name="android:layout_marginEnd">16dp</item>
+        <item name="android:layout_marginBottom">9dp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/browser_express_privacy_section</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:accessibilityHeading">true</item>
+    </style>
+
+    <style name="BrowserExpressPrivacyCaption">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginHorizontal">16dp</item>
+        <item name="android:layout_marginTop">12dp</item>
+        <item name="android:layout_marginBottom">16dp</item>
+        <item name="android:textColor">@color/browser_express_privacy_caption</item>
+        <item name="android:textSize">13sp</item>
+    </style>
+
+    <style name="BrowserExpressPrivacyRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:minHeight">56dp</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:gravity">center_vertical</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
+        <item name="android:paddingVertical">8dp</item>
+    </style>
+
+    <style name="BrowserExpressPrivacyRowIcon">
+        <item name="android:layout_width">24dp</item>
+        <item name="android:layout_height">24dp</item>
+        <item name="android:importantForAccessibility">no</item>
+    </style>
+
+    <style name="BrowserExpressPrivacyRowText">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:layout_marginStart">32dp</item>
+        <item name="android:layout_marginEnd">12dp</item>
+        <item name="android:textColor">@color/browser_express_privacy_title</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="BrowserExpressPrivacyToggle">
+        <item name="android:layout_width">50dp</item>
+        <item name="android:layout_height">30dp</item>
+    </style>
+
+    <style name="BrowserExpressPrivacyChevron">
+        <item name="android:layout_width">12dp</item>
+        <item name="android:layout_height">12dp</item>
+        <item name="android:importantForAccessibility">no</item>
+        <item name="android:src">@drawable/ic_browser_express_privacy_chevron</item>
+    </style>
+
+    <style name="BrowserExpressPrivacyDivider">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">1dp</item>
+        <item name="android:background">@color/browser_express_privacy_divider</item>
+    </style>
+
+    <style name="BrowserExpressPrivacyStat">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:focusable">true</item>
+    </style>
+
+    <style name="BrowserExpressPrivacyStatValue">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">26sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="BrowserExpressPrivacyStatLabel">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">5dp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:gravity">center_horizontal</item>
+        <item name="android:paddingHorizontal">4dp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">11sp</item>
+    </style>
+
+    <style name="BrowserExpressPrivacyStatDivider">
+        <item name="android:layout_width">1dp</item>
+        <item name="android:layout_height">44dp</item>
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:background">@android:color/white</item>
+    </style>
+
+    <!-- The site trust sheet: its layout draws its own rounded background. -->
+    <style name="BrowserExpressTrustSheetTheme"
+           parent="Theme.Design.Light.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/BrowserExpressTrustSheet</item>
+    </style>
+
+    <style name="BrowserExpressTrustSheet" parent="Widget.Design.BottomSheet.Modal">
+        <item name="android:background">@android:color/transparent</item>
+    </style>
+
     <!-- Browser Express sign-in flow. Sizes and 1.35 line heights follow the handoff design,
          which is set in Inter; semibold falls back to the nearest system weight. -->
     <style name="BrowserExpressSignin" />

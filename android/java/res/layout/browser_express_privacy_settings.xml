@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- Privacy & Security settings (Figma "Trust/Privacy settings", light 1:5268 / dark): the
+     privacy summary, the protections, data and general rows. PrivacySettingsFragment binds it;
+     the title is the settings toolbar's.
+     The row icons and chevrons are decorative: their styles set importantForAccessibility="no",
+     which lint doesn't read through a style, hence the ContentDescription ignore. -->
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/browser_express_privacy_background"
+    android:clipToPadding="false"
+    android:paddingBottom="21dp"
+    tools:ignore="ContentDescription">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Privacy summary. -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/browser_express_privacy_summary_bg"
+            android:minHeight="140dp"
+            android:orientation="vertical"
+            android:paddingHorizontal="20dp"
+            android:paddingTop="18dp"
+            android:paddingBottom="11dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                tools:ignore="UseCompoundDrawables">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:accessibilityHeading="true"
+                    android:fontFamily="sans-serif-medium"
+                    android:letterSpacing="0.12"
+                    android:text="@string/browser_express_privacy_summary_label"
+                    android:textAllCaps="true"
+                    android:textColor="@android:color/white"
+                    android:textSize="10sp"
+                    tools:ignore="SmallSp" />
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_browser_express_privacy_summary_shield" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/privacy_stat_blocked"
+                    style="@style/BrowserExpressPrivacyStat">
+
+                    <TextView
+                        android:id="@+id/privacy_stat_blocked_value"
+                        style="@style/BrowserExpressPrivacyStatValue"
+                        tools:text="1,284" />
+
+                    <TextView
+                        style="@style/BrowserExpressPrivacyStatLabel"
+                        android:text="@string/browser_express_privacy_summary_blocked"
+                        tools:ignore="SmallSp" />
+                </LinearLayout>
+
+                <View style="@style/BrowserExpressPrivacyStatDivider" />
+
+                <LinearLayout
+                    android:id="@+id/privacy_stat_data"
+                    style="@style/BrowserExpressPrivacyStat">
+
+                    <TextView
+                        android:id="@+id/privacy_stat_data_value"
+                        style="@style/BrowserExpressPrivacyStatValue"
+                        tools:text="42 MB" />
+
+                    <TextView
+                        style="@style/BrowserExpressPrivacyStatLabel"
+                        android:text="@string/browser_express_privacy_summary_data"
+                        tools:ignore="SmallSp" />
+                </LinearLayout>
+
+                <View style="@style/BrowserExpressPrivacyStatDivider" />
+
+                <LinearLayout
+                    android:id="@+id/privacy_stat_sites"
+                    style="@style/BrowserExpressPrivacyStat">
+
+                    <TextView
+                        android:id="@+id/privacy_stat_sites_value"
+                        style="@style/BrowserExpressPrivacyStatValue"
+                        tools:text="48" />
+
+                    <TextView
+                        style="@style/BrowserExpressPrivacyStatLabel"
+                        android:text="@string/browser_express_privacy_summary_sites"
+                        tools:ignore="SmallSp" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/privacy_summary_caption"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:gravity="center_horizontal"
+                android:textColor="@android:color/white"
+                android:textSize="11sp"
+                tools:ignore="SmallSp"
+                tools:text="@string/browser_express_privacy_summary_on" />
+        </LinearLayout>
+
+        <!-- Protection. -->
+        <TextView
+            style="@style/BrowserExpressPrivacySection"
+            android:layout_marginTop="20dp"
+            android:text="@string/browser_express_privacy_section_protection" />
+
+        <LinearLayout
+            android:id="@+id/privacy_row_block_trackers"
+            style="@style/BrowserExpressPrivacyRow">
+
+            <ImageView
+                style="@style/BrowserExpressPrivacyRowIcon"
+                android:src="@drawable/ic_browser_express_privacy_trackers" />
+
+            <TextView
+                style="@style/BrowserExpressPrivacyRowText"
+                android:text="@string/browser_express_privacy_block_trackers" />
+
+            <org.chromium.chrome.browser.browser_express_privacy.ExpressToggle
+                android:id="@+id/privacy_block_trackers"
+                style="@style/BrowserExpressPrivacyToggle"
+                android:contentDescription="@string/browser_express_privacy_block_trackers" />
+        </LinearLayout>
+
+        <View style="@style/BrowserExpressPrivacyDivider" />
+
+        <LinearLayout
+            android:id="@+id/privacy_row_block_ads"
+            style="@style/BrowserExpressPrivacyRow">
+
+            <ImageView
+                style="@style/BrowserExpressPrivacyRowIcon"
+                android:src="@drawable/ic_browser_express_privacy_ads" />
+
+            <TextView
+                style="@style/BrowserExpressPrivacyRowText"
+                android:text="@string/browser_express_privacy_block_ads" />
+
+            <org.chromium.chrome.browser.browser_express_privacy.ExpressToggle
+                android:id="@+id/privacy_block_ads"
+                style="@style/BrowserExpressPrivacyToggle"
+                android:contentDescription="@string/browser_express_privacy_block_ads" />
+        </LinearLayout>
+
+        <View style="@style/BrowserExpressPrivacyDivider" />
+
+        <LinearLayout
+            android:id="@+id/privacy_row_https"
+            style="@style/BrowserExpressPrivacyRow">
+
+            <ImageView
+                style="@style/BrowserExpressPrivacyRowIcon"
+                android:src="@drawable/ic_browser_express_privacy_https" />
+
+            <TextView
+                style="@style/BrowserExpressPrivacyRowText"
+                android:text="@string/browser_express_privacy_https" />
+
+            <org.chromium.chrome.browser.browser_express_privacy.ExpressToggle
+                android:id="@+id/privacy_https"
+                style="@style/BrowserExpressPrivacyToggle"
+                android:contentDescription="@string/browser_express_privacy_https" />
+        </LinearLayout>
+
+        <View style="@style/BrowserExpressPrivacyDivider" />
+
+        <LinearLayout
+            android:id="@+id/privacy_row_fingerprinting"
+            style="@style/BrowserExpressPrivacyRow">
+
+            <ImageView
+                style="@style/BrowserExpressPrivacyRowIcon"
+                android:src="@drawable/ic_browser_express_privacy_fingerprinting" />
+
+            <TextView
+                style="@style/BrowserExpressPrivacyRowText"
+                android:text="@string/browser_express_privacy_fingerprinting" />
+
+            <org.chromium.chrome.browser.browser_express_privacy.ExpressToggle
+                android:id="@+id/privacy_fingerprinting"
+                style="@style/BrowserExpressPrivacyToggle"
+                android:contentDescription="@string/browser_express_privacy_fingerprinting" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/privacy_protection_note"
+            style="@style/BrowserExpressPrivacyCaption"
+            tools:text="@string/browser_express_privacy_protection_note" />
+
+        <!-- Data. -->
+        <TextView
+            style="@style/BrowserExpressPrivacySection"
+            android:text="@string/browser_express_privacy_section_data" />
+
+        <LinearLayout
+            android:id="@+id/privacy_row_clear_on_exit"
+            style="@style/BrowserExpressPrivacyRow">
+
+            <ImageView
+                style="@style/BrowserExpressPrivacyRowIcon"
+                android:src="@drawable/ic_browser_express_privacy_clear_on_exit" />
+
+            <TextView
+                style="@style/BrowserExpressPrivacyRowText"
+                android:text="@string/browser_express_privacy_clear_on_exit" />
+
+            <org.chromium.chrome.browser.browser_express_privacy.ExpressToggle
+                android:id="@+id/privacy_clear_on_exit"
+                style="@style/BrowserExpressPrivacyToggle"
+                android:contentDescription="@string/browser_express_privacy_clear_on_exit" />
+        </LinearLayout>
+
+        <View style="@style/BrowserExpressPrivacyDivider" />
+
+        <LinearLayout
+            android:id="@+id/privacy_row_clear_data"
+            style="@style/BrowserExpressPrivacyRow">
+
+            <ImageView
+                style="@style/BrowserExpressPrivacyRowIcon"
+                android:src="@drawable/ic_browser_express_privacy_clear_data" />
+
+            <TextView
+                style="@style/BrowserExpressPrivacyRowText"
+                android:text="@string/browser_express_privacy_clear_data" />
+
+            <ImageView style="@style/BrowserExpressPrivacyChevron" />
+        </LinearLayout>
+
+        <View style="@style/BrowserExpressPrivacyDivider" />
+
+        <LinearLayout
+            android:id="@+id/privacy_row_site_permissions"
+            style="@style/BrowserExpressPrivacyRow">
+
+            <ImageView
+                style="@style/BrowserExpressPrivacyRowIcon"
+                android:src="@drawable/ic_browser_express_privacy_site_permissions" />
+
+            <TextView
+                style="@style/BrowserExpressPrivacyRowText"
+                android:text="@string/browser_express_privacy_site_permissions" />
+
+            <ImageView style="@style/BrowserExpressPrivacyChevron" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/privacy_data_note"
+            style="@style/BrowserExpressPrivacyCaption"
+            tools:text="@string/browser_express_privacy_data_note" />
+
+        <!-- General. -->
+        <TextView
+            style="@style/BrowserExpressPrivacySection"
+            android:text="@string/browser_express_privacy_section_general" />
+
+        <LinearLayout
+            android:id="@+id/privacy_row_do_not_track"
+            style="@style/BrowserExpressPrivacyRow">
+
+            <ImageView
+                style="@style/BrowserExpressPrivacyRowIcon"
+                android:src="@drawable/ic_browser_express_privacy_do_not_track" />
+
+            <TextView
+                style="@style/BrowserExpressPrivacyRowText"
+                android:text="@string/browser_express_privacy_do_not_track" />
+
+            <org.chromium.chrome.browser.browser_express_privacy.ExpressToggle
+                android:id="@+id/privacy_do_not_track"
+                style="@style/BrowserExpressPrivacyToggle"
+                android:contentDescription="@string/browser_express_privacy_do_not_track" />
+        </LinearLayout>
+
+        <View style="@style/BrowserExpressPrivacyDivider" />
+
+        <LinearLayout
+            android:id="@+id/privacy_row_search_engine"
+            style="@style/BrowserExpressPrivacyRow">
+
+            <ImageView
+                style="@style/BrowserExpressPrivacyRowIcon"
+                android:src="@drawable/ic_browser_express_privacy_search_engine" />
+
+            <TextView
+                style="@style/BrowserExpressPrivacyRowText"
+                android:layout_weight="0"
+                android:layout_width="wrap_content"
+                android:text="@string/browser_express_privacy_search_engine" />
+
+            <TextView
+                android:id="@+id/privacy_search_engine_name"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:gravity="end"
+                android:maxLines="1"
+                android:textColor="@color/browser_express_privacy_caption"
+                android:textSize="13sp"
+                tools:text="Google" />
+
+            <ImageView style="@style/BrowserExpressPrivacyChevron" />
+        </LinearLayout>
+
+        <!-- Personalization. -->
+        <TextView
+            android:id="@+id/privacy_personalization_heading"
+            style="@style/BrowserExpressPrivacySection"
+            android:text="@string/browser_express_privacy_section_personalization" />
+
+        <LinearLayout
+            android:id="@+id/privacy_row_installed_apps"
+            style="@style/BrowserExpressPrivacyRow">
+
+            <ImageView
+                style="@style/BrowserExpressPrivacyRowIcon"
+                android:src="@drawable/ic_browser_express_privacy_installed_apps" />
+
+            <TextView
+                style="@style/BrowserExpressPrivacyRowText"
+                android:text="@string/browser_express_installed_apps_setting" />
+
+            <org.chromium.chrome.browser.browser_express_privacy.ExpressToggle
+                android:id="@+id/privacy_installed_apps"
+                style="@style/BrowserExpressPrivacyToggle"
+                android:contentDescription="@string/browser_express_installed_apps_setting" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/privacy_installed_apps_note"
+            style="@style/BrowserExpressPrivacyCaption"
+            android:text="@string/browser_express_installed_apps_setting_note" />
+    </LinearLayout>
+</ScrollView>

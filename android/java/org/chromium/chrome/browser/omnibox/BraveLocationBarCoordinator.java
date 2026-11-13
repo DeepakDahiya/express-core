@@ -19,6 +19,7 @@ import org.chromium.build.annotations.NullUnmarked;
 import org.chromium.chrome.browser.back_press.BackPressManager;
 import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
+import org.chromium.chrome.browser.browser_express_privacy.TrustMarkers;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.merchant_viewer.MerchantTrustSignalsCoordinator;
 import org.chromium.chrome.browser.omnibox.LocationBarMediator.OmniboxUma;
@@ -57,6 +58,11 @@ public class BraveLocationBarCoordinator extends LocationBarCoordinator {
     private View mUrlBar;
 
     private View mQRButton;
+
+    static {
+        // Before the status mediator the constructor makes asks for its first icon.
+        TrustMarkers.install();
+    }
 
     public BraveLocationBarCoordinator(
             View locationBarLayout,
@@ -109,7 +115,8 @@ public class BraveLocationBarCoordinator extends LocationBarCoordinator {
                 activityLifecycleDispatcher,
                 overrideUrlLoadingDelegate,
                 backKeyBehavior,
-                pageInfoAction,
+                // Tapping a web page's trust marker opens the site trust sheet instead.
+                TrustMarkers.wrapPageInfoAction(pageInfoAction),
                 bringTabToFrontCallback,
                 bringTabGroupToFrontCallback,
                 omniboxUma,

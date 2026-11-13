@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- Site trust sheet: Advanced Controls chevron. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="6.1153dp"
+    android:height="9.6dp"
+    android:viewportWidth="6.1153"
+    android:viewportHeight="9.6">
+    <path
+        android:pathData="M0.800001 0.800001L4.96092 4.8L0.800001 8.8"
+        android:strokeColor="@color/browser_express_trust_advanced_chevron"
+        android:strokeWidth="1.6"
+        android:strokeLineCap="round" />
+</vector>

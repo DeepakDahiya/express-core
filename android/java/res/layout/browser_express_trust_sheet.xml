@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- The site trust sheet (Figma "Trust/Site sheet", light 1:5064 / dark 1:5139 × Green, Red,
+     Amber): the site, how much was blocked on this page, the per-site ad blocking toggle behind
+     a disc showing the site's trust status, and the way into the privacy settings.
+     SiteTrustSheet binds it. -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/browser_express_trust_sheet_bg"
+    android:gravity="center_horizontal"
+    android:orientation="vertical"
+    android:paddingHorizontal="20dp"
+    android:paddingTop="12dp"
+    android:paddingBottom="22dp">
+
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:background="@drawable/browser_express_trust_handle" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        tools:ignore="UseCompoundDrawables">
+
+        <ImageView
+            android:id="@+id/trust_favicon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:importantForAccessibility="no"
+            android:scaleType="fitCenter" />
+
+        <TextView
+            android:id="@+id/trust_host"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:ellipsize="middle"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="-0.02"
+            android:maxLines="1"
+            android:textColor="@color/browser_express_trust_host"
+            android:textSize="18sp"
+            tools:text="m.youtube.com" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/trust_blocked_count"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:fontFamily="sans-serif"
+        android:textColor="@color/browser_express_trust_count"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        tools:text="12" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="sans-serif"
+        android:gravity="center"
+        android:text="@string/browser_express_trust_blocked_count_label"
+        android:textColor="@color/browser_express_trust_count"
+        android:textSize="16sp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:baselineAligned="false"
+        android:gravity="center_vertical"
+        android:minHeight="44dp"
+        android:orientation="horizontal">
+
+        <FrameLayout
+            android:id="@+id/trust_status_disc"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="@drawable/browser_express_trust_status_disc">
+
+            <ImageView
+                android:id="@+id/trust_status_glyph"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="no" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/trust_block_ads_label"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="-0.02"
+            android:text="@string/browser_express_trust_block_ads"
+            android:textColor="@color/browser_express_trust_host"
+            android:textSize="14sp" />
+
+        <org.chromium.chrome.browser.browser_express_privacy.ExpressToggle
+            android:id="@+id/trust_block_ads"
+            android:layout_width="50dp"
+            android:layout_height="30dp"
+            android:contentDescription="@string/browser_express_trust_block_ads" />
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="16dp"
+        android:background="@color/browser_express_trust_divider" />
+
+    <LinearLayout
+        android:id="@+id/trust_advanced"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/browser_express_trust_advanced_bg"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
+        android:gravity="center_vertical"
+        android:minHeight="44dp"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp"
+        tools:ignore="UseCompoundDrawables">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="sans-serif-medium"
+            android:text="@string/browser_express_trust_advanced"
+            android:textColor="@color/browser_express_trust_advanced_text"
+            android:textSize="14sp" />
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:importantForAccessibility="no"
+            android:src="@drawable/ic_browser_express_trust_chevron"
+            app:tint="@color/browser_express_trust_advanced_chevron" />
+    </LinearLayout>
+</LinearLayout>

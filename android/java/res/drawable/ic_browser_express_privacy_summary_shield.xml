@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- Privacy summary card: shield. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="18dp"
+    android:height="18dp"
+    android:viewportWidth="18"
+    android:viewportHeight="18">
+    <path
+        android:pathData="M9 1.5L15 3.75V7.875C15 12.15 12.3 15 9 15.9C5.7 15 3 12.15 3 7.875V3.75L9 1.5Z"
+        android:fillColor="#FFFFFFFF" />
+    <path
+        android:pathData="M6.3 8.7L8.175 10.575L11.7 7.05"
+        android:strokeColor="#FF6F3BED"
+        android:strokeWidth="2.4"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- Privacy setting: block trackers. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:pathData="M12 20C16.4183 20 20 16.4183 20 12C20 7.58172 16.4183 4 12 4C7.58172 4 4 7.58172 4 12C4 16.4183 7.58172 20 12 20Z"
+        android:strokeColor="@color/browser_express_privacy_icon"
+        android:strokeWidth="1.8" />
+    <path
+        android:pathData="M12 15C13.6569 15 15 13.6569 15 12C15 10.3431 13.6569 9 12 9C10.3431 9 9 10.3431 9 12C9 13.6569 10.3431 15 12 15Z"
+        android:strokeColor="@color/browser_express_privacy_icon"
+        android:strokeWidth="1.8" />
+    <path
+        android:pathData="M12 2V6M12 18V22M2 12H6M18 12H22"
+        android:strokeColor="@color/browser_express_privacy_icon"
+        android:strokeWidth="1.8"
+        android:strokeLineCap="round" />
+</vector>
