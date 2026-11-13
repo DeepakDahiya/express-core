@@ -22,6 +22,7 @@ import com.android.billingclient.api.BillingClient;
 import com.android.billingclient.api.BillingClientStateListener;
 import com.android.billingclient.api.BillingFlowParams;
 import com.android.billingclient.api.BillingResult;
+import com.android.billingclient.api.PendingPurchasesParams;
 import com.android.billingclient.api.ProductDetails;
 import com.android.billingclient.api.Purchase;
 import com.android.billingclient.api.PurchasesUpdatedListener;
@@ -209,10 +210,12 @@ public class InAppPurchaseWrapper {
         // End existing connection if any before we start another connection
         endConnection();
 
-        mBillingClient = BillingClient.newBuilder(context)
-                                 .enablePendingPurchases()
-                                 .setListener(getPurchasesUpdatedListener(context))
-                                 .build();
+        mBillingClient =
+                BillingClient.newBuilder(context)
+                        .enablePendingPurchases(
+                                PendingPurchasesParams.newBuilder().enableOneTimeProducts().build())
+                        .setListener(getPurchasesUpdatedListener(context))
+                        .build();
         if (!mBillingClient.isReady()) {
             try {
                 mBillingClient.startConnection(new BillingClientStateListener() {
@@ -321,13 +324,14 @@ public class InAppPurchaseWrapper {
                     if (isConnected) {
                         mBillingClient.queryProductDetailsAsync(
                                 queryProductDetailsParams,
-                                (billingResult, productDetailsList) -> {
+                                (billingResult, queryProductDetailsResult) -> {
                                     // End connection after getting the product details
                                     endConnection();
 
                                     if (billingResult.getResponseCode()
                                             == BillingClient.BillingResponseCode.OK) {
-                                        for (ProductDetails productDetail : productDetailsList) {
+                                        for (ProductDetails productDetail :
+                                                queryProductDetailsResult.getProductDetailsList()) {
                                             productDetails.put(
                                                     productDetail.getProductId(), productDetail);
                                         }
@@ -603,10 +607,14 @@ public class InAppPurchaseWrapper {
 
                 Context context = ContextUtils.getApplicationContext();
 
-                mBillingClient = BillingClient.newBuilder(context)
-                                         .enablePendingPurchases()
-                                         .setListener(getPurchasesUpdatedListener(context))
-                                         .build();
+                mBillingClient =
+                        BillingClient.newBuilder(context)
+                                .enablePendingPurchases(
+                                        PendingPurchasesParams.newBuilder()
+                                                .enableOneTimeProducts()
+                                                .build())
+                                .setListener(getPurchasesUpdatedListener(context))
+                                .build();
 
                 mBillingClient.startConnection(new BillingClientStateListener() {
                     @Override
