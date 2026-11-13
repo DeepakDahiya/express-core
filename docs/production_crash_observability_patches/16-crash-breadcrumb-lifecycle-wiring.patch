@@ -1,0 +1,60 @@
+diff --git a/android/brave_java_sources.gni b/android/brave_java_sources.gni
+index f05fe74aa8..e159d9ef14 100644
+--- a/android/brave_java_sources.gni
++++ b/android/brave_java_sources.gni
+@@ -93,7 +93,8 @@ brave_java_sources = [
+   "../../brave/android/java/org/chromium/chrome/browser/compositor/layouts/BraveToolbarSwipeLayout.java",
+   "../../brave/android/java/org/chromium/chrome/browser/contextmenu/BraveChromeContextMenuPopulator.java",
+   "../../brave/android/java/org/chromium/chrome/browser/cosmetic_filters/BraveCosmeticFiltersUtils.java",
++  "../../brave/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashBreadcrumbs.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crash/BravePureJavaExceptionReporter.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crypto_wallet/AssetRatioServiceFactory.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crypto_wallet/BlockchainRegistryFactory.java",
+diff --git a/android/java/org/chromium/chrome/browser/BraveApplicationImplBase.java b/android/java/org/chromium/chrome/browser/BraveApplicationImplBase.java
+index 52f82afaf1..db2387fcc1 100644
+--- a/android/java/org/chromium/chrome/browser/BraveApplicationImplBase.java
++++ b/android/java/org/chromium/chrome/browser/BraveApplicationImplBase.java
+@@ -6,10 +6,13 @@
+  */
+ package org.chromium.chrome.browser;
+ 
++import android.content.res.Configuration;
++
+ import com.wireguard.android.backend.GoBackend;
+ 
+ import org.chromium.build.annotations.NullMarked;
+ import org.chromium.chrome.browser.base.SplitCompatApplication;
++import org.chromium.chrome.browser.crash.BrowserExpressCrashBreadcrumbs;
+ import org.chromium.chrome.browser.vpn.utils.BraveVpnProfileUtils;
+ import org.chromium.components.safe_browsing.BraveSafeBrowsingApiHandler;
+ import org.chromium.components.safe_browsing.SafeBrowsingApiBridge;
+@@ -20,6 +23,7 @@ public class BraveApplicationImplBase extends SplitCompatApplication.Impl {
+     public void onCreate() {
+         super.onCreate();
+         if (SplitCompatApplication.isBrowserProcess()) {
++            BrowserExpressCrashBreadcrumbs.initialize();
+             GoBackend.setAlwaysOnCallback(
+                     new GoBackend.AlwaysOnCallback() {
+                         @Override
+@@ -32,4 +36,20 @@ public class BraveApplicationImplBase extends SplitCompatApplication.Impl {
+                     BraveSafeBrowsingApiHandler.getInstance());
+         }
+     }
++
++    @Override
++    public void onTrimMemory(int level) {
++        super.onTrimMemory(level);
++        if (SplitCompatApplication.isBrowserProcess()) {
++            BrowserExpressCrashBreadcrumbs.recordTrimMemory(level);
++        }
++    }
++
++    @Override
++    public void onConfigurationChanged(Configuration newConfig) {
++        super.onConfigurationChanged(newConfig);
++        if (SplitCompatApplication.isBrowserProcess()) {
++            BrowserExpressCrashBreadcrumbs.recordConfigurationChanged(newConfig);
++        }
++    }
+ }

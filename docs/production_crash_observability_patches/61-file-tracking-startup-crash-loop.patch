@@ -1,0 +1,15 @@
+diff --git a/docs/production_crash_observability_file_tracking.md b/docs/production_crash_observability_file_tracking.md
+index 85a947b5b4..fdaca08533 100644
+--- a/docs/production_crash_observability_file_tracking.md
++++ b/docs/production_crash_observability_file_tracking.md
+@@ -121,6 +121,10 @@ These artifacts live under `docs/production_crash_observability_patches/`.
+ * `55-backend-api-previous-session-journal.patch`
+ * `56-implementation-log-feature-journal.patch`
+ * `57-file-tracking-feature-journal.patch`
++* `58-startup-crash-loop-detector.patch`
++* `59-backend-api-startup-crash-loop.patch`
++* `60-implementation-log-startup-crash-loop.patch`
++* `61-file-tracking-startup-crash-loop.patch`
+ 
+ ## Known unrelated dirty files
+ 

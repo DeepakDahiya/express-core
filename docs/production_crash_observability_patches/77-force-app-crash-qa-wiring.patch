@@ -1,0 +1,52 @@
+diff --git a/android/java/org/chromium/chrome/browser/settings/developer/BraveQAPreferences.java b/android/java/org/chromium/chrome/browser/settings/developer/BraveQAPreferences.java
+index 915dd77fca..c7620b244d 100644
+--- a/android/java/org/chromium/chrome/browser/settings/developer/BraveQAPreferences.java
++++ b/android/java/org/chromium/chrome/browser/settings/developer/BraveQAPreferences.java
+@@ -61,6 +61,7 @@ public class BraveQAPreferences extends BravePreferenceFragment
+     private static final String PREF_QA_COMMAND_LINE = "qa_command_line";
+     private static final String PREF_QA_FORCE_JAVA_CRASH = "qa_force_java_crash";
+     private static final String PREF_QA_FORCE_NATIVE_CRASH = "qa_force_native_crash";
++    private static final String PREF_QA_FORCE_APP_CRASH = "qa_force_app_crash";
+ 
+     private static final String QA_ADS_PER_HOUR = "qa_ads_per_hour";
+     private static final String QA_IMPORT_REWARDS_DB = "qa_import_rewards_db";
+@@ -80,6 +81,7 @@ public class BraveQAPreferences extends BravePreferenceFragment
+     private Preference mCommandLine;
+     private Preference mForceJavaCrash;
+     private Preference mForceNativeCrash;
++    private Preference mForceAppCrash;
+ 
+     private Preference mImportRewardsDb;
+     private Preference mExportRewardsDb;
+@@ -148,6 +150,7 @@ public class BraveQAPreferences extends BravePreferenceFragment
+ 
+         mForceJavaCrash = findPreference(PREF_QA_FORCE_JAVA_CRASH);
+         mForceNativeCrash = findPreference(PREF_QA_FORCE_NATIVE_CRASH);
++        mForceAppCrash = findPreference(PREF_QA_FORCE_APP_CRASH);
+         setCrashVerifierClickListeners();
+ 
+         checkQACode();
+@@ -275,6 +278,23 @@ public class BraveQAPreferences extends BravePreferenceFragment
+                         return true;
+                     });
+         }
++
++        if (mForceAppCrash != null) {
++            mForceAppCrash.setOnPreferenceClickListener(
++                    preference -> {
++                        confirmCrash(
++                                "Force app crash?",
++                                "This will terminate the current app process for crash "
++                                        + "pipeline verification.",
++                                new Runnable() {
++                                    @Override
++                                    public void run() {
++                                        BrowserExpressCrashVerifier.forceAppCrash();
++                                    }
++                                });
++                        return true;
++                    });
++        }
+     }
+ 
+     private void confirmCrash(String title, String message, Runnable crashAction) {

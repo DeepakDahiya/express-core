@@ -1,0 +1,33 @@
+diff --git a/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java b/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java
+index 762bccb4ae..89ce456f50 100644
+--- a/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java
++++ b/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java
+@@ -6,6 +6,7 @@
+ package org.chromium.chrome.browser.crash;
+ 
+ import android.os.Process;
++import android.util.Log;
+ 
+ import org.jni_zero.JNINamespace;
+ import org.jni_zero.NativeMethods;
+@@ -16,6 +17,7 @@ import org.chromium.build.annotations.NullMarked;
+ @JNINamespace("chrome::android")
+ @NullMarked
+ public final class BrowserExpressCrashVerifier {
++    private static final String TAG = "BECrashVerifier";
+     private static final String JAVA_CRASH_MARKER = "qa_java";
+     private static final String NATIVE_CRASH_MARKER = "qa_native";
+     private static final String APP_CRASH_MARKER = "qa_app";
+@@ -41,10 +43,12 @@ public final class BrowserExpressCrashVerifier {
+     }
+ 
+     public static void forceAppCrash() {
++        Log.e(TAG, "Force app crash requested");
+         markCrash(APP_CRASH_MARKER);
+         Process.sendSignal(Process.myPid(), SIGNAL_ABORT);
+         Process.killProcess(Process.myPid());
+         System.exit(10);
++        Runtime.getRuntime().halt(10);
+     }
+ 
+     private static void markCrash(String marker) {

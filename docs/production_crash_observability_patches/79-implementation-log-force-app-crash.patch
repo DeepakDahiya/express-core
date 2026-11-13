@@ -1,0 +1,59 @@
+diff --git a/docs/production_crash_observability_implementation_log.md b/docs/production_crash_observability_implementation_log.md
+index 07e39595bc..0ce19cdc1c 100644
+--- a/docs/production_crash_observability_implementation_log.md
++++ b/docs/production_crash_observability_implementation_log.md
+@@ -599,6 +599,33 @@ Patch artifacts:
+ * `docs/production_crash_observability_patches/74-implementation-log-force-java-crash.patch`
+ * `docs/production_crash_observability_patches/75-file-tracking-force-java-crash.patch`
+ 
++### 19. Deterministic QA app crash trigger
++
++Files:
++
++* `android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java`
++* `android/java/org/chromium/chrome/browser/settings/developer/BraveQAPreferences.java`
++* `android/java/res/xml/qa_preferences.xml`
++
++What changed:
++
++* Added a QA-only "Force app crash" preference for validating process-death,
++  relaunch, Android-exit capture, and pending upload behavior when the Java
++  exception verifier is not terminating reliably on a device.
++* The new trigger records the `qa_app` breadcrumb and sends `SIGABRT` to the
++  current process from Java, followed by kill/exit fallbacks.
++* This is intentionally separate from "Force Java crash" so later work can
++  debug the Java exception reporter path without blocking crash-pipeline
++  validation.
++
++Patch artifacts:
++
++* `docs/production_crash_observability_patches/76-force-app-crash-trigger.patch`
++* `docs/production_crash_observability_patches/77-force-app-crash-qa-wiring.patch`
++* `docs/production_crash_observability_patches/78-force-app-crash-qa-xml.patch`
++* `docs/production_crash_observability_patches/79-implementation-log-force-app-crash.patch`
++* `docs/production_crash_observability_patches/80-file-tracking-force-app-crash.patch`
++
+ ## Validation
+ 
+ Focused validation run:
+@@ -909,6 +936,20 @@ Result:
+ * `chrome_java__compile_java` validated the explicit process-termination
+   fallback in `BrowserExpressCrashVerifier.forceJavaCrash()`.
+ 
++Deterministic QA app crash trigger validation succeeded:
++
++```sh
++PYTHONPATH=/home/deepakdahiyagh/Desktop/browser-express/src/brave/script \
++  autoninja -C ../out/android_Debug_arm64 \
++  chrome/android:chrome_java__compile_java
++```
++
++Result:
++
++* Build succeeded.
++* `chrome_java__compile_java` validated the new `forceAppCrash()` verifier
++  method, QA preference wiring, and XML preference entry.
++
+ ## Required production configuration
+ 
+ Before shipping official builds, set:

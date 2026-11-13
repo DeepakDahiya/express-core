@@ -1,0 +1,122 @@
+diff --git a/android/java/org/chromium/chrome/browser/settings/developer/BraveQAPreferences.java b/android/java/org/chromium/chrome/browser/settings/developer/BraveQAPreferences.java
+index ba96441fb4..915dd77fca 100644
+--- a/android/java/org/chromium/chrome/browser/settings/developer/BraveQAPreferences.java
++++ b/android/java/org/chromium/chrome/browser/settings/developer/BraveQAPreferences.java
+@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.BraveRewardsHelper;
+ import org.chromium.chrome.browser.BraveRewardsNativeWorker;
+ import org.chromium.chrome.browser.BraveRewardsObserver;
+ import org.chromium.chrome.browser.billing.LinkSubscriptionUtils;
++import org.chromium.chrome.browser.crash.BrowserExpressCrashVerifier;
+ import org.chromium.chrome.browser.onboarding.OnboardingPrefManager;
+ import org.chromium.chrome.browser.preferences.BravePref;
+ import org.chromium.chrome.browser.profiles.ProfileManager;
+@@ -58,6 +59,8 @@ public class BraveQAPreferences extends BravePreferenceFragment
+     private static final String PREF_QA_DEBUG_NTP = "qa_debug_ntp";
+     private static final String PREF_QA_VLOG_REWARDS = "qa_vlog_rewards";
+     private static final String PREF_QA_COMMAND_LINE = "qa_command_line";
++    private static final String PREF_QA_FORCE_JAVA_CRASH = "qa_force_java_crash";
++    private static final String PREF_QA_FORCE_NATIVE_CRASH = "qa_force_native_crash";
+ 
+     private static final String QA_ADS_PER_HOUR = "qa_ads_per_hour";
+     private static final String QA_IMPORT_REWARDS_DB = "qa_import_rewards_db";
+@@ -75,6 +78,8 @@ public class BraveQAPreferences extends BravePreferenceFragment
+     private ChromeSwitchPreference mDebugNTP;
+     private ChromeSwitchPreference mVlogRewards;
+     private Preference mCommandLine;
++    private Preference mForceJavaCrash;
++    private Preference mForceNativeCrash;
+ 
+     private Preference mImportRewardsDb;
+     private Preference mExportRewardsDb;
+@@ -141,6 +146,10 @@ public class BraveQAPreferences extends BravePreferenceFragment
+         mCommandLine = findPreference(PREF_QA_COMMAND_LINE);
+         setCommandLineClickListener();
+ 
++        mForceJavaCrash = findPreference(PREF_QA_FORCE_JAVA_CRASH);
++        mForceNativeCrash = findPreference(PREF_QA_FORCE_NATIVE_CRASH);
++        setCrashVerifierClickListeners();
++
+         checkQACode();
+     }
+ 
+@@ -234,6 +243,59 @@ public class BraveQAPreferences extends BravePreferenceFragment
+         });
+     }
+ 
++    private void setCrashVerifierClickListeners() {
++        if (mForceJavaCrash != null) {
++            mForceJavaCrash.setOnPreferenceClickListener(
++                    preference -> {
++                        confirmCrash(
++                                "Force Java crash?",
++                                "This will close the app and should create a Java crash report.",
++                                new Runnable() {
++                                    @Override
++                                    public void run() {
++                                        BrowserExpressCrashVerifier.forceJavaCrash();
++                                    }
++                                });
++                        return true;
++                    });
++        }
++
++        if (mForceNativeCrash != null) {
++            mForceNativeCrash.setOnPreferenceClickListener(
++                    preference -> {
++                        confirmCrash(
++                                "Force native crash?",
++                                "This will close the app and should create a native minidump.",
++                                new Runnable() {
++                                    @Override
++                                    public void run() {
++                                        BrowserExpressCrashVerifier.forceNativeCrash();
++                                    }
++                                });
++                        return true;
++                    });
++        }
++    }
++
++    private void confirmCrash(String title, String message, Runnable crashAction) {
++        AlertDialog.Builder alertDialog =
++                new AlertDialog.Builder(getActivity(), R.style.ThemeOverlay_BrowserUI_AlertDialog)
++                        .setTitle(title)
++                        .setMessage(message)
++                        .setPositiveButton(
++                                "Crash",
++                                new DialogInterface.OnClickListener() {
++                                    @Override
++                                    public void onClick(DialogInterface dialog, int button) {
++                                        crashAction.run();
++                                    }
++                                })
++                        .setNegativeButton(R.string.cancel, null);
++        Dialog dialog = alertDialog.create();
++        dialog.setCanceledOnTouchOutside(false);
++        dialog.show();
++    }
++
+     @Override
+     public void onStart() {
+         BraveRewardsNativeWorker.getInstance().addObserver(this);
+diff --git a/android/java/res/xml/qa_preferences.xml b/android/java/res/xml/qa_preferences.xml
+index 7877217a93..465ddb26a6 100644
+--- a/android/java/res/xml/qa_preferences.xml
++++ b/android/java/res/xml/qa_preferences.xml
+@@ -51,6 +51,16 @@
+         android:key="qa_command_line"
+         android:title="Command Line String"/>
+ 
++    <org.chromium.components.browser_ui.settings.ChromeBasePreference
++        android:key="qa_force_java_crash"
++        android:title="Force Java crash"
++        android:summary="Creates an intentional Java crash report for internal verification" />
++
++    <org.chromium.components.browser_ui.settings.ChromeBasePreference
++        android:key="qa_force_native_crash"
++        android:title="Force native crash"
++        android:summary="Creates an intentional native minidump for internal verification" />
++
+     <org.chromium.components.browser_ui.settings.ChromeBasePreference
+         android:key="qa_import_rewards_db"
+         android:title="Import Rewards Database"/>

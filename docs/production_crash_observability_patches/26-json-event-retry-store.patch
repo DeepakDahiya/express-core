@@ -1,0 +1,142 @@
+--- a/android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java
++++ b/android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java
+@@ -7,6 +7,10 @@
+ 
+ import android.app.ActivityManager;
+ import android.app.ApplicationExitInfo;
++import android.app.job.JobInfo;
++import android.app.job.JobScheduler;
++import android.content.ComponentName;
++import android.content.Context;
+ import android.content.SharedPreferences;
+ import android.net.Uri;
+ import android.os.Build;
+@@ -71,6 +75,8 @@
+     private static final int MAX_EVENTS_TO_UPLOAD_PER_SCAN = 5;
+     private static final int MAX_EVENT_FILE_BYTES = 16 * 1024;
+     private static final int EVENT_UPLOAD_TIMEOUT_MS = 15_000;
++    private static final int JSON_EVENT_UPLOAD_JOB_ID = 770_620_601;
++    private static final int JSON_EVENT_UPLOAD_BACKOFF_MS = 1000 * 60 * 30;
+ 
+     private static boolean sInitialized;
+ 
+@@ -133,7 +139,9 @@
+ 
+         captureLastExitEvent(pendingEventsDir, uploadStateDir, nowMillis);
+         trimPendingEvents(pendingEventsDir, uploadStateDir);
+-        uploadPendingEvents(pendingEventsDir, uploadStateDir, nowMillis);
++        if (uploadPendingEvents(pendingEventsDir, uploadStateDir, nowMillis)) {
++            scheduleJsonEventUploadJob();
++        }
+     }
+ 
+     private static boolean ensureStoreLayout(File storeDir) {
+@@ -232,7 +240,9 @@
+ 
+         writePendingEvent(pendingEventsDir, uploadStateDir, eventId, event, nowMillis);
+         trimPendingEvents(pendingEventsDir, uploadStateDir);
+-        uploadPendingEvents(pendingEventsDir, uploadStateDir, nowMillis);
++        if (uploadPendingEvents(pendingEventsDir, uploadStateDir, nowMillis)) {
++            scheduleJsonEventUploadJob();
++        }
+     }
+ 
+     private static void captureLastExitEvent(
+@@ -385,21 +395,44 @@
+                 && writeJsonAtomically(uploadStateFile, uploadState);
+     }
+ 
+-    private static void uploadPendingEvents(
++    static boolean uploadPendingEventsForJob() {
++        File cacheDir = ContextUtils.getApplicationContext().getCacheDir();
++        File storeDir = new File(cacheDir, STORE_DIR);
++        File pendingEventsDir = new File(storeDir, PENDING_EVENTS_DIR);
++        File uploadStateDir = new File(storeDir, UPLOAD_STATE_DIR);
++        if (!ensureStoreLayout(storeDir)) {
++            return false;
++        }
++        trimPendingEvents(pendingEventsDir, uploadStateDir);
++        return uploadPendingEvents(pendingEventsDir, uploadStateDir, System.currentTimeMillis());
++    }
++
++    static boolean hasPendingJsonEvents() {
++        File pendingEventsDir =
++                new File(
++                        new File(ContextUtils.getApplicationContext().getCacheDir(), STORE_DIR),
++                        PENDING_EVENTS_DIR);
++        @Nullable File[] eventFiles =
++                pendingEventsDir.listFiles((dir, name) -> name.endsWith(".json"));
++        return eventFiles != null && eventFiles.length > 0;
++    }
++
++    private static boolean uploadPendingEvents(
+             File pendingEventsDir, File uploadStateDir, long nowMillis) {
+-        @Nullable File[] eventFiles = pendingEventsDir.listFiles((dir, name) -> name.endsWith(".json"));
++        @Nullable File[] eventFiles =
++                pendingEventsDir.listFiles((dir, name) -> name.endsWith(".json"));
+         if (eventFiles == null || eventFiles.length == 0) {
+-            return;
++            return false;
+         }
+         if (!canUploadJsonEvents()) {
+-            return;
++            return true;
+         }
+ 
+         Arrays.sort(eventFiles, Comparator.comparingLong(File::lastModified));
+         int uploadedOrAttempted = 0;
+         for (File eventFile : eventFiles) {
+             if (uploadedOrAttempted >= MAX_EVENTS_TO_UPLOAD_PER_SCAN) {
+-                return;
++                return true;
+             }
+             if (eventFile.length() <= 0 || eventFile.length() > MAX_EVENT_FILE_BYTES) {
+                 deleteEventAndState(eventFile, uploadStateDir);
+@@ -420,6 +453,13 @@
+                 updateEventUploadAttempt(uploadStateFile, attempt + 1, nowMillis);
+             }
+         }
++        return hasPendingEvents(pendingEventsDir);
++    }
++
++    private static boolean hasPendingEvents(File pendingEventsDir) {
++        @Nullable File[] eventFiles =
++                pendingEventsDir.listFiles((dir, name) -> name.endsWith(".json"));
++        return eventFiles != null && eventFiles.length > 0;
+     }
+ 
+     private static boolean canUploadJsonEvents() {
+@@ -483,6 +523,33 @@
+                 .toString();
+     }
+ 
++    private static void scheduleJsonEventUploadJob() {
++        if (BraveMinidumpUploaderConfig.CRASH_UPLOAD_URL.isEmpty()) {
++            return;
++        }
++
++        JobScheduler scheduler =
++                (JobScheduler)
++                        ContextUtils.getApplicationContext()
++                                .getSystemService(Context.JOB_SCHEDULER_SERVICE);
++        if (scheduler == null) {
++            return;
++        }
++
++        JobInfo uploadJob =
++                new JobInfo.Builder(
++                                JSON_EVENT_UPLOAD_JOB_ID,
++                                new ComponentName(
++                                        ContextUtils.getApplicationContext(),
++                                        BrowserExpressJsonEventUploadJobService.class))
++                        .setRequiredNetworkType(JobInfo.NETWORK_TYPE_UNMETERED)
++                        .setBackoffCriteria(
++                                JSON_EVENT_UPLOAD_BACKOFF_MS,
++                                JobInfo.BACKOFF_POLICY_EXPONENTIAL)
++                        .build();
++        scheduler.schedule(uploadJob);
++    }
++
+     private static void updateEventUploadAttempt(
+             File uploadStateFile, int attempt, long nowMillis) {
+         long firstSeenMillis = readFirstSeenMillis(uploadStateFile, nowMillis);

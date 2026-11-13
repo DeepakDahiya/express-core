@@ -1,0 +1,38 @@
+diff --git a/patches/components-crash-android-crash-keys.patch b/patches/components-crash-android-crash-keys.patch
+new file mode 100644
+index 0000000000..8deeeaf809
+--- /dev/null
++++ b/patches/components-crash-android-crash-keys.patch
+@@ -0,0 +1,32 @@
++diff --git a/components/crash/android/crash_keys_android.cc b/components/crash/android/crash_keys_android.cc
++index 05ddbd06bed9a..9dbeb7b70cc99 100644
++--- a/components/crash/android/crash_keys_android.cc
+++++ b/components/crash/android/crash_keys_android.cc
++@@ -30,2 +30,4 @@ JavaCrashKey& GetCrashKey(jint index) {
++           {"first_run", JavaCrashKey::Tag::kArray},
+++          {"browser_express_breadcrumbs", JavaCrashKey::Tag::kArray},
+++          {"browser_express_exit_info", JavaCrashKey::Tag::kArray},
++       }};
++diff --git a/components/crash/android/crash_keys_android.h b/components/crash/android/crash_keys_android.h
++index bf05c4b34caf0..b468ee0ddd650 100644
++--- a/components/crash/android/crash_keys_android.h
+++++ b/components/crash/android/crash_keys_android.h
++@@ -16,2 +16,4 @@ enum class CrashKeyIndex {
++   FIRST_RUN,
+++  BROWSER_EXPRESS_BREADCRUMBS,
+++  BROWSER_EXPRESS_EXIT_INFO,
++   NUM_SMALL_KEYS,
++diff --git a/components/crash/android/java/src/org/chromium/components/crash/CrashKeys.java b/components/crash/android/java/src/org/chromium/components/crash/CrashKeys.java
++index 8b9d810da5e17..a3bf7f05665ab 100644
++--- a/components/crash/android/java/src/org/chromium/components/crash/CrashKeys.java
+++++ b/components/crash/android/java/src/org/chromium/components/crash/CrashKeys.java
++@@ -32,5 +32,7 @@ public class CrashKeys {
++                 "application_status",
++-                "installed_modules",
++                 "partner_customization_config",
++-                "first_run"
+++                "first_run",
+++                "browser_express_breadcrumbs",
+++                "browser_express_exit_info",
+++                "installed_modules"
++             };

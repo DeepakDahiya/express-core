@@ -16,6 +16,7 @@ import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.version_info.VersionInfo;
+import org.chromium.components.minidump_uploader.BraveMinidumpUploaderConfig;
 import org.chromium.components.minidump_uploader.util.BraveHttpURLConnectionFactoryImpl;
 import org.chromium.components.minidump_uploader.util.HttpURLConnectionFactory;
 
@@ -28,11 +29,24 @@ public class BraveHttpURLConnectionFactoryImplTest {
     @Test
     @SmallTest
     public void testUploadUrlHasProductVersionGuid() {
-        HttpURLConnectionFactory httpURLConnectionFactory = new BraveHttpURLConnectionFactoryImpl();
+        HttpURLConnectionFactory httpURLConnectionFactory =
+                new BraveHttpURLConnectionFactoryImpl("https://crash.example.test/report");
         HttpURLConnection connection = httpURLConnectionFactory.createHttpURLConnection("");
         Uri uri = Uri.parse(connection.getURL().toString());
-        Assert.assertEquals("Brave_Android", uri.getQueryParameter("product"));
+        Assert.assertEquals("crash.example.test", uri.getHost());
+        Assert.assertEquals("/report", uri.getPath());
+        Assert.assertEquals(
+                BraveMinidumpUploaderConfig.CRASH_PRODUCT, uri.getQueryParameter("product"));
         Assert.assertEquals(VersionInfo.getProductVersion(), uri.getQueryParameter("version"));
-        Assert.assertEquals("00000000-0000-0000-0000-000000000000", uri.getQueryParameter("guid"));
+        Assert.assertEquals(
+                BraveHttpURLConnectionFactoryImpl.ZERO_GUID, uri.getQueryParameter("guid"));
+    }
+
+    @Test
+    @SmallTest
+    public void testEmptyUploadUrlDisablesUploads() {
+        HttpURLConnectionFactory httpURLConnectionFactory =
+                new BraveHttpURLConnectionFactoryImpl("");
+        Assert.assertNull(httpURLConnectionFactory.createHttpURLConnection(""));
     }
 }

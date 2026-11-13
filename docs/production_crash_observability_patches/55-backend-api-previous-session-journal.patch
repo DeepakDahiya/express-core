@@ -1,0 +1,710 @@
+diff --git a/docs/browser_express_crash_backend_api.md b/docs/browser_express_crash_backend_api.md
+new file mode 100644
+index 0000000000..a1c5c7cf24
+--- /dev/null
++++ b/docs/browser_express_crash_backend_api.md
+@@ -0,0 +1,704 @@
++# Browser Express Crash Backend API
++
++Last updated: 2026-06-01
++
++This document defines the backend work required to receive, store, symbolicate,
++and triage Browser Express Android crash reports.
++
++The current app implementation can use the existing Browser Express backend
++domain. A new standalone server is not required, but the crash ingestion
++surface must be isolated from normal product APIs because it accepts anonymous
++uploads and stores sensitive crash artifacts.
++
++## Goals
++
++* Receive native minidumps from the Browser Express Android Chromium fork.
++* Receive privacy-safe JSON crash events from the Android app.
++* Receive release symbol archives from CI through an authenticated endpoint.
++* Return responses compatible with Chromium's minidump uploader.
++* Store raw crash artifacts durably for later processing.
++* Symbolicate crashes using the matching release symbols.
++* Preserve user privacy and avoid collecting stable user identifiers.
++* Provide enough metadata for crash grouping, dashboards, and support triage.
++
++## Non-Goals
++
++* Do not require user login for app crash uploads.
++* Do not store page URLs, page titles, account identifiers, email addresses,
++  advertising IDs, Android IDs, or custom device identifiers.
++* Do not reuse Brave or Google crash ingestion endpoints.
++* Do not process minidumps synchronously in the upload request.
++
++## Recommended Deployment
++
++Use the existing backend infrastructure, but implement a dedicated crash module:
++
++```text
++api.browser.express
++  /crash/android/upload     public app crash ingestion
++  /crash/android/symbols    private CI symbol upload
++  /crash/health             health check
++```
++
++Recommended internal components:
++
++```text
++App upload endpoint
++  -> validate request
++  -> create report id
++  -> write raw artifact to object storage
++  -> write metadata row
++  -> enqueue symbolication or indexing job
++  -> return 2xx quickly
++
++Symbol upload endpoint
++  -> authenticate CI token
++  -> validate archive metadata
++  -> write symbol archive to object storage
++  -> write symbol metadata row
++  -> enqueue symbol unpack/index job
++```
++
++The upload endpoint should live behind HTTPS, a load balancer, request-size
++limits, and rate limiting. It should not share controller logic with normal
++authenticated API routes.
++
++## App Configuration
++
++Official Android builds must set:
++
++```gn
++browser_express_crash_upload_url = "https://api.browser.express/crash/android/upload"
++browser_express_crash_product = "BrowserExpress_Android"
++```
++
++The app appends query parameters to this configured URL:
++
++```text
++product=BrowserExpress_Android
++version=<app version>
++guid=00000000-0000-0000-0000-000000000000
++```
++
++For JSON events, the app also appends:
++
++```text
++report_type=browser_express_event
++```
++
++The zero GUID is intentional. Treat any non-zero `guid` as invalid, or store it
++as `null` and raise an internal alert.
++
++## Endpoint: App Upload
++
++### URL
++
++```http
++POST /crash/android/upload
++```
++
++This endpoint must accept two request types:
++
++* gzip-compressed multipart minidump uploads
++* JSON Browser Express event uploads
++
++Route by `Content-Type` and/or `report_type=browser_express_event`.
++
++### Common Query Parameters
++
++| Name | Required | Description |
++| --- | --- | --- |
++| `product` | yes | Expected value: `BrowserExpress_Android`. |
++| `version` | yes | Browser Express app version from the build. |
++| `guid` | yes | Expected zero GUID only. Do not use as a user id. |
++| `report_type` | JSON only | `browser_express_event` for JSON event uploads. |
++
++Reject unknown products in production. Accept missing or unknown versions only
++with an explicit `unknown` bucket so ingestion does not break after a release.
++
++### Response Codes
++
++For minidumps, Chromium treats only these response codes as upload success:
++
++* `200 OK`
++* `201 Created`
++* `202 Accepted`
++
++The response body must be a plain text crash report id, for example:
++
++```text
++bex_01jz1y4x90m6t2ck8qcpb9sk2p
++```
++
++For JSON events, the app treats these response codes as success:
++
++* `200 OK`
++* `201 Created`
++* `202 Accepted`
++* `204 No Content`
++
++Prefer returning `202 Accepted` with a report id in the response body for both
++types.
++
++### Error Semantics
++
++Use:
++
++* `400` for malformed requests.
++* `401` or `403` only for private routes, not app crash uploads.
++* `413` for request body too large.
++* `415` for unsupported media type.
++* `429` for rate limiting.
++* `500` or `503` for temporary backend failures.
++
++The Android client retries failed minidump and JSON event uploads through its
++existing jobs. Avoid returning permanent 4xx unless the payload is truly
++unusable.
++
++## Minidump Upload Contract
++
++### Request
++
++The Android minidump uploader sends:
++
++```http
++POST /crash/android/upload?product=BrowserExpress_Android&version=0.0.276&guid=00000000-0000-0000-0000-000000000000
++Content-Encoding: gzip
++Content-Type: multipart/form-data; boundary=<boundary>
++Connection: Keep-Alive
++```
++
++The request body is gzip-compressed multipart form data. Backend must:
++
++1. Detect `Content-Encoding: gzip`.
++2. Stream-decompress the body.
++3. Parse multipart using the `boundary` value.
++4. Find and store the minidump file part.
++5. Store bounded text metadata parts as report metadata.
++6. Return a crash report id immediately after durable write or queueing.
++
++Do not assume every multipart field name is stable. Chromium and Crashpad may
++include fields such as product, version, process type, platform metadata,
++upload file names, crash keys, and minidump file parts. Store unknown text
++fields only if they pass privacy filtering and size limits.
++
++### Size Limits
++
++Recommended defaults:
++
++* compressed request body: 20 MB
++* decompressed multipart body: 80 MB
++* individual text field: 8 KB
++* total text metadata: 64 KB
++* minidump file part: 64 MB
++
++Reject larger uploads with `413`.
++
++### Minidump Storage
++
++Object storage path recommendation:
++
++```text
++crash/raw/android/minidump/yyyy/mm/dd/<report_id>/request.multipart.gz
++crash/raw/android/minidump/yyyy/mm/dd/<report_id>/minidump.dmp
++crash/raw/android/minidump/yyyy/mm/dd/<report_id>/metadata.json
++```
++
++The raw compressed request is useful for parser fixes, but it is sensitive.
++Restrict access and apply retention.
++
++## JSON Event Upload Contract
++
++### Request
++
++The Android JSON event uploader sends:
++
++```http
++POST /crash/android/upload?product=BrowserExpress_Android&version=0.0.276&guid=00000000-0000-0000-0000-000000000000&report_type=browser_express_event
++Content-Type: application/json; charset=utf-8
++Connection: Keep-Alive
++```
++
++Maximum app-side file size is 16 KB. Backend should reject JSON bodies above
++32 KB.
++
++### Common Body Fields
++
++```json
++{
++  "schema": 1,
++  "type": "browser_express_event",
++  "event_type": "non_fatal",
++  "product": "BrowserExpress_Android",
++  "version": "0.0.276",
++  "upload_transport": "browser_express_json",
++  "privacy": "no_url_no_title_no_account_no_device_id"
++}
++```
++
++Validate that:
++
++* `schema` is `1`.
++* `type` is `browser_express_event`.
++* `product` matches query parameter `product`.
++* `version` matches query parameter `version`, or record mismatch as an
++  ingestion warning.
++* `privacy` is `no_url_no_title_no_account_no_device_id`.
++
++### Event Type: `android_exit`
++
++Body fields:
++
++```json
++{
++  "schema": 1,
++  "type": "browser_express_event",
++  "event_type": "android_exit",
++  "product": "BrowserExpress_Android",
++  "version": "0.0.276",
++  "upload_transport": "browser_express_json",
++  "privacy": "no_url_no_title_no_account_no_device_id",
++  "reason": "native",
++  "process_role": "browser",
++  "importance": "fg",
++  "age": "m",
++  "previous_session": {
++    "schema": 1,
++    "event_count": 4,
++    "events": ["app_create", "fg", "yt_pip_trigger", "yt_pip_error"],
++    "last_seen_age": "s"
++  }
++}
++```
++
++Allowed `reason` values:
++
++```text
++anr, java, native, dep, resource, self, init, low_mem, perm, signal,
++user_req, user_stop, freezer, pkg_state, pkg_update, other, unknown
++```
++
++Allowed `process_role` values:
++
++```text
++browser, child, other
++```
++
++Allowed `importance` values:
++
++```text
++fg, fgs, vis, per, bg, cache
++```
++
++Allowed `age` values:
++
++```text
++na, s, m, h, d
++```
++
++Optional `previous_session` object:
++
++* May be omitted when the app has no previous-session journal.
++* `schema` must be `1`.
++* `event_count` must equal the number of entries in `events`.
++* `events` must contain at most 32 tokens, each matching
++  `^[a-z0-9_]{1,24}$`.
++* `last_seen_age` must be one of `na`, `s`, `m`, `h`, or `d`.
++* Reject URLs, page titles, account identifiers, device identifiers, raw
++  exception text, stack text, free-form strings, and values containing `/`,
++  `.`, `:`, `@`, spaces, or uppercase letters.
++
++### Event Type: `non_fatal`
++
++Body fields:
++
++```json
++{
++  "schema": 1,
++  "type": "browser_express_event",
++  "event_type": "non_fatal",
++  "product": "BrowserExpress_Android",
++  "version": "0.0.276",
++  "upload_transport": "browser_express_json",
++  "privacy": "no_url_no_title_no_account_no_device_id",
++  "component": "youtube",
++  "code": "pip_restore_missing",
++  "severity": "warning"
++}
++```
++
++Token validation:
++
++* `component`, `code`, and `severity` must match `^[a-z0-9_]{1,32}$`.
++* Reject raw exception strings.
++* Reject values containing `/`, `.`, `:`, `@`, spaces, or uppercase letters.
++
++Known initial components:
++
++```text
++youtube, component
++```
++
++Known initial severities:
++
++```text
++info, warning, error
++```
++
++Known initial YouTube codes:
++
++```text
++pip_bottom_no_tab
++pip_bottom_unavailable
++pip_back_no_tab
++pip_back_unavailable
++pip_no_activity
++pip_intro_no_activity
++full_top_no_tab
++full_top_unavailable
++full_os_disabled
++pip_origin_missing
++pip_restore_missing
++pip_mode_change_error
++```
++
++### JSON Event Storage
++
++Object storage path recommendation:
++
++```text
++crash/raw/android/event/yyyy/mm/dd/<event_id>/event.json
++```
++
++JSON events are already privacy-safe enum payloads. They should still pass the
++same forbidden-key scanner before storage.
++
++## Endpoint: Symbol Upload
++
++### URL
++
++```http
++POST /crash/android/symbols
++Authorization: Bearer <ci-token>
++Content-Type: multipart/form-data; boundary=<boundary>
++```
++
++This endpoint is called by CI/release tooling, not by the app.
++
++### Fields
++
++| Name | Required | Description |
++| --- | --- | --- |
++| `product` | yes | `BrowserExpress_Android`. |
++| `version` | yes | Release version matching app uploads. |
++| `channel` | yes | `release`, `beta`, `nightly`, or `debug`. |
++| `symbols` | yes | Android symbol archive file. |
++
++The helper script sends the file field as `symbols`.
++
++### Authentication
++
++Use a secret token stored in CI:
++
++```text
++BROWSER_EXPRESS_SYMBOL_UPLOAD_TOKEN
++```
++
++Recommended backend behavior:
++
++* require HTTPS
++* require bearer token
++* support token rotation
++* audit every upload
++* limit upload size by channel and product
++* reject duplicate version/channel unless a privileged overwrite flag is used
++
++### Symbol Storage
++
++Object storage path recommendation:
++
++```text
++crash/symbols/android/<product>/<version>/<channel>/<upload_id>/symbols.tar
++crash/symbols/android/<product>/<version>/<channel>/<upload_id>/manifest.json
++```
++
++Store:
++
++* product
++* version
++* channel
++* archive checksum
++* archive size
++* upload time
++* CI build id if provided later
++* uploader principal
++
++After storage, enqueue an async symbol unpack/index job.
++
++## Database Model
++
++Suggested relational tables:
++
++### `crash_reports`
++
++| Column | Description |
++| --- | --- |
++| `id` | Server generated report id returned to app. |
++| `type` | `minidump` or `event`. |
++| `product` | `BrowserExpress_Android`. |
++| `version` | App version. |
++| `channel` | Optional if derived later. |
++| `platform` | `android`. |
++| `report_type` | Query `report_type`, nullable for minidumps. |
++| `event_type` | JSON event type, nullable for minidumps. |
++| `storage_uri` | Raw artifact object storage URI. |
++| `metadata_uri` | Metadata object storage URI. |
++| `received_at` | Ingestion timestamp. |
++| `status` | `received`, `queued`, `symbolicated`, `failed`. |
++| `privacy_status` | `passed`, `rejected`, `scrubbed`. |
++
++### `crash_events`
++
++| Column | Description |
++| --- | --- |
++| `report_id` | FK to `crash_reports`. |
++| `event_type` | `android_exit` or `non_fatal`. |
++| `component` | Non-fatal component. |
++| `code` | Non-fatal code. |
++| `severity` | Non-fatal severity. |
++| `reason` | Android exit reason. |
++| `process_role` | `browser`, `child`, `other`. |
++| `importance` | Android importance bucket. |
++| `age` | Exit age bucket. |
++
++### `symbol_files`
++
++| Column | Description |
++| --- | --- |
++| `id` | Server generated symbol upload id. |
++| `product` | `BrowserExpress_Android`. |
++| `version` | Release version. |
++| `channel` | Release channel. |
++| `storage_uri` | Archive object URI. |
++| `sha256` | Archive checksum. |
++| `size_bytes` | Archive size. |
++| `uploaded_at` | Upload timestamp. |
++| `status` | `stored`, `indexed`, `failed`. |
++
++### `symbolication_jobs`
++
++| Column | Description |
++| --- | --- |
++| `id` | Job id. |
++| `report_id` | Crash report id. |
++| `symbol_file_id` | Matching symbol file if found. |
++| `status` | `queued`, `running`, `done`, `failed`, `missing_symbols`. |
++| `attempts` | Retry count. |
++| `last_error` | Bounded operational error text. |
++
++## Privacy Requirements
++
++Crash dumps can contain memory. Treat them as sensitive even when the app does
++not intentionally send personal data.
++
++Required controls:
++
++* no public read access to crash object storage
++* restricted admin access with audit logs
++* no raw crash body in application logs
++* no query string logging if it can include future identifiers
++* no stable user id storage
++* no full IP retention beyond abuse prevention needs
++* retention policy for raw minidumps
++* separate retention policy for aggregated crash stats
++
++Forbidden JSON keys and metadata keys:
++
++```text
++url
++uri
++href
++title
++email
++account
++account_id
++user
++user_id
++profile_id
++device_id
++android_id
++advertising_id
++gaid
++guid
++client_id
++cookie
++authorization
++token
++```
++
++For JSON events, reject if any forbidden key exists at any object depth, except
++the query parameter `guid` which must be the zero GUID and should not be stored
++as an identifier.
++
++For minidump multipart text fields, allowlist preferred fields and drop unknown
++fields unless explicitly approved.
++
++## Rate Limiting and Abuse Protection
++
++App crash uploads are anonymous. Use operational limits:
++
++* per-IP request rate limits
++* per-version request rate limits
++* global circuit breaker
++* body-size limits before decompression
++* decompressed-size limits during streaming
++* gzip bomb protection
++* multipart part-count limit
++* JSON parser depth limit
++* object storage write timeout
++
++Do not block normal users permanently based only on IP. Mobile networks and
++VPNs share IPs heavily.
++
++## Symbolication
++
++Minimum backend behavior:
++
++1. Store minidump.
++2. Find matching symbols by product, version, platform, and channel if present.
++3. Run symbolication async.
++4. Store symbolicated stack trace separately from raw dump.
++5. Mark crashes with missing symbols for release pipeline follow-up.
++
++The current release tooling can create Android symbol artifacts through the
++existing build targets and upload archives through:
++
++```sh
++BROWSER_EXPRESS_SYMBOL_UPLOAD_URL="https://api.browser.express/crash/android/symbols" \
++BROWSER_EXPRESS_SYMBOL_UPLOAD_TOKEN="<ci-token>" \
++python3 script/browser_express_upload_crash_symbols.py \
++  --symbols-archive ../out/android_Release_arm64/dist/Defaultarm64.tar \
++  --version 0.0.276 \
++  --channel release
++```
++
++Release CI should run the release gate before publishing:
++
++```sh
++python3 script/browser_express_crash_release_gate.py \
++  --out-dir ../out/android_Release_arm64 \
++  --require-official-config \
++  --require-symbols \
++  --check-tracking-doc
++```
++
++## Triage Features
++
++Backend/dashboard should provide:
++
++* crash count by version and day
++* crash-free sessions later when session counts exist
++* top crash groups by version
++* top non-fatal event codes
++* Android exit reasons by version
++* missing-symbols queue
++* first seen and last seen per crash group
++* regression detection between releases
++* exportable report id for customer support
++
++Crash grouping suggestion:
++
++```text
++group_key = sha256(product + version_major_minor + exception_type_or_signal
++                  + top_in_app_frame + process_type)
++```
++
++For JSON-only events:
++
++```text
++group_key = sha256(product + version + event_type + component + code + reason)
++```
++
++## Monitoring and Alerts
++
++Add alerts for:
++
++* upload endpoint 5xx rate
++* upload endpoint p95 latency
++* object storage write failures
++* queue depth
++* symbolication failures
++* missing symbols for an official version
++* forbidden privacy key rejection spikes
++* non-zero GUID uploads
++* crash volume spike after release
++
++## Retention
++
++Suggested defaults:
++
++* raw minidumps: 30 to 90 days
++* symbolicated stack traces: 180 to 365 days
++* aggregate crash counts: 2 years
++* raw JSON events: 90 days
++* aggregated JSON event counts: 1 year
++* symbol archives: keep for every supported released version
++
++Confirm retention with legal/privacy requirements before production launch.
++
++## Test Plan
++
++Backend developer should implement automated tests for:
++
++* valid gzip multipart minidump upload returns `202` and report id
++* minidump upload without gzip is rejected or handled explicitly
++* malformed multipart returns `400`
++* oversized compressed body returns `413`
++* gzip bomb protection returns `413`
++* valid JSON `android_exit` event returns success
++* valid JSON `android_exit` event with `previous_session` returns success
++* valid JSON `non_fatal` event returns success
++* JSON with forbidden key `url` is rejected
++* JSON with non-zero `guid` query param is rejected or flagged
++* symbol upload without token returns `401`
++* symbol upload with token stores archive and metadata
++* duplicate symbol upload policy is enforced
++* object storage failure returns retryable `503`
++
++Manual JSON event smoke test:
++
++```sh
++curl -i \
++  -X POST \
++  "https://api.browser.express/crash/android/upload?product=BrowserExpress_Android&version=0.0.276&guid=00000000-0000-0000-0000-000000000000&report_type=browser_express_event" \
++  -H "Content-Type: application/json; charset=utf-8" \
++  --data '{"schema":1,"type":"browser_express_event","event_type":"non_fatal","product":"BrowserExpress_Android","version":"0.0.276","upload_transport":"browser_express_json","privacy":"no_url_no_title_no_account_no_device_id","component":"youtube","code":"pip_restore_missing","severity":"warning"}'
++```
++
++Expected response:
++
++```http
++HTTP/1.1 202 Accepted
++Content-Type: text/plain
++
++bex_<server_generated_id>
++```
++
++## Production Readiness Checklist
++
++Before setting `browser_express_crash_upload_url` in an official build:
++
++* HTTPS endpoint deployed.
++* Minidump upload path tested with gzip multipart.
++* JSON event path tested.
++* Object storage bucket private and encrypted.
++* Database tables migrated.
++* Async queue deployed.
++* Symbol upload endpoint deployed with CI token.
++* Symbolication worker deployed.
++* Dashboard or query access available to engineering.
++* Alerts configured.
++* Retention configured.
++* Access audit logging enabled.
++* Release CI runs crash release gate.
++* Release CI uploads symbols before rollout.

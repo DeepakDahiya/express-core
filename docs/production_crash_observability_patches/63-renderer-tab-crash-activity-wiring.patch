@@ -1,0 +1,59 @@
+diff --git a/android/java/org/chromium/chrome/browser/app/BraveActivity.java b/android/java/org/chromium/chrome/browser/app/BraveActivity.java
+index 221795c801..5cd3e42538 100644
+--- a/android/java/org/chromium/chrome/browser/app/BraveActivity.java
++++ b/android/java/org/chromium/chrome/browser/app/BraveActivity.java
+@@ -145,6 +145,7 @@ import org.chromium.chrome.browser.browsing_data.TimePeriod;
+ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
+ import org.chromium.chrome.browser.crash.BrowserExpressCrashBreadcrumbs;
+ import org.chromium.chrome.browser.crash.BrowserExpressPendingCrashReportStore;
++import org.chromium.chrome.browser.crash.BrowserExpressTabCrashObserver;
+ import org.chromium.chrome.browser.crypto_wallet.AssetRatioServiceFactory;
+ import org.chromium.chrome.browser.crypto_wallet.BlockchainRegistryFactory;
+ import org.chromium.chrome.browser.crypto_wallet.BraveWalletServiceFactory;
+@@ -432,6 +433,7 @@ public abstract class BraveActivity extends ChromeActivity
+     private BrowserExpressGenerateUsernameBottomSheetFragment mBottomSheetDialog;
+     private BrowserExpressUpdateApkBottomSheetFragment mBottomSheetUpdateApkDialog;
+     private BrowserExpressCommentsBottomSheetFragment mBottomSheetCommentsDialog;
++    private BrowserExpressTabCrashObserver mBrowserExpressTabCrashObserver;
+ 
+     private DatabaseHelper mDatabaseHelper;
+ 
+@@ -949,6 +951,10 @@ public abstract class BraveActivity extends ChromeActivity
+         if (ENABLE_IN_APP_UPDATE && mAppUpdateManager != null) {
+             mAppUpdateManager.unregisterListener(mInstallStateUpdatedListener);
+         }
++        if (mBrowserExpressTabCrashObserver != null) {
++            mBrowserExpressTabCrashObserver.destroy();
++            mBrowserExpressTabCrashObserver = null;
++        }
+         super.onDestroyInternal();
+         cleanUpWalletNativeServices();
+         cleanUpMiscAndroidMetrics();
+@@ -1851,6 +1857,7 @@ public abstract class BraveActivity extends ChromeActivity
+         createNotificationChannel();
+         setupBgPlayTracking();
+         setupUrlEnteredTracking();
++        setupBrowserExpressTabCrashTracking();
+         PostHogUtil.flushPendingEvents();
+     }
+ 
+@@ -3355,6 +3362,19 @@ public abstract class BraveActivity extends ChromeActivity
+     private WebContents mBgPlayObservedWebContents;
+     private Callback<Tab> mBgPlayTabObserver;
+ 
++    private void setupBrowserExpressTabCrashTracking() {
++        if (mBrowserExpressTabCrashObserver != null) return;
++        TabModelSelector selector = getTabModelSelector();
++        if (selector == null) return;
++        try {
++            mBrowserExpressTabCrashObserver = new BrowserExpressTabCrashObserver(selector);
++        } catch (Exception e) {
++            Log.e(
++                    "BraveActivity",
++                    "setupBrowserExpressTabCrashTracking error: " + e.getMessage());
++        }
++    }
++
+     private void setupBgPlayTracking() {
+         if (mBgPlayTabObserver != null) return;
+         mBgPlayTabObserver = tab -> {

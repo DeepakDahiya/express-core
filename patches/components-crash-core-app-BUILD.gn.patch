@@ -1,0 +1,20 @@
+diff --git a/components/crash/core/app/BUILD.gn b/components/crash/core/app/BUILD.gn
+index 3b42ebec89ed72900b46669fce2891c1b3f5e1ec..48ecd6265cf601629dbf6555c60bdd9e826faec9 100644
+--- a/components/crash/core/app/BUILD.gn
++++ b/components/crash/core/app/BUILD.gn
+@@ -6,6 +6,7 @@
+ assert(!is_fuchsia)
+ 
+ import("//base/debug/debug.gni")
++import("//brave/components/crash_reporting/buildflags.gni")
+ import("//components/gwp_asan/buildflags/buildflags.gni")
+ 
+ if (is_android) {
+@@ -24,6 +25,7 @@ source_set("lib") {
+     "//base",
+     "//build:branding_buildflags",
+   ]
++  defines = [ "BROWSER_EXPRESS_CRASH_UPLOAD_URL=\"$browser_express_crash_upload_url\"" ]
+ }
+ 
+ source_set("crashpad_handler_main") {

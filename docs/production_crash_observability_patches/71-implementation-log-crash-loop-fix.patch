@@ -1,0 +1,66 @@
+diff --git a/docs/production_crash_observability_implementation_log.md b/docs/production_crash_observability_implementation_log.md
+index 70f4b7d205..07afcbcf18 100644
+--- a/docs/production_crash_observability_implementation_log.md
++++ b/docs/production_crash_observability_implementation_log.md
+@@ -540,6 +540,40 @@ Patch artifacts:
+ * `docs/production_crash_observability_patches/66-implementation-log-renderer-tab-crash.patch`
+ * `docs/production_crash_observability_patches/67-file-tracking-renderer-tab-crash.patch`
+ 
++### 17. Crash-loop fix for pre-native minidump scan
++
++Files:
++
++* `android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java`
++* `android/java/org/chromium/chrome/browser/app/BraveActivity.java`
++* `android/java/org/chromium/chrome/browser/crash/BrowserExpressFeatureJournal.java`
++
++What changed:
++
++* Fixed a startup crash loop found during QA crash testing. The previous
++  startup scan called `CrashFileManager.getMinidumpsSansLogcat()` from
++  `Application.onCreate`, before the native crash MIME writer JNI was
++  available. With a pending Crashpad minidump, this threw
++  `UnsatisfiedLinkError` on every relaunch.
++* `BrowserExpressPendingCrashReportStore.initialize()` now runs only the safe
++  JSON event and Android-exit scan during pre-native application startup.
++* Minidump import, metadata refresh, and upload-job enqueue now run after
++  `BraveActivity.finishNativeInitialization()` calls
++  `BrowserExpressPendingCrashReportStore.onNativeInitialized()`.
++* The minidump scan also catches `UnsatisfiedLinkError` defensively, so a JNI
++  availability problem cannot create a repeat startup crash loop.
++* Serialized Browser Express feature-journal atomic writes to avoid concurrent
++  background writes racing on the same `current_session.json.tmp` file and
++  producing noisy commit warnings during startup.
++
++Patch artifacts:
++
++* `docs/production_crash_observability_patches/68-pre-native-minidump-scan-guard.patch`
++* `docs/production_crash_observability_patches/69-post-native-minidump-scan-wiring.patch`
++* `docs/production_crash_observability_patches/70-feature-journal-write-lock.patch`
++* `docs/production_crash_observability_patches/71-implementation-log-crash-loop-fix.patch`
++* `docs/production_crash_observability_patches/72-file-tracking-crash-loop-fix.patch`
++
+ ## Validation
+ 
+ Focused validation run:
+@@ -822,6 +856,20 @@ Result:
+   list wiring, and the call into the existing Browser Express non-fatal JSON
+   event upload path.
+ 
++Crash-loop fix validation succeeded:
++
++```sh
++PYTHONPATH=/home/deepakdahiyagh/Desktop/browser-express/src/brave/script \
++  autoninja -C ../out/android_Debug_arm64 \
++  chrome/android:chrome_java__compile_java
++```
++
++Result:
++
++* Build succeeded.
++* `chrome_java__compile_java` validated the pre-native JSON-only scan, the
++  post-native minidump scan hook, and feature-journal write locking.
++
+ ## Required production configuration
+ 
+ Before shipping official builds, set:

@@ -1,0 +1,206 @@
+#!/usr/bin/env python3
+
+# Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at https://mozilla.org/MPL/2.0/.
+
+"""Upload Browser Express Android crash symbols to an owned endpoint."""
+
+from __future__ import annotations
+
+import argparse
+import http.client
+import mimetypes
+import os
+import sys
+import uuid
+from pathlib import Path
+from urllib.parse import urlparse
+
+from browser_express_crash_release_gate import FORBIDDEN_ENDPOINTS
+
+
+DEFAULT_PRODUCT = "BrowserExpress_Android"
+DEFAULT_TOKEN_ENV = "BROWSER_EXPRESS_SYMBOL_UPLOAD_TOKEN"
+DEFAULT_URL_ENV = "BROWSER_EXPRESS_SYMBOL_UPLOAD_URL"
+DEFAULT_UPLOAD_URL = "https://api.browser.express/crash/android/symbols"
+CHUNK_SIZE = 1024 * 1024
+
+
+class UploadConfigError(Exception):
+    pass
+
+
+def validate_upload_config(
+    upload_url: str,
+    archive: Path,
+    allow_http_for_testing: bool,
+) -> None:
+    if not upload_url:
+        raise UploadConfigError(
+            f"set --upload-url or ${DEFAULT_URL_ENV} to the owned symbol endpoint"
+        )
+    if upload_url in FORBIDDEN_ENDPOINTS:
+        raise UploadConfigError(f"refusing inherited crash endpoint: {upload_url}")
+
+    parsed = urlparse(upload_url)
+    if parsed.scheme != "https" and not (allow_http_for_testing and parsed.scheme == "http"):
+        raise UploadConfigError("symbol upload URL must use https://")
+    if not parsed.netloc:
+        raise UploadConfigError("symbol upload URL must include a host")
+    if not archive.is_file() or archive.stat().st_size <= 0:
+        raise UploadConfigError(f"symbol archive is missing or empty: {archive}")
+
+
+def _multipart_field(name: str, value: str, boundary: str) -> bytes:
+    return (
+        f"--{boundary}\r\n"
+        f'Content-Disposition: form-data; name="{name}"\r\n\r\n'
+        f"{value}\r\n"
+    ).encode("utf-8")
+
+
+def _multipart_file_header(archive: Path, boundary: str) -> bytes:
+    content_type = mimetypes.guess_type(str(archive))[0] or "application/octet-stream"
+    return (
+        f"--{boundary}\r\n"
+        f'Content-Disposition: form-data; name="symbols"; '
+        f'filename="{archive.name}"\r\n'
+        f"Content-Type: {content_type}\r\n\r\n"
+    ).encode("utf-8")
+
+
+def _multipart_suffix(boundary: str) -> bytes:
+    return f"\r\n--{boundary}--\r\n".encode("utf-8")
+
+
+def upload_symbols(
+    upload_url: str,
+    archive: Path,
+    product: str,
+    version: str,
+    channel: str,
+    token: str,
+    timeout: int,
+    allow_http_for_testing: bool,
+) -> tuple[int, str]:
+    validate_upload_config(upload_url, archive, allow_http_for_testing)
+
+    parsed = urlparse(upload_url)
+    boundary = f"browserexpresssymbols{uuid.uuid4().hex}"
+    fields = {
+        "product": product,
+        "version": version,
+        "channel": channel,
+    }
+
+    prefix = b"".join(_multipart_field(k, v, boundary) for k, v in fields.items())
+    file_header = _multipart_file_header(archive, boundary)
+    suffix = _multipart_suffix(boundary)
+    content_length = len(prefix) + len(file_header) + archive.stat().st_size + len(suffix)
+
+    path = parsed.path or "/"
+    if parsed.query:
+        path = f"{path}?{parsed.query}"
+
+    connection_class = http.client.HTTPConnection if parsed.scheme == "http" else http.client.HTTPSConnection
+    connection = connection_class(parsed.netloc, timeout=timeout)
+    try:
+        connection.putrequest("POST", path)
+        connection.putheader("Content-Type", f"multipart/form-data; boundary={boundary}")
+        connection.putheader("Content-Length", str(content_length))
+        connection.putheader("User-Agent", "BrowserExpressCrashSymbolUploader/1")
+        if token:
+            connection.putheader("Authorization", f"Bearer {token}")
+        connection.endheaders()
+
+        connection.send(prefix)
+        connection.send(file_header)
+        with archive.open("rb") as symbol_file:
+            while True:
+                chunk = symbol_file.read(CHUNK_SIZE)
+                if not chunk:
+                    break
+                connection.send(chunk)
+        connection.send(suffix)
+
+        response = connection.getresponse()
+        body = response.read(65536).decode("utf-8", errors="replace")
+        return response.status, body
+    finally:
+        connection.close()
+
+
+def create_arg_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        description="Upload Browser Express Android crash symbols."
+    )
+    parser.add_argument("--symbols-archive", type=Path, required=True)
+    parser.add_argument(
+        "--upload-url",
+        default=os.environ.get(DEFAULT_URL_ENV, DEFAULT_UPLOAD_URL),
+        help=(
+            "Owned symbol upload URL. Defaults to "
+            f"${DEFAULT_URL_ENV} or {DEFAULT_UPLOAD_URL}."
+        ),
+    )
+    parser.add_argument("--product", default=DEFAULT_PRODUCT)
+    parser.add_argument("--version", required=True)
+    parser.add_argument("--channel", default="release")
+    parser.add_argument(
+        "--token-env",
+        default=DEFAULT_TOKEN_ENV,
+        help=f"Environment variable containing the bearer token. Defaults to {DEFAULT_TOKEN_ENV}.",
+    )
+    parser.add_argument("--timeout", type=int, default=60)
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate arguments without uploading.",
+    )
+    parser.add_argument(
+        "--allow-http-for-testing",
+        action="store_true",
+        help="Allow http:// endpoints for local tests only.",
+    )
+    return parser
+
+
+def main(argv: list[str]) -> int:
+    parser = create_arg_parser()
+    args = parser.parse_args(argv)
+    token = os.environ.get(args.token_env, "")
+
+    try:
+        validate_upload_config(
+            args.upload_url, args.symbols_archive, args.allow_http_for_testing
+        )
+        if args.dry_run:
+            print("Browser Express symbol upload dry run passed.")
+            return 0
+
+        status, body = upload_symbols(
+            upload_url=args.upload_url,
+            archive=args.symbols_archive,
+            product=args.product,
+            version=args.version,
+            channel=args.channel,
+            token=token,
+            timeout=args.timeout,
+            allow_http_for_testing=args.allow_http_for_testing,
+        )
+    except UploadConfigError as exc:
+        print(f"ERROR: {exc}", file=sys.stderr)
+        return 1
+
+    if 200 <= status < 300:
+        print(f"Browser Express symbol upload succeeded with HTTP {status}.")
+        return 0
+
+    print(f"ERROR: symbol upload failed with HTTP {status}: {body}", file=sys.stderr)
+    return 1
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

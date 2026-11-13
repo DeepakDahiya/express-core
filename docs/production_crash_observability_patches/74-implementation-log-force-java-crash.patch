@@ -1,0 +1,57 @@
+diff --git a/docs/production_crash_observability_implementation_log.md b/docs/production_crash_observability_implementation_log.md
+index 07afcbcf18..07e39595bc 100644
+--- a/docs/production_crash_observability_implementation_log.md
++++ b/docs/production_crash_observability_implementation_log.md
+@@ -574,6 +574,31 @@ Patch artifacts:
+ * `docs/production_crash_observability_patches/71-implementation-log-crash-loop-fix.patch`
+ * `docs/production_crash_observability_patches/72-file-tracking-crash-loop-fix.patch`
+ 
++### 18. Force Java crash termination hardening
++
++Files:
++
++* `android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java`
++
++What changed:
++
++* Hardened the QA "Force Java crash" action so it always terminates the app
++  process after creating the Java crash report.
++* The verifier now sends the intentional
++  `BrowserExpressCrashVerifierJavaCrash` exception through the current default
++  uncaught-exception handler, preserving Chromium's pure-Java crash-report
++  creation path.
++* If the installed handler reports the exception and returns without a parent
++  process-killing handler, the verifier explicitly kills the current process
++  and exits. This prevents the UI from briefly blanking and returning to the
++  app without a real process death during QA validation.
++
++Patch artifacts:
++
++* `docs/production_crash_observability_patches/73-force-java-crash-termination.patch`
++* `docs/production_crash_observability_patches/74-implementation-log-force-java-crash.patch`
++* `docs/production_crash_observability_patches/75-file-tracking-force-java-crash.patch`
++
+ ## Validation
+ 
+ Focused validation run:
+@@ -870,6 +895,20 @@ Result:
+ * `chrome_java__compile_java` validated the pre-native JSON-only scan, the
+   post-native minidump scan hook, and feature-journal write locking.
+ 
++Force Java crash termination hardening validation succeeded:
++
++```sh
++PYTHONPATH=/home/deepakdahiyagh/Desktop/browser-express/src/brave/script \
++  autoninja -C ../out/android_Debug_arm64 \
++  chrome/android:chrome_java__compile_java
++```
++
++Result:
++
++* Build succeeded.
++* `chrome_java__compile_java` validated the explicit process-termination
++  fallback in `BrowserExpressCrashVerifier.forceJavaCrash()`.
++
+ ## Required production configuration
+ 
+ Before shipping official builds, set:

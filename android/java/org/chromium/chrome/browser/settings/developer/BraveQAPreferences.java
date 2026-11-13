@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.BraveRewardsHelper;
 import org.chromium.chrome.browser.BraveRewardsNativeWorker;
 import org.chromium.chrome.browser.BraveRewardsObserver;
 import org.chromium.chrome.browser.billing.LinkSubscriptionUtils;
+import org.chromium.chrome.browser.crash.BrowserExpressCrashVerifier;
 import org.chromium.chrome.browser.onboarding.OnboardingPrefManager;
 import org.chromium.chrome.browser.preferences.BravePref;
 import org.chromium.chrome.browser.profiles.ProfileManager;
@@ -56,8 +57,12 @@ public class BraveQAPreferences extends BravePreferenceFragment
     private static final String PREF_QA_MAXIMIZE_INITIAL_ADS_NUMBER =
             "qa_maximize_initial_ads_number";
     private static final String PREF_QA_DEBUG_NTP = "qa_debug_ntp";
+    private static final String PREF_QA_FORCE_PUSH_NOTIFICATIONS = "qa_force_push_notifications";
     private static final String PREF_QA_VLOG_REWARDS = "qa_vlog_rewards";
     private static final String PREF_QA_COMMAND_LINE = "qa_command_line";
+    private static final String PREF_QA_FORCE_JAVA_CRASH = "qa_force_java_crash";
+    private static final String PREF_QA_FORCE_NATIVE_CRASH = "qa_force_native_crash";
+    private static final String PREF_QA_FORCE_APP_CRASH = "qa_force_app_crash";
 
     private static final String QA_ADS_PER_HOUR = "qa_ads_per_hour";
     private static final String QA_IMPORT_REWARDS_DB = "qa_import_rewards_db";
@@ -75,6 +80,9 @@ public class BraveQAPreferences extends BravePreferenceFragment
     private ChromeSwitchPreference mDebugNTP;
     private ChromeSwitchPreference mVlogRewards;
     private Preference mCommandLine;
+    private Preference mForceJavaCrash;
+    private Preference mForceNativeCrash;
+    private Preference mForceAppCrash;
 
     private Preference mImportRewardsDb;
     private Preference mExportRewardsDb;
@@ -121,6 +129,18 @@ public class BraveQAPreferences extends BravePreferenceFragment
             mMaximizeAdsNumber.setOnPreferenceChangeListener(this);
         }
 
+        ChromeSwitchPreference forcePush =
+                (ChromeSwitchPreference) findPreference(PREF_QA_FORCE_PUSH_NOTIFICATIONS);
+        if (forcePush != null) {
+            forcePush.setChecked(
+                    org.chromium.chrome.browser.preferences.ChromeSharedPreferences.getInstance()
+                            .readBoolean(
+                                    org.chromium.base.BravePreferenceKeys
+                                            .BROWSER_EXPRESS_PUSH_DEV_FORCE_ENABLED,
+                                    false));
+            forcePush.setOnPreferenceChangeListener(this);
+        }
+
         mDebugNTP = (ChromeSwitchPreference) findPreference(PREF_QA_DEBUG_NTP);
         if (mDebugNTP != null) {
             mDebugNTP.setOnPreferenceChangeListener(this);
@@ -140,6 +160,11 @@ public class BraveQAPreferences extends BravePreferenceFragment
 
         mCommandLine = findPreference(PREF_QA_COMMAND_LINE);
         setCommandLineClickListener();
+
+        mForceJavaCrash = findPreference(PREF_QA_FORCE_JAVA_CRASH);
+        mForceNativeCrash = findPreference(PREF_QA_FORCE_NATIVE_CRASH);
+        mForceAppCrash = findPreference(PREF_QA_FORCE_APP_CRASH);
+        setCrashVerifierClickListeners();
 
         checkQACode();
     }
@@ -234,6 +259,67 @@ public class BraveQAPreferences extends BravePreferenceFragment
         });
     }
 
+    private void setCrashVerifierClickListeners() {
+        if (mForceJavaCrash != null) {
+            mForceJavaCrash.setOnPreferenceClickListener(
+                    preference -> {
+                        confirmCrash(
+                                "Force Java crash?",
+                                "This will close the app and should create a Java crash report.",
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        BrowserExpressCrashVerifier.forceJavaCrash();
+                                    }
+                                });
+                        return true;
+                    });
+        }
+
+        if (mForceNativeCrash != null) {
+            mForceNativeCrash.setOnPreferenceClickListener(
+                    preference -> {
+                        confirmCrash(
+                                "Force native crash?",
+                                "This will close the app and should create a native minidump.",
+                                new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        BrowserExpressCrashVerifier.forceNativeCrash();
+                                    }
+                                });
+                        return true;
+                    });
+        }
+
+        if (mForceAppCrash != null) {
+            mForceAppCrash.setOnPreferenceClickListener(
+                    preference -> {
+                        BrowserExpressCrashVerifier.forceAppCrash();
+                        return true;
+                    });
+        }
+    }
+
+    private void confirmCrash(String title, String message, Runnable crashAction) {
+        AlertDialog.Builder alertDialog =
+                new AlertDialog.Builder(getActivity(), R.style.ThemeOverlay_BrowserUI_AlertDialog)
+                        .setTitle(title)
+                        .setMessage(message)
+                        .setPositiveButton(
+                                "Crash",
+                                new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int button) {
+                                        crashAction.run();
+                                    }
+                                })
+                        .setNegativeButton(R.string.cancel, null);
+        Dialog dialog = alertDialog.create();
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+    }
+
     @Override
     public void onStart() {
         BraveRewardsNativeWorker.getInstance().addObserver(this);
@@ -255,6 +341,14 @@ public class BraveQAPreferences extends BravePreferenceFragment
             enableMaximumAdsNumber(((boolean) newValue) && mMaximizeAdsNumber.isChecked());
         } else if (PREF_QA_MAXIMIZE_INITIAL_ADS_NUMBER.equals(preference.getKey())) {
             enableMaximumAdsNumber((boolean) newValue);
+        } else if (PREF_QA_FORCE_PUSH_NOTIFICATIONS.equals(preference.getKey())) {
+            org.chromium.chrome.browser.preferences.ChromeSharedPreferences.getInstance()
+                    .writeBoolean(
+                            org.chromium.base.BravePreferenceKeys
+                                    .BROWSER_EXPRESS_PUSH_DEV_FORCE_ENABLED,
+                            (boolean) newValue);
+            org.chromium.chrome.browser.browser_express_push.BrowserExpressPushTokenManager
+                    .syncIfNeeded("dev_override");
         } else if (PREF_QA_DEBUG_NTP.equals(preference.getKey())
                 || PREF_QA_VLOG_REWARDS.equals(preference.getKey())
                 || LinkSubscriptionUtils.PREF_LINK_SUBSCRIPTION_ON_STAGING.equals(

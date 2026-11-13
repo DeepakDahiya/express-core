@@ -1,0 +1,35 @@
+--- a/android/brave_java_sources.gni
++++ b/android/brave_java_sources.gni
+@@ -94,6 +94,7 @@
+   "../../brave/android/java/org/chromium/chrome/browser/contextmenu/BraveChromeContextMenuPopulator.java",
+   "../../brave/android/java/org/chromium/chrome/browser/cosmetic_filters/BraveCosmeticFiltersUtils.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashBreadcrumbs.java",
++  "../../brave/android/java/org/chromium/chrome/browser/crash/BrowserExpressJsonEventUploadJobServiceImpl.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crash/BravePureJavaExceptionReporter.java",
+@@ -602,6 +603,7 @@
+ ]
+ 
+ brave_java_base_module_sources = [
++  "//brave/android/java/org/chromium/chrome/browser/crash/BrowserExpressJsonEventUploadJobService.java",
+   "//brave/android/java/org/chromium/chrome/browser/base/SplitCompatJobIntentService.java",
+   "//brave/android/java/org/chromium/chrome/browser/media/ui/BraveMediaNotificationControllerServices.java",
+   "//brave/android/java/org/chromium/chrome/browser/playlist/hls_content/HlsService.java",
+diff --git a/android/java/AndroidManifest.xml b/android/java/AndroidManifest.xml
+index 3941c98f56..add53af802 100644
+--- a/android/java/AndroidManifest.xml
++++ b/android/java/AndroidManifest.xml
+@@ -203,6 +203,12 @@
+     android:enabled="true">
+ </service>
+ 
++<service
++    android:name="org.chromium.chrome.browser.crash.BrowserExpressJsonEventUploadJobService"
++    android:permission="android.permission.BIND_JOB_SERVICE"
++    android:exported="false">
++</service>
++
+ <service
+     android:name="org.chromium.chrome.browser.vpn.wireguard.WireguardService"
+     android:foregroundServiceType="dataSync"

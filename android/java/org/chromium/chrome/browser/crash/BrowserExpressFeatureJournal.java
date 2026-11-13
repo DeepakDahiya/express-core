@@ -1,0 +1,273 @@
+/* Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+package org.chromium.chrome.browser.crash;
+
+import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskTraits;
+import org.chromium.build.annotations.NullMarked;
+import org.chromium.build.annotations.Nullable;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+
+/** Bounded, privacy-safe feature journal for the current and previous browser sessions. */
+@NullMarked
+public final class BrowserExpressFeatureJournal {
+    private static final String TAG = "BEFeatureJournal";
+
+    private static final String STORE_DIR = "Browser Express Crash Reports";
+    private static final String SESSIONS_DIR = "sessions";
+    private static final String CURRENT_SESSION_FILE = "current_session.json";
+    private static final String PREVIOUS_SESSION_FILE = "previous_session.json";
+
+    private static final int JOURNAL_SCHEMA_VERSION = 1;
+    private static final int MAX_EVENTS = 32;
+    private static final int MAX_EVENT_TOKEN_LENGTH = 24;
+    private static final int MAX_SESSION_FILE_BYTES = 4096;
+    private static final int BUFFER_SIZE_BYTES = 1024;
+
+    private static final ArrayDeque<String> sEvents = new ArrayDeque<>();
+    private static final Object sFileLock = new Object();
+    private static boolean sInitialized;
+
+    private BrowserExpressFeatureJournal() {}
+
+    public static void initialize() {
+        ThreadUtils.assertOnUiThread();
+        if (sInitialized) {
+            return;
+        }
+        sInitialized = true;
+        sEvents.clear();
+        rotatePreviousSession();
+    }
+
+    public static void recordEvent(String event) {
+        ThreadUtils.assertOnUiThread();
+        if (!sInitialized) {
+            return;
+        }
+
+        String safeEvent = normalizeEventToken(event);
+        if (!sEvents.isEmpty() && safeEvent.equals(sEvents.peekLast())) {
+            writeCurrentSessionAsync();
+            return;
+        }
+
+        sEvents.addLast(safeEvent);
+        while (sEvents.size() > MAX_EVENTS) {
+            sEvents.removeFirst();
+        }
+        writeCurrentSessionAsync();
+    }
+
+    static @Nullable JSONObject buildPreviousSessionSummary(long nowMillis) {
+        File previousSessionFile = new File(getSessionsDir(), PREVIOUS_SESSION_FILE);
+        if (!previousSessionFile.isFile()
+                || previousSessionFile.length() <= 0
+                || previousSessionFile.length() > MAX_SESSION_FILE_BYTES) {
+            return null;
+        }
+
+        try (FileReader reader = new FileReader(previousSessionFile)) {
+            char[] buffer = new char[(int) previousSessionFile.length()];
+            int length = reader.read(buffer);
+            if (length <= 0) {
+                return null;
+            }
+            JSONObject previousSession = new JSONObject(new String(buffer, 0, length));
+            JSONArray storedEvents = previousSession.optJSONArray("events");
+            if (storedEvents == null || storedEvents.length() == 0) {
+                return null;
+            }
+
+            JSONArray safeEvents = new JSONArray();
+            for (int i = Math.max(0, storedEvents.length() - MAX_EVENTS);
+                    i < storedEvents.length();
+                    i++) {
+                String safeEvent = normalizeEventToken(storedEvents.optString(i, ""));
+                safeEvents.put(safeEvent);
+            }
+
+            JSONObject summary = new JSONObject();
+            summary.put("schema", JOURNAL_SCHEMA_VERSION);
+            summary.put("event_count", safeEvents.length());
+            summary.put("events", safeEvents);
+            summary.put(
+                    "last_seen_age",
+                    getAgeToken(nowMillis, previousSession.optLong("last_seen_ms", 0)));
+            return summary;
+        } catch (IOException | JSONException e) {
+            Log.w(TAG, "Unable to read previous session journal", e);
+            return null;
+        }
+    }
+
+    private static void rotatePreviousSession() {
+        File sessionsDir = getSessionsDir();
+        if (!ensureDirectory(sessionsDir)) {
+            return;
+        }
+
+        File currentSessionFile = new File(sessionsDir, CURRENT_SESSION_FILE);
+        File previousSessionFile = new File(sessionsDir, PREVIOUS_SESSION_FILE);
+        if (!currentSessionFile.isFile()) {
+            return;
+        }
+        if (currentSessionFile.length() <= 0
+                || currentSessionFile.length() > MAX_SESSION_FILE_BYTES) {
+            deleteFile(currentSessionFile);
+            return;
+        }
+
+        deleteFile(previousSessionFile);
+        if (!currentSessionFile.renameTo(previousSessionFile)
+                && copyFile(currentSessionFile, previousSessionFile)) {
+            deleteFile(currentSessionFile);
+        }
+    }
+
+    private static void writeCurrentSessionAsync() {
+        List<String> snapshot = new ArrayList<>(sEvents);
+        long nowMillis = System.currentTimeMillis();
+        PostTask.postTask(
+                TaskTraits.BEST_EFFORT_MAY_BLOCK,
+                () -> writeCurrentSessionSnapshot(snapshot, nowMillis));
+    }
+
+    private static void writeCurrentSessionSnapshot(List<String> events, long nowMillis) {
+        File sessionsDir = getSessionsDir();
+        if (!ensureDirectory(sessionsDir)) {
+            return;
+        }
+
+        JSONObject session = new JSONObject();
+        JSONArray safeEvents = new JSONArray();
+        try {
+            for (String event : events) {
+                safeEvents.put(normalizeEventToken(event));
+            }
+            session.put("schema", JOURNAL_SCHEMA_VERSION);
+            session.put("type", "browser_express_session_journal");
+            session.put("last_seen_ms", nowMillis);
+            session.put("events", safeEvents);
+        } catch (JSONException e) {
+            Log.w(TAG, "Unable to build current session journal", e);
+            return;
+        }
+
+        writeJsonAtomically(new File(sessionsDir, CURRENT_SESSION_FILE), session);
+    }
+
+    private static File getSessionsDir() {
+        return new File(
+                new File(ContextUtils.getApplicationContext().getCacheDir(), STORE_DIR),
+                SESSIONS_DIR);
+    }
+
+    private static boolean ensureDirectory(File directory) {
+        if (directory.isDirectory()) {
+            return true;
+        }
+        if (directory.mkdirs() || directory.isDirectory()) {
+            return true;
+        }
+        Log.w(TAG, "Unable to create " + directory.getAbsolutePath());
+        return false;
+    }
+
+    private static boolean writeJsonAtomically(File targetFile, JSONObject json) {
+        synchronized (sFileLock) {
+            @Nullable File parentFile = targetFile.getParentFile();
+            if (parentFile == null || !ensureDirectory(parentFile)) {
+                return false;
+            }
+
+            File tmpFile = new File(parentFile, targetFile.getName() + ".tmp");
+            try (FileWriter writer = new FileWriter(tmpFile)) {
+                writer.write(json.toString());
+                writer.write('\n');
+            } catch (IOException e) {
+                Log.w(TAG, "Unable to write " + tmpFile.getAbsolutePath(), e);
+                return false;
+            }
+
+            deleteFile(targetFile);
+            if (!tmpFile.renameTo(targetFile)) {
+                Log.w(TAG, "Unable to commit " + targetFile.getAbsolutePath());
+                return false;
+            }
+            return true;
+        }
+    }
+
+    private static boolean copyFile(File sourceFile, File targetFile) {
+        try (FileInputStream inputStream = new FileInputStream(sourceFile);
+                FileOutputStream outputStream = new FileOutputStream(targetFile)) {
+            byte[] buffer = new byte[BUFFER_SIZE_BYTES];
+            int count;
+            while ((count = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, count);
+            }
+            return true;
+        } catch (IOException e) {
+            Log.w(TAG, "Unable to copy " + sourceFile.getAbsolutePath(), e);
+            return false;
+        }
+    }
+
+    private static void deleteFile(File file) {
+        if (file.exists() && !file.delete()) {
+            Log.w(TAG, "Unable to delete " + file.getAbsolutePath());
+        }
+    }
+
+    private static String normalizeEventToken(String event) {
+        if (event.isEmpty() || event.length() > MAX_EVENT_TOKEN_LENGTH) {
+            return "event";
+        }
+        for (int i = 0; i < event.length(); i++) {
+            char c = event.charAt(i);
+            boolean valid = (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_';
+            if (!valid) {
+                return "event";
+            }
+        }
+        return event;
+    }
+
+    private static String getAgeToken(long nowMillis, long timestampMillis) {
+        if (timestampMillis <= 0 || nowMillis <= 0) {
+            return "na";
+        }
+
+        long ageMillis = Math.max(0, nowMillis - timestampMillis);
+        if (ageMillis < 60_000) {
+            return "s";
+        }
+        if (ageMillis < 3_600_000) {
+            return "m";
+        }
+        if (ageMillis < 86_400_000) {
+            return "h";
+        }
+        return "d";
+    }
+}

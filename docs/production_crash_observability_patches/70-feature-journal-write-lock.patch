@@ -1,0 +1,58 @@
+diff --git a/android/java/org/chromium/chrome/browser/crash/BrowserExpressFeatureJournal.java b/android/java/org/chromium/chrome/browser/crash/BrowserExpressFeatureJournal.java
+index 957846cb8e..55c1d57bc9 100644
+--- a/android/java/org/chromium/chrome/browser/crash/BrowserExpressFeatureJournal.java
++++ b/android/java/org/chromium/chrome/browser/crash/BrowserExpressFeatureJournal.java
+@@ -44,6 +44,7 @@ public final class BrowserExpressFeatureJournal {
+     private static final int BUFFER_SIZE_BYTES = 1024;
+ 
+     private static final ArrayDeque<String> sEvents = new ArrayDeque<>();
++    private static final Object sFileLock = new Object();
+     private static boolean sInitialized;
+ 
+     private BrowserExpressFeatureJournal() {}
+@@ -193,26 +194,28 @@ public final class BrowserExpressFeatureJournal {
+     }
+ 
+     private static boolean writeJsonAtomically(File targetFile, JSONObject json) {
+-        @Nullable File parentFile = targetFile.getParentFile();
+-        if (parentFile == null || !ensureDirectory(parentFile)) {
+-            return false;
+-        }
++        synchronized (sFileLock) {
++            @Nullable File parentFile = targetFile.getParentFile();
++            if (parentFile == null || !ensureDirectory(parentFile)) {
++                return false;
++            }
+ 
+-        File tmpFile = new File(parentFile, targetFile.getName() + ".tmp");
+-        try (FileWriter writer = new FileWriter(tmpFile)) {
+-            writer.write(json.toString());
+-            writer.write('\n');
+-        } catch (IOException e) {
+-            Log.w(TAG, "Unable to write " + tmpFile.getAbsolutePath(), e);
+-            return false;
+-        }
++            File tmpFile = new File(parentFile, targetFile.getName() + ".tmp");
++            try (FileWriter writer = new FileWriter(tmpFile)) {
++                writer.write(json.toString());
++                writer.write('\n');
++            } catch (IOException e) {
++                Log.w(TAG, "Unable to write " + tmpFile.getAbsolutePath(), e);
++                return false;
++            }
+ 
+-        deleteFile(targetFile);
+-        if (!tmpFile.renameTo(targetFile)) {
+-            Log.w(TAG, "Unable to commit " + targetFile.getAbsolutePath());
+-            return false;
++            deleteFile(targetFile);
++            if (!tmpFile.renameTo(targetFile)) {
++                Log.w(TAG, "Unable to commit " + targetFile.getAbsolutePath());
++                return false;
++            }
++            return true;
+         }
+-        return true;
+     }
+ 
+     private static boolean copyFile(File sourceFile, File targetFile) {

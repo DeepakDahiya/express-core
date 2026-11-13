@@ -1,0 +1,10 @@
+diff --git a/android/brave_java_sources.gni b/android/brave_java_sources.gni
+--- a/android/brave_java_sources.gni
++++ b/android/brave_java_sources.gni
+@@ -94,5 +94,6 @@ brave_java_sources = [
+   "../../brave/android/java/org/chromium/chrome/browser/cosmetic_filters/BraveCosmeticFiltersUtils.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashBreadcrumbs.java",
++  "../../brave/android/java/org/chromium/chrome/browser/crash/BrowserExpressFeatureJournal.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crash/BrowserExpressJsonEventUploadJobServiceImpl.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java",

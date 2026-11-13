@@ -1,0 +1,64 @@
+diff --git a/docs/production_crash_observability_implementation_log.md b/docs/production_crash_observability_implementation_log.md
+index 795228e321..48c0a2296a 100644
+--- a/docs/production_crash_observability_implementation_log.md
++++ b/docs/production_crash_observability_implementation_log.md
+@@ -476,6 +476,37 @@ Patch artifacts:
+ * `docs/production_crash_observability_patches/56-implementation-log-feature-journal.patch`
+ * `docs/production_crash_observability_patches/57-file-tracking-feature-journal.patch`
+ 
++### 15. Startup crash-loop signal on Android exits
++
++Files:
++
++* `android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java`
++* `docs/browser_express_crash_backend_api.md`
++
++What changed:
++
++* Added a privacy-safe startup-loop detector that uses Android 11+
++  `ApplicationExitInfo` on startup.
++* The detector tracks repeated launch-time crash-like exits within a bounded
++  10-minute window. It only considers ANR, Java crash, native crash,
++  dependency death, excessive resource usage, initialization failure, low
++  memory, and signal exits.
++* Existing `android_exit` JSON events now attach an optional `startup_loop`
++  object once two or more loop-like exits are seen in the active window.
++* The `startup_loop` payload contains only `schema`, a count bucket (`2`,
++  `3`, or `4p`), and a bucketed `window_age`. It does not include exact
++  timestamps, install IDs, account identifiers, device identifiers, raw process
++  names, exception text, stack text, or free-form strings.
++* Updated the backend API contract to document `startup_loop` validation and
++  test coverage.
++
++Patch artifacts:
++
++* `docs/production_crash_observability_patches/58-startup-crash-loop-detector.patch`
++* `docs/production_crash_observability_patches/59-backend-api-startup-crash-loop.patch`
++* `docs/production_crash_observability_patches/60-implementation-log-startup-crash-loop.patch`
++* `docs/production_crash_observability_patches/61-file-tracking-startup-crash-loop.patch`
++
+ ## Validation
+ 
+ Focused validation run:
+@@ -727,6 +758,21 @@ Result:
+   mirroring, and optional `previous_session` object on Android exit JSON
+   events.
+ 
++Startup crash-loop signal validation succeeded:
++
++```sh
++PYTHONPATH=/home/deepakdahiyagh/Desktop/browser-express/src/brave/script \
++  autoninja -C ../out/android_Debug_arm64 \
++  chrome/android:chrome_java__compile_java
++```
++
++Result:
++
++* Build succeeded.
++* `chrome_java__compile_java` validated the startup-loop state tracking,
++  optional `startup_loop` object construction, and backend-facing Android exit
++  event payload code.
++
+ ## Required production configuration
+ 
+ Before shipping official builds, set:

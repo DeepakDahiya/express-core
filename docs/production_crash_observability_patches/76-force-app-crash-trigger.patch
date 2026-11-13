@@ -1,0 +1,27 @@
+diff --git a/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java b/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java
+index c3cb212d55..762bccb4ae 100644
+--- a/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java
++++ b/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java
+@@ -18,6 +18,8 @@ import org.chromium.build.annotations.NullMarked;
+ public final class BrowserExpressCrashVerifier {
+     private static final String JAVA_CRASH_MARKER = "qa_java";
+     private static final String NATIVE_CRASH_MARKER = "qa_native";
++    private static final String APP_CRASH_MARKER = "qa_app";
++    private static final int SIGNAL_ABORT = 6;
+ 
+     private BrowserExpressCrashVerifier() {}
+ 
+@@ -38,6 +40,13 @@ public final class BrowserExpressCrashVerifier {
+         BrowserExpressCrashVerifierJni.get().forceNativeCrash();
+     }
+ 
++    public static void forceAppCrash() {
++        markCrash(APP_CRASH_MARKER);
++        Process.sendSignal(Process.myPid(), SIGNAL_ABORT);
++        Process.killProcess(Process.myPid());
++        System.exit(10);
++    }
++
+     private static void markCrash(String marker) {
+         BrowserExpressCrashBreadcrumbs.recordEvent(marker);
+     }

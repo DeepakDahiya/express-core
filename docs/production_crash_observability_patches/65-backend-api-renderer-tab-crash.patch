@@ -1,0 +1,55 @@
+diff --git a/docs/browser_express_crash_backend_api.md b/docs/browser_express_crash_backend_api.md
+index 1c83b1ca39..557e4c4e34 100644
+--- a/docs/browser_express_crash_backend_api.md
++++ b/docs/browser_express_crash_backend_api.md
+@@ -1,6 +1,6 @@
+ # Browser Express Crash Backend API
+ 
+-Last updated: 2026-06-01
++Last updated: 2026-06-03
+ 
+ This document defines the backend work required to receive, store, symbolicate,
+ and triage Browser Express Android crash reports.
+@@ -353,7 +353,7 @@ Token validation:
+ Known initial components:
+ 
+ ```text
+-youtube, component
++youtube, renderer, component
+ ```
+ 
+ Known initial severities:
+@@ -379,6 +379,33 @@ pip_restore_missing
+ pip_mode_change_error
+ ```
+ 
++Known initial renderer codes:
++
++```text
++tab_crash
++```
++
++Renderer/tab crashes are reported through the existing `non_fatal` event type,
++not a new backend schema. The app sends:
++
++```json
++{
++  "schema": 1,
++  "type": "browser_express_event",
++  "event_type": "non_fatal",
++  "product": "BrowserExpress_Android",
++  "version": "0.0.276",
++  "upload_transport": "browser_express_json",
++  "privacy": "no_url_no_title_no_account_no_device_id",
++  "component": "renderer",
++  "code": "tab_crash",
++  "severity": "error"
++}
++```
++
++Use this for dashboards that distinguish full browser-process crashes from
++tab renderer crashes where the app remains alive.
++
+ ### JSON Event Storage
+ 
+ Object storage path recommendation:

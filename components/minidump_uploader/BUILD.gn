@@ -4,7 +4,16 @@
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import("//build/config/android/rules.gni")
+import("//brave/components/crash_reporting/buildflags.gni")
 import("//testing/test.gni")
+
+java_cpp_template("brave_minidump_uploader_config_java") {
+  sources = [ "android/java/templates/BraveMinidumpUploaderConfig.template" ]
+  defines = [
+    "BROWSER_EXPRESS_CRASH_UPLOAD_URL=\"$browser_express_crash_upload_url\"",
+    "BROWSER_EXPRESS_CRASH_PRODUCT=\"$browser_express_crash_product\"",
+  ]
+}
 
 robolectric_library("junit") {
   deps = [
@@ -16,5 +25,7 @@ robolectric_library("junit") {
     "//third_party/androidx:androidx_test_runner_java",
     "//third_party/junit",
   ]
-  sources = [ "android/javatests/src/org/chromium/components/minidump_uploader/BraveHttpURLConnectionFactoryImplTest.java" ]
+  sources = [
+    "android/javatests/src/org/chromium/components/minidump_uploader/BraveHttpURLConnectionFactoryImplTest.java",
+  ]
 }

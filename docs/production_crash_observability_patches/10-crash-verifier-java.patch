@@ -1,0 +1,46 @@
+diff --git a/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java b/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java
+new file mode 100644
+index 0000000000..db38664d9b
+--- /dev/null
++++ b/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java
+@@ -0,0 +1,40 @@
++/* Copyright (c) 2026 The Browser Express Authors. All rights reserved.
++ * This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
++ * You can obtain one at https://mozilla.org/MPL/2.0/. */
++
++package org.chromium.chrome.browser.crash;
++
++import org.jni_zero.JNINamespace;
++import org.jni_zero.NativeMethods;
++
++import org.chromium.build.annotations.NullMarked;
++
++/** Internal-only helper for validating production crash capture routing. */
++@JNINamespace("chrome::android")
++@NullMarked
++public final class BrowserExpressCrashVerifier {
++    private static final String JAVA_CRASH_MARKER = "qa_java";
++    private static final String NATIVE_CRASH_MARKER = "qa_native";
++
++    private BrowserExpressCrashVerifier() {}
++
++    public static void forceJavaCrash() {
++        markCrash(JAVA_CRASH_MARKER);
++        throw new RuntimeException("BrowserExpressCrashVerifierJavaCrash");
++    }
++
++    public static void forceNativeCrash() {
++        markCrash(NATIVE_CRASH_MARKER);
++        BrowserExpressCrashVerifierJni.get().forceNativeCrash();
++    }
++
++    private static void markCrash(String marker) {
++        BrowserExpressCrashBreadcrumbs.recordEvent(marker);
++    }
++
++    @NativeMethods
++    interface Natives {
++        void forceNativeCrash();
++    }
++}

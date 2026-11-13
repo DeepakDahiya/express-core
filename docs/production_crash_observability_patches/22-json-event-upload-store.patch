@@ -1,0 +1,583 @@
+--- a/android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java
++++ b/android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java
+@@ -5,23 +5,44 @@
+
+ package org.chromium.chrome.browser.crash;
+
++import android.app.ActivityManager;
++import android.app.ApplicationExitInfo;
++import android.content.SharedPreferences;
++import android.net.Uri;
++import android.os.Build;
++
++import androidx.annotation.RequiresApi;
++
+ import org.chromium.base.ContextUtils;
+ import org.chromium.base.Log;
+ import org.chromium.base.ThreadUtils;
+ import org.chromium.base.task.PostTask;
+ import org.chromium.base.task.TaskTraits;
++import org.chromium.base.version_info.VersionInfo;
+ import org.chromium.build.annotations.NullMarked;
+ import org.chromium.build.annotations.Nullable;
++import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManagerImpl;
++import org.chromium.components.minidump_uploader.BraveMinidumpUploaderConfig;
+ import org.chromium.components.minidump_uploader.CrashFileManager;
++import org.chromium.components.minidump_uploader.util.BraveHttpURLConnectionFactoryImpl;
++import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
+
+ import org.json.JSONException;
+ import org.json.JSONObject;
+
+ import java.io.File;
++import java.io.FileInputStream;
+ import java.io.FileReader;
+ import java.io.FileWriter;
+ import java.io.IOException;
++import java.io.OutputStream;
++import java.net.HttpURLConnection;
++import java.net.URL;
++import java.util.Arrays;
++import java.util.Comparator;
+ import java.util.HashSet;
++import java.util.List;
++import java.util.Locale;
+ import java.util.Set;
+
+ /** Browser Express-owned metadata store for pending crash reports. */
+@@ -38,8 +59,18 @@
+     private static final String STATE_READY = "ready";
+     private static final String STATE_NEEDS_LOGCAT = "needs_logcat";
+
++    private static final String EVENT_TYPE_ANDROID_EXIT = "android_exit";
++    private static final String EVENT_TYPE_NON_FATAL = "non_fatal";
++    private static final String PREF_LAST_EXIT_EVENT_ID = "browser_express_last_exit_event_id";
++
+     private static final int METADATA_SCHEMA_VERSION = 1;
+     private static final int METADATA_READ_LIMIT_BYTES = 8192;
++    private static final int MAX_EXIT_REASONS_TO_SCAN = 5;
++    private static final int MAX_PENDING_EVENTS_TO_KEEP = 20;
++    private static final int MAX_EVENT_UPLOAD_ATTEMPTS = 3;
++    private static final int MAX_EVENTS_TO_UPLOAD_PER_SCAN = 5;
++    private static final int MAX_EVENT_FILE_BYTES = 16 * 1024;
++    private static final int EVENT_UPLOAD_TIMEOUT_MS = 15_000;
+
+     private static boolean sInitialized;
+
+@@ -56,10 +87,17 @@
+                 BrowserExpressPendingCrashReportStore::scanAndScheduleUploads);
+     }
+
++    public static void recordNonFatal(String component, String code, String severity) {
++        PostTask.postTask(
++                TaskTraits.BEST_EFFORT_MAY_BLOCK,
++                () -> writeNonFatalEventAndUpload(component, code, severity));
++    }
++
+     private static void scanAndScheduleUploads() {
+         File cacheDir = ContextUtils.getApplicationContext().getCacheDir();
+         File storeDir = new File(cacheDir, STORE_DIR);
+         File pendingCrashesDir = new File(storeDir, PENDING_CRASHES_DIR);
++        File pendingEventsDir = new File(storeDir, PENDING_EVENTS_DIR);
+         File uploadStateDir = new File(storeDir, UPLOAD_STATE_DIR);
+
+         if (!ensureStoreLayout(storeDir)) {
+@@ -92,6 +130,10 @@
+         if (readyMinidumps.length > 0) {
+             MinidumpUploadServiceImpl.scheduleUploadJob();
+         }
++
++        captureLastExitEvent(pendingEventsDir, uploadStateDir, nowMillis);
++        trimPendingEvents(pendingEventsDir, uploadStateDir);
++        uploadPendingEvents(pendingEventsDir, uploadStateDir, nowMillis);
+     }
+
+     private static boolean ensureStoreLayout(File storeDir) {
+@@ -155,6 +197,351 @@
+         writeJsonAtomically(new File(uploadStateDir, metadataId + ".json"), uploadState);
+     }
+
++    private static void writeNonFatalEventAndUpload(
++            String component, String code, String severity) {
++        File cacheDir = ContextUtils.getApplicationContext().getCacheDir();
++        File storeDir = new File(cacheDir, STORE_DIR);
++        File pendingEventsDir = new File(storeDir, PENDING_EVENTS_DIR);
++        File uploadStateDir = new File(storeDir, UPLOAD_STATE_DIR);
++        if (!ensureStoreLayout(storeDir)) {
++            return;
++        }
++
++        long nowMillis = System.currentTimeMillis();
++        String safeComponent = normalizeToken(component, "component");
++        String safeCode = normalizeToken(code, "code");
++        String safeSeverity = normalizeToken(severity, "info");
++        String eventId =
++                sanitizeMetadataId(
++                        String.format(
++                                Locale.US,
++                                "nonfatal_%d_%s_%s",
++                                nowMillis,
++                                safeComponent,
++                                safeCode));
++
++        JSONObject event = createBaseEvent(EVENT_TYPE_NON_FATAL);
++        try {
++            event.put("component", safeComponent);
++            event.put("code", safeCode);
++            event.put("severity", safeSeverity);
++        } catch (JSONException e) {
++            Log.w(TAG, "Unable to build non-fatal event", e);
++            return;
++        }
++
++        writePendingEvent(pendingEventsDir, uploadStateDir, eventId, event, nowMillis);
++        trimPendingEvents(pendingEventsDir, uploadStateDir);
++        uploadPendingEvents(pendingEventsDir, uploadStateDir, nowMillis);
++    }
++
++    private static void captureLastExitEvent(
++            File pendingEventsDir, File uploadStateDir, long nowMillis) {
++        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
++            return;
++        }
++
++        @Nullable ApplicationExitInfo exitInfo = getMostRelevantExitInfo();
++        if (exitInfo == null || !isReportableExitReason(exitInfo.getReason())) {
++            return;
++        }
++
++        String processRole = getProcessRole(exitInfo);
++        String eventId =
++                sanitizeMetadataId(
++                        String.format(
++                                Locale.US,
++                                "exit_%d_%s_%s",
++                                Math.max(0, exitInfo.getTimestamp()),
++                                getReasonToken(exitInfo.getReason()),
++                                processRole));
++        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
++        if (eventId.equals(prefs.getString(PREF_LAST_EXIT_EVENT_ID, ""))) {
++            return;
++        }
++
++        JSONObject event = createBaseEvent(EVENT_TYPE_ANDROID_EXIT);
++        try {
++            event.put("reason", getReasonToken(exitInfo.getReason()));
++            event.put("process_role", processRole);
++            event.put("importance", getImportanceToken(exitInfo.getImportance()));
++            event.put("age", getAgeToken(exitInfo.getTimestamp()));
++        } catch (JSONException e) {
++            Log.w(TAG, "Unable to build Android exit event", e);
++            return;
++        }
++
++        if (writePendingEvent(pendingEventsDir, uploadStateDir, eventId, event, nowMillis)) {
++            prefs.edit().putString(PREF_LAST_EXIT_EVENT_ID, eventId).apply();
++        }
++    }
++
++    @RequiresApi(Build.VERSION_CODES.R)
++    private static @Nullable ApplicationExitInfo getMostRelevantExitInfo() {
++        ActivityManager activityManager =
++                (ActivityManager)
++                        ContextUtils.getApplicationContext()
++                                .getSystemService(android.content.Context.ACTIVITY_SERVICE);
++        if (activityManager == null) {
++            return null;
++        }
++
++        @Nullable List<ApplicationExitInfo> exitInfos =
++                activityManager.getHistoricalProcessExitReasons(
++                        null, 0, MAX_EXIT_REASONS_TO_SCAN);
++        if (exitInfos == null || exitInfos.isEmpty()) {
++            return null;
++        }
++
++        String browserProcessName = ContextUtils.getApplicationContext().getPackageName();
++        @Nullable ApplicationExitInfo fallbackExitInfo = null;
++        for (ApplicationExitInfo exitInfo : exitInfos) {
++            if (exitInfo == null) {
++                continue;
++            }
++            if (browserProcessName.equals(exitInfo.getProcessName())) {
++                return exitInfo;
++            }
++            if (fallbackExitInfo == null) {
++                fallbackExitInfo = exitInfo;
++            }
++        }
++        return fallbackExitInfo;
++    }
++
++    @RequiresApi(Build.VERSION_CODES.R)
++    private static String getProcessRole(ApplicationExitInfo exitInfo) {
++        String browserProcessName = ContextUtils.getApplicationContext().getPackageName();
++        @Nullable String processName = exitInfo.getProcessName();
++        if (browserProcessName.equals(processName)) {
++            return "browser";
++        }
++        if (processName != null && processName.startsWith(browserProcessName + ":")) {
++            return "child";
++        }
++        return "other";
++    }
++
++    @RequiresApi(Build.VERSION_CODES.R)
++    private static boolean isReportableExitReason(int reason) {
++        switch (reason) {
++            case ApplicationExitInfo.REASON_ANR:
++            case ApplicationExitInfo.REASON_CRASH:
++            case ApplicationExitInfo.REASON_CRASH_NATIVE:
++            case ApplicationExitInfo.REASON_DEPENDENCY_DIED:
++            case ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE:
++            case ApplicationExitInfo.REASON_INITIALIZATION_FAILURE:
++            case ApplicationExitInfo.REASON_LOW_MEMORY:
++            case ApplicationExitInfo.REASON_SIGNALED:
++            case ApplicationExitInfo.REASON_FREEZER:
++            case ApplicationExitInfo.REASON_OTHER:
++            case ApplicationExitInfo.REASON_UNKNOWN:
++                return true;
++            default:
++                return false;
++        }
++    }
++
++    private static JSONObject createBaseEvent(String eventType) {
++        JSONObject event = new JSONObject();
++        try {
++            event.put("schema", METADATA_SCHEMA_VERSION);
++            event.put("type", "browser_express_event");
++            event.put("event_type", eventType);
++            event.put("product", BraveMinidumpUploaderConfig.CRASH_PRODUCT);
++            event.put("version", VersionInfo.getProductVersion());
++            event.put("upload_transport", "browser_express_json");
++            event.put("privacy", "no_url_no_title_no_account_no_device_id");
++        } catch (JSONException e) {
++            throw new IllegalStateException(e);
++        }
++        return event;
++    }
++
++    private static boolean writePendingEvent(
++            File pendingEventsDir,
++            File uploadStateDir,
++            String eventId,
++            JSONObject event,
++            long nowMillis) {
++        File eventFile = new File(pendingEventsDir, eventId + ".json");
++        File uploadStateFile = new File(uploadStateDir, eventId + ".event.json");
++        long firstSeenMillis = readFirstSeenMillis(uploadStateFile, nowMillis);
++
++        JSONObject uploadState = new JSONObject();
++        try {
++            uploadState.put("schema", METADATA_SCHEMA_VERSION);
++            uploadState.put("type", "event_upload_state");
++            uploadState.put("event_type", event.optString("event_type", ""));
++            uploadState.put("attempt", readAttemptCount(uploadStateFile));
++            uploadState.put("first_seen_ms", firstSeenMillis);
++            uploadState.put("last_attempt_ms", 0);
++        } catch (JSONException e) {
++            Log.w(TAG, "Unable to build pending event state", e);
++            return false;
++        }
++
++        return writeJsonAtomically(eventFile, event)
++                && writeJsonAtomically(uploadStateFile, uploadState);
++    }
++
++    private static void uploadPendingEvents(
++            File pendingEventsDir, File uploadStateDir, long nowMillis) {
++        @Nullable File[] eventFiles = pendingEventsDir.listFiles((dir, name) -> name.endsWith(".json"));
++        if (eventFiles == null || eventFiles.length == 0) {
++            return;
++        }
++        if (!canUploadJsonEvents()) {
++            return;
++        }
++
++        Arrays.sort(eventFiles, Comparator.comparingLong(File::lastModified));
++        int uploadedOrAttempted = 0;
++        for (File eventFile : eventFiles) {
++            if (uploadedOrAttempted >= MAX_EVENTS_TO_UPLOAD_PER_SCAN) {
++                return;
++            }
++            if (eventFile.length() <= 0 || eventFile.length() > MAX_EVENT_FILE_BYTES) {
++                deleteEventAndState(eventFile, uploadStateDir);
++                continue;
++            }
++
++            File uploadStateFile = new File(uploadStateDir, getEventId(eventFile) + ".event.json");
++            int attempt = readAttemptCount(uploadStateFile);
++            if (attempt >= MAX_EVENT_UPLOAD_ATTEMPTS) {
++                deleteEventAndState(eventFile, uploadStateDir);
++                continue;
++            }
++
++            uploadedOrAttempted++;
++            if (uploadJsonEventFile(eventFile)) {
++                deleteEventAndState(eventFile, uploadStateDir);
++            } else {
++                updateEventUploadAttempt(uploadStateFile, attempt + 1, nowMillis);
++            }
++        }
++    }
++
++    private static boolean canUploadJsonEvents() {
++        if (BraveMinidumpUploaderConfig.CRASH_UPLOAD_URL.isEmpty()) {
++            return false;
++        }
++
++        CrashReportingPermissionManager permissionManager =
++                PrivacyPreferencesManagerImpl.getInstance();
++        if (permissionManager.isUploadEnabledForTests()) {
++            return true;
++        }
++        return permissionManager.isUsageAndCrashReportingPermitted()
++                && permissionManager.isClientInSampleForCrashes()
++                && permissionManager.isNetworkAvailableForCrashUploads();
++    }
++
++    private static boolean uploadJsonEventFile(File eventFile) {
++        @Nullable HttpURLConnection connection = null;
++        try {
++            connection = (HttpURLConnection) new URL(getJsonUploadUrl()).openConnection();
++            connection.setConnectTimeout(EVENT_UPLOAD_TIMEOUT_MS);
++            connection.setReadTimeout(EVENT_UPLOAD_TIMEOUT_MS);
++            connection.setDoOutput(true);
++            connection.setRequestMethod("POST");
++            connection.setRequestProperty("Connection", "Keep-Alive");
++            connection.setRequestProperty("Content-Type", "application/json; charset=utf-8");
++
++            try (FileInputStream inputStream = new FileInputStream(eventFile);
++                    OutputStream outputStream = connection.getOutputStream()) {
++                byte[] buffer = new byte[4096];
++                int count;
++                while ((count = inputStream.read(buffer)) != -1) {
++                    outputStream.write(buffer, 0, count);
++                }
++            }
++
++            int responseCode = connection.getResponseCode();
++            return responseCode == HttpURLConnection.HTTP_OK
++                    || responseCode == HttpURLConnection.HTTP_CREATED
++                    || responseCode == HttpURLConnection.HTTP_ACCEPTED
++                    || responseCode == HttpURLConnection.HTTP_NO_CONTENT;
++        } catch (IOException | RuntimeException e) {
++            Log.i(TAG, "Unable to upload pending event " + eventFile.getName() + ": " + e);
++            return false;
++        } finally {
++            if (connection != null) {
++                connection.disconnect();
++            }
++        }
++    }
++
++    private static String getJsonUploadUrl() {
++        return Uri.parse(BraveMinidumpUploaderConfig.CRASH_UPLOAD_URL)
++                .buildUpon()
++                .appendQueryParameter("product", BraveMinidumpUploaderConfig.CRASH_PRODUCT)
++                .appendQueryParameter("version", VersionInfo.getProductVersion())
++                .appendQueryParameter("guid", BraveHttpURLConnectionFactoryImpl.ZERO_GUID)
++                .appendQueryParameter("report_type", "browser_express_event")
++                .build()
++                .toString();
++    }
++
++    private static void updateEventUploadAttempt(
++            File uploadStateFile, int attempt, long nowMillis) {
++        long firstSeenMillis = readFirstSeenMillis(uploadStateFile, nowMillis);
++        JSONObject uploadState = new JSONObject();
++        try {
++            uploadState.put("schema", METADATA_SCHEMA_VERSION);
++            uploadState.put("type", "event_upload_state");
++            uploadState.put("attempt", attempt);
++            uploadState.put("first_seen_ms", firstSeenMillis);
++            uploadState.put("last_attempt_ms", nowMillis);
++        } catch (JSONException e) {
++            return;
++        }
++        writeJsonAtomically(uploadStateFile, uploadState);
++    }
++
++    private static int readAttemptCount(File uploadStateFile) {
++        if (!uploadStateFile.isFile()
++                || uploadStateFile.length() <= 0
++                || uploadStateFile.length() > METADATA_READ_LIMIT_BYTES) {
++            return 0;
++        }
++
++        try (FileReader reader = new FileReader(uploadStateFile)) {
++            char[] buffer = new char[(int) uploadStateFile.length()];
++            int length = reader.read(buffer);
++            if (length <= 0) {
++                return 0;
++            }
++            JSONObject uploadState = new JSONObject(new String(buffer, 0, length));
++            return Math.max(0, uploadState.optInt("attempt", 0));
++        } catch (IOException | JSONException e) {
++            return 0;
++        }
++    }
++
++    private static void trimPendingEvents(File pendingEventsDir, File uploadStateDir) {
++        @Nullable File[] eventFiles =
++                pendingEventsDir.listFiles((dir, name) -> name.endsWith(".json"));
++        if (eventFiles == null || eventFiles.length <= MAX_PENDING_EVENTS_TO_KEEP) {
++            return;
++        }
++
++        Arrays.sort(eventFiles, Comparator.comparingLong(File::lastModified));
++        for (int i = 0; i < eventFiles.length - MAX_PENDING_EVENTS_TO_KEEP; i++) {
++            deleteEventAndState(eventFiles[i], uploadStateDir);
++        }
++    }
++
++    private static void deleteEventAndState(File eventFile, File uploadStateDir) {
++        if (!eventFile.delete()) {
++            Log.w(TAG, "Unable to delete event " + eventFile.getAbsolutePath());
++        }
++        File uploadStateFile = new File(uploadStateDir, getEventId(eventFile) + ".event.json");
++        if (uploadStateFile.exists() && !uploadStateFile.delete()) {
++            Log.w(TAG, "Unable to delete event state " + uploadStateFile.getAbsolutePath());
++        }
++    }
++
+     private static long readFirstSeenMillis(File metadataFile, long fallbackMillis) {
+         if (!metadataFile.isFile()) {
+             return fallbackMillis;
+@@ -177,23 +564,25 @@
+         }
+     }
+
+-    private static void writeJsonAtomically(File targetFile, JSONObject json) {
++    private static boolean writeJsonAtomically(File targetFile, JSONObject json) {
+         File tmpFile = new File(targetFile.getParentFile(), targetFile.getName() + ".tmp");
+         try (FileWriter writer = new FileWriter(tmpFile)) {
+             writer.write(json.toString());
+             writer.write('\n');
+         } catch (IOException e) {
+             Log.w(TAG, "Unable to write " + tmpFile.getAbsolutePath(), e);
+-            return;
++            return false;
+         }
+
+         if (targetFile.exists() && !targetFile.delete()) {
+             Log.w(TAG, "Unable to replace " + targetFile.getAbsolutePath());
+-            return;
++            return false;
+         }
+         if (!tmpFile.renameTo(targetFile)) {
+             Log.w(TAG, "Unable to commit " + targetFile.getAbsolutePath());
++            return false;
+         }
++        return true;
+     }
+
+     private static void deleteStaleMetadata(File directory, Set<String> liveMetadataIds) {
+@@ -220,6 +609,106 @@
+         return sanitizeMetadataId(metadataId);
+     }
+
++    private static String getEventId(File eventFile) {
++        String name = eventFile.getName();
++        return name.endsWith(".json") ? name.substring(0, name.length() - ".json".length()) : name;
++    }
++
++    @RequiresApi(Build.VERSION_CODES.R)
++    private static String getReasonToken(int reason) {
++        switch (reason) {
++            case ApplicationExitInfo.REASON_ANR:
++                return "anr";
++            case ApplicationExitInfo.REASON_CRASH:
++                return "java";
++            case ApplicationExitInfo.REASON_CRASH_NATIVE:
++                return "native";
++            case ApplicationExitInfo.REASON_DEPENDENCY_DIED:
++                return "dep";
++            case ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE:
++                return "resource";
++            case ApplicationExitInfo.REASON_EXIT_SELF:
++                return "self";
++            case ApplicationExitInfo.REASON_INITIALIZATION_FAILURE:
++                return "init";
++            case ApplicationExitInfo.REASON_LOW_MEMORY:
++                return "low_mem";
++            case ApplicationExitInfo.REASON_PERMISSION_CHANGE:
++                return "perm";
++            case ApplicationExitInfo.REASON_SIGNALED:
++                return "signal";
++            case ApplicationExitInfo.REASON_USER_REQUESTED:
++                return "user_req";
++            case ApplicationExitInfo.REASON_USER_STOPPED:
++                return "user_stop";
++            case ApplicationExitInfo.REASON_FREEZER:
++                return "freezer";
++            case ApplicationExitInfo.REASON_PACKAGE_STATE_CHANGE:
++                return "pkg_state";
++            case ApplicationExitInfo.REASON_PACKAGE_UPDATED:
++                return "pkg_update";
++            case ApplicationExitInfo.REASON_OTHER:
++                return "other";
++            case ApplicationExitInfo.REASON_UNKNOWN:
++            default:
++                return "unknown";
++        }
++    }
++
++    private static String getImportanceToken(int importance) {
++        if (importance <= ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND) {
++            return "fg";
++        }
++        if (importance <= ActivityManager.RunningAppProcessInfo.IMPORTANCE_FOREGROUND_SERVICE) {
++            return "fgs";
++        }
++        if (importance <= ActivityManager.RunningAppProcessInfo.IMPORTANCE_VISIBLE) {
++            return "vis";
++        }
++        if (importance <= ActivityManager.RunningAppProcessInfo.IMPORTANCE_PERCEPTIBLE) {
++            return "per";
++        }
++        if (importance <= ActivityManager.RunningAppProcessInfo.IMPORTANCE_SERVICE) {
++            return "svc";
++        }
++        if (importance >= ActivityManager.RunningAppProcessInfo.IMPORTANCE_CACHED) {
++            return "cache";
++        }
++        return "bg";
++    }
++
++    private static String getAgeToken(long timestampMillis) {
++        if (timestampMillis <= 0) {
++            return "na";
++        }
++
++        long ageMillis = Math.max(0, System.currentTimeMillis() - timestampMillis);
++        if (ageMillis < 60_000) {
++            return "s";
++        }
++        if (ageMillis < 3_600_000) {
++            return "m";
++        }
++        if (ageMillis < 86_400_000) {
++            return "h";
++        }
++        return "d";
++    }
++
++    private static String normalizeToken(String token, String fallback) {
++        if (token.isEmpty() || token.length() > 32) {
++            return fallback;
++        }
++        for (int i = 0; i < token.length(); i++) {
++            char c = token.charAt(i);
++            boolean valid = (c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_';
++            if (!valid) {
++                return fallback;
++            }
++        }
++        return token;
++    }
++
+     private static String sanitizeMetadataId(String metadataId) {
+         StringBuilder sanitized = new StringBuilder(metadataId.length());
+         for (int i = 0; i < metadataId.length(); i++) {

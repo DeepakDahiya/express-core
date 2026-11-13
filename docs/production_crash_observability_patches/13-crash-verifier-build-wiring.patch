@@ -1,0 +1,44 @@
+diff --git a/android/brave_java_sources.gni b/android/brave_java_sources.gni
+index 748a4010a0..f05fe74aa8 100644
+--- a/android/brave_java_sources.gni
++++ b/android/brave_java_sources.gni
+@@ -93,6 +93,7 @@ brave_java_sources = [
+   "../../brave/android/java/org/chromium/chrome/browser/compositor/layouts/BraveToolbarSwipeLayout.java",
+   "../../brave/android/java/org/chromium/chrome/browser/contextmenu/BraveChromeContextMenuPopulator.java",
+   "../../brave/android/java/org/chromium/chrome/browser/cosmetic_filters/BraveCosmeticFiltersUtils.java",
++  "../../brave/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crash/BravePureJavaExceptionReporter.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crypto_wallet/AssetRatioServiceFactory.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crypto_wallet/BlockchainRegistryFactory.java",
+diff --git a/browser/android/BUILD.gn b/browser/android/BUILD.gn
+index eba7badc48..a17c3df784 100644
+--- a/browser/android/BUILD.gn
++++ b/browser/android/BUILD.gn
+@@ -9,6 +9,7 @@ assert(is_android)
+ 
+ source_set("android_browser_process") {
+   sources = [
++    "browser_express_crash_verifier.cc",
+     "brave_feature_util.cc",
+     "brave_local_state_android.cc",
+     "brave_relaunch_utils.cc",
+@@ -42,6 +43,7 @@ source_set("android_browser_process") {
+     "//chrome/common",
+     "//components/content_settings/core/browser",
+     "//components/content_settings/core/browser:cookie_settings",
++    "//components/crash/core/common:crash_key",
+     "//components/ntp_tiles",
+     "//components/sync",
+     "//components/translate/core/browser",
+diff --git a/build/android/config.gni b/build/android/config.gni
+index c094f51e6a..61a9be3c06 100644
+--- a/build/android/config.gni
++++ b/build/android/config.gni
+@@ -125,6 +125,7 @@ brave_jni_headers_sources = [
+   "//brave/android/java/org/chromium/chrome/browser/brave_leo/BraveLeoUtils.java",
+   "//brave/android/java/org/chromium/chrome/browser/brave_news/BraveNewsControllerFactory.java",
+   "//brave/android/java/org/chromium/chrome/browser/cosmetic_filters/BraveCosmeticFiltersUtils.java",
++  "//brave/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java",
+   "//brave/android/java/org/chromium/chrome/browser/crypto_wallet/AssetRatioServiceFactory.java",
+   "//brave/android/java/org/chromium/chrome/browser/crypto_wallet/BlockchainRegistryFactory.java",
+   "//brave/android/java/org/chromium/chrome/browser/crypto_wallet/BraveWalletProviderDelegateImplHelper.java",

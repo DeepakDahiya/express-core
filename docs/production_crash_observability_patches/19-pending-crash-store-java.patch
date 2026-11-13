@@ -1,0 +1,243 @@
+diff --git a/android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java b/android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java
+new file mode 100644
+index 0000000000..d2b3280672
+--- /dev/null
++++ b/android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java
+@@ -0,0 +1,237 @@
++/* Copyright (c) 2026 The Browser Express Authors. All rights reserved.
++ * This Source Code Form is subject to the terms of the Mozilla Public
++ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
++ * You can obtain one at https://mozilla.org/MPL/2.0/. */
++
++package org.chromium.chrome.browser.crash;
++
++import org.chromium.base.ContextUtils;
++import org.chromium.base.Log;
++import org.chromium.base.ThreadUtils;
++import org.chromium.base.task.PostTask;
++import org.chromium.base.task.TaskTraits;
++import org.chromium.build.annotations.NullMarked;
++import org.chromium.build.annotations.Nullable;
++import org.chromium.components.minidump_uploader.CrashFileManager;
++
++import org.json.JSONException;
++import org.json.JSONObject;
++
++import java.io.File;
++import java.io.FileReader;
++import java.io.FileWriter;
++import java.io.IOException;
++import java.util.HashSet;
++import java.util.Set;
++
++/** Browser Express-owned metadata store for pending crash reports. */
++@NullMarked
++public final class BrowserExpressPendingCrashReportStore {
++    private static final String TAG = "BEPendingCrashStore";
++
++    private static final String STORE_DIR = "Browser Express Crash Reports";
++    private static final String PENDING_CRASHES_DIR = "pending_crashes";
++    private static final String PENDING_EVENTS_DIR = "pending_events";
++    private static final String SESSIONS_DIR = "sessions";
++    private static final String UPLOAD_STATE_DIR = "upload_state";
++
++    private static final String STATE_READY = "ready";
++    private static final String STATE_NEEDS_LOGCAT = "needs_logcat";
++
++    private static final int METADATA_SCHEMA_VERSION = 1;
++    private static final int METADATA_READ_LIMIT_BYTES = 8192;
++
++    private static boolean sInitialized;
++
++    private BrowserExpressPendingCrashReportStore() {}
++
++    public static void initialize() {
++        ThreadUtils.assertOnUiThread();
++        if (sInitialized) {
++            return;
++        }
++        sInitialized = true;
++        PostTask.postTask(
++                TaskTraits.BEST_EFFORT_MAY_BLOCK,
++                BrowserExpressPendingCrashReportStore::scanAndScheduleUploads);
++    }
++
++    private static void scanAndScheduleUploads() {
++        File cacheDir = ContextUtils.getApplicationContext().getCacheDir();
++        File storeDir = new File(cacheDir, STORE_DIR);
++        File pendingCrashesDir = new File(storeDir, PENDING_CRASHES_DIR);
++        File uploadStateDir = new File(storeDir, UPLOAD_STATE_DIR);
++
++        if (!ensureStoreLayout(storeDir)) {
++            return;
++        }
++
++        CrashFileManager crashFileManager = new CrashFileManager(cacheDir);
++        Set<String> liveMetadataIds = new HashSet<>();
++        long nowMillis = System.currentTimeMillis();
++
++        File[] minidumpsSansLogcat = crashFileManager.getMinidumpsSansLogcat();
++        for (File minidump : minidumpsSansLogcat) {
++            writeMinidumpMetadata(
++                    pendingCrashesDir, uploadStateDir, minidump, STATE_NEEDS_LOGCAT, nowMillis);
++            liveMetadataIds.add(getMetadataId(minidump));
++        }
++
++        File[] readyMinidumps =
++                crashFileManager.getMinidumpsReadyForUpload(
++                        MinidumpUploadServiceImpl.MAX_TRIES_ALLOWED);
++        for (File minidump : readyMinidumps) {
++            writeMinidumpMetadata(
++                    pendingCrashesDir, uploadStateDir, minidump, STATE_READY, nowMillis);
++            liveMetadataIds.add(getMetadataId(minidump));
++        }
++
++        deleteStaleMetadata(pendingCrashesDir, liveMetadataIds);
++        deleteStaleMetadata(uploadStateDir, liveMetadataIds);
++
++        if (readyMinidumps.length > 0) {
++            MinidumpUploadServiceImpl.scheduleUploadJob();
++        }
++    }
++
++    private static boolean ensureStoreLayout(File storeDir) {
++        return ensureDirectory(storeDir)
++                && ensureDirectory(new File(storeDir, PENDING_CRASHES_DIR))
++                && ensureDirectory(new File(storeDir, PENDING_EVENTS_DIR))
++                && ensureDirectory(new File(storeDir, SESSIONS_DIR))
++                && ensureDirectory(new File(storeDir, UPLOAD_STATE_DIR));
++    }
++
++    private static boolean ensureDirectory(File directory) {
++        if (directory.isDirectory()) {
++            return true;
++        }
++        if (directory.mkdir() || directory.isDirectory()) {
++            return true;
++        }
++        Log.w(TAG, "Unable to create " + directory.getAbsolutePath());
++        return false;
++    }
++
++    private static void writeMinidumpMetadata(
++            File pendingCrashesDir,
++            File uploadStateDir,
++            File minidump,
++            String state,
++            long nowMillis) {
++        String metadataId = getMetadataId(minidump);
++        File metadataFile = new File(pendingCrashesDir, metadataId + ".json");
++        long firstSeenMillis = readFirstSeenMillis(metadataFile, nowMillis);
++
++        JSONObject metadata = new JSONObject();
++        JSONObject uploadState = new JSONObject();
++        try {
++            String localId = CrashFileManager.getCrashLocalIdFromFileName(minidump.getName());
++            metadata.put("schema", METADATA_SCHEMA_VERSION);
++            metadata.put("type", "minidump");
++            metadata.put("state", state);
++            metadata.put("crash_file", minidump.getName());
++            metadata.put("local_id", localId == null ? "" : localId);
++            metadata.put("attempt", CrashFileManager.readAttemptNumber(minidump.getName()));
++            metadata.put("size_bytes", Math.max(0, minidump.length()));
++            metadata.put("last_modified_ms", Math.max(0, minidump.lastModified()));
++            metadata.put("first_seen_ms", firstSeenMillis);
++            metadata.put("last_seen_ms", nowMillis);
++            metadata.put("upload_transport", "chromium_minidump_job");
++            metadata.put("privacy", "no_url_no_title_no_account_no_device_id");
++
++            uploadState.put("schema", METADATA_SCHEMA_VERSION);
++            uploadState.put("type", "minidump_upload_state");
++            uploadState.put("state", state);
++            uploadState.put("attempt", CrashFileManager.readAttemptNumber(minidump.getName()));
++            uploadState.put("first_seen_ms", firstSeenMillis);
++            uploadState.put("last_enqueued_ms", STATE_READY.equals(state) ? nowMillis : 0);
++        } catch (JSONException e) {
++            Log.w(TAG, "Unable to build pending crash metadata", e);
++            return;
++        }
++
++        writeJsonAtomically(metadataFile, metadata);
++        writeJsonAtomically(new File(uploadStateDir, metadataId + ".json"), uploadState);
++    }
++
++    private static long readFirstSeenMillis(File metadataFile, long fallbackMillis) {
++        if (!metadataFile.isFile()) {
++            return fallbackMillis;
++        }
++        long metadataLength = metadataFile.length();
++        if (metadataLength <= 0 || metadataLength > METADATA_READ_LIMIT_BYTES) {
++            return fallbackMillis;
++        }
++
++        try (FileReader reader = new FileReader(metadataFile)) {
++            char[] buffer = new char[(int) metadataLength];
++            int length = reader.read(buffer);
++            if (length <= 0) {
++                return fallbackMillis;
++            }
++            JSONObject metadata = new JSONObject(new String(buffer, 0, length));
++            return metadata.optLong("first_seen_ms", fallbackMillis);
++        } catch (IOException | JSONException e) {
++            return fallbackMillis;
++        }
++    }
++
++    private static void writeJsonAtomically(File targetFile, JSONObject json) {
++        File tmpFile = new File(targetFile.getParentFile(), targetFile.getName() + ".tmp");
++        try (FileWriter writer = new FileWriter(tmpFile)) {
++            writer.write(json.toString());
++            writer.write('\n');
++        } catch (IOException e) {
++            Log.w(TAG, "Unable to write " + tmpFile.getAbsolutePath(), e);
++            return;
++        }
++
++        if (targetFile.exists() && !targetFile.delete()) {
++            Log.w(TAG, "Unable to replace " + targetFile.getAbsolutePath());
++            return;
++        }
++        if (!tmpFile.renameTo(targetFile)) {
++            Log.w(TAG, "Unable to commit " + targetFile.getAbsolutePath());
++        }
++    }
++
++    private static void deleteStaleMetadata(File directory, Set<String> liveMetadataIds) {
++        @Nullable File[] files = directory.listFiles();
++        if (files == null) {
++            return;
++        }
++
++        for (File file : files) {
++            String name = file.getName();
++            if (!name.endsWith(".json")) {
++                continue;
++            }
++            String metadataId = name.substring(0, name.length() - ".json".length());
++            if (!liveMetadataIds.contains(metadataId) && !file.delete()) {
++                Log.w(TAG, "Unable to delete stale metadata " + file.getAbsolutePath());
++            }
++        }
++    }
++
++    private static String getMetadataId(File minidump) {
++        String localId = CrashFileManager.getCrashLocalIdFromFileName(minidump.getName());
++        String metadataId = localId == null || localId.isEmpty() ? minidump.getName() : localId;
++        return sanitizeMetadataId(metadataId);
++    }
++
++    private static String sanitizeMetadataId(String metadataId) {
++        StringBuilder sanitized = new StringBuilder(metadataId.length());
++        for (int i = 0; i < metadataId.length(); i++) {
++            char c = metadataId.charAt(i);
++            boolean valid =
++                    (c >= 'a' && c <= 'z')
++                            || (c >= 'A' && c <= 'Z')
++                            || (c >= '0' && c <= '9')
++                            || c == '_'
++                            || c == '-';
++            sanitized.append(valid ? c : '_');
++        }
++        return sanitized.toString();
++    }
++}

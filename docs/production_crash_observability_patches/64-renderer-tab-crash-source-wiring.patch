@@ -1,0 +1,12 @@
+diff --git a/android/brave_java_sources.gni b/android/brave_java_sources.gni
+index eee0c0775c..a6a65527f0 100644
+--- a/android/brave_java_sources.gni
++++ b/android/brave_java_sources.gni
+@@ -97,6 +97,7 @@ brave_java_sources = [
+   "../../brave/android/java/org/chromium/chrome/browser/crash/BrowserExpressFeatureJournal.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crash/BrowserExpressJsonEventUploadJobServiceImpl.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java",
++  "../../brave/android/java/org/chromium/chrome/browser/crash/BrowserExpressTabCrashObserver.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crash/BravePureJavaExceptionReporter.java",
+   "../../brave/android/java/org/chromium/chrome/browser/crypto_wallet/AssetRatioServiceFactory.java",

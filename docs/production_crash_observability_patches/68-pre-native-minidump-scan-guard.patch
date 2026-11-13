@@ -1,0 +1,89 @@
+diff --git a/android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java b/android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java
+index 61300f8433..6433bf9a10 100644
+--- a/android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java
++++ b/android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java
+@@ -86,6 +86,7 @@ public final class BrowserExpressPendingCrashReportStore {
+     private static final long STARTUP_LOOP_WINDOW_MS = 10 * 60 * 1000;
+ 
+     private static boolean sInitialized;
++    private static boolean sNativeInitialized;
+ 
+     private BrowserExpressPendingCrashReportStore() {}
+ 
+@@ -97,7 +98,18 @@ public final class BrowserExpressPendingCrashReportStore {
+         sInitialized = true;
+         PostTask.postTask(
+                 TaskTraits.BEST_EFFORT_MAY_BLOCK,
+-                BrowserExpressPendingCrashReportStore::scanAndScheduleUploads);
++                () -> scanAndScheduleUploads(/* includeMinidumps= */ false));
++    }
++
++    public static void onNativeInitialized() {
++        ThreadUtils.assertOnUiThread();
++        if (sNativeInitialized) {
++            return;
++        }
++        sNativeInitialized = true;
++        PostTask.postTask(
++                TaskTraits.BEST_EFFORT_MAY_BLOCK,
++                () -> scanAndScheduleUploads(/* includeMinidumps= */ true));
+     }
+ 
+     public static void recordNonFatal(String component, String code, String severity) {
+@@ -106,7 +118,7 @@ public final class BrowserExpressPendingCrashReportStore {
+                 () -> writeNonFatalEventAndUpload(component, code, severity));
+     }
+ 
+-    private static void scanAndScheduleUploads() {
++    private static void scanAndScheduleUploads(boolean includeMinidumps) {
+         File cacheDir = ContextUtils.getApplicationContext().getCacheDir();
+         File storeDir = new File(cacheDir, STORE_DIR);
+         File pendingCrashesDir = new File(storeDir, PENDING_CRASHES_DIR);
+@@ -117,11 +129,32 @@ public final class BrowserExpressPendingCrashReportStore {
+             return;
+         }
+ 
++        long nowMillis = System.currentTimeMillis();
++
++        if (includeMinidumps) {
++            scanMinidumpsAndScheduleUploads(
++                    cacheDir, pendingCrashesDir, uploadStateDir, nowMillis);
++        }
++
++        captureLastExitEvent(pendingEventsDir, uploadStateDir, nowMillis);
++        trimPendingEvents(pendingEventsDir, uploadStateDir);
++        if (uploadPendingEvents(pendingEventsDir, uploadStateDir, nowMillis)) {
++            scheduleJsonEventUploadJob();
++        }
++    }
++
++    private static void scanMinidumpsAndScheduleUploads(
++            File cacheDir, File pendingCrashesDir, File uploadStateDir, long nowMillis) {
+         CrashFileManager crashFileManager = new CrashFileManager(cacheDir);
+         Set<String> liveMetadataIds = new HashSet<>();
+-        long nowMillis = System.currentTimeMillis();
+ 
+-        File[] minidumpsSansLogcat = crashFileManager.getMinidumpsSansLogcat();
++        File[] minidumpsSansLogcat;
++        try {
++            minidumpsSansLogcat = crashFileManager.getMinidumpsSansLogcat();
++        } catch (UnsatisfiedLinkError e) {
++            Log.w(TAG, "Skipping minidump scan until crash MIME JNI is available", e);
++            return;
++        }
+         for (File minidump : minidumpsSansLogcat) {
+             writeMinidumpMetadata(
+                     pendingCrashesDir, uploadStateDir, minidump, STATE_NEEDS_LOGCAT, nowMillis);
+@@ -143,12 +176,6 @@ public final class BrowserExpressPendingCrashReportStore {
+         if (readyMinidumps.length > 0) {
+             MinidumpUploadServiceImpl.scheduleUploadJob();
+         }
+-
+-        captureLastExitEvent(pendingEventsDir, uploadStateDir, nowMillis);
+-        trimPendingEvents(pendingEventsDir, uploadStateDir);
+-        if (uploadPendingEvents(pendingEventsDir, uploadStateDir, nowMillis)) {
+-            scheduleJsonEventUploadJob();
+-        }
+     }
+ 
+     private static boolean ensureStoreLayout(File storeDir) {

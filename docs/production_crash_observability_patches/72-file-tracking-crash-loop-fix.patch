@@ -1,0 +1,16 @@
+diff --git a/docs/production_crash_observability_file_tracking.md b/docs/production_crash_observability_file_tracking.md
+index f3752c82c5..f1fd996915 100644
+--- a/docs/production_crash_observability_file_tracking.md
++++ b/docs/production_crash_observability_file_tracking.md
+@@ -132,6 +132,11 @@ These artifacts live under `docs/production_crash_observability_patches/`.
+ * `65-backend-api-renderer-tab-crash.patch`
+ * `66-implementation-log-renderer-tab-crash.patch`
+ * `67-file-tracking-renderer-tab-crash.patch`
++* `68-pre-native-minidump-scan-guard.patch`
++* `69-post-native-minidump-scan-wiring.patch`
++* `70-feature-journal-write-lock.patch`
++* `71-implementation-log-crash-loop-fix.patch`
++* `72-file-tracking-crash-loop-fix.patch`
+ 
+ ## Known unrelated dirty files
+ 

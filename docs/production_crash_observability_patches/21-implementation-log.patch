@@ -1,0 +1,308 @@
+diff --git a/docs/production_crash_observability_implementation_log.md b/docs/production_crash_observability_implementation_log.md
+new file mode 100644
+index 0000000000..6003485e78
+--- /dev/null
++++ b/docs/production_crash_observability_implementation_log.md
+@@ -0,0 +1,302 @@
++# Production Crash Observability Implementation Log
++
++Last updated: 2026-06-01
++
++This document records the implementation changes made from the production crash
++observability plan. Each entry names the code surface changed, why it changed,
++and which patch artifact captures it.
++
++## Implemented changes
++
++### 1. Fork-owned native crash upload URL
++
++Files:
++
++* `components/crash_reporting/buildflags.gni`
++* `chromium_src/components/crash/core/app/crash_reporter_client.cc`
++* `patches/components-crash-core-app-BUILD.gn.patch`
++
++What changed:
++
++* Added `browser_express_crash_upload_url` and
++  `browser_express_crash_product` GN args.
++* Official builds now assert that `browser_express_crash_upload_url` is set.
++* Brave and Google crash endpoints are rejected by GN assertions.
++* The native Crashpad upload URL now comes from
++  `BROWSER_EXPRESS_CRASH_UPLOAD_URL` instead of Brave's endpoint.
++
++Patch artifacts:
++
++* `docs/production_crash_observability_patches/01-crash-buildflags.patch`
++* `docs/production_crash_observability_patches/02-native-crash-client.patch`
++* `docs/production_crash_observability_patches/03-crash-core-build-patch-file.patch`
++
++### 2. Fork-owned Android Java minidump upload URL
++
++Files:
++
++* `components/minidump_uploader/android/java/src/.../util/BraveHttpURLConnectionFactoryImpl.java`
++* `components/minidump_uploader/android/javatests/src/.../BraveHttpURLConnectionFactoryImplTest.java`
++
++What changed:
++
++* Removed the hardcoded Brave minidump upload URL.
++* The Java uploader now appends `product`, `version`, and a zeroed `guid`
++  to the configured fork-owned upload URL.
++* Empty upload URL disables Java minidump upload instead of sending reports to
++  inherited Brave or Google infrastructure.
++* Added tests for URL construction and disabled-upload behavior.
++
++Patch artifacts:
++
++* `docs/production_crash_observability_patches/07-minidump-http-factory.patch`
++* `docs/production_crash_observability_patches/08-minidump-http-factory-tests.patch`
++
++### 3. Generated Java minidump config from GN args
++
++Files:
++
++* `components/minidump_uploader/BUILD.gn`
++* `components/minidump_uploader/android/java/templates/BraveMinidumpUploaderConfig.template`
++* `components/minidump_uploader/sources.gni`
++* `patches/components-minidump_uploader-BUILD.gn.patch`
++
++What changed:
++
++* Replaced the checked-in Java config class with a generated Java config
++  srcjar.
++* Native and Java crash upload paths now use the same GN values:
++  `browser_express_crash_upload_url` and `browser_express_crash_product`.
++* Updated the Chromium minidump uploader patch to import Brave sources once,
++  append Brave Java sources/deps, and append the generated config srcjar.
++
++Patch artifacts:
++
++* `docs/production_crash_observability_patches/04-minidump-build-target.patch`
++* `docs/production_crash_observability_patches/05-minidump-config-template.patch`
++* `docs/production_crash_observability_patches/06-minidump-sources.patch`
++* `docs/production_crash_observability_patches/09-minidump-build-patch-file.patch`
++
++### 4. Internal Java/native crash verification hooks
++
++Files:
++
++* `android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java`
++* `browser/android/browser_express_crash_verifier.cc`
++* `android/java/org/chromium/chrome/browser/settings/developer/BraveQAPreferences.java`
++* `android/java/res/xml/qa_preferences.xml`
++* `android/brave_java_sources.gni`
++* `build/android/config.gni`
++* `browser/android/BUILD.gn`
++
++What changed:
++
++* Added an internal Java helper that intentionally triggers Java or native
++  crashes for production crash pipeline verification.
++* Java crash verification records a privacy-safe `qa_java` breadcrumb before
++  throwing an uncaught `RuntimeException`.
++* Native crash verification sets a Browser Express-owned native crash key
++  named `browser-express-crash-verifier` before calling
++  `base::ImmediateCrash()`.
++* Native crash verification also records a privacy-safe `qa_native`
++  breadcrumb before entering native code.
++* Added QA-code-gated preferences for "Force Java crash" and
++  "Force native crash", each behind a confirmation dialog.
++* Wired the new Java class into Brave's Android Java sources, JNI header
++  generation, and native Android browser process source set.
++
++Patch artifacts:
++
++* `docs/production_crash_observability_patches/10-crash-verifier-java.patch`
++* `docs/production_crash_observability_patches/11-crash-verifier-native.patch`
++* `docs/production_crash_observability_patches/12-crash-verifier-qa-ui.patch`
++* `docs/production_crash_observability_patches/13-crash-verifier-build-wiring.patch`
++
++### 5. Fork-owned crash breadcrumbs and Android last-exit signal
++
++Files:
++
++* `components/crash/android/crash_keys_android.h`
++* `components/crash/android/crash_keys_android.cc`
++* `components/crash/android/java/src/org/chromium/components/crash/CrashKeys.java`
++* `patches/components-crash-android-crash-keys.patch`
++* `android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashBreadcrumbs.java`
++* `android/java/org/chromium/chrome/browser/BraveApplicationImplBase.java`
++* `android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java`
++* `android/brave_java_sources.gni`
++
++What changed:
++
++* Added two Browser Express-owned Android crash keys:
++  `browser_express_breadcrumbs` and `browser_express_exit_info`.
++* Added a Chromium patch override for the crash-key extension so this fork
++  keeps the new keys when Chromium/Brave patches are re-applied.
++* Aligned `CrashKeys.java` key ordering with the generated `CrashKeyIndex`
++  values while adding the new keys, keeping `installed_modules` at the alias
++  index after the small crash-key array.
++* Added a privacy-safe breadcrumb ring that stores at most eight short tokens
++  and publishes a 63-character-or-shorter value to
++  `browser_express_breadcrumbs`.
++* Added startup capture for Android `ApplicationExitInfo` on Android 11+.
++  The crash key stores only compact buckets: process role (`b`, `c`, `o`),
++  reason, importance bucket, and age bucket.
++* Wired breadcrumbs to browser-process application startup, foreground/
++  background state changes, memory-trim callbacks, configuration changes, and
++  internal QA crash verification.
++* Explicitly avoids URL, page title, account, install, raw process-name, stack,
++  exception-message, and device-identifier data in these crash keys.
++
++Patch artifacts:
++
++* `docs/production_crash_observability_patches/10-crash-verifier-java.patch`
++  (updated to use the Browser Express breadcrumb key)
++* `docs/production_crash_observability_patches/14-crash-key-extension.patch`
++* `docs/production_crash_observability_patches/15-crash-breadcrumbs-java.patch`
++* `docs/production_crash_observability_patches/16-crash-breadcrumb-lifecycle-wiring.patch`
++* `docs/production_crash_observability_patches/17-crash-key-patch-file.patch`
++* `docs/production_crash_observability_patches/18-implementation-log.patch`
++
++### 6. Local pending crash metadata store and early upload enqueue
++
++Files:
++
++* `android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java`
++* `android/java/org/chromium/chrome/browser/BraveApplicationImplBase.java`
++* `android/brave_java_sources.gni`
++
++What changed:
++
++* Added a Browser Express-owned cache layout:
++  `Browser Express Crash Reports/pending_crashes`,
++  `pending_events`, `sessions`, and `upload_state`.
++* Added a startup background scan that imports Crashpad minidumps through
++  Chromium's existing `CrashFileManager` and writes metadata JSON for
++  minidumps that are ready to upload or still need logcat processing.
++* Metadata is local-only and stores bounded crash state: file name, local crash
++  id when available, upload attempt number, file size, timestamps, state, and
++  upload transport. It does not store URLs, titles, accounts, device IDs, raw
++  process names, exception messages, or stack text.
++* When ready minidumps already exist, the startup scan enqueues Chromium's
++  existing `MinidumpUploadServiceImpl.scheduleUploadJob()` instead of adding a
++  parallel uploader. This preserves existing crash-reporting consent, policy,
++  sampling, network, and retry checks while moving enqueue earlier in app
++  startup.
++* Stale metadata is deleted when the corresponding minidump is no longer
++  pending.
++
++Patch artifacts:
++
++* `docs/production_crash_observability_patches/19-pending-crash-store-java.patch`
++* `docs/production_crash_observability_patches/20-pending-crash-store-wiring.patch`
++* `docs/production_crash_observability_patches/21-implementation-log.patch`
++
++## Validation
++
++Focused validation run:
++
++```sh
++PYTHONPATH=/home/deepakdahiyagh/Desktop/browser-express/src/brave/script \
++  autoninja -C ../out/android_Debug_arm64 \
++  brave/components/minidump_uploader:junit
++```
++
++Result:
++
++* Build succeeded.
++* GN regenerated successfully.
++* Generated target
++  `//brave/components/minidump_uploader:brave_minidump_uploader_config_java`
++  built successfully.
++* The minidump uploader Java target compiled, ran bytecode rewrite, and
++  validated successfully.
++
++Additional checks:
++
++* `git diff --check` passed for the crash/minidump implementation files.
++* Search over the touched crash/minidump override paths found no live
++  `cr.brave.com` or `clients2.google.com/cr/report` upload URL outside tests.
++* Crash verifier native and Java compile validation succeeded:
++
++```sh
++PYTHONPATH=/home/deepakdahiyagh/Desktop/browser-express/src/brave/script \
++  autoninja -C ../out/android_Debug_arm64 \
++  brave/browser/android:android_browser_process \
++  chrome/android:chrome_java__compile_java
++```
++
++Result:
++
++* Native file `browser_express_crash_verifier.cc` compiled into
++  `obj/brave/browser/android/android_browser_process/browser_express_crash_verifier.o`.
++* `chrome/android:chrome_java__compile_java` completed successfully, validating
++  the Java source and generated JNI symbol references.
++* The broader `chrome/android:chrome_java` target was attempted and failed on
++  an unrelated existing ErrorProne warning in
++  `chrome/browser/ui/android/toolbar/java/src/.../ToolbarPhone.java`
++  (`mIsHomeButtonEnabled` unused).
++
++Crash breadcrumb and Android crash-key validation succeeded:
++
++```sh
++PYTHONPATH=/home/deepakdahiyagh/Desktop/browser-express/src/brave/script \
++  autoninja -C ../out/android_Debug_arm64 \
++  brave/browser/android:android_browser_process \
++  chrome/android:chrome_java__compile_java
++```
++
++```sh
++PYTHONPATH=/home/deepakdahiyagh/Desktop/browser-express/src/brave/script \
++  autoninja -C ../out/android_Debug_arm64 \
++  components/crash/android:java__compile_java \
++  components/crash/android:crash_android
++```
++
++Result:
++
++* Both focused builds succeeded.
++* Generated `CrashKeyIndex` now includes
++  `BROWSER_EXPRESS_BREADCRUMBS = 3`,
++  `BROWSER_EXPRESS_EXIT_INFO = 4`, and `NUM_SMALL_KEYS = 5`.
++* The crash component Java jar contains the new crash-key constants and key
++  names.
++* The native `crash_keys_android.o` object contains
++  `browser_express_breadcrumbs` and `browser_express_exit_info`.
++
++Pending crash metadata store validation succeeded:
++
++```sh
++PYTHONPATH=/home/deepakdahiyagh/Desktop/browser-express/src/brave/script \
++  autoninja -C ../out/android_Debug_arm64 \
++  chrome/android:chrome_java__compile_java
++```
++
++Result:
++
++* Build succeeded.
++* `chrome_java__compile_java` included
++  `BrowserExpressPendingCrashReportStore.java`, validating the startup wiring,
++  JSON metadata writer, and minidump uploader references.
++
++## Required production configuration
++
++Before shipping official builds, set:
++
++```gn
++browser_express_crash_upload_url = "https://<owned-crash-endpoint>/..."
++browser_express_crash_product = "BrowserExpress_Android"
++```
++
++Do not set this URL to Brave or Google crash ingestion. The GN assertions are
++intended to fail fast if inherited endpoints are accidentally used.
++
++## Still pending
++
++* Add an owned staging/prod crash ingestion backend.
++* Add release symbol upload and release-gate checks.
++* Add first-party JSON/non-fatal report upload on top of the pending report
++  store.
++* Expand breadcrumbs into feature-level instrumentation and persisted previous
++  session journals.
++* Convert ANR/OOM/ApplicationExitInfo signals into full pending reports, not
++  only crash-key context.
++* Add Appium/BrowserStack reproduction runs.

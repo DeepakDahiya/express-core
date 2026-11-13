@@ -1,0 +1,159 @@
+diff --git a/android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java b/android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java
+index e08716b2ac..61300f8433 100644
+--- a/android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java
++++ b/android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java
+@@ -66,6 +66,11 @@ public final class BrowserExpressPendingCrashReportStore {
+     private static final String EVENT_TYPE_ANDROID_EXIT = "android_exit";
+     private static final String EVENT_TYPE_NON_FATAL = "non_fatal";
+     private static final String PREF_LAST_EXIT_EVENT_ID = "browser_express_last_exit_event_id";
++    private static final String PREF_STARTUP_LOOP_LAST_EXIT_EVENT_ID =
++            "browser_express_startup_loop_last_exit_event_id";
++    private static final String PREF_STARTUP_LOOP_COUNT = "browser_express_startup_loop_count";
++    private static final String PREF_STARTUP_LOOP_WINDOW_START_MS =
++            "browser_express_startup_loop_window_start_ms";
+ 
+     private static final int METADATA_SCHEMA_VERSION = 1;
+     private static final int METADATA_READ_LIMIT_BYTES = 8192;
+@@ -77,6 +82,8 @@ public final class BrowserExpressPendingCrashReportStore {
+     private static final int EVENT_UPLOAD_TIMEOUT_MS = 15_000;
+     private static final int JSON_EVENT_UPLOAD_JOB_ID = 770_620_601;
+     private static final int JSON_EVENT_UPLOAD_BACKOFF_MS = 1000 * 60 * 30;
++    private static final int STARTUP_LOOP_MIN_COUNT = 2;
++    private static final long STARTUP_LOOP_WINDOW_MS = 10 * 60 * 1000;
+ 
+     private static boolean sInitialized;
+ 
+@@ -252,7 +259,13 @@ public final class BrowserExpressPendingCrashReportStore {
+         }
+ 
+         @Nullable ApplicationExitInfo exitInfo = getMostRelevantExitInfo();
+-        if (exitInfo == null || !isReportableExitReason(exitInfo.getReason())) {
++        if (exitInfo == null) {
++            return;
++        }
++
++        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
++        if (!isReportableExitReason(exitInfo.getReason())) {
++            clearStartupLoopState(prefs);
+             return;
+         }
+ 
+@@ -265,7 +278,6 @@ public final class BrowserExpressPendingCrashReportStore {
+                                 Math.max(0, exitInfo.getTimestamp()),
+                                 getReasonToken(exitInfo.getReason()),
+                                 processRole));
+-        SharedPreferences prefs = ContextUtils.getAppSharedPreferences();
+         if (eventId.equals(prefs.getString(PREF_LAST_EXIT_EVENT_ID, ""))) {
+             return;
+         }
+@@ -281,6 +293,11 @@ public final class BrowserExpressPendingCrashReportStore {
+             if (previousSession != null) {
+                 event.put("previous_session", previousSession);
+             }
++            @Nullable JSONObject startupLoop =
++                    buildStartupLoopSummary(prefs, eventId, exitInfo, nowMillis);
++            if (startupLoop != null) {
++                event.put("startup_loop", startupLoop);
++            }
+         } catch (JSONException e) {
+             Log.w(TAG, "Unable to build Android exit event", e);
+             return;
+@@ -291,6 +308,57 @@ public final class BrowserExpressPendingCrashReportStore {
+         }
+     }
+ 
++    @RequiresApi(Build.VERSION_CODES.R)
++    private static @Nullable JSONObject buildStartupLoopSummary(
++            SharedPreferences prefs,
++            String eventId,
++            ApplicationExitInfo exitInfo,
++            long nowMillis)
++            throws JSONException {
++        if (!isStartupLoopReason(exitInfo.getReason())) {
++            clearStartupLoopState(prefs);
++            return null;
++        }
++
++        if (eventId.equals(prefs.getString(PREF_STARTUP_LOOP_LAST_EXIT_EVENT_ID, ""))) {
++            return null;
++        }
++
++        long windowStartMillis = prefs.getLong(PREF_STARTUP_LOOP_WINDOW_START_MS, 0);
++        int previousCount = Math.max(0, prefs.getInt(PREF_STARTUP_LOOP_COUNT, 0));
++        int count;
++        if (windowStartMillis > 0 && nowMillis - windowStartMillis <= STARTUP_LOOP_WINDOW_MS) {
++            count = previousCount + 1;
++        } else {
++            windowStartMillis = nowMillis;
++            count = 1;
++        }
++
++        prefs.edit()
++                .putString(PREF_STARTUP_LOOP_LAST_EXIT_EVENT_ID, eventId)
++                .putLong(PREF_STARTUP_LOOP_WINDOW_START_MS, windowStartMillis)
++                .putInt(PREF_STARTUP_LOOP_COUNT, count)
++                .apply();
++
++        if (count < STARTUP_LOOP_MIN_COUNT) {
++            return null;
++        }
++
++        JSONObject startupLoop = new JSONObject();
++        startupLoop.put("schema", METADATA_SCHEMA_VERSION);
++        startupLoop.put("count", getStartupLoopCountToken(count));
++        startupLoop.put("window_age", getAgeToken(windowStartMillis));
++        return startupLoop;
++    }
++
++    private static void clearStartupLoopState(SharedPreferences prefs) {
++        prefs.edit()
++                .remove(PREF_STARTUP_LOOP_LAST_EXIT_EVENT_ID)
++                .remove(PREF_STARTUP_LOOP_COUNT)
++                .remove(PREF_STARTUP_LOOP_WINDOW_START_MS)
++                .apply();
++    }
++
+     @RequiresApi(Build.VERSION_CODES.R)
+     private static @Nullable ApplicationExitInfo getMostRelevantExitInfo() {
+         ActivityManager activityManager =
+@@ -357,6 +425,23 @@ public final class BrowserExpressPendingCrashReportStore {
+         }
+     }
+ 
++    @RequiresApi(Build.VERSION_CODES.R)
++    private static boolean isStartupLoopReason(int reason) {
++        switch (reason) {
++            case ApplicationExitInfo.REASON_ANR:
++            case ApplicationExitInfo.REASON_CRASH:
++            case ApplicationExitInfo.REASON_CRASH_NATIVE:
++            case ApplicationExitInfo.REASON_DEPENDENCY_DIED:
++            case ApplicationExitInfo.REASON_EXCESSIVE_RESOURCE_USAGE:
++            case ApplicationExitInfo.REASON_INITIALIZATION_FAILURE:
++            case ApplicationExitInfo.REASON_LOW_MEMORY:
++            case ApplicationExitInfo.REASON_SIGNALED:
++                return true;
++            default:
++                return false;
++        }
++    }
++
+     private static JSONObject createBaseEvent(String eventType) {
+         JSONObject event = new JSONObject();
+         try {
+@@ -767,6 +852,16 @@ public final class BrowserExpressPendingCrashReportStore {
+         return "d";
+     }
+ 
++    private static String getStartupLoopCountToken(int count) {
++        if (count <= 2) {
++            return "2";
++        }
++        if (count == 3) {
++            return "3";
++        }
++        return "4p";
++    }
++
+     private static String normalizeToken(String token, String fallback) {
+         if (token.isEmpty() || token.length() > 32) {
+             return fallback;

@@ -1,0 +1,215 @@
+diff --git a/android/java/org/chromium/chrome/browser/app/BraveActivity.java b/android/java/org/chromium/chrome/browser/app/BraveActivity.java
+index 65ff2e0e33..221795c801 100644
+--- a/android/java/org/chromium/chrome/browser/app/BraveActivity.java
++++ b/android/java/org/chromium/chrome/browser/app/BraveActivity.java
+@@ -143,6 +143,8 @@ import org.chromium.chrome.browser.browsing_data.BrowsingDataBridge;
+ import org.chromium.chrome.browser.browsing_data.BrowsingDataType;
+ import org.chromium.chrome.browser.browsing_data.TimePeriod;
+ import org.chromium.chrome.browser.compositor.layouts.LayoutManagerChrome;
++import org.chromium.chrome.browser.crash.BrowserExpressCrashBreadcrumbs;
++import org.chromium.chrome.browser.crash.BrowserExpressPendingCrashReportStore;
+ import org.chromium.chrome.browser.crypto_wallet.AssetRatioServiceFactory;
+ import org.chromium.chrome.browser.crypto_wallet.BlockchainRegistryFactory;
+ import org.chromium.chrome.browser.crypto_wallet.BraveWalletServiceFactory;
+@@ -701,9 +703,13 @@ public abstract class BraveActivity extends ChromeActivity
+     }
+ 
+     private void handleYouTubeBackPress() {
++        BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_back");
+         Log.e("Browser Express", "=== Handling Youtube Back Press ===");
+         Tab currentTab = getActivityTab();
+         if (currentTab == null || currentTab.getWebContents() == null) {
++            BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_no_tab");
++            BrowserExpressPendingCrashReportStore.recordNonFatal(
++                    "youtube", "pip_back_no_tab", "warning");
+             Log.e("Browser Express", "Current tab is null or has no web contents");
+             performDefaultBackPress();
+             return;
+@@ -716,12 +722,19 @@ public abstract class BraveActivity extends ChromeActivity
+                         + currentTab.getId()
+                         + " url="
+                         + currentTab.getUrl().getSpec());
++        if (!BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
++                    currentTab.getWebContents())) {
++            BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_unavailable");
++            BrowserExpressPendingCrashReportStore.recordNonFatal(
++                    "youtube", "pip_back_unavailable", "warning");
++        }
+         // Record the watch tab as the PiP origin before requesting PiP. The
+         // home tab is opened only after the framework confirms PiP entry; doing
+         // it earlier can hide the WebContents while requestPictureInPicture()
+         // is still settling.
+         notePipOriginTab(currentTab, true);
+         Log.e(PIP_DEBUG_TAG, "handleYouTubeBackPress triggerYouTubePiP tabId=" + currentTab.getId());
++        BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_trigger");
+         BraveYouTubeScriptInjectorNativeHelper.triggerYouTubePiP(currentTab.getWebContents());
+     }
+ 
+@@ -985,7 +998,13 @@ public abstract class BraveActivity extends ChromeActivity
+     }
+ 
+     public void notePipOriginTab(Tab originTab, boolean openYouTubeHomeAfterPipEntered) {
++        BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_origin");
+         mPipOriginTabId = originTab != null ? originTab.getId() : Tab.INVALID_TAB_ID;
++        if (mPipOriginTabId == Tab.INVALID_TAB_ID) {
++            BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_no_origin");
++            BrowserExpressPendingCrashReportStore.recordNonFatal(
++                    "youtube", "pip_origin_missing", "warning");
++        }
+         mOpenYouTubeHomeAfterPipEntered = openYouTubeHomeAfterPipEntered;
+         mPipRequestTimestampMs = System.currentTimeMillis();
+         ContextUtils.getAppSharedPreferences()
+@@ -1039,6 +1058,7 @@ public abstract class BraveActivity extends ChromeActivity
+         // A lost fullscreen-exit or tab restore is recoverable on the next
+         // layout pass; an activity crash isn't.
+         try {
++            BrowserExpressCrashBreadcrumbs.recordEvent(inPicture ? "yt_pip_enter" : "yt_pip_exit");
+             Tab beforeSuperTab = getActivityTab();
+             Log.e(
+                     PIP_DEBUG_TAG,
+@@ -1083,6 +1103,11 @@ public abstract class BraveActivity extends ChromeActivity
+                             "BraveActivity.onPictureInPictureModeChanged fallbackOrigin tabId="
+                                     + mPipOriginTabId);
+                 }
++                if (mPipOriginTabId == Tab.INVALID_TAB_ID) {
++                    BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_no_origin");
++                    BrowserExpressPendingCrashReportStore.recordNonFatal(
++                            "youtube", "pip_origin_missing", "warning");
++                }
+ 
+                 if (isCurrentTabYouTube()) {
+                     firePostHogUserEvent(PostHogEventKeys.YT_FEATURE_EXPLORED_PIP_BG_PLAY);
+@@ -1101,6 +1126,13 @@ public abstract class BraveActivity extends ChromeActivity
+             // field in `finally` made the deferred restore a no-op.
+             final int restoreId = getPipOriginTabIdForRestore();
+             clearPipRestoreState();
++            if (restoreId == Tab.INVALID_TAB_ID) {
++                BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_restore_miss");
++                BrowserExpressPendingCrashReportStore.recordNonFatal(
++                        "youtube", "pip_restore_missing", "warning");
++            } else {
++                BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_restore");
++            }
+ 
+             // Restore in a short retry ladder. Android may deliver the PiP
+             // resume intent and the mode-change callback in either order; the
+@@ -1135,6 +1167,9 @@ public abstract class BraveActivity extends ChromeActivity
+                 fullscreenManager.exitPersistentFullscreenMode();
+             }
+         } catch (Exception e) {
++            BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_error");
++            BrowserExpressPendingCrashReportStore.recordNonFatal(
++                    "youtube", "pip_mode_change_error", "error");
+             Log.e(PIP_DEBUG_TAG, "BraveActivity.onPictureInPictureModeChanged error: " + e.getMessage());
+             Log.e("BraveActivity", "onPictureInPictureModeChanged error: " + e.getMessage());
+         }
+diff --git a/android/java/org/chromium/chrome/browser/toolbar/bottom/BrowsingModeBottomToolbarCoordinator.java b/android/java/org/chromium/chrome/browser/toolbar/bottom/BrowsingModeBottomToolbarCoordinator.java
+index 8b8f81a7af..e3ee056b33 100644
+--- a/android/java/org/chromium/chrome/browser/toolbar/bottom/BrowsingModeBottomToolbarCoordinator.java
++++ b/android/java/org/chromium/chrome/browser/toolbar/bottom/BrowsingModeBottomToolbarCoordinator.java
+@@ -48,6 +48,8 @@ import android.view.HapticFeedbackConstants;
+ import org.chromium.chrome.browser.BraveYouTubeScriptInjectorNativeHelper;
+ import org.chromium.chrome.browser.browser_express_comments.YouTubeCommentsUtil;
+ import org.chromium.chrome.browser.browser_express_comments.Comment;
++import org.chromium.chrome.browser.crash.BrowserExpressCrashBreadcrumbs;
++import org.chromium.chrome.browser.crash.BrowserExpressPendingCrashReportStore;
+ import android.util.DisplayMetrics;
+ import android.util.Base64;
+ import java.util.List;
+@@ -330,6 +332,7 @@ public class BrowsingModeBottomToolbarCoordinator {
+                 // later.
+                 final boolean fromIntro = mIntroPipClickPending;
+                 mIntroPipClickPending = false;
++                BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_bottom");
+ 
+                 // Dismiss the coach mark if it's currently showing.
+                 dismissPipCoachMark();
+@@ -338,7 +341,18 @@ public class BrowsingModeBottomToolbarCoordinator {
+                         .putInt(PREF_PIP_INTRO_SHOWN_COUNT, MAX_PIP_INTRO_SHOW_COUNT).apply();
+ 
+                 Tab tab = mTabProvider.get();
+-                if (tab == null || tab.getWebContents() == null) return;
++                if (tab == null || tab.getWebContents() == null) {
++                    BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_no_tab");
++                    BrowserExpressPendingCrashReportStore.recordNonFatal(
++                            "youtube", "pip_bottom_no_tab", "warning");
++                    return;
++                }
++                if (!BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
++                            tab.getWebContents())) {
++                    BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_unavailable");
++                    BrowserExpressPendingCrashReportStore.recordNonFatal(
++                            "youtube", "pip_bottom_unavailable", "warning");
++                }
+                 try {
+                     BraveActivity activity = BraveActivity.getBraveActivity();
+                     Log.e(
+@@ -352,11 +366,15 @@ public class BrowsingModeBottomToolbarCoordinator {
+                     // after the framework confirms PiP entry.
+                     activity.notePipOriginTab(tab, true);
+                     Log.e("BravePiPDebug", "bottomToolbar triggerYouTubePiP tabId=" + tab.getId());
++                    BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_trigger");
+                     BraveYouTubeScriptInjectorNativeHelper.triggerYouTubePiP(tab.getWebContents());
+ 
+                     // Track PIP feature explored
+                     firePostHogEvent(PostHogEventKeys.YT_FEATURE_EXPLORED_PIP, null);
+                 } catch (BraveActivity.BraveActivityNotFoundException e) {
++                    BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_no_activity");
++                    BrowserExpressPendingCrashReportStore.recordNonFatal(
++                            "youtube", "pip_no_activity", "warning");
+                     Log.e(TAG, "openYouTubeHome: " + e.getMessage());
+                 }
+                 maybeShowBgPlayNudge();
+@@ -392,6 +410,9 @@ public class BrowsingModeBottomToolbarCoordinator {
+                             mToolbarRoot.requestLayout();
+                             activity.moveTaskToBack(true);
+                         } catch (BraveActivity.BraveActivityNotFoundException e) {
++                            BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_no_activity");
++                            BrowserExpressPendingCrashReportStore.recordNonFatal(
++                                    "youtube", "pip_intro_no_activity", "warning");
+                             Log.e(TAG, "moveTaskToBack during PiP intro: "
+                                     + e.getMessage());
+                         }
+diff --git a/android/java/org/chromium/chrome/browser/toolbar/top/BraveToolbarLayoutImpl.java b/android/java/org/chromium/chrome/browser/toolbar/top/BraveToolbarLayoutImpl.java
+index 72de884dea..f8d877a123 100644
+--- a/android/java/org/chromium/chrome/browser/toolbar/top/BraveToolbarLayoutImpl.java
++++ b/android/java/org/chromium/chrome/browser/toolbar/top/BraveToolbarLayoutImpl.java
+@@ -69,6 +69,8 @@ import org.chromium.chrome.browser.BraveYouTubeScriptInjectorNativeHelper;
+ import org.chromium.chrome.browser.app.BraveActivity;
+ import org.chromium.chrome.browser.brave_stats.BraveStatsUtil;
+ import org.chromium.chrome.browser.crypto_wallet.controller.DAppsWalletController;
++import org.chromium.chrome.browser.crash.BrowserExpressCrashBreadcrumbs;
++import org.chromium.chrome.browser.crash.BrowserExpressPendingCrashReportStore;
+ import org.chromium.chrome.browser.custom_layout.popup_window_tooltip.PopupWindowTooltip;
+ import org.chromium.chrome.browser.customtabs.FullScreenCustomTabActivity;
+ import org.chromium.chrome.browser.customtabs.features.toolbar.CustomTabToolbar;
+@@ -1419,15 +1421,27 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
+         } else if (mBraveWalletButton == v && mBraveWalletButton != null) {
+             maybeShowWalletPanel();
+         } else if (mYouTubePipButton == v && mYouTubePipButton != null) {
++            BrowserExpressCrashBreadcrumbs.recordEvent("yt_full_top");
+             Tab currentTab = getToolbarDataProvider().getTab();
+-            if (currentTab != null
+-                    && BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
++            if (currentTab == null || currentTab.getWebContents() == null) {
++                BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_no_tab");
++                BrowserExpressPendingCrashReportStore.recordNonFatal(
++                        "youtube", "full_top_no_tab", "warning");
++            } else if (BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
+                             currentTab.getWebContents())) {
+                 if (!PictureInPicture.isEnabled(getContext())) {
++                    BrowserExpressCrashBreadcrumbs.recordEvent("yt_pip_os_disabled");
++                    BrowserExpressPendingCrashReportStore.recordNonFatal(
++                            "youtube", "full_os_disabled", "warning");
+                     hideYouTubePipIcon();
+                     return;
+                 }
++                BrowserExpressCrashBreadcrumbs.recordEvent("yt_full_req");
+                 BraveYouTubeScriptInjectorNativeHelper.setFullscreen(currentTab.getWebContents());
++            } else {
++                BrowserExpressCrashBreadcrumbs.recordEvent("yt_full_unavail");
++                BrowserExpressPendingCrashReportStore.recordNonFatal(
++                        "youtube", "full_top_unavailable", "warning");
+             }
+         }
+     }

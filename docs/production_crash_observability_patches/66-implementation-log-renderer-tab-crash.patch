@@ -1,0 +1,67 @@
+diff --git a/docs/production_crash_observability_implementation_log.md b/docs/production_crash_observability_implementation_log.md
+index 48c0a2296a..70f4b7d205 100644
+--- a/docs/production_crash_observability_implementation_log.md
++++ b/docs/production_crash_observability_implementation_log.md
+@@ -507,6 +507,39 @@ Patch artifacts:
+ * `docs/production_crash_observability_patches/60-implementation-log-startup-crash-loop.patch`
+ * `docs/production_crash_observability_patches/61-file-tracking-startup-crash-loop.patch`
+ 
++### 16. Renderer/tab crash signal
++
++Files:
++
++* `android/java/org/chromium/chrome/browser/crash/BrowserExpressTabCrashObserver.java`
++* `android/java/org/chromium/chrome/browser/app/BraveActivity.java`
++* `android/brave_java_sources.gni`
++* `docs/browser_express_crash_backend_api.md`
++
++What changed:
++
++* Added a Browser Express-owned `TabModelSelectorTabObserver` that observes all
++  tabs owned by the activity and receives `TabObserver.onCrash(...)` callbacks.
++* A tab renderer crash now records a `tab_crash` breadcrumb for native/Java
++  crash context and enqueues a privacy-safe JSON event:
++  `event_type=non_fatal`, `component=renderer`, `code=tab_crash`,
++  `severity=error`.
++* The event uses the already implemented backend-compatible `non_fatal`
++  schema, so no new backend endpoint or event type is required.
++* The activity registers the observer after post-inflation startup and destroys
++  it during `onDestroyInternal()` to avoid leaking tab observers.
++* The payload intentionally excludes URL, title, account, device id, tab id,
++  exception text, stack text, and page content.
++
++Patch artifacts:
++
++* `docs/production_crash_observability_patches/62-renderer-tab-crash-observer.patch`
++* `docs/production_crash_observability_patches/63-renderer-tab-crash-activity-wiring.patch`
++* `docs/production_crash_observability_patches/64-renderer-tab-crash-source-wiring.patch`
++* `docs/production_crash_observability_patches/65-backend-api-renderer-tab-crash.patch`
++* `docs/production_crash_observability_patches/66-implementation-log-renderer-tab-crash.patch`
++* `docs/production_crash_observability_patches/67-file-tracking-renderer-tab-crash.patch`
++
+ ## Validation
+ 
+ Focused validation run:
+@@ -773,6 +806,22 @@ Result:
+   optional `startup_loop` object construction, and backend-facing Android exit
+   event payload code.
+ 
++Renderer/tab crash signal validation succeeded:
++
++```sh
++PYTHONPATH=/home/deepakdahiyagh/Desktop/browser-express/src/brave/script \
++  autoninja -C ../out/android_Debug_arm64 \
++  chrome/android:chrome_java__compile_java
++```
++
++Result:
++
++* Build succeeded.
++* `chrome_java__compile_java` validated
++  `BrowserExpressTabCrashObserver.java`, activity registration/cleanup, source
++  list wiring, and the call into the existing Browser Express non-fatal JSON
++  event upload path.
++
+ ## Required production configuration
+ 
+ Before shipping official builds, set:

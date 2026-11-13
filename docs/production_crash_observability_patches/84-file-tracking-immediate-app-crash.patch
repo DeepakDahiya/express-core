@@ -1,0 +1,15 @@
+diff --git a/docs/production_crash_observability_file_tracking.md b/docs/production_crash_observability_file_tracking.md
+index 42c64ddd3d..d6d30d486c 100644
+--- a/docs/production_crash_observability_file_tracking.md
++++ b/docs/production_crash_observability_file_tracking.md
+@@ -145,6 +145,10 @@ These artifacts live under `docs/production_crash_observability_patches/`.
+ * `78-force-app-crash-qa-xml.patch`
+ * `79-implementation-log-force-app-crash.patch`
+ * `80-file-tracking-force-app-crash.patch`
++* `81-immediate-force-app-crash-trigger.patch`
++* `82-immediate-force-app-crash-qa-wiring.patch`
++* `83-implementation-log-immediate-app-crash.patch`
++* `84-file-tracking-immediate-app-crash.patch`
+ 
+ ## Known unrelated dirty files
+ 

@@ -1,0 +1,25 @@
+diff --git a/docs/production_crash_observability_file_tracking.md b/docs/production_crash_observability_file_tracking.md
+index fdaca08533..f3752c82c5 100644
+--- a/docs/production_crash_observability_file_tracking.md
++++ b/docs/production_crash_observability_file_tracking.md
+@@ -18,6 +18,7 @@ changes.
+ * `android/java/org/chromium/chrome/browser/crash/BrowserExpressJsonEventUploadJobServiceImpl.java`
+ * `android/java/org/chromium/chrome/browser/crash/BrowserExpressCrashVerifier.java`
+ * `android/java/org/chromium/chrome/browser/crash/BrowserExpressPendingCrashReportStore.java`
++* `android/java/org/chromium/chrome/browser/crash/BrowserExpressTabCrashObserver.java`
+ * `android/java/org/chromium/chrome/browser/settings/developer/BraveQAPreferences.java`
+ * `android/java/res/xml/qa_preferences.xml`
+ * `android/java/org/chromium/chrome/browser/toolbar/bottom/BrowsingModeBottomToolbarCoordinator.java`
+@@ -125,6 +126,12 @@ These artifacts live under `docs/production_crash_observability_patches/`.
+ * `59-backend-api-startup-crash-loop.patch`
+ * `60-implementation-log-startup-crash-loop.patch`
+ * `61-file-tracking-startup-crash-loop.patch`
++* `62-renderer-tab-crash-observer.patch`
++* `63-renderer-tab-crash-activity-wiring.patch`
++* `64-renderer-tab-crash-source-wiring.patch`
++* `65-backend-api-renderer-tab-crash.patch`
++* `66-implementation-log-renderer-tab-crash.patch`
++* `67-file-tracking-renderer-tab-crash.patch`
+ 
+ ## Known unrelated dirty files
+ 

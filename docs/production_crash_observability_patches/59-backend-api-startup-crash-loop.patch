@@ -1,0 +1,43 @@
+diff --git a/docs/browser_express_crash_backend_api.md b/docs/browser_express_crash_backend_api.md
+index a1c5c7cf24..1c83b1ca39 100644
+--- a/docs/browser_express_crash_backend_api.md
++++ b/docs/browser_express_crash_backend_api.md
+@@ -267,6 +267,11 @@ Body fields:
+     "event_count": 4,
+     "events": ["app_create", "fg", "yt_pip_trigger", "yt_pip_error"],
+     "last_seen_age": "s"
++  },
++  "startup_loop": {
++    "schema": 1,
++    "count": "2",
++    "window_age": "s"
+   }
+ }
+ ```
+@@ -308,6 +313,18 @@ Optional `previous_session` object:
+   exception text, stack text, free-form strings, and values containing `/`,
+   `.`, `:`, `@`, spaces, or uppercase letters.
+ 
++Optional `startup_loop` object:
++
++* May be omitted when the app has not detected repeated startup exits.
++* `schema` must be `1`.
++* `count` must be one of `2`, `3`, or `4p`.
++* `window_age` must be one of `na`, `s`, `m`, `h`, or `d`.
++* Treat this as an alerting hint for repeated launch-time exits, not as a
++  stable user or device identifier.
++* Reject exact timestamps, install IDs, account identifiers, device
++  identifiers, raw process names, raw exception text, stack text, and
++  free-form strings.
++
+ ### Event Type: `non_fatal`
+ 
+ Body fields:
+@@ -657,6 +674,7 @@ Backend developer should implement automated tests for:
+ * gzip bomb protection returns `413`
+ * valid JSON `android_exit` event returns success
+ * valid JSON `android_exit` event with `previous_session` returns success
++* valid JSON `android_exit` event with `startup_loop` returns success
+ * valid JSON `non_fatal` event returns success
+ * JSON with forbidden key `url` is rejected
+ * JSON with non-zero `guid` query param is rejected or flagged

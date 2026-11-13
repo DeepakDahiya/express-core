@@ -1,0 +1,12 @@
+diff --git a/android/java/org/chromium/chrome/browser/app/BraveActivity.java b/android/java/org/chromium/chrome/browser/app/BraveActivity.java
+index 5cd3e42538..27d0485cb1 100644
+--- a/android/java/org/chromium/chrome/browser/app/BraveActivity.java
++++ b/android/java/org/chromium/chrome/browser/app/BraveActivity.java
+@@ -2109,6 +2109,7 @@ public abstract class BraveActivity extends ChromeActivity
+         initWalletNativeServices();
+ 
+         mNativeInitialized = true;
++        BrowserExpressPendingCrashReportStore.onNativeInitialized();
+ 
+         // if (countryCode.equals(BraveConstants.INDIA_COUNTRY_CODE)
+         //         && ChromeSharedPreferences.getInstance()

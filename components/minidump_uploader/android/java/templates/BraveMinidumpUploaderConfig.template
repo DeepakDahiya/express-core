@@ -1,0 +1,14 @@
+/* Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+package org.chromium.components.minidump_uploader;
+
+/** Build-time configuration for this fork's minidump uploader. */
+public final class BraveMinidumpUploaderConfig {
+    public static final String CRASH_UPLOAD_URL = BROWSER_EXPRESS_CRASH_UPLOAD_URL;
+    public static final String CRASH_PRODUCT = BROWSER_EXPRESS_CRASH_PRODUCT;
+
+    private BraveMinidumpUploaderConfig() {}
+}

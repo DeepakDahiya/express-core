@@ -1,0 +1,16 @@
+diff --git a/android/java/res/xml/qa_preferences.xml b/android/java/res/xml/qa_preferences.xml
+index 465ddb26a6..be07dad8b6 100644
+--- a/android/java/res/xml/qa_preferences.xml
++++ b/android/java/res/xml/qa_preferences.xml
+@@ -61,6 +61,11 @@
+         android:title="Force native crash"
+         android:summary="Creates an intentional native minidump for internal verification" />
+ 
++    <org.chromium.components.browser_ui.settings.ChromeBasePreference
++        android:key="qa_force_app_crash"
++        android:title="Force app crash"
++        android:summary="Terminates the current app process for crash pipeline verification" />
++
+     <org.chromium.components.browser_ui.settings.ChromeBasePreference
+         android:key="qa_import_rewards_db"
+         android:title="Import Rewards Database"/>

@@ -52,6 +52,21 @@
         android:title="Command Line String"/>
 
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
+        android:key="qa_force_java_crash"
+        android:title="Force Java crash"
+        android:summary="Creates an intentional Java crash report for internal verification" />
+
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
+        android:key="qa_force_native_crash"
+        android:title="Force native crash"
+        android:summary="Creates an intentional native minidump for internal verification" />
+
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
+        android:key="qa_force_app_crash"
+        android:title="Force app crash"
+        android:summary="Terminates the current app process for crash pipeline verification" />
+
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:key="qa_import_rewards_db"
         android:title="Import Rewards Database"/>
 

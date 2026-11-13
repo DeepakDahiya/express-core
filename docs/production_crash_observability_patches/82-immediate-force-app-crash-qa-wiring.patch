@@ -1,0 +1,22 @@
+diff --git a/android/java/org/chromium/chrome/browser/settings/developer/BraveQAPreferences.java b/android/java/org/chromium/chrome/browser/settings/developer/BraveQAPreferences.java
+index c7620b244d..77c62f02d0 100644
+--- a/android/java/org/chromium/chrome/browser/settings/developer/BraveQAPreferences.java
++++ b/android/java/org/chromium/chrome/browser/settings/developer/BraveQAPreferences.java
+@@ -282,16 +282,7 @@ public class BraveQAPreferences extends BravePreferenceFragment
+         if (mForceAppCrash != null) {
+             mForceAppCrash.setOnPreferenceClickListener(
+                     preference -> {
+-                        confirmCrash(
+-                                "Force app crash?",
+-                                "This will terminate the current app process for crash "
+-                                        + "pipeline verification.",
+-                                new Runnable() {
+-                                    @Override
+-                                    public void run() {
+-                                        BrowserExpressCrashVerifier.forceAppCrash();
+-                                    }
+-                                });
++                        BrowserExpressCrashVerifier.forceAppCrash();
+                         return true;
+                     });
+         }
