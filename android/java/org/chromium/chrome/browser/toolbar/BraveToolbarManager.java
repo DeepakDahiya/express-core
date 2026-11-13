@@ -55,6 +55,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.readaloud.ReadAloudController;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.chrome.browser.tab.TabObscuringHandler;
 import org.chromium.chrome.browser.tab_ui.TabContentManager;
 import org.chromium.chrome.browser.tab_ui.TabModelDotInfo;
@@ -96,16 +97,11 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import android.content.SharedPreferences;
 import org.chromium.chrome.browser.settings.BrowserExpressGetProfilePreferencesUtil;
-import org.chromium.chrome.browser.app.helpers.ImageLoader;
-import org.json.JSONException;
-import org.json.JSONObject;
+import org.chromium.chrome.browser.app.helpers.ProfileAvatar;
 import android.widget.ImageButton;
 import android.content.Context;
 import org.chromium.base.ContextUtils;
-import com.bumptech.glide.Glide;
 import org.chromium.base.task.AsyncTask;
-import android.util.Base64;
-import java.io.UnsupportedEncodingException;
 import org.chromium.base.Log;
 
 import java.util.List;
@@ -150,6 +146,12 @@ public class BraveToolbarManager extends ToolbarManager
 
     // Own members.
     private boolean mIsBraveBottomControlsVisible;
+    /**
+     * The new tab page is showing. The floating bottom bar has nothing to offer there (the page
+     * has its own search box and feed), so the bottom controls collapse while it is up.
+     */
+    private boolean mIsNtpShowing;
+    private @Nullable ActivityTabProvider.ActivityTabTabObserver mNtpTabObserver;
     private final ObservableSupplier<Boolean> mOmniboxFocusStateSupplier;
     private final OneshotSupplier<LayoutStateProvider> mLayoutStateProviderSupplier;
     private final HomepageManager.HomepageStateListener mBraveHomepageStateListener;
@@ -307,6 +309,42 @@ public class BraveToolbarManager extends ToolbarManager
         // handled separately via persistent token in
         // BrowsingModeBottomToolbarCoordinator.updateYouTubeControlsLock.
         updateBraveBottomControlsVisibility();
+
+        if (mActivityTabProvider != null) {
+            mNtpTabObserver =
+                    new ActivityTabProvider.ActivityTabTabObserver(mActivityTabProvider, true) {
+                        @Override
+                        protected void onObservingDifferentTab(@Nullable Tab tab) {
+                            updateNtpShowing(tab);
+                        }
+
+                        @Override
+                        public void onUrlUpdated(Tab tab) {
+                            updateNtpShowing(tab);
+                        }
+                    };
+        }
+    }
+
+    private void updateNtpShowing(@Nullable Tab tab) {
+        boolean ntp = tab != null && UrlUtilities.isNtpUrl(tab.getUrl());
+        if (ntp == mIsNtpShowing) return;
+        mIsNtpShowing = ntp;
+        applyBottomToolbarVisibility();
+    }
+
+    /**
+     * Shows or collapses the bottom controls: shown when enabled for this orientation, except on
+     * the new tab page. Only the controls themselves change; the top toolbar keeps treating them
+     * as enabled, so its buttons don't shuffle each time the new tab page comes and goes.
+     */
+    private void applyBottomToolbarVisibility() {
+        if (mBottomControlsCoordinatorSupplier != null
+                && mBottomControlsCoordinatorSupplier.get()
+                        instanceof BraveBottomControlsCoordinator) {
+            ((BraveBottomControlsCoordinator) mBottomControlsCoordinatorSupplier.get())
+                    .setBottomToolbarVisible(mIsBraveBottomControlsVisible && !mIsNtpShowing);
+        }
     }
 
 
@@ -438,7 +476,7 @@ public class BraveToolbarManager extends ToolbarManager
             mBottomControls.setBottomControlsCoordinatorSupplier(
                     mBottomControlsCoordinatorSupplier);
             updateBraveBottomControlsVisibility();
-            if (mIsBraveBottomControlsVisible) {
+            if (mIsBraveBottomControlsVisible && !mIsNtpShowing) {
                 mBottomControls.setVisibility(View.VISIBLE);
             }
         }
@@ -505,6 +543,10 @@ public class BraveToolbarManager extends ToolbarManager
 
     @Override
     public void destroy() {
+        if (mNtpTabObserver != null) {
+            mNtpTabObserver.destroy();
+            mNtpTabObserver = null;
+        }
         if (mLayoutStateProvider != null && mLayoutStateObserver != null) {
             mLayoutStateProvider.removeObserver(mLayoutStateObserver);
             mLayoutStateObserver = null;
@@ -588,12 +630,7 @@ public class BraveToolbarManager extends ToolbarManager
         if (mToolbar instanceof BraveTopToolbarCoordinator) {
             ((BraveTopToolbarCoordinator) mToolbar).onBottomControlsVisibilityChanged(visible);
         }
-        if (mBottomControlsCoordinatorSupplier != null
-                && mBottomControlsCoordinatorSupplier.get()
-                        instanceof BraveBottomControlsCoordinator) {
-            ((BraveBottomControlsCoordinator) mBottomControlsCoordinatorSupplier.get())
-                    .setBottomToolbarVisible(visible);
-        }
+        applyBottomToolbarVisibility();
     }
 
     private void fetchAndUpdateProfileImage() {
@@ -607,15 +644,7 @@ public class BraveToolbarManager extends ToolbarManager
             mProfileButton = activity.getProfileButton();
 
             if (accessToken != null && mProfileButton != null) {
-                Context context = ContextUtils.getApplicationContext();
-                SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
-                String avatar = prefs.getString("avatar_url", null);
-                JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
-                if (avatar != null) {
-                    ImageLoader.downloadImage(avatar, Glide.with(activity), true, 5, mProfileButton, null);
-                }else{
-                    ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), true, 5, mProfileButton, null);
-                }
+                ProfileAvatar.loadSelf(mProfileButton, accessToken);
 
                 BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask1 =
                     new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
@@ -623,36 +652,7 @@ public class BraveToolbarManager extends ToolbarManager
             }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e(TAG, "maybeShowWalletPanel " + e);
-        } catch (JSONException e) {
-            Log.e("Express Browser Access Token", e.getMessage());
         }
-    }
-
-    private JSONObject getDecodedToken(String accessToken){
-        if (accessToken == null || accessToken.isEmpty()) return null;
-        try{
-            String[] split_string = accessToken.split("\\.");
-            if (split_string.length < 2) {
-                Log.e(TAG, "Invalid JWT format - token does not have header.payload.signature structure");
-                return null;
-            }
-            String base64EncodedBody = split_string[1];
-
-            byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
-            String decodedString = new String(data, "UTF-8");
-            JSONObject jsonObj = new JSONObject(decodedString.toString());
-            return jsonObj;
-        }catch(JSONException e){
-            Log.e(TAG, "JSON parsing error: " + e.getMessage());
-            return null;
-        }catch(UnsupportedEncodingException e){
-            Log.e(TAG, "Encoding error: " + e.getMessage());
-            return null;
-        }catch(Exception e){
-            Log.e(TAG, "Unexpected error decoding token: " + e.getMessage());
-            return null;
-        }
-        
     }
 
     private final BrowserExpressGetProfilePreferencesUtil.GetProfileCallback getProfileCallback =
@@ -663,9 +663,8 @@ public class BraveToolbarManager extends ToolbarManager
                     SharedPreferences sharedPref = context.getSharedPreferences(BE_PROFILE_PREF, 0);
                     SharedPreferences.Editor editor = sharedPref.edit();
 
-                    if(avatar != null && avatar.length() > 0){
-                        editor.putString("avatar_url", avatar);
-                        ImageLoader.downloadImage(avatar, Glide.with(context), true, 5, mProfileButton, null);
+                    if (avatar != null && !avatar.isEmpty() && mProfileButton != null) {
+                        ProfileAvatar.load(mProfileButton, avatar, null);
                     }
 
                     if(xp != null && xp.length() > 0){

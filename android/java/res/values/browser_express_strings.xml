@@ -27,6 +27,19 @@
     <!-- Reel pager -->
     <string name="be_next_reel_peek">Preview of the video on the next page</string>
 
+    <!-- Floating comments bar (bottom toolbar) -->
+    <plurals name="browser_express_comments_bar_count">
+        <item quantity="one">%1$d comment</item>
+        <item quantity="other">%1$d comments</item>
+    </plurals>
+    <plurals name="browser_express_comments_bar_reaction_count">
+        <item quantity="one">%1$d reaction</item>
+        <item quantity="other">%1$d reactions</item>
+    </plurals>
+    <string name="browser_express_comments_bar_join_description">Start the conversation</string>
+    <!-- Badge on the bottom bar's comments icon while the page has no comments yet. -->
+    <string name="browser_express_bottom_bar_join_badge" translatable="false">+</string>
+
     <!-- Full-page video comment -->
     <string name="browser_express_reel_add_your_take">Add your take</string>
     <!-- "Karma earned": drifts off the reader's picture after they react. The first time it

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- The play mark of ic_browser_express_bottom_bar_reels, on the same 32dp tile. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp"
+    android:height="32dp"
+    android:viewportWidth="32"
+    android:viewportHeight="32">
+    <group
+        android:translateX="3.977"
+        android:translateY="4.706">
+        <path
+            android:fillColor="@color/browser_express_bottom_bar_accent"
+            android:pathData="M9.62354 10.4939L16.969 14.5666L9.62354 18.6394V10.4939Z" />
+    </group>
+</vector>

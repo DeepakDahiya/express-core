@@ -9,6 +9,8 @@ package org.chromium.chrome.browser.toolbar.bottom;
 import android.content.Context;
 import android.os.Build;
 
+import androidx.annotation.Nullable;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONArray;
@@ -48,7 +50,12 @@ public class BrowserExpressGetFirstCommentsUtil {
     private static final String GET_FIRST_COMMENTS_URL = "https://api.browser.express/v1/comment/first_load";
 
     public interface GetFirstCommentsCallback {
-        void getFirstCommentsSuccessful(JSONArray comments, int commentCount);
+        /**
+         * @param pageReactions the page's reactions grouped by emoji ({@code {reactions:
+         *     [{emoji, count}], reactionCount}}), or null from a server that doesn't send them
+         */
+        void getFirstCommentsSuccessful(
+                JSONArray comments, int commentCount, @Nullable JSONObject pageReactions);
         void getFirstCommentsFailed(String error);
     }
 
@@ -59,6 +66,7 @@ public class BrowserExpressGetFirstCommentsUtil {
         private static String mUrl;
         private static JSONArray mComments;
         private static int mCommentCount;
+        private static @Nullable JSONObject mPageReactions;
 
         public GetFirstCommentsWorkerTask(String url, GetFirstCommentsCallback callback) {
             mCallback = callback;
@@ -67,11 +75,14 @@ public class BrowserExpressGetFirstCommentsUtil {
             mUrl = url;
             mComments = new JSONArray();
             mCommentCount = 0;
+            mPageReactions = null;
         }
 
-        public static void setComments(JSONArray comments, int commentCount){
+        public static void setComments(
+                JSONArray comments, int commentCount, @Nullable JSONObject pageReactions) {
             mComments = comments;
             mCommentCount = commentCount;
+            mPageReactions = pageReactions;
         }
 
         public static void setGetFirstCommentsSuccessStatus(Boolean status){
@@ -93,7 +104,7 @@ public class BrowserExpressGetFirstCommentsUtil {
             assert ThreadUtils.runningOnUiThread();
             if (isCancelled()) return;
             if(getFirstCommentsStatus){
-                mCallback.getFirstCommentsSuccessful(mComments, mCommentCount);
+                mCallback.getFirstCommentsSuccessful(mComments, mCommentCount, mPageReactions);
             }else{
                 mCallback.getFirstCommentsFailed(mErrorMessage);
             }
@@ -130,7 +141,8 @@ public class BrowserExpressGetFirstCommentsUtil {
                     GetFirstCommentsWorkerTask.setGetFirstCommentsSuccessStatus(true);
                     JSONArray comments = responseObject.getJSONArray("comments");
                     int commentCount = responseObject.getInt("commentCount");
-                    GetFirstCommentsWorkerTask.setComments(comments, commentCount);
+                    GetFirstCommentsWorkerTask.setComments(
+                            comments, commentCount, responseObject.optJSONObject("pageReactions"));
                 }else{
                     GetFirstCommentsWorkerTask.setGetFirstCommentsSuccessStatus(false);
                     GetFirstCommentsWorkerTask.setErrorMessage(responseObject.getString("error"));

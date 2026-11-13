@@ -104,4 +104,7 @@
 
     <!-- Quick Action Search Widget -->
     <dimen name="quick_action_search_widget_small_margin_vertical">12dp</dimen>
+    <!-- Browser Express: the bottom controls hold the floating bottom bar, 60dp tall with a
+         10dp gap below it. Overrides Chromium's 48dp strip. -->
+    <dimen name="bottom_controls_height">70dp</dimen>
 </resources>

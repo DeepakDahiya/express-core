@@ -26,6 +26,8 @@ class BraveBottomControlsMediator extends BottomControlsMediator {
             new ObservableSupplierImpl<>();
     private final ObservableSupplierImpl<Boolean> mBottomToolbarVisibleSupplier =
             new ObservableSupplierImpl<>();
+    private final ObservableSupplierImpl<Float> mFloatingHiddenRatioSupplier =
+            new ObservableSupplierImpl<>();
     private final int mBottomControlsHeightSingle;
     private final int mBottomControlsHeightDouble;
 
@@ -56,6 +58,7 @@ class BraveBottomControlsMediator extends BottomControlsMediator {
 
         mTabGroupUiVisibleSupplier.set(false);
         mBottomToolbarVisibleSupplier.set(false);
+        mFloatingHiddenRatioSupplier.set(0f);
         mBottomControlsHeightSingle = bottomControlsHeight;
         mBottomControlsHeightDouble = bottomControlsHeight * 2;
     }
@@ -66,6 +69,7 @@ class BraveBottomControlsMediator extends BottomControlsMediator {
         // We should keep it visible if bottom toolbar is visible.
         super.setBottomControlsVisible(mBottomToolbarVisibleSupplier.get() || visible);
         updateYOffset();
+        updateFloating();
     }
 
     public void setBottomToolbarVisible(boolean visible) {
@@ -73,6 +77,26 @@ class BraveBottomControlsMediator extends BottomControlsMediator {
         // We should keep it visible if tag group UI is visible.
         super.setBottomControlsVisible(mTabGroupUiVisibleSupplier.get() || visible);
         updateYOffset();
+        updateFloating();
+    }
+
+    @Override
+    public void keyboardVisibilityChanged(boolean isShowing) {
+        super.keyboardVisibilityChanged(isShowing);
+        updateFloating();
+    }
+
+    @Override
+    public void onControlsOffsetChanged(
+            int topOffset,
+            int topControlsMinHeightOffset,
+            boolean topControlsMinHeightChanged,
+            int bottomOffset,
+            int bottomControlsMinHeightOffset,
+            boolean bottomControlsMinHeightChanged,
+            boolean requestNewFrame,
+            boolean isVisibilityForced) {
+        updateFloatingHiddenRatio();
     }
 
     public ObservableSupplierImpl<Boolean> getBottomToolbarVisibleSupplier() {
@@ -81,6 +105,38 @@ class BraveBottomControlsMediator extends BottomControlsMediator {
 
     public ObservableSupplierImpl<Boolean> getTabGroupUiVisibleSupplier() {
         return mTabGroupUiVisibleSupplier;
+    }
+
+    /**
+     * How far the floating bottom toolbar is scrolled away, from 0 (shown) to 1 (hidden). It
+     * follows the top toolbar, so the pill leaves and returns with it; 0 when not floating.
+     */
+    public ObservableSupplierImpl<Float> getFloatingHiddenRatioSupplier() {
+        return mFloatingHiddenRatioSupplier;
+    }
+
+    /**
+     * The browsing toolbar on its own is a pill floating over the page (Express AI Handoff
+     * 283:12314): the page keeps its full height under it, see {@link #getHeight()}. Being
+     * height-less it never scrolls with the browser controls, so the Android view is always the
+     * one showing; the compositor's copy of it would only sit under the translucent pill and
+     * darken it.
+     */
+    private boolean isFloating() {
+        return mBottomToolbarVisibleSupplier.get() && !mTabGroupUiVisibleSupplier.get();
+    }
+
+    private void updateFloating() {
+        // The parent sets this from its own visibility rules on each change; re-hide after it.
+        if (isFloating()) mModel.set(BottomControlsProperties.COMPOSITED_VIEW_VISIBLE, false);
+        updateFloatingHiddenRatio();
+    }
+
+    private void updateFloatingHiddenRatio() {
+        mFloatingHiddenRatioSupplier.set(
+                isFloating()
+                        ? mBottomControlsStacker.getBrowserControls().getBrowserControlHiddenRatio()
+                        : 0f);
     }
 
     private void updateYOffset() {
@@ -95,6 +151,7 @@ class BraveBottomControlsMediator extends BottomControlsMediator {
 
     @Override
     public int getHeight() {
+        if (isFloating()) return 0;
         if (bothBottomControlsVisible()) {
             // Factor in the height of the Brave navigation bottom controls when they are visible.
             return super.getHeight() + mBottomControlsHeightSingle;

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- The bar's reels icon (clapper) on a 32dp tile, without its play mark: that is
+     ic_browser_express_bottom_bar_reels_play, a separate view so it can pulse on its own. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="32dp"
+    android:height="32dp"
+    android:viewportWidth="32"
+    android:viewportHeight="32">
+    <group
+        android:translateX="3.977"
+        android:translateY="4.706">
+        <path
+            android:pathData="M18.5696 0.75H5.47764C2.86664 0.75 0.75 2.86618 0.75 5.47662V17.1114C0.75 19.7218 2.86664 21.838 5.47764 21.838H18.5696C21.1806 21.838 23.2972 19.7218 23.2972 17.1114V5.47662C23.2972 2.86618 21.1806 0.75 18.5696 0.75Z"
+            android:strokeWidth="1.5"
+            android:strokeColor="@color/browser_express_bottom_bar_accent" />
+        <path
+            android:pathData="M1.84082 7.29395H22.2045"
+            android:strokeWidth="1.5"
+            android:strokeColor="@color/browser_express_bottom_bar_accent"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M6.20605 1.11157L9.6963 7.29397M13.4774 1.11157L16.9677 7.29397"
+            android:strokeWidth="1.5"
+            android:strokeColor="@color/browser_express_bottom_bar_accent"
+            android:strokeLineCap="round" />
+    </group>
+</vector>

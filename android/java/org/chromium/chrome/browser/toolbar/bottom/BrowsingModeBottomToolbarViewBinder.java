@@ -5,11 +5,8 @@
 
 package org.chromium.chrome.browser.toolbar.bottom;
 
-import android.graphics.Color;
 import android.view.View;
-import android.widget.TextView;
 
-import org.chromium.chrome.R;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
@@ -31,11 +28,8 @@ public class BrowsingModeBottomToolbarViewBinder
     public final void bind(
             BrowsingModeBottomToolbarModel model, View view, PropertyKey propertyKey) {
         if (BrowsingModeBottomToolbarModel.PRIMARY_COLOR == propertyKey) {
-            // Background is always kept dark (set in XML), so text is always white.
-            TextView homeText = view.findViewById(R.id.bottom_home_text);
-            TextView commentsText = view.findViewById(R.id.comments_button1);
-            if (homeText != null) homeText.setTextColor(Color.WHITE);
-            if (commentsText != null) commentsText.setTextColor(Color.WHITE);
+            // The toolbar is a floating comments bar with its own themed colours over a
+            // transparent strip, so it deliberately does not take the top toolbar's colour.
         } else if (BrowsingModeBottomToolbarModel.IS_VISIBLE == propertyKey) {
             view.setVisibility(model.get(BrowsingModeBottomToolbarModel.IS_VISIBLE) ? View.VISIBLE
                                                                                     : View.GONE);

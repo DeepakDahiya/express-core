@@ -766,6 +766,18 @@
         <item name="android:textColor">@color/news_time_color</item>
     </style>
 
+    <!-- One emoji in the floating comments bar's reaction mix: a 16dp disc that shows either
+         an icon background or an emoji glyph. The glyph is sized in dp so font scaling can't
+         push it out of the fixed disc. -->
+    <style name="BrowserExpressCommentsBarReaction">
+        <item name="android:layout_width">16dp</item>
+        <item name="android:layout_height">16dp</item>
+        <item name="android:gravity">center</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textSize" tools:ignore="SpUsage">12dp</item>
+    </style>
+
     <!-- NEW on a take posted since the reader last opened the stream; layouts set its height,
          padding, size and background (16dp on cards, 20dp on full-screen takes). Starts hidden. -->
     <style name="BrowserExpressCommentNewTag">

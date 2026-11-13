@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.toolbar.bottom;
 
 import android.content.Context;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -134,6 +135,11 @@ class BottomToolbarCoordinator implements View.OnLongClickListener {
 
         mBottomContainerTopShadow =
                 mScrollingBottomView.findViewById(R.id.bottom_container_top_shadow);
+        // The browsing toolbar is a floating comments bar, not an edge-to-edge strip, so the
+        // shadow along the top of the bottom controls draws nothing. Clearing the image rather
+        // than hiding the view also keeps it out of the compositor's captured bitmap, which
+        // Chromium makes visible again for each capture.
+        ((ImageView) mBottomContainerTopShadow).setImageDrawable(null);
 
         mBookmarkModelSupplier = bookmarkModelSupplier;
         mLocationBarModel = locationBarModel;

@@ -190,6 +190,14 @@ public class BraveBottomControlsCoordinator extends BottomControlsCoordinator {
         return null;
     }
 
+    public ObservableSupplierImpl<Float> getFloatingHiddenRatioSupplier() {
+        if (mMediator instanceof BraveBottomControlsMediator) {
+            return ((BraveBottomControlsMediator) mMediator).getFloatingHiddenRatioSupplier();
+        }
+        assert false : "Make sure mMediator is properly patched in bytecode.";
+        return null;
+    }
+
     public boolean isInTabSwitcherMode() {
         return mBottomToolbarCoordinator != null && mBottomToolbarCoordinator.isInTabSwitcherMode();
     }

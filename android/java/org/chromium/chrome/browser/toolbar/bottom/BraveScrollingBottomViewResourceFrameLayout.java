@@ -25,6 +25,8 @@ public class BraveScrollingBottomViewResourceFrameLayout
     private final CallbackController mCallbackController;
     View mBottomToolbar;
     View mBottomContainerSlot;
+    private View mBottomBarPill;
+    private final int[] mPillLocation = new int[2];
 
     private class SwipeGestureListenerImpl extends SwipeGestureListener {
         public SwipeGestureListenerImpl(Context context, SwipeHandler handler) {
@@ -57,6 +59,8 @@ public class BraveScrollingBottomViewResourceFrameLayout
         mBottomToolbar = findViewById(R.id.bottom_toolbar);
         assert mBottomToolbar != null : "Something has changed in upstream!";
 
+        mBottomBarPill = findViewById(R.id.bottom_bar_pill);
+
         mBottomContainerSlot = findViewById(R.id.bottom_container_slot);
         assert mBottomContainerSlot != null : "Something has changed in upstream!";
         if (mBottomContainerSlot != null
@@ -78,6 +82,29 @@ public class BraveScrollingBottomViewResourceFrameLayout
         // through to the web contents. We should figure out how to make this work while also
         // supporting the toolbar swipe behavior.
         setClickable(true);
+    }
+
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        // The pill floats over the page; a touch beside it is the page's. Declining the down
+        // event hands the whole gesture to the view below.
+        if (event.getActionMasked() == MotionEvent.ACTION_DOWN && isBesideFloatingPill(event)) {
+            return false;
+        }
+        return super.dispatchTouchEvent(event);
+    }
+
+    private boolean isBesideFloatingPill(MotionEvent event) {
+        if (mBottomBarPill == null
+                || !mBottomBarPill.isShown()
+                || mBottomContainerSlot.getVisibility() == View.VISIBLE
+                || isInTabSwitcherMode()) {
+            return false;
+        }
+        mBottomBarPill.getLocationOnScreen(mPillLocation);
+        float x = event.getRawX() - mPillLocation[0];
+        float y = event.getRawY() - mPillLocation[1];
+        return x < 0 || y < 0 || x >= mBottomBarPill.getWidth() || y >= mBottomBarPill.getHeight();
     }
 
     @Override
@@ -121,6 +148,13 @@ public class BraveScrollingBottomViewResourceFrameLayout
                         mBottomContainerSlot.setVisibility(visible ? View.VISIBLE : View.GONE);
                         triggerBitmapCapture(!visible);
                     }
+                }));
+        // The floating pill slides down out of the strip as the top toolbar scrolls away.
+        braveBottomControlsCoordinator().getFloatingHiddenRatioSupplier().addObserver(
+                mCallbackController.makeCancelable((ratio) -> {
+                    if (mBottomToolbar == null) return;
+                    mBottomToolbar.setTranslationY(
+                            isInTabSwitcherMode() ? 0f : ratio * mBottomToolbar.getHeight());
                 }));
     }
 

@@ -3,7 +3,10 @@
      Use of this source code is governed by a BSD-style license that can be
      found in the LICENSE file. -->
 
-
+<!-- The browsing-mode bottom toolbar is one floating pill, centred over the page: Home | the
+     page's comments ("edge rail" in the Express AI handoff, 283:12314 with comments, 283:12508
+     without). Only the pill is visible; the other children are the Chromium/Brave buttons the
+     coordinators still look up by id, kept GONE. -->
 <org.chromium.chrome.browser.toolbar.bottom.BrowsingModeBottomToolbarLinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -12,177 +15,162 @@
     android:orientation="horizontal"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/be_background_black"
     android:layout_gravity="top|center_horizontal"
-    android:paddingStart="@dimen/bottom_toolbar_padding"
-    android:paddingEnd="@dimen/bottom_toolbar_padding" >
+    android:gravity="center_horizontal">
 
-    <include layout="@layout/toolbar_space" />
-
+    <!-- 170dp x 60dp: 26.5dp between the pill's edges, the two 32dp icons and the divider. The
+         icons sit in 48dp touch targets, so the visible gaps are made up of 8dp of each target
+         plus these paddings and margins. -->
     <LinearLayout
-        android:id="@+id/home_button_section"
+        android:id="@+id/bottom_bar_pill"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:paddingHorizontal="16dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:background="?attr/selectableItemBackgroundBorderless">
+        android:layout_height="60dp"
+        android:layout_gravity="bottom"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/browser_express_bottom_bar_bg"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="18.5dp">
 
-        <ImageButton
-            android:id="@+id/be_home_button"
-            android:background="@drawable/home"
-            android:layout_height="20sp"
-            android:layout_width="20sp"
-            android:layout_gravity="center"
-            android:visibility="visible"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+        <FrameLayout
+            android:id="@+id/home_button_section"
+            android:layout_width="48dp"
+            android:layout_height="48dp">
 
-        <org.chromium.chrome.browser.toolbar.BraveHomeButton
-            android:id="@+id/bottom_home_button"
-            app:tint="@color/content_color"
+            <ImageButton
+                android:id="@+id/be_home_button"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/accessibility_toolbar_btn_home"
+                android:scaleType="center"
+                android:src="@drawable/ic_browser_express_bottom_bar_home" />
+
+            <!-- Chromium's home button and Brave's label; BottomToolbarCoordinator binds them. -->
+            <org.chromium.chrome.browser.toolbar.BraveHomeButton
+                android:id="@+id/bottom_home_button"
+                style="@style/SplitToolbarButton"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/accessibility_toolbar_btn_home"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/bottom_home_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/browser_express_home_title"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <View
+            android:layout_width="1dp"
+            android:layout_height="32dp"
+            android:layout_marginHorizontal="18dp"
+            android:background="@drawable/browser_express_bottom_bar_divider" />
+
+        <!-- The page's comments. The badge on the icon's top-right corner is the comment count,
+             or "+" while there are none. The description is set with the count. -->
+        <FrameLayout
+            android:id="@+id/comments_button_section"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/accessibility_toolbar_btn_home"
-            android:visibility="gone"
-            style="@style/SplitToolbarButton" />
+            android:clickable="true"
+            android:contentDescription="@string/browser_express_comments_bar_join_description"
+            android:focusable="true">
 
-        <TextView
-            android:id="@+id/bottom_home_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/browser_express_home_title"
-            android:gravity="center"
-            android:textColor="@color/content_color"
-            android:textSize="11sp" />
-
-    </LinearLayout>
-
-<!--
-    <org.chromium.chrome.browser.toolbar.bottom.BottomToolbarNewTabButton
-        android:id="@+id/bottom_new_tab_button"
-        android:contentDescription="@string/accessibility_toolbar_btn_new_tab"
-        app:tint="@color/default_icon_color_tint_list"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        app:srcCompat="@drawable/new_tab_icon"
-        android:visibility="gone"
-        style="@style/SplitToolbarButton" />
--->
-
-    <include layout="@layout/toolbar_space" />
-
-    <LinearLayout
-        android:id="@+id/comments_button_section"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:paddingHorizontal="16dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:background="?attr/selectableItemBackgroundBorderless">
-
-        <ImageButton android:id="@+id/comments_button"
-            android:src="@drawable/comments"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:tint="@color/upvote_stroke_color"
-            android:layout_height="17sp"
-            android:layout_width="17sp"
-            android:layout_gravity="center"
-            android:visibility="visible"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-        <LinearLayout
-            tools:ignore="UseCompoundDrawables"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-
-            <ImageView
-                android:id="@+id/comments_count_arrow"
-                android:layout_width="14dp"
-                android:layout_height="14dp"
-                android:src="@drawable/ic_arrow_upward"
-                android:tint="@color/upvote_stroke_color"
-                android:visibility="gone"
+            <!-- The white tile; the icon on it wiggles on its own layer below. -->
+            <View
+                android:id="@+id/comments_button"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:background="@drawable/browser_express_bottom_bar_reels_tile"
                 android:importantForAccessibility="no" />
 
+            <!-- Wiggles while the page has comments (CommentsBarIconMotion). -->
+            <FrameLayout
+                android:id="@+id/comments_bar_icon_motion"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:layout_gravity="center"
+                android:importantForAccessibility="noHideDescendants">
+
+                <ImageView
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_browser_express_bottom_bar_reels" />
+
+                <ImageView
+                    android:id="@+id/comments_bar_icon_play"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_browser_express_bottom_bar_reels_play" />
+            </FrameLayout>
+
+            <!-- The count, centred on the icon's corner. Sized in dp like the reaction discs so
+                 font scaling can't push it out of the badge. -->
             <TextView
                 android:id="@+id/comments_button1"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/browser_express_empty_text"
+                android:layout_height="16dp"
+                android:layout_gravity="top|end"
+                android:minWidth="16dp"
+                android:paddingHorizontal="2dp"
+                android:background="@drawable/browser_express_bottom_bar_count_bg"
+                android:fontFamily="sans-serif"
                 android:gravity="center"
-                android:textColor="@color/upvote_stroke_color"
-                android:textSize="11sp" />
-        </LinearLayout>
+                android:importantForAccessibility="no"
+                android:includeFontPadding="false"
+                android:letterSpacing="-0.05"
+                android:maxLines="1"
+                android:textColor="@color/browser_express_bottom_bar_count_text"
+                android:textFontWeight="600"
+                android:textSize="7dp"
+                android:visibility="gone"
+                tools:ignore="SpUsage" />
+
+            <FrameLayout
+                android:id="@+id/comments_bar_join"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="1dp"
+                android:layout_marginEnd="1dp"
+                android:background="@drawable/browser_express_bottom_bar_join_bg"
+                android:importantForAccessibility="noHideDescendants">
+
+                <!-- Taller than the badge; the frame centres the glyph and clips the line box. -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:fontFamily="sans-serif"
+                    android:includeFontPadding="false"
+                    android:letterSpacing="-0.05"
+                    android:text="@string/browser_express_bottom_bar_join_badge"
+                    android:textColor="@color/browser_express_bottom_bar_accent"
+                    android:textFontWeight="600"
+                    android:textSize="16dp"
+                    tools:ignore="SpUsage" />
+            </FrameLayout>
+        </FrameLayout>
     </LinearLayout>
-
-    <!-- Permanent trailing space — always visible after comments -->
-    <include layout="@layout/toolbar_space" />
-
-    <!-- PIP section: only shown on YouTube video pages -->
-    <LinearLayout
-        android:id="@+id/youtube_pip_button_container"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:gravity="center"
-        android:paddingHorizontal="16dp"
-        android:clickable="true"
-        android:focusable="true"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:visibility="gone">
-
-        <ImageButton android:id="@+id/bottom_youtube_pip_button"
-            android:src="@drawable/ic_picture_in_picture"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:layout_height="20sp"
-            android:layout_width="20sp"
-            android:layout_gravity="center"
-            android:tint="#D4AF37"
-            android:contentDescription="@string/bottom_toolbar_pip_button_label" />
-
-        <TextView
-            android:id="@+id/bottom_youtube_pip_text"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/bottom_toolbar_pip_button_label"
-            android:gravity="center"
-            android:textColor="#D4AF37"
-            android:textSize="11sp" />
-
-    </LinearLayout>
-
-    <!-- Balancing spacer for PIP — visible only when PIP container is visible -->
-    <Space
-        android:id="@+id/pip_trailing_space"
-        android:layout_width="0dp"
-        android:layout_height="1dp"
-        android:layout_weight="1"
-        android:visibility="gone" />
 
     <include layout="@layout/brave_bookmark_toolbar" />
-    <!-- <include layout="@layout/toolbar_space" /> -->
 
     <org.chromium.chrome.browser.toolbar.bottom.SearchAccelerator
         android:id="@+id/search_accelerator"
         android:layout_width="@dimen/search_accelerator_width"
         android:layout_height="@dimen/search_accelerator_height"
         android:layout_gravity="center"
-        android:layout_marginStart="@dimen/search_accelerator_width_margin"
-        android:layout_marginEnd="@dimen/search_accelerator_width_margin"
-        android:paddingTop="@dimen/search_accelerator_height_padding"
-        android:paddingBottom="@dimen/search_accelerator_height_padding"
         android:contentDescription="@string/accessibility_toolbar_btn_search_accelerator"
         app:srcCompat="@drawable/ic_search_21dp"
-        android:visibility="gone"/>
-    <include layout="@layout/brave_bottom_new_tab_button" />
+        android:visibility="gone" />
 
-    <!-- <include layout="@layout/toolbar_space" /> -->
-    <!-- <include layout="@layout/toolbar_space" /> -->
+    <include layout="@layout/brave_bottom_new_tab_button" />
 
     <org.chromium.chrome.browser.toolbar.TabSwitcherButtonView
         android:id="@+id/bottom_tab_switcher_button"
@@ -192,7 +180,8 @@
         android:background="?attr/selectableItemBackgroundBorderless"
         app:menuVerticalOverlapAnchor="false" />
 
-    <!-- <include layout="@layout/toolbar_space" /> -->
-
-    <include layout="@layout/bottom_toolbar_menu_button" style="@style/SplitToolbarButton" />
+    <include
+        layout="@layout/bottom_toolbar_menu_button"
+        style="@style/SplitToolbarButton"
+        android:visibility="gone" />
 </org.chromium.chrome.browser.toolbar.bottom.BrowsingModeBottomToolbarLinearLayout>
