@@ -34,36 +34,27 @@ import java.nio.charset.StandardCharsets;
 
 public class BrowserExpressLoginPreferencesUtil {
     private static final String TAG = "Login_Browser_Express";
-    private static final String LOGIN_URL = "https://api.browser.express/v1/auth/login";
+    private static final String LOGIN_URL = "https://api.browser.express/v1/auth/register";
+    private static final int CONNECT_TIMEOUT_MS = 15000;
+    private static final int READ_TIMEOUT_MS = 20000;
 
     public interface LoginCallback {
-        void loginSuccessful(String accessToken, String refreshToken);
+        void loginOtpSent(String phoneNumber);
         void loginFailed(String error);
     }
 
     public static class LoginWorkerTask extends AsyncTask<Void> {
-        private final String mEmail;
-        private final String mPassword;
+        private final String mPhoneNumber;
         private final LoginCallback mCallback;
         private static Boolean loginStatus;
         private static String mErrorMessage;
-        private static String mAccessToken;
-        private static String mRefreshToken;
 
         public LoginWorkerTask(
-                String email, String password, LoginCallback callback) {
-            mEmail = email;
-            mPassword = password;
+                String phoneNumber, LoginCallback callback) {
+            mPhoneNumber = phoneNumber;
             mCallback = callback;
             loginStatus = false;
             mErrorMessage = "";
-            mAccessToken = null;
-            mRefreshToken = null;
-        }
-
-        public static void setAuthTokens(String accessToken, String refreshToken){
-            mAccessToken = accessToken;
-            mRefreshToken = refreshToken;
         }
 
         public static void setLoginSuccessStatus(Boolean status){
@@ -76,7 +67,7 @@ public class BrowserExpressLoginPreferencesUtil {
 
         @Override
         protected Void doInBackground() {
-            sendLoginRequest(mEmail, mPassword);
+            sendLoginRequest(mPhoneNumber);
             return null;
         }
 
@@ -85,20 +76,22 @@ public class BrowserExpressLoginPreferencesUtil {
             assert ThreadUtils.runningOnUiThread();
             if (isCancelled()) return;
             if(loginStatus){
-                mCallback.loginSuccessful(mAccessToken, mRefreshToken);
+                mCallback.loginOtpSent(mPhoneNumber);
             }else{
                 mCallback.loginFailed(mErrorMessage);
             }
         }
     }
 
-    private static void sendLoginRequest(String email, String password) {
+    private static void sendLoginRequest(String phoneNumber) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
             URL url = new URL(LOGIN_URL);
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
+            urlConnection.setConnectTimeout(CONNECT_TIMEOUT_MS);
+            urlConnection.setReadTimeout(READ_TIMEOUT_MS);
             urlConnection.setDoOutput(true);
             urlConnection.setRequestMethod("POST");
             urlConnection.setUseCaches(false);
@@ -106,9 +99,8 @@ public class BrowserExpressLoginPreferencesUtil {
             urlConnection.connect();
 
             JSONObject jsonParam = new JSONObject();
-            jsonParam.put("email", email);
-            jsonParam.put("platform", "Android");
-            jsonParam.put("password", password);
+            jsonParam.put("phone", phoneNumber);
+            jsonParam.put("country", "IN");
 
             OutputStream outputStream = urlConnection.getOutputStream();
             byte[] input = jsonParam.toString().getBytes(StandardCharsets.UTF_8.name());
@@ -117,39 +109,79 @@ public class BrowserExpressLoginPreferencesUtil {
             outputStream.close();
 
             int HttpResult = urlConnection.getResponseCode();
-            if (HttpResult == HttpURLConnection.HTTP_OK) {
-                BufferedReader br = new BufferedReader(new InputStreamReader(
-                        urlConnection.getInputStream(), StandardCharsets.UTF_8.name()));
-                String line = null;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line + "\n");
-                }
-                JSONObject responseObject = new JSONObject(sb.toString());
-                if(responseObject.getBoolean("success")){
+            String responseBody = readResponseBody(urlConnection, HttpResult);
+            if (responseBody != null) sb.append(responseBody);
+            JSONObject responseObject = sb.length() > 0 ? new JSONObject(sb.toString()) : new JSONObject();
+            if (isSuccessfulResponse(HttpResult)) {
+                if(responseObject.optBoolean("ok", false)
+                        && responseObject.optBoolean("otpSent", false)){
                     LoginWorkerTask.setLoginSuccessStatus(true);
-                    String accessToken = responseObject.optString("accessToken", "");
-                    String refreshToken = responseObject.optString("refreshToken", "");
-                    if(!accessToken.isEmpty() && !refreshToken.isEmpty()){
-                        LoginWorkerTask.setAuthTokens(accessToken, refreshToken);
-                    }
                 }else{
                     LoginWorkerTask.setLoginSuccessStatus(false);
-                    LoginWorkerTask.setErrorMessage(responseObject.getString("error"));
+                    LoginWorkerTask.setErrorMessage(getResponseErrorMessage(
+                            responseObject, "OTP could not be sent"));
                 }
-                br.close();
             } else {
-                Log.e(TAG, urlConnection.getResponseMessage());
+                String error = getResponseErrorMessage(
+                        responseObject, urlConnection.getResponseMessage());
+                if (error == null) error = "HTTP " + HttpResult;
+                LoginWorkerTask.setErrorMessage(error);
+                Log.e(TAG, error);
             }
         } catch (MalformedURLException e) {
+            LoginWorkerTask.setErrorMessage(getErrorMessage(e));
             Log.e(TAG, e.getMessage());
         } catch (IOException e) {
+            LoginWorkerTask.setErrorMessage(getErrorMessage(e));
             Log.e(TAG, e.getMessage());
         } catch (JSONException e) {
+            LoginWorkerTask.setErrorMessage(getErrorMessage(e));
             Log.e(TAG, e.getMessage());
         } catch (Exception e) {
+            LoginWorkerTask.setErrorMessage(getErrorMessage(e));
             Log.e(TAG, e.getMessage());
         } finally {
             if (urlConnection != null) urlConnection.disconnect();
         }
+    }
+
+    private static String getErrorMessage(Exception e) {
+        String message = e.getMessage();
+        return message != null ? message : e.getClass().getSimpleName();
+    }
+
+    private static boolean isSuccessfulResponse(int responseCode) {
+        return responseCode >= HttpURLConnection.HTTP_OK && responseCode < 300;
+    }
+
+    private static String readResponseBody(HttpURLConnection urlConnection, int responseCode)
+            throws IOException {
+        BufferedReader br = null;
+        try {
+            if (isSuccessfulResponse(responseCode)) {
+                br = new BufferedReader(new InputStreamReader(
+                        urlConnection.getInputStream(), StandardCharsets.UTF_8.name()));
+            } else if (urlConnection.getErrorStream() != null) {
+                br = new BufferedReader(new InputStreamReader(
+                        urlConnection.getErrorStream(), StandardCharsets.UTF_8.name()));
+            }
+            if (br == null) return "";
+            StringBuilder response = new StringBuilder();
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                response.append(line);
+            }
+            return response.toString();
+        } finally {
+            if (br != null) br.close();
+        }
+    }
+
+    private static String getResponseErrorMessage(JSONObject responseObject, String fallback) {
+        String message = responseObject.optString("message", "");
+        if (!message.isEmpty()) return message;
+        String error = responseObject.optString("error", "");
+        if (!error.isEmpty()) return error;
+        return fallback;
     }
 }

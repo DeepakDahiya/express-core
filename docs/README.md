@@ -45,6 +45,18 @@ This is only an estimate. The **github** view may differ.
     into `brave-core`
 *   [Adapting Chromium tests to the Brave Codebase](adapting_chromium_tests.md) -
     Suggestions on how to make chromium test work on our test targets.
+*   [Production Crash Observability and E2E Reproduction Plan](production_crash_observability_and_e2e_reproduction_plan.md) -
+    Plan for production crash logging, symbolication, triage, and real-device
+    Appium reproduction.
+*   [Browser Express Crash Backend API](browser_express_crash_backend_api.md) -
+    Backend API contract for Browser Express crash ingestion, JSON crash
+    events, symbol upload, storage, privacy controls, and release readiness.
+*   [Browser Express India Phone Auth API](browser_express_india_phone_auth_api.md) -
+    Backend API contract for India manual auth, phone signup, OTP verification,
+    and server-side generate-username blocking.
+*   [Production Crash Observability Implementation Log](production_crash_observability_implementation_log.md) -
+    Implementation record for the crash reporting overrides and validation
+    patch artifacts.
 *   [Ship a File to All Clients](ship_a_file_to_all_clients.md) - How to ship a
     file to all clients via component updater.
 *   [Git Configuration](git_configuration.md) - General recommendations for

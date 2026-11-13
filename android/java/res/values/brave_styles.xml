@@ -724,4 +724,135 @@
     <style name="BraveNewsDescTextColor">
         <item name="android:textColor">@color/news_time_color</item>
     </style>
+    <!-- Browser Express sign-in flow. Sizes and 1.35 line heights follow the handoff design,
+         which is set in Inter; semibold falls back to the nearest system weight. -->
+    <style name="BrowserExpressSignin" />
+
+    <style name="BrowserExpressSignin.Wordmark">
+        <item name="android:textSize">23sp</item>
+        <item name="android:lineHeight">31sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textFontWeight">600</item>
+        <item name="android:textColor">@color/browser_express_signin_text_primary</item>
+    </style>
+
+    <style name="BrowserExpressSignin.Eyebrow">
+        <item name="android:textSize">11sp</item>
+        <item name="android:lineHeight">15sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textFontWeight">600</item>
+        <item name="android:textAllCaps">true</item>
+        <item name="android:textColor">@color/browser_express_signin_accent</item>
+    </style>
+
+    <style name="BrowserExpressSignin.Headline">
+        <item name="android:textSize">34sp</item>
+        <item name="android:lineHeight">46sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textFontWeight">600</item>
+        <item name="android:textColor">@color/browser_express_signin_text_primary</item>
+    </style>
+
+    <style name="BrowserExpressSignin.Description">
+        <item name="android:textSize">15sp</item>
+        <item name="android:lineHeight">20sp</item>
+        <item name="android:textColor">@color/browser_express_signin_text_secondary</item>
+    </style>
+
+    <style name="BrowserExpressSignin.FieldLabel">
+        <item name="android:textSize">12sp</item>
+        <item name="android:lineHeight">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/browser_express_signin_text_primary</item>
+    </style>
+
+    <style name="BrowserExpressSignin.FieldInput">
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineHeight">19sp</item>
+        <item name="android:textColor">@color/browser_express_signin_text_primary</item>
+        <item name="android:textColorHint">@color/browser_express_signin_text_secondary</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:textCursorDrawable">@null</item>
+    </style>
+
+    <style name="BrowserExpressSignin.PrimaryButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">54dp</item>
+        <item name="android:background">@drawable/browser_express_signin_primary_button</item>
+        <item name="android:foreground">?attr/selectableItemBackground</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
+
+    <style name="BrowserExpressSignin.PrimaryButtonLabel">
+        <item name="android:textSize">16sp</item>
+        <item name="android:lineHeight">22sp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textFontWeight">600</item>
+        <item name="android:textColor">@color/browser_express_signin_on_accent</item>
+    </style>
+
+    <style name="BrowserExpressSignin.Caption">
+        <item name="android:textSize">12sp</item>
+        <item name="android:lineHeight">16sp</item>
+        <item name="android:textColor">@color/browser_express_signin_text_secondary</item>
+    </style>
+
+    <style name="BrowserExpressSignin.Error">
+        <item name="android:textSize">12sp</item>
+        <item name="android:lineHeight">16sp</item>
+        <item name="android:textColor">@color/browser_express_signin_error</item>
+    </style>
+
+    <!-- A text-only control: Edit number, Resend. A plain TextView rather than a Button, which
+         the Material theme would inflate as a MaterialButton with a tinted fill. -->
+    <style name="BrowserExpressSignin.Link">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">44dp</item>
+        <item name="android:gravity">center_vertical|start</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:textSize">13sp</item>
+        <item name="android:lineHeight">18sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/browser_express_signin_link</item>
+    </style>
+
+    <style name="BrowserExpressSignin.Skip">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">44dp</item>
+        <item name="android:layout_gravity">center_horizontal</item>
+        <item name="android:gravity">center</item>
+        <item name="android:paddingStart">12dp</item>
+        <item name="android:paddingEnd">12dp</item>
+        <item name="android:background">?attr/selectableItemBackground</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineHeight">19sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/browser_express_signin_text_secondary</item>
+    </style>
+
+    <style name="BrowserExpressSignin.CardTitle">
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineHeight">19sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/browser_express_signin_text_primary</item>
+    </style>
+
+    <style name="BrowserExpressSignin.CodeDigit">
+        <item name="android:layout_width">49dp</item>
+        <item name="android:layout_height">58dp</item>
+        <item name="android:background">@drawable/browser_express_signin_code_box_bg</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textSize">22sp</item>
+        <item name="android:lineHeight">30sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/browser_express_signin_text_secondary</item>
+        <item name="android:text">@string/browser_express_signin_code_placeholder</item>
+        <item name="android:importantForAccessibility">no</item>
+    </style>
+
 </resources>

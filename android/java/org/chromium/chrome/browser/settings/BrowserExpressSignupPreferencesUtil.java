@@ -15,6 +15,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.about_settings.AboutChromeSettings;
 import org.chromium.chrome.browser.about_settings.AboutSettingsBridge;
 import org.chromium.chrome.browser.ntp_background_images.NTPBackgroundImagesBridge;
@@ -34,28 +35,29 @@ import java.nio.charset.StandardCharsets;
 public class BrowserExpressSignupPreferencesUtil {
     private static final String TAG = "Signup_Browser_Express";
     private static final String SIGNUP_URL = "https://api.browser.express/v1/auth/register";
+    private static final int CONNECT_TIMEOUT_MS = 15000;
+    private static final int READ_TIMEOUT_MS = 20000;
 
     public interface SignupCallback {
-        void signupSuccessful(String Email);
+        void signupSuccessful(String phoneNumber, String purpose);
         void signupFailed(String error);
     }
 
     public static class SignupWorkerTask extends AsyncTask<Void> {
-        private final String mEmail;
-        private final String mPassword;
+        private final String mPhoneNumber;
         private final String mName;
         private final SignupCallback mCallback;
         private static Boolean signupStatus;
         private static String mErrorMessage;
+        private static String mOtpPurpose;
 
-        public SignupWorkerTask(
-                String email, String password, String name, SignupCallback callback) {
-            mEmail = email;
-            mPassword = password;
+        public SignupWorkerTask(String phoneNumber, String name, SignupCallback callback) {
+            mPhoneNumber = phoneNumber;
             mName = name;
             mCallback = callback;
             signupStatus = false;
             mErrorMessage = "";
+            mOtpPurpose = BraveActivity.BROWSER_EXPRESS_OTP_PURPOSE_SIGNUP;
         }
 
         public static void setSignupSuccessStatus(Boolean status){
@@ -66,9 +68,17 @@ public class BrowserExpressSignupPreferencesUtil {
             mErrorMessage = error;
         }
 
+        public static void setOtpPurpose(String purpose) {
+            if (BraveActivity.BROWSER_EXPRESS_OTP_PURPOSE_LOGIN.equals(purpose)) {
+                mOtpPurpose = BraveActivity.BROWSER_EXPRESS_OTP_PURPOSE_LOGIN;
+            } else {
+                mOtpPurpose = BraveActivity.BROWSER_EXPRESS_OTP_PURPOSE_SIGNUP;
+            }
+        }
+
         @Override
         protected Void doInBackground() {
-            sendSignupRequest(mEmail, mPassword, mName);
+            sendSignupRequest(mPhoneNumber, mName);
             return null;
         }
 
@@ -77,7 +87,7 @@ public class BrowserExpressSignupPreferencesUtil {
             assert ThreadUtils.runningOnUiThread();
             if (isCancelled()) return;
             if(signupStatus){
-                mCallback.signupSuccessful(mEmail);
+                mCallback.signupSuccessful(mPhoneNumber, mOtpPurpose);
             }else{
                 Log.e(TAG, "FAILURE ERROR MESSAGE: " + mErrorMessage);
                 mCallback.signupFailed(mErrorMessage);
@@ -85,13 +95,15 @@ public class BrowserExpressSignupPreferencesUtil {
         }
     }
 
-    private static void sendSignupRequest(String email, String password, String name) {
+    private static void sendSignupRequest(String phoneNumber, String name) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
             URL url = new URL(SIGNUP_URL);
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
+            urlConnection.setConnectTimeout(CONNECT_TIMEOUT_MS);
+            urlConnection.setReadTimeout(READ_TIMEOUT_MS);
             urlConnection.setDoOutput(true);
             urlConnection.setRequestMethod("POST");
             urlConnection.setUseCaches(false);
@@ -99,9 +111,8 @@ public class BrowserExpressSignupPreferencesUtil {
             urlConnection.connect();
 
             JSONObject jsonParam = new JSONObject();
-            jsonParam.put("email", email);
-            jsonParam.put("platform", "Android");
-            jsonParam.put("password", password);
+            jsonParam.put("phone", phoneNumber);
+            jsonParam.put("country", "IN");
             jsonParam.put("name", name);
 
             OutputStream outputStream = urlConnection.getOutputStream();
@@ -111,38 +122,84 @@ public class BrowserExpressSignupPreferencesUtil {
             outputStream.close();
 
             int HttpResult = urlConnection.getResponseCode();
-            if (HttpResult == HttpURLConnection.HTTP_OK) {
-                BufferedReader br = new BufferedReader(new InputStreamReader(
-                        urlConnection.getInputStream(), StandardCharsets.UTF_8.name()));
-                String line = null;
-                while ((line = br.readLine()) != null) {
-                    sb.append(line + "\n");
-                }
-                JSONObject responseObject = new JSONObject(sb.toString());
-                Log.e(TAG, sb.toString());
-                Log.e(TAG, "Success: "+ responseObject.getBoolean("success"));
-                if(responseObject.getBoolean("success")){
+            String responseBody = readResponseBody(urlConnection, HttpResult);
+            if (responseBody != null) sb.append(responseBody);
+            JSONObject responseObject = sb.length() > 0 ? new JSONObject(sb.toString()) : new JSONObject();
+            Log.e(TAG, sb.toString());
+            if (isSuccessfulResponse(HttpResult)) {
+                if(responseObject.optBoolean("ok", false)
+                        && responseObject.optBoolean("otpSent", false)){
                     SignupWorkerTask.setSignupSuccessStatus(true);
+                    SignupWorkerTask.setOtpPurpose(responseObject.optString(
+                            "purpose", BraveActivity.BROWSER_EXPRESS_OTP_PURPOSE_SIGNUP));
                     Log.e(TAG, "INSIDE SUCCESS TRUE");
                 }else{
                     SignupWorkerTask.setSignupSuccessStatus(false);
-                    SignupWorkerTask.setErrorMessage(responseObject.getString("error"));
+                    SignupWorkerTask.setErrorMessage(getResponseErrorMessage(
+                            responseObject, "OTP could not be sent"));
                     Log.e(TAG, "INSIDE FAILURE");
                 }
-                br.close();
             } else {
-                Log.e(TAG, urlConnection.getResponseMessage());
+                String error = getResponseErrorMessage(
+                        responseObject, urlConnection.getResponseMessage());
+                if (error == null) error = "HTTP " + HttpResult;
+                SignupWorkerTask.setErrorMessage(error);
+                Log.e(TAG, error);
             }
         } catch (MalformedURLException e) {
+            SignupWorkerTask.setErrorMessage(getErrorMessage(e));
             Log.e(TAG, e.getMessage());
         } catch (IOException e) {
+            SignupWorkerTask.setErrorMessage(getErrorMessage(e));
             Log.e(TAG, e.getMessage());
         } catch (JSONException e) {
+            SignupWorkerTask.setErrorMessage(getErrorMessage(e));
             Log.e(TAG, e.getMessage());
         } catch (Exception e) {
+            SignupWorkerTask.setErrorMessage(getErrorMessage(e));
             Log.e(TAG, e.getMessage());
         } finally {
             if (urlConnection != null) urlConnection.disconnect();
         }
+    }
+
+    private static String getErrorMessage(Exception e) {
+        String message = e.getMessage();
+        return message != null ? message : e.getClass().getSimpleName();
+    }
+
+    private static boolean isSuccessfulResponse(int responseCode) {
+        return responseCode >= HttpURLConnection.HTTP_OK && responseCode < 300;
+    }
+
+    private static String readResponseBody(HttpURLConnection urlConnection, int responseCode)
+            throws IOException {
+        BufferedReader br = null;
+        try {
+            if (isSuccessfulResponse(responseCode)) {
+                br = new BufferedReader(new InputStreamReader(
+                        urlConnection.getInputStream(), StandardCharsets.UTF_8.name()));
+            } else if (urlConnection.getErrorStream() != null) {
+                br = new BufferedReader(new InputStreamReader(
+                        urlConnection.getErrorStream(), StandardCharsets.UTF_8.name()));
+            }
+            if (br == null) return "";
+            StringBuilder response = new StringBuilder();
+            String line = null;
+            while ((line = br.readLine()) != null) {
+                response.append(line);
+            }
+            return response.toString();
+        } finally {
+            if (br != null) br.close();
+        }
+    }
+
+    private static String getResponseErrorMessage(JSONObject responseObject, String fallback) {
+        String message = responseObject.optString("message", "");
+        if (!message.isEmpty()) return message;
+        String error = responseObject.optString("error", "");
+        if (!error.isEmpty()) return error;
+        return fallback;
     }
 }

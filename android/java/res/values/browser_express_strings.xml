@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Brave Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/.
+-->
+<resources>
+    <string name="browser_express_blazingly_fast_title">Blazingly Fast</string>
+    <string name="browser_express_blazingly_fast_subtitle">Engineered for speed</string>
+    <string name="browser_express_close">Close</string>
+
+    <!-- Sign-in flow: details -->
+    <string name="browser_express_signin_wordmark">express</string>
+    <string name="browser_express_signin_details_eyebrow">Make yourself at home</string>
+    <string name="browser_express_signin_details_headline">Your browser.\nA little more you.</string>
+    <string name="browser_express_signin_details_description">Sign in with your name and number.\nOr skip this and keep exploring.</string>
+    <string name="browser_express_signin_name_label">Your name</string>
+    <string name="browser_express_signin_name_hint">What should we call you?</string>
+    <string name="browser_express_signin_phone_label">Mobile number</string>
+    <string name="browser_express_signin_phone_hint">Mobile number</string>
+    <string name="browser_express_signin_country_code">+91</string>
+    <string name="browser_express_signin_send_code">Send verification code</string>
+    <string name="browser_express_signin_sending_code">Sending code…</string>
+    <string name="browser_express_signin_sms_disclosure">We’ll send an SMS to verify your number.</string>
+    <string name="browser_express_signin_missing_details">Add your name and mobile number to continue.</string>
+    <string name="browser_express_signin_privacy_title">Less tracking. More browsing.</string>
+    <string name="browser_express_signin_privacy_description">Privacy controls, right where you need them.</string>
+    <string name="browser_express_signin_skip_details">Continue without signing in</string>
+
+    <!-- Sign-in flow: verify code -->
+    <string name="browser_express_signin_verify_eyebrow">One quick check</string>
+    <string name="browser_express_signin_verify_headline">Check your\nmessages.</string>
+    <!-- %1$d: number of digits in the code. %2$s: the masked phone number. -->
+    <string name="browser_express_signin_verify_description">Enter the %1$d-digit code sent to\n%2$s</string>
+    <string name="browser_express_signin_edit_number">Edit number</string>
+    <string name="browser_express_signin_code_placeholder">–</string>
+    <!-- %1$d: number of digits in the code. -->
+    <plurals name="browser_express_signin_incomplete_code">
+        <item quantity="one">Enter the %1$d digit to continue.</item>
+        <item quantity="other">Enter all %1$d digits to continue.</item>
+    </plurals>
+    <string name="browser_express_signin_verify">Verify &amp; continue</string>
+    <string name="browser_express_signin_verifying">Verifying…</string>
+    <string name="browser_express_signin_resend">Didn’t get a code? Resend</string>
+    <string name="browser_express_signin_resending">Sending a new code…</string>
+    <plurals name="browser_express_signin_resend_cooldown">
+        <item quantity="one">Code sent. You can resend in %1$d second.</item>
+        <item quantity="other">Code sent. You can resend in %1$d seconds.</item>
+    </plurals>
+    <string name="browser_express_signin_code_help">Keep your code private. We’ll never ask you to share it.</string>
+    <string name="browser_express_signin_conversation_title">Join the conversation.</string>
+    <string name="browser_express_signin_conversation_description">React and reply to text, photos and videos.</string>
+    <string name="browser_express_signin_skip_verify">I’ll do this later</string>
+
+    <!-- Sign-in flow: all set -->
+    <!-- %1$s: the name the user entered. -->
+    <string name="browser_express_signin_success_headline">You’re all set, %1$s.</string>
+    <string name="browser_express_signin_success_headline_no_name">You’re all set.</string>
+    <string name="browser_express_signin_success_description">Your number is verified.\nMake yourself at home in Express.</string>
+    <string name="browser_express_signin_start_browsing">Start browsing</string>
+    <string name="browser_express_signin_choice_title">Your privacy, your choice.</string>
+    <string name="browser_express_signin_choice_description">Manage protection from the address bar.</string>
+
+</resources>

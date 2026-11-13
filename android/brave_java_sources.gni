@@ -407,6 +407,9 @@ brave_java_sources = [
   "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressEditAvatarPreferencesUtil.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressGetProfilePreferencesUtil.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressCommentsPreferences.java",
+  "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressAuthUiUtil.java",
+  "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressAuthJourney.java",
+  "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressGuestLogin.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressLoginPreferencesUtil.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressOtpVerifyPreferences.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressOtpVerifyPreferencesUtil.java",
@@ -615,6 +618,7 @@ brave_java_base_module_sources = [
 
 brave_java_base_module_deps = [
   "//brave/third_party/android_deps:com_wireguard_android_java",
+  "//third_party/android_deps:google_play_services_auth_api_phone_java",
   "//third_party/androidx:androidx_core_core_java",
   "//third_party/androidx:androidx_lifecycle_lifecycle_livedata_core_java",
   "//third_party/androidx:androidx_lifecycle_lifecycle_livedata_java",

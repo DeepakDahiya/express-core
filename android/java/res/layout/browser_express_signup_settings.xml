@@ -4,205 +4,228 @@
      License, v. 2.0. If a copy of the MPL was not distributed with this file,
      You can obtain one at https://mozilla.org/MPL/2.0/.
  -->
- <ScrollView android:id="@+id/browser_express_signup_settings"
-     xmlns:android="http://schemas.android.com/apk/res/android"
-     xmlns:app="http://schemas.android.com/apk/res-auto"
-     android:layout_height="match_parent"
-     android:background="@color/be_background_black"
-     android:layout_width="match_parent">
 
-     <LinearLayout
-          android:id="@+id/layout_parent"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:orientation="vertical"
-          android:visibility="visible">
+<!-- Sign-in, step 1: name + phone. Serves new and returning users alike; the register endpoint
+     answers with purpose=login for a number that already has an account. -->
+<ScrollView
+    android:id="@+id/browser_express_signup_settings"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/browser_express_signin_background"
+    android:fillViewport="true">
 
-         <TextView
-             android:layout_width="match_parent"
-             android:layout_height="wrap_content"
-             android:layout_marginTop="20dp"
-             android:paddingHorizontal="20dp"
-             android:text="@string/browser_express_signup_title"
-             android:gravity="start"
-             android:textColor="@color/content_color"
-             android:textSize="32sp"
-             android:textStyle="bold" />
+    <LinearLayout
+        android:id="@+id/layout_parent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="24dp">
 
-         <TextView
-             android:layout_width="match_parent"
-             android:layout_height="wrap_content"
-             android:layout_marginTop="10dp"
-             android:paddingHorizontal="20dp"
-             android:text="@string/browser_express_signup_desc"
-             android:gravity="start"
-             android:textColor="@color/content_color"
-             android:textSize="16sp"
-             android:textStyle="normal" />
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="44dp"
+            android:layout_marginTop="10dp">
 
-        <EditText
-             android:id="@+id/browser_express_name"
-             android:layout_width="match_parent"
-             android:layout_height="48dp"
-             android:layout_marginTop="20dp"
-             android:layout_marginStart="20dp"
-             android:layout_marginEnd="20dp"
-             android:drawableStart="@drawable/person"
-             android:drawablePadding="10dp"
-             android:background="@drawable/rounded_wallet_edittext"
-             android:hint="@string/enter_your_name"
-             android:importantForAutofill="no"
-             android:inputType="text"
-             android:paddingEnd="18dp"
-             android:paddingStart="18dp"
-             android:paddingTop="10dp"
-             android:paddingBottom="10dp"
-             android:textCursorDrawable="@null"
-             android:textSize="14sp"
-             android:textColor="@color/wallet_text_color"
-             android:textColorHint="@color/brave_theme_hint_text" />
+            <TextView
+                style="@style/BrowserExpressSignin.Wordmark"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start|center_vertical"
+                android:text="@string/browser_express_signin_wordmark" />
 
-         <EditText
-             android:id="@+id/browser_express_email"
-             android:layout_width="match_parent"
-             android:layout_height="48dp"
-             android:layout_marginTop="20dp"
-             android:layout_marginStart="20dp"
-             android:layout_marginEnd="20dp"
-             android:drawableStart="@drawable/mail"
-             android:drawablePadding="10dp"
-             android:background="@drawable/rounded_wallet_edittext"
-             android:hint="@string/enter_your_email"
-             android:importantForAutofill="no"
-             android:inputType="textEmailAddress"
-             android:paddingEnd="18dp"
-             android:paddingStart="18dp"
-             android:paddingTop="10dp"
-             android:paddingBottom="10dp"
-             android:textCursorDrawable="@null"
-             android:textSize="14sp"
-             android:textColor="@color/wallet_text_color"
-             android:textColorHint="@color/brave_theme_hint_text" />
+            <FrameLayout
+                android:id="@+id/btn_close"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:layout_gravity="end"
+                android:background="@drawable/browser_express_signin_close_bg"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:clickable="true"
+                android:focusable="true"
+                android:contentDescription="@string/browser_express_close">
 
-         <EditText
-             android:id="@+id/browser_express_password"
-             android:layout_width="match_parent"
-             android:layout_height="48dp"
-             android:layout_marginTop="20dp"
-             android:layout_marginStart="20dp"
-             android:layout_marginEnd="20dp"
-             android:drawableStart="@drawable/lock"
-             android:drawablePadding="10dp"
-             android:background="@drawable/rounded_wallet_edittext"
-             android:hint="@string/enter_your_password"
-             android:importantForAutofill="no"
-             android:inputType="textPassword"
-             android:paddingEnd="18dp"
-             android:paddingStart="18dp"
-             android:paddingTop="10dp"
-             android:paddingBottom="10dp"
-             android:textCursorDrawable="@null"
-             android:textSize="14sp"
-             android:textColor="@color/wallet_text_color"
-             android:textColorHint="@color/brave_theme_hint_text" />
-          
-        <EditText
-             android:id="@+id/browser_express_confirm_password"
-             android:layout_width="match_parent"
-             android:layout_height="48dp"
-             android:layout_marginTop="20dp"
-             android:layout_marginStart="20dp"
-             android:layout_marginEnd="20dp"
-             android:drawableStart="@drawable/lock"
-             android:drawablePadding="10dp"
-             android:background="@drawable/rounded_wallet_edittext"
-             android:hint="@string/confirm_password"
-             android:importantForAutofill="no"
-             android:inputType="textPassword"
-             android:paddingEnd="18dp"
-             android:paddingStart="18dp"
-             android:paddingTop="10dp"
-             android:paddingBottom="10dp"
-             android:textCursorDrawable="@null"
-             android:textSize="14sp"
-             android:textColor="@color/wallet_text_color"
-             android:textColorHint="@color/brave_theme_hint_text" />
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:importantForAccessibility="no"
+                    android:src="@drawable/ic_browser_express_signin_close" />
+            </FrameLayout>
+        </FrameLayout>
 
-         <Button
-             android:id="@+id/btn_forgot_password"
-             android:layout_width="wrap_content"
-             android:layout_height="wrap_content"
-             android:layout_marginTop="10dp"
-             android:layout_marginEnd="10dp"
-             android:layout_gravity="end"
-             android:background="@android:color/transparent"
-             android:text="@string/browser_express_login_forgot_password"
-             android:textAllCaps="false"
-             android:textColor="@color/browser_express_orange_color"
-             android:textSize="14sp"
-             style="?android:attr/borderlessButtonStyle"/>
-
-          <Button
-               android:id="@+id/btn_sign_up"
-               android:layout_width="match_parent"
-               android:layout_height="48dp"
-               android:layout_gravity="center_horizontal"
-               android:layout_marginTop="10dp"
-               android:layout_marginStart="20dp"
-               android:layout_marginEnd="20dp"
-               android:background="@drawable/orange_rounded_bg"
-               app:backgroundTint="@null"
-               android:text="@string/browser_express_signup_button_title"
-               android:textAllCaps="false"
-               android:textColor="@android:color/black"
-               android:textSize="16sp"
-               android:paddingVertical="4dp"
-               android:paddingHorizontal="20dp"
-               android:minHeight="0dp"
-               style="?android:attr/borderlessButtonStyle"/>
-        
         <TextView
-             android:id="@+id/login_error_message"
-             android:layout_width="wrap_content"
-             android:layout_height="wrap_content"
-             android:layout_marginTop="10dp"
-             android:layout_gravity="center_horizontal"
-             android:text=""
-             android:textColor="@color/browser_express_error_color"
-             android:textSize="12sp"
-             android:textStyle="normal"
-             android:visibility="visible"/>
-
-       <LinearLayout
-            android:id="@+id/layout_already_have__account"
+            style="@style/BrowserExpressSignin.Eyebrow"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="45dp"
+            android:text="@string/browser_express_signin_details_eyebrow" />
+
+        <TextView
+            style="@style/BrowserExpressSignin.Headline"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:accessibilityHeading="true"
+            android:text="@string/browser_express_signin_details_headline" />
+
+        <TextView
+            style="@style/BrowserExpressSignin.Description"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="11dp"
+            android:text="@string/browser_express_signin_details_description" />
+
+        <TextView
+            style="@style/BrowserExpressSignin.FieldLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:text="@string/browser_express_signin_name_label" />
+
+        <EditText
+            android:id="@+id/browser_express_name"
+            style="@style/BrowserExpressSignin.FieldInput"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/browser_express_signin_field_bg"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:autofillHints="personName"
+            android:hint="@string/browser_express_signin_name_hint"
+            android:importantForAutofill="yes"
+            android:imeOptions="actionNext"
+            android:inputType="textPersonName|textCapWords"
+            android:maxLines="1" />
+
+        <TextView
+            style="@style/BrowserExpressSignin.FieldLabel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/browser_express_signin_phone_label" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="8dp"
+            android:background="@drawable/browser_express_signin_field_bg"
+            android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:visibility="visible"
-            android:layout_gravity="center">
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:text="@string/browser_express_signup_account"
-                android:textColor="@color/content_color"
-                android:textSize="16sp"
-                android:textStyle="normal" />
+                android:fontFamily="sans-serif-medium"
+                android:lineHeight="19sp"
+                android:text="@string/browser_express_signin_country_code"
+                android:textColor="@color/browser_express_signin_text_primary"
+                android:textSize="14sp" />
 
-            <Button
-                android:id="@+id/btn_sign_in"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:background="@android:color/transparent"
-                android:text="@string/browser_express_login_button_title"
-                android:textAllCaps="false"
-                android:textColor="@color/browser_express_orange_color"
-                android:textSize="14sp"
-                style="?android:attr/borderlessButtonStyle"/>
+            <View
+                android:layout_width="1dp"
+                android:layout_height="26dp"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="16dp"
+                android:background="@color/browser_express_signin_field_divider" />
 
+            <EditText
+                android:id="@+id/browser_express_phone"
+                style="@style/BrowserExpressSignin.FieldInput"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:padding="0dp"
+                android:autofillHints="phoneNational"
+                android:hint="@string/browser_express_signin_phone_hint"
+                android:importantForAutofill="yes"
+                android:imeOptions="actionDone"
+                android:inputType="phone"
+                android:maxLines="1" />
         </LinearLayout>
 
-     </LinearLayout>
+        <!-- Holds its line even when empty (INVISIBLE) so the button below does not jump. -->
+        <TextView
+            android:id="@+id/login_error_message"
+            style="@style/BrowserExpressSignin.Error"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:accessibilityLiveRegion="polite"
+            android:textSize="11sp"
+            android:lineHeight="15sp"
+            android:visibility="invisible" />
+
+        <FrameLayout
+            android:id="@+id/btn_sign_up"
+            style="@style/BrowserExpressSignin.PrimaryButton"
+            android:layout_marginTop="5dp">
+
+            <TextView
+                android:id="@+id/btn_sign_up_text"
+                style="@style/BrowserExpressSignin.PrimaryButtonLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="@string/browser_express_signin_send_code" />
+        </FrameLayout>
+
+        <TextView
+            style="@style/BrowserExpressSignin.Caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:text="@string/browser_express_signin_sms_disclosure" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="39dp"
+            android:background="@drawable/browser_express_signin_card_bg"
+            android:orientation="horizontal"
+            android:paddingStart="16dp"
+            android:paddingTop="13dp"
+            android:paddingEnd="16dp"
+            android:paddingBottom="23dp">
+
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_marginTop="6dp"
+                android:importantForAccessibility="no"
+                android:src="@drawable/ic_browser_express_signin_shield" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    style="@style/BrowserExpressSignin.CardTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/browser_express_signin_privacy_title" />
+
+                <TextView
+                    style="@style/BrowserExpressSignin.Caption"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="3dp"
+                    android:text="@string/browser_express_signin_privacy_description" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/btn_skip"
+            style="@style/BrowserExpressSignin.Skip"
+            android:layout_marginTop="24dp"
+            android:text="@string/browser_express_signin_skip_details" />
+    </LinearLayout>
 </ScrollView>

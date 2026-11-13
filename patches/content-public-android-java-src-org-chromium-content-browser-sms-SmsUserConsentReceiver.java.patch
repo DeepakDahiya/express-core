@@ -1,0 +1,36 @@
+diff --git a/content/public/android/java/src/org/chromium/content/browser/sms/SmsUserConsentReceiver.java b/content/public/android/java/src/org/chromium/content/browser/sms/SmsUserConsentReceiver.java
+index d32f846463f1a..38c95a02932d3 100644
+--- a/content/public/android/java/src/org/chromium/content/browser/sms/SmsUserConsentReceiver.java
++++ b/content/public/android/java/src/org/chromium/content/browser/sms/SmsUserConsentReceiver.java
+@@ -85,17 +85,23 @@ public class SmsUserConsentReceiver extends BroadcastReceiver {
+ 
+         switch (status.getStatusCode()) {
+             case CommonStatusCodes.SUCCESS:
+-                assert mProvider.getWindow() != null;
+-
+                 Intent consentIntent =
+                         intent.getExtras().getParcelable(SmsRetriever.EXTRA_CONSENT_INTENT);
++                WindowAndroid window = mProvider.getWindow();
++                // SMS_RETRIEVED is also broadcast when the app's own
++                // SmsRetriever (app-hash) client retrieves a message; those
++                // broadcasts carry no consent intent, and no WebOTP request
++                // means no window. Showing the consent dialog in either case
++                // would throw, killing the process on every incoming OTP SMS.
++                if (consentIntent == null || window == null) {
++                    Log.w(TAG, "Ignoring SMS_RETRIEVED broadcast without consent intent/window.");
++                    return;
++                }
+                 try {
+-                    mProvider
+-                            .getWindow()
+-                            .showIntent(
+-                                    consentIntent,
+-                                    (resultCode, data) -> onConsentResult(resultCode, data),
+-                                    null);
++                    window.showIntent(
++                            consentIntent,
++                            (resultCode, data) -> onConsentResult(resultCode, data),
++                            null);
+                 } catch (android.content.ActivityNotFoundException e) {
+                     if (DEBUG) Log.d(TAG, "Error starting activity for result.");
+                 }

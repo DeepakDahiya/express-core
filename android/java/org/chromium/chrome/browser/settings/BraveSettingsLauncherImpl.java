@@ -59,6 +59,10 @@ public class BraveSettingsLauncherImpl extends SettingsNavigationImpl {
         }
         if (fragmentArgs != null) {
             intent.putExtra(SettingsActivity.EXTRA_SHOW_FRAGMENT_ARGUMENTS, fragmentArgs);
+            if (fragmentArgs.getBoolean(
+                        BraveSettingsActivity.EXTRA_BROWSER_EXPRESS_AUTH_REQUIRED, false)) {
+                intent.putExtra(BraveSettingsActivity.EXTRA_BROWSER_EXPRESS_AUTH_REQUIRED, true);
+            }
         }
         return intent;
     }

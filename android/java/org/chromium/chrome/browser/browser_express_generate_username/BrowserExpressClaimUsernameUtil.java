@@ -24,6 +24,7 @@ import org.chromium.net.ChromiumNetworkAdapter;
 import org.chromium.net.NetworkTrafficAnnotationTag;
 
 import org.chromium.chrome.browser.app.BraveActivity;
+import org.chromium.chrome.browser.util.BraveConstants;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -33,10 +34,15 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
+import java.util.TimeZone;
 
 public class BrowserExpressClaimUsernameUtil {
     private static final String TAG = "Claim_Username_Browser_Express";
+    public static final String ERROR_MANUAL_AUTH_REQUIRED = "manual_auth_required";
     private static final String CLAIM_USERNAME_URL = "https://api.browser.express/v1/auth/generate-username";
+    private static final int CONNECT_TIMEOUT_MS = 15000;
+    private static final int READ_TIMEOUT_MS = 20000;
 
     private BrowserExpressGenerateUsernameBottomSheetFragment mBottomSheetDialog;
 
@@ -47,17 +53,31 @@ public class BrowserExpressClaimUsernameUtil {
 
     public static class ClaimUsernameWorkerTask extends AsyncTask<Void> {
         private final ClaimUsernameCallback mCallback;
+        // When true, skip the India manual-auth gate and auto-login anyway. Used
+        // by the register screen's "close" fallback so a user who declines to
+        // register still gets the same generate-username auto-login non-India
+        // users get automatically.
+        private final boolean mForceAutoLogin;
         private Boolean claimUsernameStatus;
         private String mErrorMessage;
         private String mAccessToken;
         private String mRefreshToken;
 
         public ClaimUsernameWorkerTask(ClaimUsernameCallback callback) {
+            this(callback, false);
+        }
+
+        public ClaimUsernameWorkerTask(ClaimUsernameCallback callback, boolean forceAutoLogin) {
             mCallback = callback;
+            mForceAutoLogin = forceAutoLogin;
             claimUsernameStatus = false;
             mErrorMessage = "";
             mAccessToken = null;
             mRefreshToken = null;
+        }
+
+        boolean isForceAutoLogin() {
+            return mForceAutoLogin;
         }
 
         public void setAuthTokens(String accessToken, String refreshToken){
@@ -75,6 +95,11 @@ public class BrowserExpressClaimUsernameUtil {
 
         @Override
         protected Void doInBackground() {
+            if (!mForceAutoLogin && shouldRequireManualAuth()) {
+                setClaimUsernameSuccessStatus(false);
+                setErrorMessage(ERROR_MANUAL_AUTH_REQUIRED);
+                return null;
+            }
             sendClaimUsernameRequest(this);
             return null;
         }
@@ -94,6 +119,9 @@ public class BrowserExpressClaimUsernameUtil {
 
     public void showGenerateUsernameBottomSheet() {
         try {
+            if (openManualAuthIfRequired()) {
+                return;
+            }
             if(mBottomSheetDialog == null){
                 BrowserExpressGenerateUsernameBottomSheetFragment bottomSheetDialog =
                         BrowserExpressGenerateUsernameBottomSheetFragment.newInstance(true);
@@ -117,9 +145,16 @@ public class BrowserExpressClaimUsernameUtil {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
+            if (!task.isForceAutoLogin() && shouldRequireManualAuth()) {
+                task.setClaimUsernameSuccessStatus(false);
+                task.setErrorMessage(ERROR_MANUAL_AUTH_REQUIRED);
+                return;
+            }
             URL url = new URL(CLAIM_USERNAME_URL);
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
+            urlConnection.setConnectTimeout(CONNECT_TIMEOUT_MS);
+            urlConnection.setReadTimeout(READ_TIMEOUT_MS);
             urlConnection.setRequestMethod("GET");
             urlConnection.setUseCaches(false);
             urlConnection.setRequestProperty("Content-Type", "application/json");
@@ -135,11 +170,14 @@ public class BrowserExpressClaimUsernameUtil {
                 }
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
-                    task.setClaimUsernameSuccessStatus(true);
                     String accessToken1 = responseObject.optString("accessToken", "");
                     String refreshToken1 = responseObject.optString("refreshToken", "");
                     if(!accessToken1.isEmpty() && !refreshToken1.isEmpty()){
+                        task.setClaimUsernameSuccessStatus(true);
                         task.setAuthTokens(accessToken1, refreshToken1);
+                    } else {
+                        task.setClaimUsernameSuccessStatus(false);
+                        task.setErrorMessage("Missing auth tokens");
                     }
                 }else{
                     task.setClaimUsernameSuccessStatus(false);
@@ -147,18 +185,52 @@ public class BrowserExpressClaimUsernameUtil {
                 }
                 br.close();
             } else {
-                Log.e(TAG, urlConnection.getResponseMessage());
+                String error = urlConnection.getResponseMessage();
+                if (error == null) error = "HTTP " + HttpResult;
+                task.setErrorMessage(error);
+                Log.e(TAG, error);
             }
         } catch (MalformedURLException e) {
+            task.setErrorMessage(getErrorMessage(e));
             Log.e(TAG, e.getMessage());
         } catch (IOException e) {
+            task.setErrorMessage(getErrorMessage(e));
             Log.e(TAG, e.getMessage());
         } catch (JSONException e) {
+            task.setErrorMessage(getErrorMessage(e));
             Log.e(TAG, e.getMessage());
         } catch (Exception e) {
+            task.setErrorMessage(getErrorMessage(e));
             Log.e(TAG, e.getMessage());
         } finally {
             if (urlConnection != null) urlConnection.disconnect();
         }
+    }
+
+    private static String getErrorMessage(Exception e) {
+        String message = e.getMessage();
+        return message != null ? message : e.getClass().getSimpleName();
+    }
+
+    public static boolean shouldRequireManualAuth() {
+        String countryCode = Locale.getDefault().getCountry();
+        String timeZoneId = TimeZone.getDefault().getID();
+        return BraveConstants.INDIA_COUNTRY_CODE.equalsIgnoreCase(countryCode)
+                || "Asia/Kolkata".equalsIgnoreCase(timeZoneId);
+    }
+
+    public static boolean openManualAuthIfRequired() {
+        if (!shouldRequireManualAuth()) return false;
+        try {
+            BraveActivity activity = BraveActivity.getBraveActivity();
+            if (activity.getAccessToken() != null) {
+                Log.e(TAG, "Manual auth navigation skipped because the user is authenticated");
+                return true;
+            }
+            activity.openBrowserExpressSignupSettings(true);
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+            Log.e(TAG, "Unable to open manual auth: " + e.getMessage());
+        }
+        return true;
     }
 }

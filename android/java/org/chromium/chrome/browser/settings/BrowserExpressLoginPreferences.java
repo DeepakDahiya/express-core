@@ -66,10 +66,11 @@ import org.json.JSONException;
 public class BrowserExpressLoginPreferences extends BravePreferenceFragment
         implements Preference.OnPreferenceChangeListener {
     private Button mBtnSignUp;
-    private Button mBtnSignIn;
-    private EditText mEmailEditText;
-    private EditText mPasswordEditText;
+    private View mBtnSignIn;
+    private TextView mBtnSignInText;
+    private EditText mPhoneEditText;
     private TextView mErrorTextView;
+    private View mBtnClose;
 
     private final ObservableSupplierImpl<String> mPageTitle = new ObservableSupplierImpl<>();
 
@@ -92,12 +93,19 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
         View view = getView();
         if (view != null) {
             mBtnSignUp = (Button) view.findViewById(R.id.btn_sign_up);
-            mBtnSignIn = (Button) view.findViewById(R.id.btn_sign_in);
-            mEmailEditText = (EditText) view.findViewById(R.id.browser_express_email);
-            mPasswordEditText = (EditText) view.findViewById(R.id.browser_express_password);
+            mBtnSignIn = view.findViewById(R.id.btn_sign_in);
+            mBtnSignInText = (TextView) view.findViewById(R.id.btn_sign_in_text);
+            mPhoneEditText = (EditText) view.findViewById(R.id.browser_express_phone);
             mErrorTextView = (TextView) view.findViewById(R.id.login_error_message);
+            mBtnClose = view.findViewById(R.id.btn_close);
+            if (mBtnClose != null) {
+                mBtnClose.setOnClickListener(
+                        v -> BrowserExpressAuthUiUtil.skipAuthWithAutoLogin(this, "login"));
+            }
 
+            BrowserExpressAuthUiUtil.applyCompactText(getContext(), view);
             onClickViews();
+            BrowserExpressAuthJourney.track(PostHogEventKeys.AUTH_SCREEN_VIEWED, "login");
         }
     }
 
@@ -105,50 +113,67 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
         mBtnSignUp.setOnClickListener(view -> {
             try {
                 BraveActivity activity = BraveActivity.getBraveActivity();
-                activity.openBrowserExpressSignupSettings();
+                activity.openBrowserExpressSignupSettings(isBrowserExpressAuthRequired());
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             }
         });
 
         mBtnSignIn.setOnClickListener(view -> {
-            String email = mEmailEditText.getText().toString();
-            String password = mPasswordEditText.getText().toString();
+            String rawPhoneNumber = mPhoneEditText.getText().toString().trim();
+            String phoneNumber = normalizePhoneNumber(rawPhoneNumber);
 
             mErrorTextView.setText(R.string.browser_express_empty_text);
-            mErrorTextView.setVisibility(View.INVISIBLE);
+            mErrorTextView.setVisibility(View.GONE);
 
             String emptyString = "";
 
-            if(password.equals(emptyString) || email.equals(emptyString)){
+            if (rawPhoneNumber.equals(emptyString)) {
                 mErrorTextView.setText(R.string.browser_express_fill_all_fields_text);
                 mErrorTextView.setVisibility(View.VISIBLE);
                 return;
             }
 
+            if (!isValidPhoneNumber(phoneNumber)) {
+                mErrorTextView.setText(R.string.browser_express_phone_invalid_text);
+                mErrorTextView.setVisibility(View.VISIBLE);
+                return;
+            }
+
             mBtnSignIn.setClickable(false);
-            mBtnSignIn.setText(R.string.browser_express_loading_title);
+            mBtnSignInText.setText(R.string.browser_express_loading_title);
 
             Utils.hideKeyboard(getActivity());
 
-            try {
-                BraveActivity activity = BraveActivity.getBraveActivity();
-                String pInfo = activity.getCurrentAppVersion();
-                JSONObject payload = new JSONObject();
-                payload.put("email", email);
-                payload.put("app_version", pInfo);
-                PostHogUtil.PostHogWorkerTask postHogWorkerTask =
-                        new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.LOGIN, "NEW_USER", payload);
-                postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            } catch (BraveActivity.BraveActivityNotFoundException e) {
-            } catch (JSONException e) {
-                Log.e("TokenHandler", "Error decoding new access token", e);
-            }
+            BrowserExpressAuthJourney.track(PostHogEventKeys.OTP_REQUESTED, "login");
 
             BrowserExpressLoginPreferencesUtil.LoginWorkerTask workerTask =
                     new BrowserExpressLoginPreferencesUtil.LoginWorkerTask(
-                            email, password, loginCallback);
+                            phoneNumber, loginCallback);
             workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         });
+    }
+
+    private String normalizePhoneNumber(String rawPhoneNumber) {
+        if (rawPhoneNumber == null) return null;
+        String digits = rawPhoneNumber.replaceAll("[^0-9]", "");
+        if (digits.startsWith("91") && digits.length() == 12) {
+            digits = digits.substring(2);
+        } else if (digits.startsWith("0") && digits.length() == 11) {
+            digits = digits.substring(1);
+        }
+        if (digits.length() == 10) {
+            return "+91" + digits;
+        }
+        if (rawPhoneNumber.trim().startsWith("+")
+                && digits.length() >= 8
+                && digits.length() <= 15) {
+            return "+" + digits;
+        }
+        return null;
+    }
+
+    private boolean isValidPhoneNumber(String phoneNumber) {
+        return phoneNumber != null && phoneNumber.matches("\\+[1-9][0-9]{7,14}");
     }
     
     @Override
@@ -159,38 +184,16 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
     private final BrowserExpressLoginPreferencesUtil.LoginCallback loginCallback =
             new BrowserExpressLoginPreferencesUtil.LoginCallback() {
                 @Override
-                public void loginSuccessful(String accessToken, String refreshToken) {
+                public void loginOtpSent(String phoneNumber) {
                     mBtnSignIn.setClickable(true);
-                    mBtnSignIn.setText(R.string.browser_express_login_button_title);
+                    mBtnSignInText.setText(R.string.browser_express_send_otp_button_title);
 
                     try {
                         BraveActivity activity = BraveActivity.getBraveActivity();
-                        activity.setAccessToken(accessToken);
-                        Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                        intent.setAction(Intent.ACTION_VIEW);
-                        Toast.makeText(activity, "Login Successful", Toast.LENGTH_SHORT).show();
-                        startActivity(intent);
-
-                        // Track YT sign-in complete
-                        try {
-                            String[] parts = accessToken.split("\\.");
-                            if (parts.length >= 2) {
-                                byte[] decoded = android.util.Base64.decode(parts[1],
-                                        android.util.Base64.DEFAULT);
-                                JSONObject jwt = new JSONObject(new String(decoded, "UTF-8"));
-                                String userId = jwt.getString("_id");
-                                JSONObject payload = new JSONObject();
-                                payload.put("app_version", activity.getCurrentAppVersion());
-                                PostHogUtil.PostHogWorkerTask task =
-                                        new PostHogUtil.PostHogWorkerTask(
-                                                PostHogEventKeys.YT_SIGN_IN_COMPLETE,
-                                                userId, payload);
-                                task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                            }
-                        } catch (Exception ex) {
-                            Log.e("LoginPrefs", "PostHog YT sign-in error: " + ex.getMessage());
-                        }
+                        activity.setBrowserExpressPhoneNumber(phoneNumber);
+                        activity.setBrowserExpressOtpPurpose(
+                                BraveActivity.BROWSER_EXPRESS_OTP_PURPOSE_LOGIN);
+                        activity.openBrowserExpressVerify(isBrowserExpressAuthRequired());
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                     }
                 }
@@ -198,11 +201,20 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
                 @Override
                 public void loginFailed(String error) {
                     Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
+                    BrowserExpressAuthJourney.trackError(
+                            PostHogEventKeys.OTP_SEND_FAILED, "login", error);
                     mErrorTextView.setText(error);
                     mErrorTextView.setVisibility(View.VISIBLE);
 
                     mBtnSignIn.setClickable(true);
-                    mBtnSignIn.setText(R.string.browser_express_login_button_title);
+                    mBtnSignInText.setText(R.string.browser_express_send_otp_button_title);
                 }
             };
+
+    private boolean isBrowserExpressAuthRequired() {
+        Bundle args = getArguments();
+        return args != null
+                && args.getBoolean(
+                        BraveSettingsActivity.EXTRA_BROWSER_EXPRESS_AUTH_REQUIRED, false);
+    }
 }

@@ -4204,72 +4204,90 @@ If you don't accept this request, VPN will not reconnect and your internet conne
       To view passwords, first set a screen lock on your device
     </message>
     <message name="IDS_BROWSER_EXPRESS_LOGIN_TITLE" desc="Sign in with Brave Wallet Request ID label">
-      Welcome Back!
+      The Most Private
+    </message>
+    <message name="IDS_NOTIFICATION_CATEGORY_COMMENTS" desc="Notification channel name for likes and replies on the user's comments">
+      Comments &amp; replies
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_PUSH_TOGGLE_TITLE" desc="Settings switch: send a notification when someone likes or replies to the user's comment">
+      Notify me about likes and replies
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_PUSH_TOGGLE_SUMMARY" desc="Settings switch summary for like/reply notifications">
+      Get a notification when someone likes or replies to your comment
     </message>
     <message name="IDS_BROWSER_EXPRESS_NO_COMMENTS_TITLE" desc="Sign in with Brave Wallet Request ID label">
       No Comments!
     </message>
-    <message name="IDS_BROWSER_EXPRESS_OTP_VERIFY_TITLE" desc="Sign in with Brave Wallet Request ID label">
-      Verify Email
-    </message>
     <message name="IDS_BROWSER_EXPRESS_LOGIN_DESC" desc="Sign in with Brave Wallet Request ID label">
-      Sign in to start exploring the world Anonymously
+      Browser on the Internet
     </message>
     <message name="IDS_BROWSER_EXPRESS_NO_COMMENTS_DESC" desc="Sign in with Brave Wallet Request ID label">
       No comments found for this page. Be the first one to start the conversation!!
     </message>
-    <message name="IDS_BROWSER_EXPRESS_OTP_VERIFY_DESC" desc="Sign in with Brave Wallet Request ID label">
-      Enter the OTP code sent to your email
-    </message>
-    <message name="IDS_BROWSER_EXPRESS_SIGNUP_TITLE" desc="Sign in with Brave Wallet Request ID label">
-      Register Now!
-    </message>
     <message name="IDS_BROWSER_EXPRESS_SIGNUP_DESC" desc="Sign in with Brave Wallet Request ID label">
-      Sign in to start exploring the world Anonymously
-    </message>
-    <message name="IDS_BROWSER_EXPRESS_LOGIN_BUTTON_TITLE" desc="Sign in with Brave Wallet Request ID label">
-      Sign In
-    </message>
-    <message name="IDS_BROWSER_EXPRESS_EDIT_PROFILE_BUTTON_TITLE" desc="Sign in with Brave Wallet Request ID label">
-      Save Details
+      Browser on the Internet
     </message>
     <message name="IDS_BROWSER_EXPRESS_EMPTY_TEXT" desc="Sign in with Brave Wallet Request ID label">
     </message>
-    <message name="IDS_BROWSER_EXPRESS_PASSWORD_NOT_MATCH_TEXT" desc="Sign in with Brave Wallet Request ID label">
-      Confirm password and password do not match
-    </message>
     <message name="IDS_BROWSER_EXPRESS_FILL_ALL_FIELDS_TEXT" desc="Sign in with Brave Wallet Request ID label">
-      Please fill all the fields
+      Please fill in all required fields
     </message>
     <message name="IDS_BROWSER_EXPRESS_LOADING_TITLE" desc="Sign in with Brave Wallet Request ID label">
       Loading...
     </message>
-    <message name="IDS_BROWSER_EXPRESS_LOGIN_FORGOT_PASSWORD" desc="Sign in with Brave Wallet Request ID label">
-      Forgot Password?
-    </message>
-    <message name="IDS_BROWSER_EXPRESS_RESEND_OTP" desc="Sign in with Brave Wallet Request ID label">
-      Resend OTP
-    </message>
     <message name="IDS_BROWSER_EXPRESS_LOGIN_NO_ACCOUNT" desc="Sign in with Brave Wallet Request ID label">
       Don't have an account?
-    </message>
-    <message name="IDS_BROWSER_EXPRESS_SIGNUP_ACCOUNT" desc="Sign in with Brave Wallet Request ID label">
-      Already have an account?
     </message>
     <message name="IDS_BROWSER_EXPRESS_SIGNUP_BUTTON_TITLE" desc="Sign in with Brave Wallet Request ID label">
       Sign up
     </message>
-    <message name="IDS_BROWSER_EXPRESS_OTP_VERIFY_BUTTON_TITLE" desc="Sign in with Brave Wallet Request ID label">
-      Continue
+    <message name="IDS_BROWSER_EXPRESS_SEND_OTP_BUTTON_TITLE" desc="Button text for Browser Express phone signup">
+      Send OTP
     </message>
-    <message name="IDS_ENTER_YOUR_NAME" desc="Brave wallet password hint text">
-      Enter your name
+    <message name="IDS_BROWSER_EXPRESS_ENTER_PHONE_NUMBER" desc="Hint for Browser Express phone number signup field">
+      Mobile number
     </message>
-    <message name="IDS_ENTER_YOUR_EMAIL" desc="Brave wallet password hint text">
-      Enter your email
+    <message name="IDS_BROWSER_EXPRESS_PHONE_INVALID_TEXT" desc="Validation error for Browser Express phone number signup">
+      Enter a valid phone number with country code
     </message>
-    <message name="IDS_ENTER_YOUR_USERNAME" desc="Brave wallet password hint text">
-      Enter username
+    <message name="IDS_BROWSER_EXPRESS_BRAND_WORD" desc="Browser Express brand wordmark on auth screens">
+      Express
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_HERO_THE" desc="First word in Browser Express auth hero headline">
+      The
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_HERO_EYEBROW" desc="Highlighted privacy word on Browser Express auth screens">
+      Most Private
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_PRIVATE_DESIGN_TITLE" desc="Privacy panel title on Browser Express auth screens">
+      Private by design.
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_PRIVATE_DESIGN_SUBTITLE" desc="Privacy panel subtitle on Browser Express auth screens">
+      Built for you.
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_INDIA_PREFIX" desc="India phone country code shown beside Browser Express phone input">
+      +91
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_PRIVACY_STATEMENT" desc="Privacy promise on Browser Express auth screens">
+      We don't collect. We don't track. You stay private.
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_ZERO_ADS_TITLE" desc="First Browser Express auth proof card title">
+      Zero Ads
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_ZERO_ADS_SUBTITLE" desc="First Browser Express auth proof card subtitle">
+      Distraction Free
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_ZERO_TRACKERS_TITLE" desc="Second Browser Express auth proof card title">
+      Zero Trackers
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_ZERO_TRACKERS_SUBTITLE" desc="Second Browser Express auth proof card subtitle">
+      Total Privacy
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_ZERO_COOKIES_TITLE" desc="Third Browser Express auth proof card title">
+      Zero Cookies
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_ZERO_COOKIES_SUBTITLE" desc="Third Browser Express auth proof card subtitle">
+      No Data Trail
     </message>
     <message name="IDS_ENTER_OTP" desc="Brave wallet password hint text">
       Enter OTP

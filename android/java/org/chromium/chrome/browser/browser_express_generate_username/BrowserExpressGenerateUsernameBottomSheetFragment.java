@@ -67,6 +67,10 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
+        if (BrowserExpressClaimUsernameUtil.openManualAuthIfRequired()) {
+            dismissAllowingStateLoss();
+            return;
+        }
         ((BottomSheetDialog) getDialog())
                 .getBehavior()
                 .setState(BottomSheetBehavior.STATE_EXPANDED);
@@ -74,6 +78,10 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
         nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                if (BrowserExpressClaimUsernameUtil.openManualAuthIfRequired()) {
+                    dismissAllowingStateLoss();
+                    return;
+                }
                 if (getActivity() != null) {
                     nextButton.setClickable(false);
                     nextButton.setText(R.string.browser_express_loading_title);
@@ -131,6 +139,11 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
                 @Override
                 public void claimUsernameFailed(String error) {
                     Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
+                    if (BrowserExpressClaimUsernameUtil.ERROR_MANUAL_AUTH_REQUIRED.equals(error)) {
+                        BrowserExpressClaimUsernameUtil.openManualAuthIfRequired();
+                        dismissAllowingStateLoss();
+                        return;
+                    }
                     nextButton.setClickable(true);
                     nextButton.setText(R.string.brave_next);
                 }

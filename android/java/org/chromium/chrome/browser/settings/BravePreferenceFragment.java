@@ -30,11 +30,18 @@ public abstract class BravePreferenceFragment extends ChromeBaseSettingsFragment
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         menu.clear();
-        inflater.inflate(R.menu.exit_settings_menu, menu);
+        if (!isBrowserExpressAuthLocked()) {
+            inflater.inflate(R.menu.exit_settings_menu, menu);
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
+        if (isBrowserExpressAuthLocked()
+                && (item.getItemId() == R.id.close_menu_id
+                        || item.getItemId() == android.R.id.home)) {
+            return true;
+        }
         if (item.getItemId() == R.id.close_menu_id) {
             Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
@@ -42,6 +49,11 @@ public abstract class BravePreferenceFragment extends ChromeBaseSettingsFragment
             startActivity(intent);
         }
         return false;
+    }
+
+    private boolean isBrowserExpressAuthLocked() {
+        return getActivity() instanceof BraveSettingsActivity
+                && ((BraveSettingsActivity) getActivity()).isBrowserExpressAuthLocked();
     }
 
     @Override
