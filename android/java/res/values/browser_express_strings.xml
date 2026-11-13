@@ -91,6 +91,17 @@
     <string name="browser_express_privacy_save_failed">Couldn’t change that setting. Try again.</string>
     <string name="browser_express_privacy_section_personalization">Personalization</string>
 
+    <!-- Sharing the apps on this phone to personalize the feed (asked once, then a Privacy &
+         Security switch). The dialog is the disclosure Google Play requires before collecting
+         the installed-apps list: it has to say what is collected and what it is for. -->
+    <string name="browser_express_installed_apps_setting">Personalize with your apps</string>
+    <string name="browser_express_installed_apps_setting_note">Shares your app list with Express to help choose posts for your feed. Turning this off stops sharing and requests deletion of this phone’s list. If offline, deletion is retried when you’re online and signed in.</string>
+    <string name="browser_express_installed_apps_consent_title">Personalize your feed?</string>
+    <string name="browser_express_installed_apps_consent_message">Express can read the apps in your current Android profile, including system apps, and send their package names, names, categories, versions, install dates and stores to our servers. We store the latest list with your Express account to help choose posts for your feed, and refresh it up to once a day while you use Express.\n\nSharing is optional. Turn it off in Settings › Privacy &amp; Security to stop sharing and request deletion of this phone’s list. If offline, deletion is retried when you’re online and signed in.</string>
+    <string name="browser_express_installed_apps_sign_in">Sign in to personalize your feed with your apps.</string>
+    <string name="browser_express_installed_apps_consent_allow">Allow</string>
+    <string name="browser_express_installed_apps_consent_deny">Not now</string>
+
     <!-- Site trust sheet -->
     <string name="browser_express_trust_blocked_count_label">trackers, ads and more blocked</string>
     <string name="browser_express_trust_block_ads">Block ads on this site</string>

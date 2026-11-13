@@ -9,6 +9,9 @@ import("//build/config/android/rules.gni")
 
 declare_args() {
   brave_android_developer_options_code = ""
+
+  # Enable for inventory QA only until this specific use is approved for Play.
+  brave_android_installed_apps_enabled = false
 }
 
 java_cpp_enum("brave_android_java_enums_srcjar") {
@@ -24,5 +27,6 @@ java_cpp_template("brave_config_java") {
     "BRAVE_ANDROID_DEVELOPER_OPTIONS_CODE=\"$brave_android_developer_options_code\"",
     "BRAVE_ANDROID_WEBCOMPAT_REPORT_ENDPOINT=\"$webcompat_report_api_endpoint\"",
     "BRAVE_ANDROID_WEB_DISCOVERY_ENABLED=$enable_web_discovery_native",
+    "BRAVE_ANDROID_INSTALLED_APPS_ENABLED=$brave_android_installed_apps_enabled",
   ]
 }
