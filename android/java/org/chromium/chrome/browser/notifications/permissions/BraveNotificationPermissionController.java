@@ -10,7 +10,7 @@ import org.chromium.ui.permissions.AndroidPermissionDelegate;
 
 /**
  * Drops Chromium's startup notification permission request. The NTP asks instead, once the reader
- * has scrolled through enough comments (see CommentScrollPrompts).
+ * has scrolled past enough Home feed posts (see NtpScrollPrompts).
  */
 public class BraveNotificationPermissionController extends NotificationPermissionController {
     public BraveNotificationPermissionController(

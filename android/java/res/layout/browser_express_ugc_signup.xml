@@ -1,0 +1,327 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- The UGC sign-up screen (ugc-signup-handoff): one screen, two steps (details, then the code)
+     under a shared animated hero. Dark in both themes. The window is edge to edge, and
+     BrowserExpressSignupPreferences places the header, the panel and the hero around the system
+     bars and the keyboard. A tap anywhere outside the form closes the keyboard. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/ugc_signup_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/browser_express_ugc_signup_bg"
+    android:clickable="true"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    android:importantForAccessibility="no">
+
+    <org.chromium.chrome.browser.browser_express_signup.UgcSignupHeroView
+        android:id="@+id/ugc_signup_hero"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <!-- Header: the wordmark, and Guest top right. It starts 14dp above the wordmark (which sits
+         11dp below the status bar), so Guest's 48dp touch target fits inside it. -->
+    <FrameLayout
+        android:id="@+id/ugc_signup_header"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_gravity="start|top"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="14dp"
+            android:adjustViewBounds="true"
+            android:contentDescription="@string/browser_express_name"
+            android:src="@drawable/browser_express_ugc_wordmark_on_dark" />
+
+        <!-- 32dp tall in the design, centred 3dp below the wordmark's centre; 48dp here for the
+             touch target. -->
+        <TextView
+            android:id="@+id/ugc_signup_guest"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_gravity="end|top"
+            android:layout_marginTop="3dp"
+            android:layout_marginEnd="14dp"
+            android:contentDescription="@string/browser_express_ugc_signup_guest_description"
+            android:focusable="true"
+            android:fontFamily="@font/browser_express_ugc_text_medium"
+            android:gravity="center"
+            android:paddingHorizontal="10dp"
+            android:text="@string/browser_express_ugc_signup_guest"
+            android:textColor="@color/browser_express_ugc_signup_guest_text"
+            android:textSize="14sp" />
+    </FrameLayout>
+
+    <!-- The panel rides the keyboard; its top 40dp fade into the hero. -->
+    <LinearLayout
+        android:id="@+id/ugc_signup_panel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@drawable/browser_express_ugc_signup_panel_bg"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="28dp"
+        android:paddingBottom="28dp">
+
+        <!-- Step 1: details. -->
+        <LinearLayout
+            android:id="@+id/ugc_signup_details"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Collapses while a field has focus, so the hero keeps its room. -->
+            <LinearLayout
+                android:id="@+id/ugc_signup_intro"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/ugc_signup_headline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:accessibilityHeading="true"
+                    android:fontFamily="@font/browser_express_ugc_display_bold"
+                    android:includeFontPadding="false"
+                    android:letterSpacing="-0.03"
+                    android:lineHeight="37.5sp"
+                    android:textColor="@color/browser_express_ugc_signup_ink_strong"
+                    android:textSize="36sp" />
+
+                <TextView
+                    android:id="@+id/ugc_signup_sub"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:fontFamily="@font/browser_express_ugc_text_regular"
+                    android:lineHeight="22.4sp"
+                    android:text="@string/browser_express_ugc_signup_sub"
+                    android:textColor="@color/browser_express_ugc_signup_sub"
+                    android:textSize="16sp" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/ugc_signup_form"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:addStatesFromChildren="true"
+                    android:background="@drawable/browser_express_ugc_signup_field_bg"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="16dp">
+
+                    <TextView
+                        android:id="@+id/ugc_signup_name_label"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/browser_express_ugc_text_medium"
+                        android:importantForAccessibility="no"
+                        android:includeFontPadding="false"
+                        android:textColor="@color/browser_express_ugc_signup_muted"
+                        android:textSize="11sp" />
+
+                    <EditText
+                        android:id="@+id/ugc_signup_name"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:autofillHints="personGivenName"
+                        android:background="@null"
+                        android:fontFamily="@font/browser_express_ugc_text_medium"
+                        android:hint="@string/browser_express_ugc_signup_name_placeholder"
+                        android:imeOptions="actionNext"
+                        android:importantForAutofill="yes"
+                        android:includeFontPadding="false"
+                        android:inputType="textPersonName|textCapWords"
+                        android:maxLength="40"
+                        android:maxLines="1"
+                        android:padding="0dp"
+                        android:textColor="@color/browser_express_ugc_signup_ink"
+                        android:textColorHint="@color/browser_express_ugc_signup_placeholder"
+                        android:textCursorDrawable="@drawable/browser_express_ugc_signup_cursor"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="10dp"
+                    android:addStatesFromChildren="true"
+                    android:background="@drawable/browser_express_ugc_signup_field_bg"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="16dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="@font/browser_express_ugc_text_medium"
+                        android:importantForAccessibility="no"
+                        android:includeFontPadding="false"
+                        android:text="@string/browser_express_ugc_signup_phone_label"
+                        android:textColor="@color/browser_express_ugc_signup_muted"
+                        android:textSize="11sp" />
+
+                    <EditText
+                        android:id="@+id/ugc_signup_phone"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="3dp"
+                        android:autofillHints="phoneNationalNumber"
+                        android:background="@null"
+                        android:fontFamily="@font/browser_express_ugc_text_medium"
+                        android:hint="@string/browser_express_ugc_signup_phone_placeholder"
+                        android:imeOptions="actionGo"
+                        android:importantForAutofill="yes"
+                        android:includeFontPadding="false"
+                        android:inputType="phone"
+                        android:maxLength="14"
+                        android:maxLines="1"
+                        android:padding="0dp"
+                        android:textColor="@color/browser_express_ugc_signup_ink"
+                        android:textColorHint="@color/browser_express_ugc_signup_placeholder"
+                        android:textCursorDrawable="@drawable/browser_express_ugc_signup_cursor"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/ugc_signup_details_error"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:accessibilityLiveRegion="polite"
+                    android:fontFamily="@font/browser_express_ugc_text_regular"
+                    android:textColor="@color/browser_express_ugc_signup_error"
+                    android:textSize="13sp"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/ugc_signup_jump_in"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:layout_marginTop="16dp"
+                    android:background="@drawable/browser_express_ugc_signup_cta_bg"
+                    android:clickable="true"
+                    android:drawablePadding="10dp"
+                    android:focusable="true"
+                    android:fontFamily="@font/browser_express_ugc_display_semibold"
+                    android:gravity="center"
+                    android:text="@string/browser_express_ugc_signup_jump_in"
+                    android:textColor="@color/browser_express_ugc_signup_on_accent"
+                    android:textSize="17sp"
+                    app:drawableEndCompat="@drawable/ic_browser_express_ugc_signup_arrow" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Step 2: the code. -->
+        <LinearLayout
+            android:id="@+id/ugc_signup_code"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/ugc_signup_code_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:accessibilityHeading="true"
+                android:fontFamily="@font/browser_express_ugc_display_bold"
+                android:includeFontPadding="false"
+                android:letterSpacing="-0.03"
+                android:lineHeight="35.5sp"
+                android:text="@string/browser_express_ugc_signup_code_title"
+                android:textColor="@color/browser_express_ugc_signup_ink_strong"
+                android:textSize="34sp" />
+
+            <TextView
+                android:id="@+id/ugc_signup_code_sub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:fontFamily="@font/browser_express_ugc_text_regular"
+                android:lineHeight="21sp"
+                android:textColor="@color/browser_express_ugc_signup_sub"
+                android:textSize="15sp" />
+
+            <org.chromium.chrome.browser.browser_express_signup.UgcCodeBoxes
+                android:id="@+id/ugc_signup_code_boxes"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginTop="24dp" />
+
+            <TextView
+                android:id="@+id/ugc_signup_code_error"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:accessibilityLiveRegion="polite"
+                android:fontFamily="@font/browser_express_ugc_text_regular"
+                android:textColor="@color/browser_express_ugc_signup_error"
+                android:textSize="13sp"
+                android:visibility="gone" />
+
+            <!-- 18dp below the boxes in the design; 10dp of that is padding, for a bigger target. -->
+            <TextView
+                android:id="@+id/ugc_signup_resend"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:focusable="true"
+                android:fontFamily="@font/browser_express_ugc_text_medium"
+                android:paddingStart="0dp"
+                android:paddingTop="10dp"
+                android:paddingEnd="12dp"
+                android:paddingBottom="10dp"
+                android:textSize="14sp" />
+
+            <LinearLayout
+                android:id="@+id/ugc_signup_verify"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="12dp"
+                android:background="@drawable/browser_express_ugc_signup_cta_bg"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ProgressBar
+                    android:id="@+id/ugc_signup_verify_spinner"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:layout_marginEnd="10dp"
+                    android:importantForAccessibility="no"
+                    android:indeterminateTint="@color/browser_express_ugc_signup_on_accent"
+                    android:visibility="gone" />
+
+                <TextView
+                    android:id="@+id/ugc_signup_verify_label"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/browser_express_ugc_display_semibold"
+                    android:text="@string/browser_express_ugc_signup_verify"
+                    android:textColor="@color/browser_express_ugc_signup_on_accent"
+                    android:textSize="17sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </LinearLayout>
+</FrameLayout>

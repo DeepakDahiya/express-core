@@ -11,7 +11,10 @@
     <data android:mimeType="message/rfc822" />
 </intent-filter>
 
-<intent-filter android:autoVerify="true">
+<!-- No autoVerify: brave.com's assetlinks.json names Brave's package, not this one, so it can
+     never verify, and on Android 11 and lower one host failing stops every App Link host of the
+     app from verifying, www.browser.express included. -->
+<intent-filter android:autoVerify="false">
     <action android:name="android.intent.action.VIEW" />
     <category android:name="android.intent.category.DEFAULT" />
     <category android:name="android.intent.category.BROWSABLE" />
@@ -19,18 +22,35 @@
           android:host="brave.com" />
 </intent-filter>
 
-<!-- Deep link for referral system. Register both the apex and www hosts:
-     browser.express 308-redirects to www.browser.express, and App Links match
-     the tapped URL host literally (redirects are not followed), so share links
-     using either host must match. assetlinks.json must be published (with the
-     real signing-cert SHA-256, not the REPLACE_WITH_* placeholder) on BOTH
-     hosts for autoVerify to succeed. -->
+<!-- browser.express links the app opens itself: referral links (/refer?code=) and shared
+     takes and posts (/t/<postId>?take=&by=, and the old /view?id=<takeId>; see
+     browser-express-node docs/share-links-android.md). BraveActivity.maybeHandleUrlIntent opens
+     the shared ones natively instead of loading them in a tab.
+
+     Only www.browser.express is verified. browser.express 308-redirects there, assetlinks.json
+     included, and Android doesn't follow redirects when it verifies, so the bare host can never
+     verify and, on Android 11 and lower, would stop www from verifying too. It stays below
+     unverified, for people who have this app as their browser. Verification needs
+     https://www.browser.express/.well-known/assetlinks.json with the Play app signing key's
+     SHA-256 (not the REPLACE_WITH_* placeholder). -->
 <intent-filter android:autoVerify="true">
     <action android:name="android.intent.action.VIEW" />
     <category android:name="android.intent.category.DEFAULT" />
     <category android:name="android.intent.category.BROWSABLE" />
     <data android:scheme="https" />
-    <data android:host="browser.express" />
     <data android:host="www.browser.express" />
     <data android:pathPrefix="/refer" />
+    <data android:pathPrefix="/t/" />
+    <data android:path="/view" />
+</intent-filter>
+
+<intent-filter android:autoVerify="false">
+    <action android:name="android.intent.action.VIEW" />
+    <category android:name="android.intent.category.DEFAULT" />
+    <category android:name="android.intent.category.BROWSABLE" />
+    <data android:scheme="https" />
+    <data android:host="browser.express" />
+    <data android:pathPrefix="/refer" />
+    <data android:pathPrefix="/t/" />
+    <data android:path="/view" />
 </intent-filter>

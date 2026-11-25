@@ -52,6 +52,16 @@
         android:title="Command Line String"/>
 
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
+        android:key="qa_replay_walkthrough"
+        android:title="Replay walkthrough"
+        android:summary="Runs the first-launch walkthrough again, bonus tip included, next time the Home is on screen" />
+
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
+        android:key="qa_replay_splash"
+        android:title="Replay splash"
+        android:summary="Plays the UGC launch splash now, over this screen. Tap it to skip" />
+
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:key="qa_force_java_crash"
         android:title="Force Java crash"
         android:summary="Creates an intentional Java crash report for internal verification" />

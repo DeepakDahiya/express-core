@@ -97,7 +97,11 @@ public class BraveSettingsActivity extends SettingsActivity {
     }
 
     private void applyBrowserExpressAuthChromeIfNeeded() {
-        if (isBrowserExpressAuthPage()) {
+        if (BrowserExpressSignupPreferences.class.getName().equals(
+                    getIntent().getStringExtra(EXTRA_SHOW_FRAGMENT))) {
+            // The UGC sign-up screen is edge to edge and places itself around the bars.
+            BrowserExpressAuthUiUtil.applySignupWindowChrome(this);
+        } else if (isBrowserExpressAuthPage()) {
             BrowserExpressAuthUiUtil.applyAuthPageChrome(this);
         } else if (BrowserExpressProfilePreferences.class.getName().equals(
                            getIntent().getStringExtra(EXTRA_SHOW_FRAGMENT))

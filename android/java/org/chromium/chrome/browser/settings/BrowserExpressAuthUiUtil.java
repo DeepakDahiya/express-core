@@ -9,6 +9,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.util.TypedValue;
@@ -17,10 +18,12 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.TextView;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.WindowCompat;
 import androidx.fragment.app.Fragment;
 
 import org.chromium.base.BravePreferenceKeys;
@@ -73,6 +76,31 @@ final class BrowserExpressAuthUiUtil {
         if (activity != null) {
             activity.finish();
         }
+    }
+
+    /**
+     * The UGC sign-up page's window: edge to edge with the keyboard resizing nothing, so the page
+     * can follow the keyboard frame by frame and keep clear of the bars itself. No app bar, and
+     * clear bars with light icons over the page's dark background.
+     */
+    static void applySignupWindowChrome(Activity activity) {
+        if (activity == null) return;
+        Window window = activity.getWindow();
+        if (window == null) return;
+        WindowCompat.setDecorFitsSystemWindows(window, false);
+        int softInput = window.getAttributes().softInputMode;
+        int resize = (softInput & ~WindowManager.LayoutParams.SOFT_INPUT_MASK_ADJUST)
+                | WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE;
+        if (resize != softInput) window.setSoftInputMode(resize);
+        UiUtils.setStatusBarColor(window, Color.TRANSPARENT);
+        window.setNavigationBarColor(Color.TRANSPARENT);
+        window.setNavigationBarContrastEnforced(false);
+        View decor = window.getDecorView();
+        UiUtils.setStatusBarIconColor(decor.getRootView(), false);
+        UiUtils.setNavigationBarIconColor(decor.getRootView(), false);
+
+        View appBar = activity.findViewById(R.id.app_bar_layout);
+        if (appBar != null) appBar.setVisibility(View.GONE);
     }
 
     static void applyAuthPageChrome(Activity activity) {

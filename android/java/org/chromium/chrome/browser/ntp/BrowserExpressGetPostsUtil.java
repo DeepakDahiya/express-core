@@ -168,6 +168,15 @@ public class BrowserExpressGetPostsUtil {
                             Log.e(TAG, "Skipping post " + post.optString("_id") + ": " + e.getMessage());
                         }
                     }
+                    // The post the first-launch walkthrough features, when the server picks one.
+                    String featured = responseObject.isNull("walkthroughPostId")
+                            ? ""
+                            : responseObject.optString("walkthroughPostId", "");
+                    for (Post post : posts) {
+                        if (!featured.isEmpty() && featured.equals(post.getId())) {
+                            post.setWalkthroughFeatured(true);
+                        }
+                    }
                     Log.e("BE_GET_POST", "8"); 
                     String nextCursor =
                             responseObject.isNull("nextCursor")

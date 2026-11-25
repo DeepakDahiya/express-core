@@ -28,11 +28,11 @@ import java.util.List;
  *       {@link #DEFAULT_LOOKAHEAD_WINDOW} comments and pulls forward any that fit. Score order
  *       is deliberately bent by at most that window, which is invisible in a page-snapping UI
  *       but keeps pages from ending half blank. Comments that are not pulled keep their order.
- *   <li>The page directly under a reel packs into a viewport short by
- *       {@link #NEXT_REEL_PEEK_FRACTION} of the page: that bottom strip is handed to a preview of
- *       the video waiting below, so the reader can see a full-page video is coming. Rows that no
- *       longer fit are pushed back into the queue and start the page that ends up carrying the
- *       strip.
+ *   <li>Text comes first. The page directly under a reel packs like any other, into the full
+ *       viewport, and only the space its rows leave at the bottom goes to a preview of the video
+ *       waiting below, so the reader can see a full-page video is coming. The preview is at most
+ *       {@link #MAX_NEXT_REEL_PEEK_FRACTION} of the page, and a page with less room left than
+ *       the smallest preview worth drawing gets none.
  * </ul>
  *
  * <p>This is a pure function of (comments, viewport height, measurer), so re-packing after a
@@ -51,11 +51,10 @@ public class CommentSlidePacker {
     public static final int DEFAULT_LOOKAHEAD_WINDOW = 10;
 
     /**
-     * Share of the page the sneak peek takes on a slide that sits under a reel. Enough of the
-     * video to read as a video and as "there is another page", small enough that the comments
-     * above it still own the screen.
+     * Most of the page the sneak peek may take on a slide that sits under a reel. It only ever
+     * fills space the comments left, so it never costs a row.
      */
-    public static final float NEXT_REEL_PEEK_FRACTION = 0.15f;
+    public static final float MAX_NEXT_REEL_PEEK_FRACTION = 0.15f;
 
     /** Supplies the rendered size of a single comment row. */
     public interface Measurer {
@@ -76,8 +75,10 @@ public class CommentSlidePacker {
     private final int mPageHeightPx;
     private final int mMaxCommentsPerSlide;
     private final int mLookaheadWindow;
-    /** Height of the peek strip, and so the height the page under a reel loses. */
-    private final int mPeekHeightPx;
+    /** Tallest the peek strip gets. */
+    private final int mMaxPeekHeightPx;
+    /** Leftover space shorter than this gets no peek strip at all. */
+    private final int mMinPeekHeightPx;
 
     public CommentSlidePacker(Measurer measurer, int viewportHeightPx) {
         this(measurer, viewportHeightPx, DEFAULT_MAX_COMMENTS_PER_SLIDE);
@@ -98,6 +99,16 @@ public class CommentSlidePacker {
      */
     public CommentSlidePacker(Measurer measurer, int viewportHeightPx, int pageHeightPx,
             int maxCommentsPerSlide, int lookaheadWindow) {
+        this(measurer, viewportHeightPx, pageHeightPx, maxCommentsPerSlide, lookaheadWindow, 0);
+    }
+
+    /**
+     * @param viewportHeightPx height text rows can fill.
+     * @param pageHeightPx height of a whole page, at least the viewport.
+     * @param minPeekHeightPx smallest peek strip worth drawing; less room than this shows none.
+     */
+    public CommentSlidePacker(Measurer measurer, int viewportHeightPx, int pageHeightPx,
+            int maxCommentsPerSlide, int lookaheadWindow, int minPeekHeightPx) {
         if (measurer == null) {
             throw new IllegalArgumentException("measurer must not be null");
         }
@@ -115,7 +126,8 @@ public class CommentSlidePacker {
         mPageHeightPx = Math.max(pageHeightPx, viewportHeightPx);
         mMaxCommentsPerSlide = maxCommentsPerSlide;
         mLookaheadWindow = lookaheadWindow;
-        mPeekHeightPx = Math.round(mPageHeightPx * NEXT_REEL_PEEK_FRACTION);
+        mMaxPeekHeightPx = Math.round(mPageHeightPx * MAX_NEXT_REEL_PEEK_FRACTION);
+        mMinPeekHeightPx = Math.max(1, minPeekHeightPx);
     }
 
     /**
@@ -143,34 +155,17 @@ public class CommentSlidePacker {
 
             if (comment.isPortraitVideo()) {
                 if (!pending.isEmpty()) {
-                    // This page is about to become the one under a reel, so its usable height
-                    // drops by the peek strip.
-                    int budget = mViewportHeightPx - mPeekHeightPx;
-                    List<Comment> displaced = trimToBudget(pending, budget);
-                    if (!displaced.isEmpty()) {
-                        // The rows that no longer fit start a fresh page — and since the reel
-                        // still follows them, that page is the one that gets the strip. Both go
-                        // back on the queue, displaced rows first, and the loop re-runs this
-                        // branch for them.
-                        remaining.add(0, comment);
-                        remaining.addAll(0, displaced);
-                        slides.add(new CommentSlide(
-                                CommentSlide.TYPE_TEXT, pending, mPageHeightPx));
-                        pending = new ArrayList<>();
-                        pendingHeight = 0;
-                        continue;
-                    }
-                    pendingHeight = fillFromLookahead(remaining, pending, pendingHeight, budget);
-                    slides.add(new CommentSlide(CommentSlide.TYPE_TEXT, pending,
-                            mPageHeightPx, comment, mPeekHeightPx));
+                    // This page is about to become the one under a reel. Its comments fill it
+                    // first; the preview of the reel only gets the space they leave.
+                    pendingHeight = fillFromLookahead(
+                            remaining, pending, pendingHeight, mViewportHeightPx);
+                    int peek = peekHeightFor(pendingHeight);
+                    slides.add(new CommentSlide(CommentSlide.TYPE_TEXT, pending, mPageHeightPx,
+                            peek > 0 ? comment : null, peek));
                     pending = new ArrayList<>();
                     pendingHeight = 0;
                 }
-                // The reel row fills its page regardless of measured height, so the measurement
-                // only keeps the Item's fields honest.
-                slides.add(new CommentSlide(CommentSlide.TYPE_REEL,
-                        Collections.singletonList(mMeasurer.measure(comment)),
-                        mPageHeightPx));
+                slides.add(reelPage(comment));
                 continue;
             }
 
@@ -200,23 +195,27 @@ public class CommentSlidePacker {
     }
 
     /**
-     * Drops trailing rows until the page fits {@code budgetPx}, returning their comments in their
-     * original order so the caller can put them back at the head of the queue. The first row is
-     * never dropped: a single row taller than the budget has nowhere better to go, and dropping
-     * it would leave an empty page and loop forever.
+     * The page {@link #pack} gives a portrait video: the video alone, filling the page.
+     *
+     * <p>A stream that opens on one starts {@code pack(comments)} with exactly this page, followed
+     * by {@code pack(comments.subList(1, n))}: nothing is pending ahead of the first comment, so
+     * nothing is pulled forward past it or previews it. The pager relies on that to show the
+     * opening reel before it has measured the rest.
      */
-    private List<Comment> trimToBudget(List<CommentSlide.Item> pending, int budgetPx) {
-        int height = 0;
-        for (CommentSlide.Item item : pending) {
-            height += item.getHeightPx();
-        }
-        List<Comment> displaced = new ArrayList<>();
-        while (pending.size() > 1 && height > budgetPx) {
-            CommentSlide.Item last = pending.remove(pending.size() - 1);
-            height -= last.getHeightPx();
-            displaced.add(0, last.getComment());
-        }
-        return displaced;
+    public CommentSlide reelPage(Comment reel) {
+        // The reel row fills its page regardless of measured height, so the measurement only
+        // keeps the Item's fields honest.
+        return new CommentSlide(CommentSlide.TYPE_REEL,
+                Collections.singletonList(mMeasurer.measure(reel)), mPageHeightPx);
+    }
+
+    /**
+     * The peek strip for a page whose rows take {@code rowsHeightPx}: the room left under them,
+     * up to {@link #mMaxPeekHeightPx}, or 0 when that room is under {@link #mMinPeekHeightPx}.
+     */
+    private int peekHeightFor(int rowsHeightPx) {
+        int peek = Math.min(mMaxPeekHeightPx, mViewportHeightPx - rowsHeightPx);
+        return peek >= mMinPeekHeightPx ? peek : 0;
     }
 
     /**
@@ -224,8 +223,7 @@ public class CommentSlidePacker {
      * them out of {@code remaining}. Scans at most {@link #mLookaheadWindow} comments; portrait
      * videos are never pulled (they own their pages). Pulled comments keep their relative order.
      *
-     * @param budgetPx height the page has to fill — the full viewport, or that minus the peek
-     *     strip when a reel follows.
+     * @param budgetPx height the page has to fill: the full viewport.
      * @return the pending height after any pulls.
      */
     private int fillFromLookahead(List<Comment> remaining, List<CommentSlide.Item> pending,

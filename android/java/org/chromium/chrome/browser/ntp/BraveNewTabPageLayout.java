@@ -73,6 +73,8 @@ import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.brave_news.BraveNewsControllerFactory;
 import org.chromium.chrome.browser.brave_news.BraveNewsUtils;
 import org.chromium.chrome.browser.brave_news.CardBuilderFeedCard;
+import org.chromium.chrome.browser.browser_express_splash.UgcSplash;
+import org.chromium.chrome.browser.browser_express_walkthrough.WalkthroughHome;
 import org.chromium.chrome.browser.brave_news.LinearLayoutManagerWrapper;
 import org.chromium.chrome.browser.brave_news.models.FeedItemCard;
 import org.chromium.chrome.browser.brave_news.models.FeedItemsCard;
@@ -212,6 +214,10 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
     private CopyOnWriteArrayList<FeedItemsCard> mNewsItemsFeedCard =
             new CopyOnWriteArrayList<FeedItemsCard>();
     private RecyclerView mRecyclerView;
+    /** The furthest post this feed has scrolled past (NtpScrollPrompts counts them). */
+    private int mMaxPostsPassed;
+    /** Posts went by since the feed last stopped: check the Home prompts when it does. */
+    private boolean mPostsPassedSinceIdle;
 
     // The feed header's search box stands in for Chrome's fake search box: the toolbar keeps its
     // location bar out of sight while the box is on screen and grows it out of the box when it is
@@ -224,6 +230,8 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
     private TextView mNewContentText;
     private ProgressBar mNewContentProgressBar;
     private PostListAdapter mPostAdapter;
+    /** The first-launch walkthrough's Home steps, over this page's feed while it shows. */
+    @Nullable private WalkthroughHome mWalkthrough;
     /**
      * The feed so far. It outlives the adapter: the page builds a fresh adapter each time it is
      * shown again (see onDetachedFromWindow), over the same posts.
@@ -375,6 +383,8 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                     .registerOnSharedPreferenceChangeListener(mPreferenceListener);
         }
         setNtpViews();
+        // The app is ready under the launch splash, which can fade into the Home now.
+        UgcSplash.onHomeShown();
     }
 
     @SuppressLint("ClickableViewAccessibility")
@@ -402,6 +412,12 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
             applyFeedFooter();
             
             mRecyclerView.setAdapter(mPostAdapter);
+
+            if (mWalkthrough != null) mWalkthrough.detach();
+            mWalkthrough = new WalkthroughHome(mActivity, mRecyclerView, mPostAdapter);
+            mWalkthrough.attach();
+            // Shown again over posts it already has: the walkthrough can carry on at once.
+            if (mPostsLoaded && !mPosts.isEmpty()) mWalkthrough.onFeedReady();
             mRecyclerView.addOnScrollListener(
                     new RecyclerView.OnScrollListener() {
                         @Override
@@ -409,6 +425,19 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                                 @NonNull RecyclerView recyclerView, int dx, int dy) {
                             notifyHeaderSearchBoxScrolled();
                             scheduleLoadMoreCheck();
+                            countPostsScrolledPast();
+                        }
+
+                        @Override
+                        public void onScrollStateChanged(
+                                @NonNull RecyclerView recyclerView, int newState) {
+                            // The notification and default-browser asks come between scrolls,
+                            // never in the middle of one.
+                            if (newState == RecyclerView.SCROLL_STATE_IDLE
+                                    && mPostsPassedSinceIdle) {
+                                mPostsPassedSinceIdle = false;
+                                ((BraveActivity) mActivity).maybeShowNtpPrompts();
+                            }
                         }
                     });
             mRecyclerView.addOnLayoutChangeListener(
@@ -439,6 +468,27 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
         } catch (Exception e) {
             throw e; // Re-throw to see the original crash
         }
+    }
+
+    /**
+     * Counts the posts that have gone up past the top of this feed, each once: the Home prompts
+     * wait for them (NtpScrollPrompts). Posts are only ever added at the end, so the furthest one
+     * passed is all there is to remember.
+     */
+    private void countPostsScrolledPast() {
+        if (mPostAdapter == null || mPosts == null
+                || !(mRecyclerView.getLayoutManager() instanceof LinearLayoutManager)) {
+            return;
+        }
+        int first = ((LinearLayoutManager) mRecyclerView.getLayoutManager())
+                .findFirstVisibleItemPosition();
+        if (first == RecyclerView.NO_POSITION) return;
+        int passed = Math.min(mPosts.size(),
+                Math.max(0, first - mPostAdapter.getPostAdapterOffset()));
+        if (passed <= mMaxPostsPassed) return;
+        NtpScrollPrompts.recordPostsPassed(passed - mMaxPostsPassed);
+        mMaxPostsPassed = passed;
+        mPostsPassedSinceIdle = true;
     }
 
     private void loadPostsAndProfile(String accessToken) {
@@ -1142,6 +1192,10 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                 .unregisterOnSharedPreferenceChangeListener(mPreferenceListener);
         mPreferenceListener = null;
 
+        if (mWalkthrough != null) {
+            mWalkthrough.detach();
+            mWalkthrough = null;
+        }
         if (mPostAdapter != null) {
             mPostAdapter.releaseTutorialPlayer();
         }
@@ -2018,6 +2072,10 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                     // A short page, or one of repeats only, can leave the end of the feed on
                     // screen with nothing left to scroll.
                     scheduleLoadMoreCheck();
+                    // The first page is what the first-launch walkthrough features a post from.
+                    if (len == 0 && !added.isEmpty() && mWalkthrough != null) {
+                        mWalkthrough.onFeedReady();
+                    }
                 }
 
                 @Override

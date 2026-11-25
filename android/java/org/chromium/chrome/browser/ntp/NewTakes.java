@@ -33,7 +33,10 @@ public final class NewTakes {
     public final int reactionsTotal;
     /** The most-used emoji among them, most first. */
     public final List<String> topEmoji;
-    /** The oldest new take: where the stream opens when the card is tapped. */
+    /**
+     * The new take the stream shows first, in the stream's own order: where the stream opens
+     * when the card is tapped.
+     */
     public final @Nullable String firstNewTakeId;
 
     private NewTakes(int count, int videos, int photos, int voice, int text, int reactionsTotal,

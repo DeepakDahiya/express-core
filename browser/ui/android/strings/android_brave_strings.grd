@@ -839,7 +839,7 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
         Background play
       </message>
       <message name="IDS_PREFS_CLOSING_ALL_TABS_CLOSES_BRAVE" desc="Title for closing all tabs closes brave in controls section">
-        Closing all tabs closes Express Browser 
+        Closing all tabs closes UGC 
       </message>
       <message name="IDS_PREFS_BACKGROUND_VIDEO_PLAYBACK_ON" desc="Text for background video playback is on">
         Allows audio to play when you switch to another tab in Brave or another app or your device screen is off.
@@ -1012,7 +1012,7 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
         Download
       </message>
       <message name="IDS_BRAVE_PRIVACY_SET_DEFAULT_BROWSER" desc="Set default browser modal title">
-        To improve your privacy, set Express Browser as your default Browser
+        To improve your privacy, set UGC as your default Browser
       </message>
       <message name="IDS_BROWSER_EXPRESS_GENERATE_USERNAME_TITLE" desc="Set default browser modal title">
         Generate username and enjoy the app
@@ -1036,7 +1036,7 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
        Click on download and install the latest apk from google drive.
       </message>
       <message name="IDS_BRAVE_CHOOSE" desc="Set default browser modal text">
-        Choose Express Browser on the next screen.
+        Choose UGC on the next screen.
       </message>
       <message name="IDS_BRAVE_DONT_ASK_AGAIN" desc="Set default browser modal text">
         Don't ask again
@@ -1456,10 +1456,10 @@ Are you sure you want to do this?
         Photo by <ph name="PHOTO_BY">%1$s</ph>
       </message> -->
       <message name="IDS_PREFS_USE_CUSTOM_TABS_TITLE" desc="Title for use custom tabs section">
-        Open external links in Express Browser
+        Open external links in UGC
       </message>
       <message name="IDS_PREFS_USE_CUSTOM_TABS_TEXT" desc="Text for use custom tabs section">
-        Opens links from other apps in a Express Browser webview. Note: Express Browser must be set as your default browser.
+        Opens links from other apps in a UGC webview. Note: UGC must be set as your default browser.
       </message>
       <message name="IDS_BRAVE_UI_WALLET_BUTTON_LOGGED_OUT" desc="Brave rewards panel logged out state text">
         Logged out
@@ -1501,7 +1501,7 @@ Are you sure you want to do this?
         Oops, something is wrong. Please try again later.
       </message>
       <message name="IDS_PREFS_RATE_BRAVE" desc="Title for rate brave settings option.">
-        Rate Browser Express
+        Rate UGC
       </message>
       <message name="IDS_PREFS_SECTION_GENERAL" desc="Title for the general section in settings.">
         General
@@ -4254,7 +4254,7 @@ If you don't accept this request, VPN will not reconnect and your internet conne
       Enter a valid phone number with country code
     </message>
     <message name="IDS_BROWSER_EXPRESS_BRAND_WORD" desc="Browser Express brand wordmark on auth screens">
-      Express
+      UGC
     </message>
     <message name="IDS_BROWSER_EXPRESS_HERO_THE" desc="First word in Browser Express auth hero headline">
       The
@@ -4311,7 +4311,7 @@ If you don't accept this request, VPN will not reconnect and your internet conne
       Activity Feed
     </message> -->
     <message name="IDS_BROWSER_EXPRESS_NAME" desc="App name">
-      Express
+      UGC
     </message>
     <!-- <message name="IDS_BE_NOTIFICATIONS" desc="Brave wallet password hint text">
       Notifications
@@ -4345,7 +4345,7 @@ If you don't accept this request, VPN will not reconnect and your internet conne
       Update Available
     </message>
     <message name="IDS_UPDATE_DIALOG_SUBTITLE" desc="Subtitle for the update dialog, usually the app name.">
-      Express Browser
+      UGC
     </message>
     <message name="IDS_UPDATE_DIALOG_MESSAGE_DEFAULT" desc="The default body text for the update dialog explaining the benefits of the update.">
       This update includes important security fixes and performance improvements.

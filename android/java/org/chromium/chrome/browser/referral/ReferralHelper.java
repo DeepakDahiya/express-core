@@ -30,6 +30,8 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.base.task.AsyncTask;
+import org.chromium.chrome.browser.browser_express_share.ShareLinkOpener;
+import org.chromium.chrome.browser.browser_express_share.ShareLinks;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.settings.PostHogEventKeys;
 import org.chromium.chrome.browser.settings.PostHogUtil;
@@ -251,6 +253,10 @@ public class ReferralHelper {
 
     private static void processReferrerString(String referrerUrl, String source) {
         Log.w(TAG, "processReferrerString source=" + source + " url=" + referrerUrl);
+        if (ShareLinks.isShareReferrer(referrerUrl)) {
+            handleShareInstall(referrerUrl, source);
+            return;
+        }
         String referralCode = getReferrerParameter(referrerUrl, "referral_code");
         if (referralCode == null || referralCode.isEmpty()) {
             referralCode = getReferrerParameter(referrerUrl, "code");
@@ -262,6 +268,37 @@ public class ReferralHelper {
             // No code in this source; try the next layer.
             attemptFingerprintMatchIfNeeded();
         }
+    }
+
+    /**
+     * An install from a shared take's web page (its install buttons send {@code source=share&post=
+     * …&take=…&by=…}, never a referral code). The app opens on that take once the reader is signed
+     * in. There is nothing to attribute: the referrer is retired so it isn't read again, and so are
+     * the fingerprint and clipboard fallbacks, which for this install could only credit a stranger.
+     */
+    private static void handleShareInstall(String referrerUrl, String source) {
+        SharedPreferencesManager prefs = ChromeSharedPreferences.getInstance();
+        prefs.writeInt(BravePreferenceKeys.EXPRESS_REFERRAL_ATTEMPT_COUNT,
+                MAX_INSTALL_REFERRER_ATTEMPTS);
+        prefs.writeBoolean(BravePreferenceKeys.EXPRESS_REFERRAL_FINGERPRINT_TRIED, true);
+        prefs.writeBoolean(BravePreferenceKeys.EXPRESS_REFERRAL_CLIPBOARD_TRIED, true);
+        if (STATE_PENDING_FINGERPRINT_MATCH.equals(getReferralState())) {
+            clearPendingReferralWork();
+        }
+
+        ShareLinks.Target target = ShareLinks.parseInstallReferrer(referrerUrl);
+        JSONObject props = new JSONObject();
+        try {
+            props.put("source", source);
+            props.put("post_id", target != null ? target.postId : JSONObject.NULL);
+        } catch (Exception ignored) { }
+        firePostHog(PostHogEventKeys.REFERRAL_SHARE_INSTALL, null, null, props);
+        if (target != null) ShareLinkOpener.openAfterInstall(target);
+    }
+
+    /** The signed-in user's id (JWT {@code _id}), or null when nobody is signed in. */
+    public static String signedInUserId() {
+        return userIdFromToken(storedAccessToken());
     }
 
     /**

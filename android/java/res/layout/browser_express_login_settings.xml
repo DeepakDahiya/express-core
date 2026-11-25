@@ -8,7 +8,6 @@
     android:id="@+id/browser_express_login_settings"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/browser_express_auth_screen_bg">
@@ -30,29 +29,14 @@
             android:paddingTop="12dp"
             android:paddingEnd="18dp">
 
-            <LinearLayout
+            <!-- UGC wordmark. The brand kit keeps the app icon away from the wordmark, so the
+                 header is the wordmark alone. -->
+            <ImageView
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center"
-                android:orientation="horizontal"
-                tools:ignore="UseCompoundDrawables">
-
-                <ImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:contentDescription="@string/browser_express_name"
-                    android:src="@drawable/be_logo" />
-
-                <TextView
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="7dp"
-                    android:includeFontPadding="false"
-                    android:text="@string/browser_express_brand_word"
-                    android:textColor="@color/browser_express_text_primary"
-                    android:textSize="22sp"
-                    android:textStyle="bold" />
-            </LinearLayout>
+                android:layout_height="32dp"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/browser_express_name"
+                android:src="@drawable/ugc_wordmark" />
 
             <LinearLayout
                 android:layout_width="wrap_content"

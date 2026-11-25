@@ -20,7 +20,7 @@ import android.provider.Settings;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.browser_express_comments.CommentScrollPrompts;
+import org.chromium.chrome.browser.ntp.NtpScrollPrompts;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.util.BraveConstants;
 
@@ -319,8 +319,9 @@ public class BraveSetDefaultBrowserUtils {
      *
      * @param activity The current Activity context
      * @return true if all conditions are met to show the dialog: - Brave is not currently set as
-     *     the default browser - The reader has scrolled through comments enough times (see
-     *     CommentScrollPrompts) - The app has been opened at least 5 times since the last prompt -
+     *     the default browser - The reader has scrolled past enough Home posts, and far enough
+     *     since the last prompt (see NtpScrollPrompts) - The app has been opened at least 5 times
+     *     since the last prompt -
      *     The configured wait time has elapsed since the last prompt
      */
     public static boolean shouldShowDefaultBrowserDialog(Activity activity) {
@@ -333,13 +334,14 @@ public class BraveSetDefaultBrowserUtils {
         // the truth -- which is what stops the forced prompt from reappearing after
         // the user has already made us their default browser.
         return !isCurrentAppDefaultBrowser(activity)
-                && CommentScrollPrompts.getScrollCount()
-                        >= CommentScrollPrompts.DEFAULT_BROWSER_PROMPT_SCROLLS
+                && NtpScrollPrompts.isDefaultBrowserPromptDue()
                 && getBraveDefaultAppOpenCounter() >= 5
                 && System.currentTimeMillis() > getBraveDefaultShowTime();
     }
 
     private static void handleDefaultBrowserPrompt(AppCompatActivity activity) {
+        // Spaces the Home feed's next ask from this one.
+        NtpScrollPrompts.markPromptShown();
         setDefaultBrowser(activity, false);
         resetBraveDefaultAppOpenCounter();
         updateNextPromptTimer();

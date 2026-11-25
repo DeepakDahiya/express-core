@@ -14,6 +14,8 @@ import androidx.media3.datasource.DefaultHttpDataSource;
 import androidx.media3.datasource.cache.CacheDataSource;
 import androidx.media3.datasource.cache.LeastRecentlyUsedCacheEvictor;
 import androidx.media3.datasource.cache.SimpleCache;
+import androidx.media3.exoplayer.DefaultLoadControl;
+import androidx.media3.exoplayer.LoadControl;
 import androidx.media3.exoplayer.source.DefaultMediaSourceFactory;
 
 import java.io.File;
@@ -83,5 +85,24 @@ public final class CommentMediaCache {
      */
     public static DefaultMediaSourceFactory mediaSourceFactory(Context context) {
         return new DefaultMediaSourceFactory(dataSourceFactory(context));
+    }
+
+    /**
+     * Buffering for short comment videos, which should start the moment a little is in.
+     * ExoPlayer's default holds a video back until 2.5s of it has downloaded, which on a cold
+     * CDN edge is most of the wait after the comments arrive. Here half a second starts it, a
+     * stall needs 1.5s before resuming, and the player reads ahead 15–30s instead of 50s, so
+     * the reels bound beside the current one fetch less while it plays.
+     *
+     * <p>A new instance per player: a load control belongs to one player.
+     */
+    public static LoadControl newFastStartLoadControl() {
+        return new DefaultLoadControl.Builder()
+                .setBufferDurationsMs(
+                        /* minBufferMs= */ 15_000,
+                        /* maxBufferMs= */ 30_000,
+                        /* bufferForPlaybackMs= */ 500,
+                        /* bufferForPlaybackAfterRebufferMs= */ 1_500)
+                .build();
     }
 }

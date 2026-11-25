@@ -221,6 +221,11 @@ public class ReelStreamProgress extends View {
         private static final long MOVE_MS = 400;
         private static final long FADE_OUT_START_MS = 2300;
         private static final long FADE_OUT_MS = 400;
+        /**
+         * From the page settling to the row gone. The "Add your take" pill keeps its label folded
+         * away until then, since the row reaches the folded pill (ReelTakeBubble).
+         */
+        static final long SHOWING_MS = FADE_OUT_START_MS + FADE_OUT_MS;
         private static final long COLLAPSE_MS = 150;
         private static final Interpolator EASE_OUT = new PathInterpolator(0.33f, 1f, 0.68f, 1f);
         private static final Interpolator EASE_IN_OUT = new PathInterpolator(0.65f, 0f, 0.35f, 1f);
@@ -239,6 +244,11 @@ public class ReelStreamProgress extends View {
         private float mAlpha;
         /** The row drawn on last frame, so a rebound page's old row is hidden. */
         private @Nullable ReelStreamProgress mRow;
+        /**
+         * Kept up past the usual fade-out, e.g. while the first-launch walkthrough points at the
+         * row; let go, it fades from then.
+         */
+        private boolean mHeld;
 
         Sequence(Host host) {
             mHost = host;
@@ -281,6 +291,15 @@ public class ReelStreamProgress extends View {
             if (mRow != null) mRow.setAlpha(0f);
             mRow = null;
             mReelId = null;
+            mHeld = false;
+        }
+
+        /**
+         * Keeps the row showing (true) for as long as needed, or lets it fade as usual from now
+         * (false). Only a showing in progress can be held; start one first.
+         */
+        void setHeld(boolean held) {
+            mHeld = held && mReelId != null;
         }
 
         @Override
@@ -293,6 +312,11 @@ public class ReelStreamProgress extends View {
             }
 
             long t = (frameTimeNanos - mStartNanos) / 1_000_000L;
+            if (mHeld && t > FADE_OUT_START_MS) {
+                // Held: the clock waits at the fade-out's start, so a release fades from there.
+                mStartNanos = frameTimeNanos - FADE_OUT_START_MS * 1_000_000L;
+                t = FADE_OUT_START_MS;
+            }
             boolean done;
             float alpha;
             if (mCollapseNanos >= 0) {

@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -29,11 +30,13 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout;
+import org.chromium.chrome.browser.browser_express_walkthrough.WalkthroughReel;
 import org.chromium.chrome.browser.crypto_wallet.util.AndroidUtils;
 import org.chromium.chrome.browser.settings.PostHogEventKeys;
 import org.chromium.chrome.browser.settings.PostHogUtil;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -60,13 +63,24 @@ public class CommentReelFragment extends Fragment {
     private static final int PER_PAGE = 100;
 
     /**
-     * How long the first pack waits for video-orientation probes, so a portrait video renders as
-     * a reel from the very first frame instead of flashing inline and being promoted a beat
-     * later. The shimmer covers the wait; past the deadline unresolved videos pack inline and
-     * are promoted when their dimensions land (probe or player report). Only videos the app has
-     * never seen pay this wait — resolved dimensions persist across sessions.
+     * Longest the first pack waits for the orientation of the videos it opens on, so a portrait
+     * video can render as a reel from the very first frame instead of flashing inline and being
+     * promoted a beat later. The shimmer covers the wait; past the deadline unresolved videos pack
+     * inline and are promoted when their dimensions land (probe or player report).
+     *
+     * <p>Kept short because the list is ready the moment the API answers: the API sends each
+     * video's size (mediaWidth/mediaHeight), and sizes the app has resolved before persist across
+     * sessions, so only an old video never seen here can be waited on at all.
      */
-    private static final long INITIAL_PROBE_WAIT_MS = 2000;
+    private static final long INITIAL_PROBE_WAIT_MS = 300;
+
+    /**
+     * How far either side of the opening comment a video still changes the opening page: one
+     * page's worth of comments plus the packer's lookahead, which pulls later ones forward. Videos
+     * further out resolve in the background and re-pack without moving the reader.
+     */
+    private static final int OPENING_PAGE_REACH = CommentSlidePacker.DEFAULT_MAX_COMMENTS_PER_SLIDE
+            + CommentSlidePacker.DEFAULT_LOOKAHEAD_WINDOW;
 
     private static final long HEADER_FADE_MS = 150;
 
@@ -118,9 +132,16 @@ public class CommentReelFragment extends Fragment {
      */
     private @Nullable String mRestoreAnchorCommentId;
 
+    /**
+     * Counts packs. The second half of a pack that opened on a reel (the pages behind it) checks
+     * it, to find out whether another pack replaced the pages in the meantime.
+     */
+    private int mPackGeneration;
+
     /** True while the first pack is held for orientation probes; repack() waits it out. */
     private boolean mPackHeldForProbes;
-    private int mPendingInitialProbes;
+    /** Ids of the opening page's videos the first pack still waits on. */
+    private final Set<String> mHeldForCommentIds = new HashSet<>();
 
     /**
      * The page the pager last came to rest on (its first comment) and how far through the stream
@@ -132,6 +153,96 @@ public class CommentReelFragment extends Fragment {
 
     /** NEW takes whose page has come up, reported once each (New Take Viewed). */
     private final Set<String> mViewedNewTakes = new HashSet<>();
+
+    /** The first-launch walkthrough's video step and bonus tip, over this stream. */
+    private @Nullable WalkthroughReel mWalkthrough;
+
+    private final WalkthroughReel.Host mWalkthroughHost =
+            new WalkthroughReel.Host() {
+                @Override
+                public boolean isCurrentPageReel() {
+                    if (mPager == null || mAdapter == null) return false;
+                    if (mPager.getScrollState() != ViewPager2.SCROLL_STATE_IDLE) return false;
+                    CommentSlide slide = mAdapter.getSlide(mPager.getCurrentItem());
+                    return slide != null && slide.isReel() && currentReelHolder() != null;
+                }
+
+                @Override
+                public @Nullable String currentReelAnchor() {
+                    if (mPager == null || mAdapter == null) return null;
+                    CommentSlide slide = mAdapter.getSlide(mPager.getCurrentItem());
+                    return slide != null && slide.isReel() ? slide.getAnchorCommentId() : null;
+                }
+
+                @Override
+                public @Nullable View reelTitle() {
+                    CommentSlideAdapter.SlideHolder holder = currentReelHolder();
+                    return holder != null ? holder.mReelTitle : null;
+                }
+
+                @Override
+                public @Nullable View reelStreamProgress() {
+                    CommentSlideAdapter.SlideHolder holder = currentReelHolder();
+                    return holder != null ? holder.mStreamProgress : null;
+                }
+
+                @Override
+                public @Nullable ViewGroup reelPage() {
+                    CommentSlideAdapter.SlideHolder holder = currentReelHolder();
+                    return holder != null && holder.itemView instanceof ViewGroup
+                            ? (ViewGroup) holder.itemView
+                            : null;
+                }
+
+                @Override
+                public @Nullable View reelRows() {
+                    CommentSlideAdapter.SlideHolder holder = currentReelHolder();
+                    return holder != null ? holder.mRows : null;
+                }
+
+                @Override
+                public @Nullable RecyclerView pagerList() {
+                    if (mPager == null) return null;
+                    View list = mPager.getChildAt(0);
+                    return list instanceof RecyclerView ? (RecyclerView) list : null;
+                }
+
+                @Override
+                public boolean isCovered() {
+                    return !isResumed() || isReelCovered();
+                }
+
+                @Override
+                public @Nullable String hashtag() {
+                    BrowserExpressCommentsBottomSheetFragment sheet = sheet();
+                    return sheet != null ? sheet.topicHashtag() : null;
+                }
+
+                @Override
+                public void holdStreamProgress(boolean hold) {
+                    CommentReelFragment.this.holdStreamProgress(hold);
+                }
+
+                @Override
+                public List<View> reelEmojiChips() {
+                    List<View> chips = new ArrayList<>();
+                    View row = currentReelRow();
+                    if (row == null) return chips;
+                    int[] ids = {R.id.reaction_chip_1, R.id.reaction_chip_2, R.id.reaction_chip_3};
+                    for (int id : ids) {
+                        View chip = row.findViewById(id);
+                        if (chip != null && chip.getVisibility() == View.VISIBLE) chips.add(chip);
+                    }
+                    return chips;
+                }
+
+                @Override
+                public @Nullable View reelReplyButton() {
+                    View row = currentReelRow();
+                    View reply = row != null ? row.findViewById(R.id.btn_reply) : null;
+                    return reply != null && reply.getVisibility() == View.VISIBLE ? reply : null;
+                }
+            };
 
     /** The stream position fading in under a reel's hashtag; one showing at a time. */
     private final ReelStreamProgress.Sequence mStreamProgress =
@@ -172,9 +283,15 @@ public class CommentReelFragment extends Fragment {
                 @Override
                 public void onPageScrollStateChanged(int state) {
                     if (state == ViewPager2.SCROLL_STATE_DRAGGING) {
-                        CommentScrollPrompts.recordScroll();
+                        // The walkthrough's first swipe, up or down.
+                        if (mWalkthrough != null) mWalkthrough.onUserDrag();
+                        // The page may be on its way out: its "Add your take" pill doesn't open
+                        // until a page settles again.
+                        ReelTakeBubble bubble = takeBubbleOn(mPager.getCurrentItem());
+                        if (bubble != null) bubble.holdOff();
                     } else if (state == ViewPager2.SCROLL_STATE_IDLE) {
-                        // A reel that opened with the full "Add your take" pill folds it now.
+                        // A third reel's "Add your take" pill opens once the stream position
+                        // has faded.
                         attemptSettleTakeBubble(mPager.getCurrentItem(), 0);
                         onPageSettled();
                     }
@@ -296,6 +413,7 @@ public class CommentReelFragment extends Fragment {
             if (mPager != null) mPager.post(this::repackIfNeeded);
         });
         mPager.registerOnPageChangeCallback(mPageChangeCallback);
+        mWalkthrough = new WalkthroughReel((FrameLayout) view, mWalkthroughHost);
 
         if (!mComments.isEmpty()) {
             // Back from a replies page: the fragment kept its comments and only its view went.
@@ -353,14 +471,15 @@ public class CommentReelFragment extends Fragment {
                     // count; the next feed and stream measure from it.
                     if ("post".equals(mCommentsFor)) PostOpenedReporter.report(mPostId);
 
-                    // Cached video dimensions land synchronously, so a portrait video the app
-                    // has seen before gets its reel page in the very first pack. Videos still
-                    // unknown hold that pack — briefly, behind the shimmer — so their first
-                    // render is already correct rather than inline-then-promoted.
-                    int pendingProbes = resolveVideoOrientations();
-                    if (pendingProbes > 0 && mPager != null) {
+                    // Sizes from the API and cached ones land synchronously, so those portrait
+                    // videos get their reel page in the very first pack. Unknown videos near the
+                    // opening comment hold that pack — briefly, behind the shimmer — so the first
+                    // page is already right rather than inline-then-promoted.
+                    Set<String> held = resolveVideoOrientations();
+                    if (!held.isEmpty() && mPager != null) {
                         mPackHeldForProbes = true;
-                        mPendingInitialProbes = pendingProbes;
+                        mHeldForCommentIds.clear();
+                        mHeldForCommentIds.addAll(held);
                         mPager.postDelayed(CommentReelFragment.this::releaseInitialHold,
                                 INITIAL_PROBE_WAIT_MS);
                     } else {
@@ -417,13 +536,26 @@ public class CommentReelFragment extends Fragment {
         if (rowsHeight <= 0) return;
 
         CommentRowMeasurer measurer = new CommentRowMeasurer(getContext(), width);
-        List<CommentSlide> slides = new CommentSlidePacker(measurer, rowsHeight, height,
+        // The next reel's preview only fills room the comments leave. Shorter than its two
+        // rounded corners, it would read as a stray sliver, so such a page gets none.
+        int minPeek = 2 * getResources().getDimensionPixelSize(R.dimen.be_reel_peek_corner_radius);
+        CommentSlidePacker packer = new CommentSlidePacker(measurer, rowsHeight, height,
                 CommentSlidePacker.DEFAULT_MAX_COMMENTS_PER_SLIDE,
-                CommentSlidePacker.DEFAULT_LOOKAHEAD_WINDOW)
-                .pack(mComments);
+                CommentSlidePacker.DEFAULT_LOOKAHEAD_WINDOW, minPeek);
         mAdapter.setHeaderInset(mHeaderInset);
         mAdapter.setComposerInset(mComposerInset);
-        mAdapter.setSlides(slides);
+        final int generation = ++mPackGeneration;
+        boolean packRestLater = opensOnLeadingReel(anchorCommentId);
+        if (packRestLater) {
+            // The stream leads with a full-page video and the reader starts on it. That page is
+            // all they see, and it is the page a full pack begins with, so it goes up alone and
+            // its video starts loading in the coming frame. The other comments are measured into
+            // pages after that frame (posted last, below) and added behind it without rebinding
+            // it.
+            mAdapter.setSlides(Collections.singletonList(packer.reelPage(mComments.get(0))));
+        } else {
+            mAdapter.setSlides(packer.pack(mComments));
+        }
 
         mPackedForWidth = width;
         mPackedForHeight = height;
@@ -445,6 +577,32 @@ public class CommentReelFragment extends Fragment {
         mPager.post(this::autoplayCurrentPage);
         mPager.post(this::updateDepth);
         mPager.post(() -> updateHeaderForPage(false));
+        if (packRestLater) mPager.post(() -> packBehindOpeningReel(packer, generation));
+    }
+
+    /**
+     * The first pack, opening on the first comment, and that comment is a portrait video: the
+     * stream's opening reel.
+     */
+    private boolean opensOnLeadingReel(@Nullable String anchorCommentId) {
+        if (mAdapter.getItemCount() > 0 || mComments.isEmpty()) return false;
+        Comment first = mComments.get(0);
+        if (!first.isPortraitVideo()) return false;
+        return anchorCommentId == null || anchorCommentId.equals(first.getId());
+    }
+
+    /**
+     * Second half of a pack that put the opening reel up on its own: packs every comment after it
+     * and adds those pages behind it. {@link CommentSlidePacker#reelPage} guarantees these are
+     * the pages a full pack would have made. Skipped when another pack has replaced the pages
+     * since.
+     */
+    private void packBehindOpeningReel(CommentSlidePacker packer, int generation) {
+        if (generation != mPackGeneration || mPager == null || mAdapter == null) return;
+        if (mComments.size() > 1) {
+            mAdapter.appendSlides(packer.pack(mComments.subList(1, mComments.size())));
+        }
+        updateDepth();
     }
 
     /**
@@ -499,6 +657,7 @@ public class CommentReelFragment extends Fragment {
     private void releaseInitialHold() {
         if (!mPackHeldForProbes) return;
         mPackHeldForProbes = false;
+        mHeldForCommentIds.clear();
         finishInitialLoad();
     }
 
@@ -583,6 +742,12 @@ public class CommentReelFragment extends Fragment {
      * e.g. when takes arrive, and its timer carries on.
      */
     private void onPageSettled() {
+        showStreamPositionIfArrived();
+        // A vertical video coming to rest may start the walkthrough's video step.
+        if (mWalkthrough != null) mWalkthrough.onPageSettled();
+    }
+
+    private void showStreamPositionIfArrived() {
         if (mPager == null || mAdapter == null) return;
         if (mPager.getScrollState() != ViewPager2.SCROLL_STATE_IDLE) return;
         int position = mPager.getCurrentItem();
@@ -610,25 +775,60 @@ public class CommentReelFragment extends Fragment {
     }
 
     /**
+     * Keeps the current reel's stream position up (starting it if it isn't showing), or lets it
+     * fade as usual. The walkthrough's video step points at it.
+     */
+    private void holdStreamProgress(boolean hold) {
+        if (!hold) {
+            mStreamProgress.setHeld(false);
+            return;
+        }
+        if (mPager == null || mAdapter == null) return;
+        int position = mPager.getCurrentItem();
+        CommentSlide slide = mAdapter.getSlide(position);
+        if (slide == null || !slide.isReel() || slide.getAnchorCommentId() == null) return;
+        String anchor = slide.getAnchorCommentId();
+        if (!mStreamProgress.isShowing(anchor)) {
+            int seen = seenThrough(position);
+            mStreamProgress.start(anchor, seen, seen, mComments.size());
+        }
+        mStreamProgress.setHeld(true);
+    }
+
+    /** The current page while it is a bound reel page, else null. */
+    private @Nullable CommentSlideAdapter.SlideHolder currentReelHolder() {
+        if (mPager == null) return null;
+        CommentSlideAdapter.SlideHolder holder = findSlideHolder(mPager.getCurrentItem());
+        return holder != null && holder.mReelTitle != null ? holder : null;
+    }
+
+    /** The current reel page's one row: its video, caption and rail. */
+    private @Nullable View currentReelRow() {
+        CommentSlideAdapter.SlideHolder holder = currentReelHolder();
+        return holder != null && holder.mRows.getChildCount() > 0
+                ? holder.mRows.getChildAt(0)
+                : null;
+    }
+
+    /**
      * Where the stream opens when the sheet was asked to open at a comment, e.g. the first of a
      * feed card's "new takes": that comment when it is loaded; else, since it can sit past the
-     * loaded takes, the oldest one marked NEW. Null opens at the top. The request is used up.
+     * loaded takes, the first one marked NEW in the stream's order. That is how the server picks
+     * firstNewTakeId (docs/new-takes.md). createdAt can't stand in for it: one pipeline run's
+     * takes share one, and appended or merged takes arrive later than it. Null opens at the top.
+     * The request is used up.
      */
     private @Nullable String openingAnchor() {
         BrowserExpressCommentsBottomSheetFragment sheet = sheet();
         String target = sheet != null ? sheet.getLastOpenedRepliesForCommentId() : null;
         if (target == null) return null;
         sheet.clearLastOpenedRepliesForCommentId();
-        Comment oldestNew = null;
+        String firstNew = null;
         for (Comment comment : mComments) {
             if (target.equals(comment.getId())) return target;
-            if (comment.isNew()
-                    && (oldestNew == null
-                            || comment.getCreatedAtMs() < oldestNew.getCreatedAtMs())) {
-                oldestNew = comment;
-            }
+            if (firstNew == null && comment.isNew()) firstNew = comment.getId();
         }
-        return oldestNew != null ? oldestNew.getId() : null;
+        return firstNew;
     }
 
     /**
@@ -712,20 +912,25 @@ public class CommentReelFragment extends Fragment {
     }
 
     /**
-     * Makes sure every video comment knows its orientation. Cache hits apply synchronously;
-     * misses resolve in the background — metadata probe or the inline player's size report,
-     * whichever lands first — and are announced through {@link #onVideoDimensionsResolved}.
+     * Makes sure every video comment knows its orientation. API sizes and cache hits apply
+     * synchronously; misses resolve in the background — metadata probe or the inline player's
+     * size report, whichever lands first — and are announced through
+     * {@link #onVideoDimensionsResolved}.
      *
-     * @return how many comments are waiting on a background resolution.
+     * @return ids of the unresolved videos close enough to the opening comment
+     *     ({@link #OPENING_PAGE_REACH}) to change the page the reader opens on — the ones worth
+     *     holding the first pack for. Every other miss is still probed, just not waited on.
      */
-    private int resolveVideoOrientations() {
-        if (getContext() == null) return 0;
+    private Set<String> resolveVideoOrientations() {
+        Set<String> nearOpening = new HashSet<>();
+        if (getContext() == null) return nearOpening;
         // The resolution callbacks live in a process-wide cache; holding this fragment weakly
         // keeps a video that never resolves from pinning the whole view tree in memory.
         final java.lang.ref.WeakReference<CommentReelFragment> self =
                 new java.lang.ref.WeakReference<>(this);
-        int pending = 0;
-        for (Comment comment : mComments) {
+        int opening = Math.max(0, indexOfComment(mRestoreAnchorCommentId));
+        for (int i = 0; i < mComments.size(); i++) {
+            Comment comment = mComments.get(i);
             if (!comment.hasVideoMedia() || comment.hasCachedDimensions()) continue;
             if (CommentVideoDimensions.applyCached(comment)) continue;
             final Comment target = comment;
@@ -733,15 +938,31 @@ public class CommentReelFragment extends Fragment {
                 CommentReelFragment fragment = self.get();
                 if (fragment != null) fragment.onVideoDimensionsResolved(target);
             });
-            if (mayResolve) pending++;
+            if (mayResolve && comment.getId() != null
+                    && Math.abs(i - opening) < OPENING_PAGE_REACH) {
+                nearOpening.add(comment.getId());
+            }
         }
-        return pending;
+        return nearOpening;
+    }
+
+    /** Position of {@code commentId} in {@link #mComments}, or -1. */
+    private int indexOfComment(@Nullable String commentId) {
+        if (commentId == null) return -1;
+        for (int i = 0; i < mComments.size(); i++) {
+            if (commentId.equals(mComments.get(i).getId())) return i;
+        }
+        return -1;
     }
 
     /** A background resolution landed for {@code comment}; re-render whatever it changes. */
     private void onVideoDimensionsResolved(Comment comment) {
         if (mPackHeldForProbes) {
-            if (--mPendingInitialProbes <= 0) releaseInitialHold();
+            // Whatever lands now is in place for the first pack; only the opening page's videos
+            // end the wait early.
+            if (mHeldForCommentIds.remove(comment.getId()) && mHeldForCommentIds.isEmpty()) {
+                releaseInitialHold();
+            }
             return;
         }
         if (mPager == null || mAdapter == null) return;
@@ -778,8 +999,9 @@ public class CommentReelFragment extends Fragment {
     }
 
     /**
-     * Folds the current reel page's "Add your take" pill shortly after the pager comes to rest,
-     * retrying briefly like autoplay because right after a (re)pack the page has not been bound.
+     * Tells the current reel page's "Add your take" pill that the pager has come to rest, so a
+     * third reel's pill opens after the stream position (ReelTakeBubble#onSettled). Retries
+     * briefly like autoplay because right after a (re)pack the page has not been bound.
      */
     private void attemptSettleTakeBubble(int position, int attempt) {
         if (mPager == null || mAdapter == null || position < 0) return;
@@ -791,7 +1013,7 @@ public class CommentReelFragment extends Fragment {
 
         ReelTakeBubble bubble = takeBubbleOn(position);
         if (bubble != null) {
-            bubble.foldSoon();
+            bubble.onSettled();
         } else if (attempt < 5) {
             mPager.postDelayed(() -> attemptSettleTakeBubble(position, attempt + 1), 100);
         }
@@ -882,12 +1104,15 @@ public class CommentReelFragment extends Fragment {
         updateEmptyHint();
         // onPause stopped whatever was playing; the current page's video picks back up here.
         if (mPager != null) mPager.post(this::autoplayCurrentPage);
+        if (mWalkthrough != null) mWalkthrough.resume();
     }
 
     @Override
     public void onPause() {
         super.onPause();
         GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
+        // Back to Home, or the app went away: the walkthrough waits for the next stream.
+        if (mWalkthrough != null) mWalkthrough.pause();
         mStreamProgress.stop();
         if (mUploadReceiver != null && getContext() != null) {
             androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(getContext())
@@ -899,6 +1124,8 @@ public class CommentReelFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (mWalkthrough != null) mWalkthrough.destroy();
+        mWalkthrough = null;
         GlobalVideoPlaybackManager.getInstance().releaseAllResources();
         mStreamProgress.stop();
         if (mPager != null && mAdapter != null && mAdapter.getItemCount() > 0) {
@@ -908,7 +1135,11 @@ public class CommentReelFragment extends Fragment {
         // the deadline was posted to this view's pager.
         mPackedForWidth = 0;
         mPackedForHeight = 0;
+        // The pages behind an opening reel are packed for this view's pager; a pack still posted
+        // must not land on the next view's.
+        mPackGeneration++;
         mPackHeldForProbes = false;
+        mHeldForCommentIds.clear();
         if (mPager != null) {
             mPager.unregisterOnPageChangeCallback(mPageChangeCallback);
             // Recycles every page, current and pre-built alike, which releases their video

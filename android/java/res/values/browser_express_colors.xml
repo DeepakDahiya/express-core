@@ -59,7 +59,6 @@
     <!-- Fields, code boxes and the close button. -->
     <color name="browser_express_signin_surface">#FFFFFF</color>
     <color name="browser_express_signin_field_stroke">#DBE0ED</color>
-    <color name="browser_express_signin_field_divider">#DBE0ED</color>
     <color name="browser_express_signin_close_icon">#747480</color>
     <!-- Feature cards and the success mark. -->
     <color name="browser_express_signin_card">#F0F2FF</color>
@@ -428,4 +427,54 @@
     <color name="browser_express_take_tile_gif_bg">#24F2B227</color>
     <color name="browser_express_take_tile_document">#3AA3E8</color>
     <color name="browser_express_take_tile_document_bg">#243AA3E8</color>
+
+    <!-- First-launch walkthrough (design_handoff_walkthrough tokens.json). The prompts look the
+         same in both themes; only the dimming and the card edge change (values-night). -->
+    <color name="browser_express_walkthrough_ink">#151A18</color>
+    <color name="browser_express_walkthrough_warm_white">#FAF9F2</color>
+    <color name="browser_express_walkthrough_wasabi">#C4F032</color>
+    <color name="browser_express_walkthrough_hero_inner">#1B211E</color>
+    <!-- Warm White at 78%, 72%, 70%, 68%, 66% and 56%. -->
+    <color name="browser_express_walkthrough_text_78">#C7FAF9F2</color>
+    <color name="browser_express_walkthrough_text_72">#B8FAF9F2</color>
+    <color name="browser_express_walkthrough_text_70">#B3FAF9F2</color>
+    <color name="browser_express_walkthrough_text_68">#ADFAF9F2</color>
+    <color name="browser_express_walkthrough_text_66">#A8FAF9F2</color>
+    <color name="browser_express_walkthrough_text_56">#8FFAF9F2</color>
+    <!-- Wasabi at 12% (the bonus tip's icon tiles) and 28% (the toast's edge). -->
+    <color name="browser_express_walkthrough_tile">#1FC4F032</color>
+    <color name="browser_express_walkthrough_toast_edge">#47C4F032</color>
+    <!-- Ink at 94%: the "All set" toast. -->
+    <color name="browser_express_walkthrough_toast_bg">#F0151A18</color>
+    <color name="browser_express_walkthrough_card_edge">#38C4F032</color>
+    <color name="browser_express_walkthrough_dim">#9E0C0D14</color>
+
+    <!-- UGC wordmark (ugc-brand-kit): ink letters, a pop-pink full stop in both themes. -->
+    <color name="ugc_wordmark_ink">#0B0F09</color>
+    <color name="ugc_wordmark_dot">#FF5FA2</color>
+
+    <!-- UGC sign-up screen (ugc-signup-handoff/src/theme.ts). The screen is dark whatever the
+         theme, so these have no night values. -->
+    <color name="browser_express_ugc_signup_bg">#0B0F09</color>
+    <!-- The panel's top edge: bg at 94%, 22dp down its fade into the hero. -->
+    <color name="browser_express_ugc_signup_panel_fade">#F00B0F09</color>
+    <color name="browser_express_ugc_signup_ink">#EEF3E2</color>
+    <color name="browser_express_ugc_signup_ink_strong">#F4F8EA</color>
+    <color name="browser_express_ugc_signup_sub">#B4BDA3</color>
+    <color name="browser_express_ugc_signup_muted">#9AA58A</color>
+    <color name="browser_express_ugc_signup_dim">#8F9A80</color>
+    <color name="browser_express_ugc_signup_faint">#6F7A62</color>
+    <color name="browser_express_ugc_signup_placeholder">#7F8A70</color>
+    <color name="browser_express_ugc_signup_field">#141A10</color>
+    <color name="browser_express_ugc_signup_line">#273021</color>
+    <color name="browser_express_ugc_signup_line_filled">#3E4A33</color>
+    <color name="browser_express_ugc_signup_accent">#BFD957</color>
+    <color name="browser_express_ugc_signup_on_accent">#0E1309</color>
+    <color name="browser_express_ugc_signup_pop">#FF5FA2</color>
+    <color name="browser_express_ugc_signup_error">#F2A65A</color>
+    <color name="browser_express_ugc_signup_pill_bg">#C70B0F09</color>
+    <color name="browser_express_ugc_signup_pill_border">#24EEF3E2</color>
+    <color name="browser_express_ugc_signup_pill_text">#C9D2B8</color>
+    <color name="browser_express_ugc_signup_toast_bg">#EB1B2316</color>
+    <color name="browser_express_ugc_signup_toast_border">#2A3423</color>
 </resources>

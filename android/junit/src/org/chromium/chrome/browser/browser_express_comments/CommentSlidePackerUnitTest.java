@@ -492,6 +492,40 @@ public class CommentSlidePackerUnitTest {
         }
     }
 
+    @Test
+    @SmallTest
+    public void streamOpeningOnAReelPacksAsThatReelThenTheRest() {
+        // CommentReelFragment shows reelPage(first) on its own, then appends pack(rest). That is
+        // only right if a full pack of the same stream comes out page for page the same.
+        List<Comment> stream = Arrays.asList(portraitVideo("r0"), text("a"), landscapeVideo("l"),
+                portraitVideo("r1"), text("b"), image("i"), text("c"), portraitVideo("r2"),
+                text("d"));
+        CommentSlidePacker packer =
+                new CommentSlidePacker(new FakeMeasurer(ROW).withHeight("l", 450), VIEWPORT,
+                        1200, 4, CommentSlidePacker.DEFAULT_LOOKAHEAD_WINDOW, 40);
+
+        List<CommentSlide> full = packer.pack(stream);
+        List<CommentSlide> split = new ArrayList<>();
+        split.add(packer.reelPage(stream.get(0)));
+        split.addAll(packer.pack(stream.subList(1, stream.size())));
+
+        assertEquals(full.size(), split.size());
+        for (int i = 0; i < full.size(); i++) {
+            CommentSlide expected = full.get(i);
+            CommentSlide actual = split.get(i);
+            assertEquals(expected.getType(), actual.getType());
+            assertEquals(expected.getPageHeightPx(), actual.getPageHeightPx());
+            assertEquals(expected.getPeekHeightPx(), actual.getPeekHeightPx());
+            assertSame(expected.getNextReelComment(), actual.getNextReelComment());
+            assertEquals(expected.getItemCount(), actual.getItemCount());
+            for (int j = 0; j < expected.getItemCount(); j++) {
+                assertSame(expected.getItem(j).getComment(), actual.getItem(j).getComment());
+            }
+        }
+        assertTrue(split.get(0).isReel());
+        assertSame(stream.get(0), split.get(0).getReelComment());
+    }
+
     private static CommentSlidePacker packer(int viewportHeightPx) {
         return new CommentSlidePacker(new FakeMeasurer(ROW), viewportHeightPx);
     }

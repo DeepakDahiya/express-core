@@ -19,6 +19,7 @@ import android.view.View;
 import android.view.View.OnFocusChangeListener;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
+import android.widget.Toast;
 
 import androidx.preference.Preference;
 import androidx.preference.Preference.OnPreferenceChangeListener;
@@ -35,6 +36,8 @@ import org.chromium.chrome.browser.BraveRewardsHelper;
 import org.chromium.chrome.browser.BraveRewardsNativeWorker;
 import org.chromium.chrome.browser.BraveRewardsObserver;
 import org.chromium.chrome.browser.billing.LinkSubscriptionUtils;
+import org.chromium.chrome.browser.browser_express_splash.UgcSplash;
+import org.chromium.chrome.browser.browser_express_walkthrough.WalkthroughState;
 import org.chromium.chrome.browser.crash.BrowserExpressCrashVerifier;
 import org.chromium.chrome.browser.onboarding.OnboardingPrefManager;
 import org.chromium.chrome.browser.preferences.BravePref;
@@ -63,6 +66,8 @@ public class BraveQAPreferences extends BravePreferenceFragment
     private static final String PREF_QA_FORCE_JAVA_CRASH = "qa_force_java_crash";
     private static final String PREF_QA_FORCE_NATIVE_CRASH = "qa_force_native_crash";
     private static final String PREF_QA_FORCE_APP_CRASH = "qa_force_app_crash";
+    private static final String PREF_QA_REPLAY_WALKTHROUGH = "qa_replay_walkthrough";
+    private static final String PREF_QA_REPLAY_SPLASH = "qa_replay_splash";
 
     private static final String QA_ADS_PER_HOUR = "qa_ads_per_hour";
     private static final String QA_IMPORT_REWARDS_DB = "qa_import_rewards_db";
@@ -165,6 +170,29 @@ public class BraveQAPreferences extends BravePreferenceFragment
         mForceNativeCrash = findPreference(PREF_QA_FORCE_NATIVE_CRASH);
         mForceAppCrash = findPreference(PREF_QA_FORCE_APP_CRASH);
         setCrashVerifierClickListeners();
+
+        Preference replayWalkthrough = findPreference(PREF_QA_REPLAY_WALKTHROUGH);
+        if (replayWalkthrough != null) {
+            replayWalkthrough.setOnPreferenceClickListener(
+                    preference -> {
+                        WalkthroughState.replayForQa();
+                        Toast.makeText(
+                                        getActivity(),
+                                        "Walkthrough reset. Go back to the Home to start it.",
+                                        Toast.LENGTH_LONG)
+                                .show();
+                        return true;
+                    });
+        }
+
+        Preference replaySplash = findPreference(PREF_QA_REPLAY_SPLASH);
+        if (replaySplash != null) {
+            replaySplash.setOnPreferenceClickListener(
+                    preference -> {
+                        if (getActivity() != null) UgcSplash.playForQa(getActivity());
+                        return true;
+                    });
+        }
 
         checkQACode();
     }

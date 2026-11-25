@@ -1370,6 +1370,11 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         return hashtag != null ? "#" + hashtag : null;
     }
 
+    @Override
+    public @Nullable String sharePostId() {
+        return "post".equals(mCommentsFor) ? mPostId : null;
+    }
+
     /** The take card's title: the post's hashtag, else its caption or the page's title. */
     private String takeTopicName() {
         String hashtag = topicHashtag();

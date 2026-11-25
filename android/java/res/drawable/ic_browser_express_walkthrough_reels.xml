@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- Step 1's stacked-reels icon: a phone-shaped reel with a play mark, more reels either side. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@color/browser_express_walkthrough_ink"
+        android:pathData="M9.1,1.5h5.8a2.6,2.6 0,0 1,2.6 2.6v15.8a2.6,2.6 0,0 1,-2.6 2.6h-5.8a2.6,2.6 0,0 1,-2.6 -2.6v-15.8a2.6,2.6 0,0 1,2.6 -2.6z" />
+    <path
+        android:fillColor="@color/browser_express_walkthrough_wasabi"
+        android:pathData="M10.6,9v6l4.8,-3z" />
+    <path
+        android:pathData="M4,5v14M20,5v14"
+        android:strokeWidth="1.8"
+        android:strokeColor="@color/browser_express_walkthrough_ink"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M1.4,8v8M22.6,8v8"
+        android:strokeAlpha="0.5"
+        android:strokeWidth="1.6"
+        android:strokeColor="@color/browser_express_walkthrough_ink"
+        android:strokeLineCap="round" />
+</vector>

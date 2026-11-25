@@ -173,6 +173,7 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.notifications.permissions.NotificationPermissionController;
 import org.chromium.chrome.browser.notifications.retention.RetentionNotificationUtil;
 import org.chromium.chrome.browser.ntp.NewTabPageManager;
+import org.chromium.chrome.browser.ntp.NtpScrollPrompts;
 import org.chromium.chrome.browser.onboarding.OnboardingPrefManager;
 import org.chromium.chrome.browser.onboarding.v2.HighlightDialogFragment;
 import org.chromium.chrome.browser.playlist.PlaylistHostActivity;
@@ -202,10 +203,12 @@ import org.chromium.chrome.browser.browser_express_generate_username.BrowserExpr
 import org.chromium.chrome.browser.browser_express_update_apk.BrowserExpressUpdateApkBottomSheetFragment;
 import org.chromium.chrome.browser.browser_express_comments.BrowserExpressCommentsBottomSheetFragment;
 import org.chromium.chrome.browser.browser_express_comments.BrowserExpressReplyWithAttachmentBottomSheetFragment;
-import org.chromium.chrome.browser.browser_express_comments.CommentScrollPrompts;
+import org.chromium.chrome.browser.browser_express_walkthrough.WalkthroughState;
 import org.chromium.chrome.browser.browser_express_apps.InstalledAppsManager;
 import org.chromium.chrome.browser.browser_express_push.BrowserExpressPushOpenHandler;
 import org.chromium.chrome.browser.browser_express_push.BrowserExpressPushTokenManager;
+import org.chromium.chrome.browser.browser_express_share.ShareLinkOpener;
+import org.chromium.chrome.browser.browser_express_splash.UgcSplash;
 import org.chromium.chrome.browser.settings.BraveNewsPreferencesV2;
 import org.chromium.chrome.browser.settings.BrowserExpressProfilePreferences;
 import org.chromium.chrome.browser.settings.BrowserExpressEditProfilePreferences;
@@ -538,6 +541,13 @@ public abstract class BraveActivity extends ChromeActivity
                     }
                 }
             }
+
+            // The launch splash fades into the tab the app reopened to. The Home reports itself
+            // when it attaches (BraveNewTabPageLayout); any other tab is up now.
+            Tab splashTab = getActivityTab();
+            if (splashTab != null && !UrlUtilities.isNtpUrl(splashTab.getUrl().getSpec())) {
+                UgcSplash.onTabShown();
+            }
         }
 
         BraveSafeBrowsingApiHandler.getInstance()
@@ -574,6 +584,9 @@ public abstract class BraveActivity extends ChromeActivity
         }
 
         checkReferral();
+        // A shared take that arrived before sign-in (or with the install) opens once there is a
+        // session.
+        ShareLinkOpener.openPendingIfReady(this);
         // Executes Leo voice prompt if it was triggered from quick search app widget
         // maybeExecuteLeoVoicePrompt();
     }
@@ -605,12 +618,31 @@ public abstract class BraveActivity extends ChromeActivity
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
+        // After all of onCreate (window features included), before the window first shows.
+        maybeShowLaunchSplash(savedInstanceState != null);
         if (!mIsCallbackSetup) {
             setupYouTubeBackButtonHandler();
         }
 
         // Safe update with null check
         updateBackCallbackState();
+    }
+
+    /**
+     * The UGC splash, each time the app starts. A launch that opens a link or a shared take goes
+     * straight to it instead.
+     *
+     * @param restored The activity is being recreated from saved state.
+     */
+    private void maybeShowLaunchSplash(boolean restored) {
+        if (isFinishing()) return;
+        Intent intent = getIntent();
+        boolean plainLaunch =
+                intent == null
+                        || (!hasExternalUrl(intent) && !ShareLinkOpener.isShareLinkIntent(intent));
+        UgcSplash.maybeShowOnLaunch(this, restored, plainLaunch);
+        // The Home's prompts held back while it showed get their turn.
+        UgcSplash.runWhenGone(this::maybeShowNtpPrompts);
     }
 
     private void setupYouTubeBackButtonHandler() {
@@ -1605,7 +1637,7 @@ public abstract class BraveActivity extends ChromeActivity
         Context context = ContextUtils.getApplicationContext();
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_chrome)
-            .setContentTitle("Express Browser")
+            .setContentTitle(context.getString(R.string.app_name))
             .setContentText("Browser is running")
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
@@ -1976,8 +2008,8 @@ public abstract class BraveActivity extends ChromeActivity
         //                     BraveWalletActivity.RESTART_WALLET_ACTIVITY_RESTORE, false));
         // }
 
-        // The forced default-browser sheet now waits for the NTP and enough comment
-        // scrolling (CommentScrollPrompts, from maybeShowNtpPrompts). Here we only
+        // The forced default-browser sheet now waits for the NTP and enough Home feed
+        // scrolling (NtpScrollPrompts, from maybeShowNtpPrompts). Here we only
         // report, once, a default that has flipped since.
         if (BraveSetDefaultBrowserUtils.isCurrentAppDefaultBrowser(BraveActivity.this)) {
             fireDefaultBrowserConfirmationOnce();
@@ -2025,6 +2057,8 @@ public abstract class BraveActivity extends ChromeActivity
      * format that {@link IntentHandler#getUrlFromIntent} can parse).
      */
     private boolean hasExternalUrl(Intent intent) {
+        // A shared take opens natively over the new tab page, not in a tab of its own.
+        if (ShareLinkOpener.isShareLinkIntent(intent)) return false;
         if (Intent.ACTION_VIEW.equals(intent.getAction()) && intent.getData() != null) {
             return true;
         }
@@ -2713,6 +2747,15 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     public void openBrowserExpressSignupSettings(boolean authRequired) {
+        // At first launch the sign-in screen would cover the splash: it comes up once that's gone.
+        if (UgcSplash.runWhenGone(
+                () -> {
+                    if (!isFinishing() && !isDestroyed()) {
+                        openBrowserExpressSignupSettings(authRequired);
+                    }
+                })) {
+            return;
+        }
         SettingsNavigation settingsLauncher = SettingsNavigationFactory.createSettingsNavigation();
         settingsLauncher.startSettings(
                 this,
@@ -3991,7 +4034,11 @@ public abstract class BraveActivity extends ChromeActivity
 
     private final Runnable mNtpPromptsRunnable = this::showNtpPromptsIfOnNtp;
 
-    private void maybeShowNtpPrompts() {
+    /**
+     * Checks for a Home prompt that has come due: on resume, focus, the NTP loading, and when the
+     * Home feed stops scrolling past posts (BraveNewTabPageLayout).
+     */
+    public void maybeShowNtpPrompts() {
         // Resume, focus and the NTP load tend to arrive together: check once, after them.
         View decorView = getWindow().getDecorView();
         decorView.removeCallbacks(mNtpPromptsRunnable);
@@ -4008,7 +4055,11 @@ public abstract class BraveActivity extends ChromeActivity
                 && !BraveSetDefaultBrowserUtils.isBottomSheetVisible
                 && tab != null && !tab.isIncognito() && tab.getUrl() != null
                 && UrlUtilities.isNtpUrl(tab.getUrl().getSpec())) {
-            if (CommentScrollPrompts.maybeShowOnNtp(this)) return;
+            // The first-launch walkthrough's Home prompts come first; these wait until it has
+            // moved on to the comments. The first-launch splash comes before both.
+            if (UgcSplash.isShowing()) return;
+            if (WalkthroughState.blocksNtpPrompts()) return;
+            if (NtpScrollPrompts.maybeShowOnNtp(this)) return;
             InstalledAppsManager.maybePrompt(this);
         }
     }
@@ -4199,6 +4250,8 @@ public abstract class BraveActivity extends ChromeActivity
                     .linkReferralToAccount(getApplicationContext(), accessToken);
             // Usage recorded before there was a session can go out now.
             ReferralUsageTracker.flushAsync(getApplicationContext(), "login");
+            // A shared take kept through sign-in opens now (or when the browser is back in front).
+            ShareLinkOpener.openPendingIfReady(this);
         }
     }
 
@@ -4591,6 +4644,9 @@ public abstract class BraveActivity extends ChromeActivity
      * bytecode changes.
      */
     public boolean maybeHandleUrlIntent(Intent intent) {
+        // browser.express/t/… and /view links open the shared take in the app, not the web page.
+        if (ShareLinkOpener.maybeHandleIntent(this, intent)) return false;
+
         String appLinkAction = intent.getAction();
         Uri appLinkData = intent.getData();
 

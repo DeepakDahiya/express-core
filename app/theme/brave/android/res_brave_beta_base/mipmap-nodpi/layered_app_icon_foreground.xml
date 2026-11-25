@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- Replaces Chromium's transparent placeholder (copied over
+     chrome/android/java/res_chromium_base by branding.js). ic_launcher_round.xml draws this over
+     @mipmap/layered_app_icon_background, which is the plain wasabi layer, so the round icon
+     needs the whole UGC art here. That art is @mipmap/layered_app_icon, the same bitmap
+     ic_launcher.xml uses. -->
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@mipmap/layered_app_icon" />

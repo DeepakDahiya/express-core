@@ -44,7 +44,6 @@
     <color name="browser_express_signin_on_accent">#F0F2FF</color>
     <color name="browser_express_signin_surface">#1E1F24</color>
     <color name="browser_express_signin_field_stroke">#3C3F4A</color>
-    <color name="browser_express_signin_field_divider">#1E1F24</color>
     <color name="browser_express_signin_close_icon">#3C3F4A</color>
     <color name="browser_express_signin_card">#1E1F24</color>
     <color name="browser_express_signin_code_row_background">#1E1F24</color>
@@ -257,4 +256,11 @@
     <color name="browser_express_take_tile_voice_bg">#382FBF71</color>
     <color name="browser_express_take_tile_gif_bg">#38F2B227</color>
     <color name="browser_express_take_tile_document_bg">#383AA3E8</color>
+
+    <!-- First-launch walkthrough: dark mode dims harder and lifts the card edge (README §6). -->
+    <color name="browser_express_walkthrough_card_edge">#61C4F032</color>
+    <color name="browser_express_walkthrough_dim">#B8000000</color>
+
+    <!-- UGC wordmark: off-white letters on dark backgrounds. -->
+    <color name="ugc_wordmark_ink">#F4F8EA</color>
 </resources>

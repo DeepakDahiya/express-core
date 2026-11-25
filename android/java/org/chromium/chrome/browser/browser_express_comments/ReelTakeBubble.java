@@ -29,9 +29,11 @@ import org.chromium.chrome.R;
 
 /**
  * The reel page's "Add your take" pill (design handoffs "Add your take" §1A and "Karma earned"):
- * a 36dp pill holding a plus in a white circle. On every third reel it starts 146dp wide with its
- * label and, 1.2s after the page settles, folds to the circle over 600ms with its right edge in
- * place; every other reel shows the circle only. With animations off it stays folded.
+ * a 36dp pill holding a plus in a white circle. Every reel lands with the circle. On every third
+ * reel the pill then opens to 146dp with its label, once the stream position under the hashtag
+ * has faded (ReelStreamProgress spans the title column up to the folded circle, so the two must
+ * not show at once), and folds back to the circle 1.2s later. Both moves take 600ms with the
+ * right edge in place. With animations off it stays folded.
  *
  * <p>Nothing here lays out per frame. The slot is always the full pill plus a 4dp margin that
  * keeps the folded pill's target at 44dp; the pill is drawn at the current width from the right,
@@ -40,7 +42,10 @@ import org.chromium.chrome.R;
  */
 final class ReelTakeBubble {
     private static final long FOLD_MS = 600;
+    /** How long the open pill shows its label before folding. */
     private static final long FOLD_DELAY_MS = 1200;
+    /** From the page settling to the pill opening: the stream position has gone by then. */
+    private static final long OPEN_DELAY_MS = ReelStreamProgress.Sequence.SHOWING_MS + 100;
     private static final float MARGIN_DP = 4f;
     private static final float PILL_HEIGHT_DP = 36f;
     private static final float PILL_WIDTH_DP = 146f;
@@ -59,10 +64,13 @@ final class ReelTakeBubble {
     private final int mSlotWidthPx;
     private final int mSlotHeightPx;
     private final Rect mClip = new Rect();
+    private final Runnable mOpen = this::open;
     private final Runnable mFold = () -> animateTo(0f);
     private @Nullable ValueAnimator mAnimator;
     /** 0 is the folded circle, 1 the pill with its label. */
     private float mProgress;
+    /** This page still owes the reader its label: a third reel whose pill hasn't opened yet. */
+    private boolean mLabelOwed;
 
     ReelTakeBubble(View slot) {
         mSlot = slot;
@@ -99,24 +107,53 @@ final class ReelTakeBubble {
         mHit.setContentDescription(label);
     }
 
-    /** Poses the bubble for a freshly bound page: the full pill on every third reel. */
+    /**
+     * Poses the bubble for a freshly bound page: folded, owing its label on every third reel.
+     */
     void show(boolean withLabel) {
         cancel();
-        apply(withLabel && ValueAnimator.areAnimatorsEnabled() ? 1f : 0f);
+        mSlot.removeCallbacks(mOpen);
+        mLabelOwed = withLabel && ValueAnimator.areAnimatorsEnabled();
+        apply(0f);
     }
 
-    /** The page has settled: a pill folds to its circle after a moment. */
-    void foldSoon() {
-        if (mProgress == 0f || mAnimator != null) return;
-        mSlot.removeCallbacks(mFold);
-        mSlot.postDelayed(mFold, FOLD_DELAY_MS);
+    /**
+     * The page has settled, so its stream position is showing up to the folded circle. A pill
+     * still open (back on a page before its fold) folds now; a page owing its label opens once
+     * the stream position has gone.
+     */
+    void onSettled() {
+        mSlot.removeCallbacks(mOpen);
+        if (mProgress != 0f) {
+            mSlot.removeCallbacks(mFold);
+            animateTo(0f);
+        }
+        if (mLabelOwed) mSlot.postDelayed(mOpen, OPEN_DELAY_MS);
     }
 
-    /** Folds to the circle now, e.g. so something can come out from behind it. */
+    /**
+     * The reader is dragging the page away: an opening still to come waits for the page to
+     * settle again, so the pill never opens off-screen.
+     */
+    void holdOff() {
+        mSlot.removeCallbacks(mOpen);
+    }
+
+    /**
+     * Folds to the circle now, e.g. so something can come out from behind it. The label doesn't
+     * show on this page after that.
+     */
     void foldNow() {
-        if (mAnimator != null) return;
+        mLabelOwed = false;
+        mSlot.removeCallbacks(mOpen);
         mSlot.removeCallbacks(mFold);
         animateTo(0f);
+    }
+
+    private void open() {
+        mLabelOwed = false;
+        animateTo(1f);
+        mSlot.postDelayed(mFold, FOLD_MS + FOLD_DELAY_MS);
     }
 
     private void animateTo(float target) {

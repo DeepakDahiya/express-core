@@ -395,9 +395,7 @@ public class ReplyListFragment extends Fragment {
                 @Override
                 public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
                     super.onScrollStateChanged(recyclerView, newState);
-                    if (newState == RecyclerView.SCROLL_STATE_DRAGGING) {
-                        CommentScrollPrompts.recordScroll();
-                    } else if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    if (newState == RecyclerView.SCROLL_STATE_IDLE) {
                         scheduleVideoCheck();
                     }
                 }

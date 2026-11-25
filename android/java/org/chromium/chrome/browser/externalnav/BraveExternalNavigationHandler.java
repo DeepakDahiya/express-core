@@ -10,6 +10,7 @@ import android.content.Intent;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.browser.app.BraveActivity;
+import org.chromium.chrome.browser.browser_express_share.ShareLinkOpener;
 import org.chromium.chrome.browser.preferences.BravePrefServiceBridge;
 import org.chromium.chrome.browser.privacy.settings.BravePrivacySettings;
 import org.chromium.chrome.browser.util.BraveConstants;
@@ -38,6 +39,11 @@ public class BraveExternalNavigationHandler extends ExternalNavigationHandler {
             } catch (BraveActivity.BraveActivityNotFoundException e) {
                 Log.e(TAG, "adblock url " + e);
             }
+            return OverrideUrlLoadingResult.forExternalIntent();
+        }
+        // A browser.express share link followed in a tab opens the shared take in the app; the
+        // tab doesn't load the web page (and closes if it was opened just for it).
+        if (ShareLinkOpener.maybeHandleNavigation(params)) {
             return OverrideUrlLoadingResult.forExternalIntent();
         }
         return super.shouldOverrideUrlLoading(params);

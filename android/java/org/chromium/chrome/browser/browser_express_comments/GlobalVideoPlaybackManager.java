@@ -1,6 +1,14 @@
 package org.chromium.chrome.browser.browser_express_comments;
 
+import android.os.Handler;
+import android.os.Looper;
+
 import androidx.annotation.Nullable;
+
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * The one video that may play at a time, across the new tab page feed and the comments: starting
@@ -197,6 +205,65 @@ public class GlobalVideoPlaybackManager {
         pauseCurrentlyPlayingAudio();
         // A row waiting to resume belongs to a page that is going too.
         mHolderToResume = null;
+    }
+
+    /**
+     * Longest the reel that opened, or was swiped to, keeps the connection to itself. If it isn't
+     * playable by then, the pages beside it start loading anyway.
+     */
+    private static final long REEL_HEAD_START_MAX_MS = 2500;
+
+    /**
+     * The reel page loading ahead of the others: the one the reader is on, until it can play.
+     * The pager binds the pages beside it straight away, and their players would otherwise
+     * download alongside it and share the bandwidth on its way to its first frame.
+     */
+    @Nullable private Object mLoadingReel;
+    /** Reels bound while another loads, and how each starts loading, in the order they came. */
+    private final Map<Object, Runnable> mWaitingReels = new LinkedHashMap<>();
+    private final Handler mReelHandler = new Handler(Looper.getMainLooper());
+    private final Runnable mReelHeadStartOver = () -> finishReelLoad(mLoadingReel);
+
+    /**
+     * A reel page has bound and wants to load its video.
+     *
+     * @return true when it may load now, and takes the head start because no other reel is
+     *     loading; false when another is, in which case {@code load} runs once that one can play.
+     */
+    boolean requestReelLoad(Object reel, Runnable load) {
+        if (mLoadingReel == null || mLoadingReel == reel) {
+            startReelLoad(reel);
+            return true;
+        }
+        mWaitingReels.put(reel, load);
+        return false;
+    }
+
+    /** The reader is on {@code reel}: it loads now and has the head start over any other. */
+    void claimReelLoad(Object reel) {
+        mWaitingReels.remove(reel);
+        startReelLoad(reel);
+    }
+
+    private void startReelLoad(Object reel) {
+        mLoadingReel = reel;
+        mReelHandler.removeCallbacks(mReelHeadStartOver);
+        mReelHandler.postDelayed(mReelHeadStartOver, REEL_HEAD_START_MAX_MS);
+    }
+
+    /**
+     * {@code reel} can play, failed, or its row went. If it had the head start, the reels
+     * waiting behind it start loading.
+     */
+    void finishReelLoad(@Nullable Object reel) {
+        if (reel == null) return;
+        mWaitingReels.remove(reel);
+        if (reel != mLoadingReel) return;
+        mLoadingReel = null;
+        mReelHandler.removeCallbacks(mReelHeadStartOver);
+        List<Runnable> waiting = new ArrayList<>(mWaitingReels.values());
+        mWaitingReels.clear();
+        for (Runnable load : waiting) load.run();
     }
 
     /** The comment video holding the slot, or null (also when a feed video holds it). */

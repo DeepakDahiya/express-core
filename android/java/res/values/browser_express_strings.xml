@@ -145,21 +145,6 @@
 
     <!-- Sign-in flow: details -->
     <string name="browser_express_signin_wordmark">express</string>
-    <string name="browser_express_signin_details_eyebrow">Make yourself at home</string>
-    <string name="browser_express_signin_details_headline">Your browser.\nA little more you.</string>
-    <string name="browser_express_signin_details_description">Sign in with your name and number.\nOr skip this and keep exploring.</string>
-    <string name="browser_express_signin_name_label">Your name</string>
-    <string name="browser_express_signin_name_hint">What should we call you?</string>
-    <string name="browser_express_signin_phone_label">Mobile number</string>
-    <string name="browser_express_signin_phone_hint">Mobile number</string>
-    <string name="browser_express_signin_country_code">+91</string>
-    <string name="browser_express_signin_send_code">Send verification code</string>
-    <string name="browser_express_signin_sending_code">Sending code…</string>
-    <string name="browser_express_signin_sms_disclosure">We’ll send an SMS to verify your number.</string>
-    <string name="browser_express_signin_missing_details">Add your name and mobile number to continue.</string>
-    <string name="browser_express_signin_privacy_title">Less tracking. More browsing.</string>
-    <string name="browser_express_signin_privacy_description">Privacy controls, right where you need them.</string>
-    <string name="browser_express_signin_skip_details">Continue without signing in</string>
 
     <!-- Sign-in flow: verify code -->
     <string name="browser_express_signin_verify_eyebrow">One quick check</string>
@@ -195,6 +180,58 @@
     <string name="browser_express_signin_choice_title">Your privacy, your choice.</string>
     <string name="browser_express_signin_choice_description">Manage protection from the address bar.</string>
 
+    <!-- UGC sign-up (ugc-signup-handoff, copy deck): details step -->
+    <!-- %1$s: browser_express_ugc_signup_headline_accent, drawn in the accent colour. -->
+    <string name="browser_express_ugc_signup_headline">The internet’s\nbest %1$s.\nBack to back.</string>
+    <string name="browser_express_ugc_signup_headline_accent">reactions</string>
+    <string name="browser_express_ugc_signup_sub">On everything you’re into, right now.</string>
+    <string name="browser_express_ugc_signup_name_label">Name</string>
+    <string name="browser_express_ugc_signup_name_optional">(optional)</string>
+    <string name="browser_express_ugc_signup_name_placeholder">Aarav</string>
+    <string name="browser_express_ugc_signup_phone_label">Mobile number</string>
+    <string name="browser_express_ugc_signup_phone_placeholder">98765 43210</string>
+    <string name="browser_express_ugc_signup_jump_in">Jump in</string>
+    <string name="browser_express_ugc_signup_guest">Guest</string>
+    <string name="browser_express_ugc_signup_guest_description">Continue as guest</string>
+    <string name="browser_express_ugc_signup_error_phone">Enter a valid 10-digit mobile number.</string>
+    <!-- The server still asks new numbers for a name until name-optional sign-up is deployed. -->
+    <string name="browser_express_ugc_signup_error_name">Add your name to continue.</string>
+
+    <!-- UGC sign-up: code step -->
+    <string name="browser_express_ugc_signup_code_title">Verify your number</string>
+    <!-- %1$s: the number, "98765 43210". "Edit" (browser_express_ugc_signup_edit) follows. -->
+    <string name="browser_express_ugc_signup_code_sent_to">Code sent to %1$s</string>
+    <string name="browser_express_ugc_signup_edit">Edit</string>
+    <string name="browser_express_ugc_signup_code_description">Verification code</string>
+    <string name="browser_express_ugc_signup_verify">Verify</string>
+    <string name="browser_express_ugc_signup_verifying">Getting you in…</string>
+    <!-- %1$s: time left, "0:30". -->
+    <string name="browser_express_ugc_signup_resend_in">Resend in %1$s</string>
+    <string name="browser_express_ugc_signup_resend">Resend code</string>
+    <string name="browser_express_ugc_signup_code_sent">Code sent ✓</string>
+    <string name="browser_express_ugc_signup_resend_locked">Try again later</string>
+    <!-- %1$d: number of digits in the code. -->
+    <plurals name="browser_express_ugc_signup_error_incomplete">
+        <item quantity="one">Enter the %1$d digit.</item>
+        <item quantity="other">Enter all %1$d digits.</item>
+    </plurals>
+    <string name="browser_express_ugc_signup_error_wrong_code">That code didn’t work. Try again.</string>
+    <string name="browser_express_ugc_signup_error_expired">That code has expired. Resend a new one.</string>
+    <string name="browser_express_ugc_signup_error_locked">Too many tries. Resend a new code.</string>
+    <string name="browser_express_ugc_signup_error_send_failed">Couldn’t send a code. Try again.</string>
+    <!-- %1$d: minutes to wait. -->
+    <plurals name="browser_express_ugc_signup_error_rate_limited">
+        <item quantity="one">Too many attempts. Try again in %1$d min.</item>
+        <item quantity="other">Too many attempts. Try again in %1$d min.</item>
+    </plurals>
+    <string name="browser_express_ugc_signup_error_offline">No connection. Check your internet and try again.</string>
+
+    <!-- UGC sign-up: hero pill and the toast a guest sees on Home -->
+    <!-- %1$s: how many people are reacting right now, "1,284". -->
+    <string name="browser_express_ugc_signup_reacting">%1$s reacting</string>
+    <!-- %1$s: the guest's username, "@chai_ninja_284". -->
+    <string name="browser_express_ugc_guest_toast">You’re %1$s for now</string>
+
     <!-- Comments page: header and cards -->
     <!-- %1$d: the page (or comment) being read, %2$d: how many there are. -->
     <string name="browser_express_comments_position">%1$d / %2$d</string>
@@ -222,6 +259,10 @@
     <!-- %1$d: reactions not shown as chips. -->
     <string name="browser_express_comment_reactions_more">+%1$d</string>
     <string name="browser_express_comment_menu_share">Share</string>
+    <!-- Toast when a shared link's post has been deleted; the feed opens under it. -->
+    <string name="browser_express_share_post_gone">This post isn\'t around anymore</string>
+    <!-- Toast when a shared link couldn't be looked up, e.g. offline. -->
+    <string name="browser_express_share_link_failed">Couldn\'t open that link. Check your connection and try again.</string>
     <string name="browser_express_comment_menu_copy">Copy text</string>
     <string name="browser_express_comment_copied">Comment copied</string>
     <string name="browser_express_comment_reaction_failed">Couldn’t save your reaction</string>
@@ -486,4 +527,34 @@
     <string name="browser_express_take_failed">Couldn\'t post your take</string>
     <string name="browser_express_take_failed_body">Tap to retry</string>
     <string name="browser_express_take_retry">Retry</string>
+
+    <!-- First-launch walkthrough (design_handoff_walkthrough README §3, §5). -->
+    <string name="browser_express_walkthrough_search_title">The Internet, Upgraded</string>
+    <string name="browser_express_walkthrough_search_line">Your web browser just levelled up</string>
+    <string name="browser_express_walkthrough_search_features">Web search · AI answers · Private</string>
+    <string name="browser_express_walkthrough_search_eyebrow">A NEW CONTENT FORMAT</string>
+    <string name="browser_express_walkthrough_search_hero">The Best Reactions On Everything You Love</string>
+    <string name="browser_express_walkthrough_skip">Skip</string>
+    <string name="browser_express_walkthrough_reveal">Reveal it</string>
+    <string name="browser_express_walkthrough_post_eyebrow">SEE WHAT EVERYONE IS SAYING</string>
+    <string name="browser_express_walkthrough_post_title">The Best User Reactions</string>
+    <string name="browser_express_walkthrough_post_line">From all over the internet</string>
+    <string name="browser_express_walkthrough_pick_another">Pick another post</string>
+    <string name="browser_express_walkthrough_dive_in">Dive in</string>
+    <!-- %1$s is the post's hashtag as the backend sends it, with its "#". -->
+    <string name="browser_express_walkthrough_video_title">Every Take On %1$s</string>
+    <string name="browser_express_walkthrough_video_title_fallback">Every Take On This Topic</string>
+    <string name="browser_express_walkthrough_video_line">Swipe as long as you like</string>
+    <string name="browser_express_walkthrough_all_set">All set</string>
+    <string name="browser_express_walkthrough_tip_eyebrow">YOU\'RE ON A ROLL</string>
+    <string name="browser_express_walkthrough_tip_emoji_title">Drop An Emoji</string>
+    <string name="browser_express_walkthrough_tip_emoji_line">Tap one on the right, any time</string>
+    <string name="browser_express_walkthrough_tip_reply_title">Join The Conversation</string>
+    <string name="browser_express_walkthrough_tip_reply_line">See replies to this take</string>
+    <string name="browser_express_walkthrough_tip_dismiss">Got it</string>
+    <string name="browser_express_walkthrough_tip_emoji" translatable="false">🔥</string>
+
+    <!-- UGC launch splash (ugc-splash-handoff): what a screen reader says. The splash shows
+         these English words whatever the language, so this isn't translated. -->
+    <string name="browser_express_splash_description" translatable="false">UGC, User Generated Content</string>
 </resources>

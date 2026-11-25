@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- The walkthrough's one-time bonus tip, "YOU'RE ON A ROLL" (design_handoff_walkthrough README
+     §5): bottom left of a reel, beside the rail whose emoji and replies it points out. "Got it" is
+     text only, in a 44dp touch target, so the card's bottom padding is 6dp short of the 8dp
+     design. -->
+<org.chromium.chrome.browser.browser_express_walkthrough.WalkthroughCardFrame
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content">
+
+    <LinearLayout
+        android:id="@+id/walkthrough_card"
+        android:layout_width="316dp"
+        android:layout_height="wrap_content"
+        android:background="@drawable/browser_express_walkthrough_card_bg"
+        android:orientation="vertical"
+        android:paddingStart="14dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="12dp"
+        android:paddingBottom="2dp">
+
+        <TextView
+            android:id="@+id/walkthrough_eyebrow"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="sans-serif-medium"
+            android:letterSpacing="0.12"
+            android:lineHeight="13sp"
+            android:text="@string/browser_express_walkthrough_tip_eyebrow"
+            android:textColor="@color/browser_express_walkthrough_wasabi"
+            android:textSize="10.5sp"
+            tools:ignore="SmallSp" />
+
+        <LinearLayout
+            android:id="@+id/walkthrough_tip_emoji_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:background="@drawable/browser_express_walkthrough_tip_tile_bg"
+                android:gravity="center"
+                android:importantForAccessibility="no"
+                android:includeFontPadding="false"
+                android:text="@string/browser_express_walkthrough_tip_emoji"
+                android:textSize="17sp" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:lineHeight="18sp"
+                    android:text="@string/browser_express_walkthrough_tip_emoji_title"
+                    android:textColor="@color/browser_express_walkthrough_warm_white"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    android:fontFamily="sans-serif"
+                    android:lineHeight="16sp"
+                    android:text="@string/browser_express_walkthrough_tip_emoji_line"
+                    android:textColor="@color/browser_express_walkthrough_text_66"
+                    android:textSize="12.5sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/walkthrough_tip_reply_row"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="34dp"
+                android:layout_height="34dp"
+                android:background="@drawable/browser_express_walkthrough_tip_tile_bg"
+                android:importantForAccessibility="no"
+                android:scaleType="center"
+                android:src="@drawable/ic_browser_express_walkthrough_comment" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="sans-serif-medium"
+                    android:lineHeight="18sp"
+                    android:text="@string/browser_express_walkthrough_tip_reply_title"
+                    android:textColor="@color/browser_express_walkthrough_warm_white"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="1dp"
+                    android:fontFamily="sans-serif"
+                    android:lineHeight="16sp"
+                    android:text="@string/browser_express_walkthrough_tip_reply_line"
+                    android:textColor="@color/browser_express_walkthrough_text_66"
+                    android:textSize="12.5sp" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/walkthrough_tip_dismiss"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:layout_gravity="end"
+            android:layout_marginTop="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:fontFamily="sans-serif-medium"
+            android:gravity="center"
+            android:minWidth="44dp"
+            android:paddingHorizontal="10dp"
+            android:text="@string/browser_express_walkthrough_tip_dismiss"
+            android:textColor="@color/browser_express_walkthrough_wasabi"
+            android:textSize="13sp" />
+    </LinearLayout>
+</org.chromium.chrome.browser.browser_express_walkthrough.WalkthroughCardFrame>

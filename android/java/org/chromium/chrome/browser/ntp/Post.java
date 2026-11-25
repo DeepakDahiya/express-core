@@ -31,6 +31,8 @@ public class Post{
     private @Nullable String audioUrl;
     private long audioDurationMs;
     private @Nullable NewTakes newTakes;
+    /** The server's pick for the first-launch walkthrough to feature (walkthroughPostId). */
+    private boolean walkthroughFeatured;
 
     public Post(String _id, String content, String type, String title, String imageUrl, String url, int upvoteCount, int downvoteCount, int commentCount, String publisherName, String publisherImageUrl, Boolean redirect, Boolean showFull, Vote vote, SubPost subPost) {  
         this._id = _id;  
@@ -176,5 +178,14 @@ public class Post{
 
     public void setNewTakes(@Nullable NewTakes newTakes) {
         this.newTakes = newTakes;
+    }
+
+    /** Whether the server picked this post for the first-launch walkthrough to feature. */
+    public boolean isWalkthroughFeatured() {
+        return this.walkthroughFeatured;
+    }
+
+    public void setWalkthroughFeatured(boolean walkthroughFeatured) {
+        this.walkthroughFeatured = walkthroughFeatured;
     }
 }  

@@ -11,6 +11,8 @@ import android.content.SharedPreferences;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import org.chromium.base.ActivityState;
+import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BravePreferenceKeys;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -19,6 +21,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.chrome.browser.app.BraveActivity;
+import org.chromium.chrome.browser.browser_express_signup.UgcGuestToast;
 import org.chromium.chrome.browser.browser_express_generate_username.BrowserExpressClaimUsernameUtil;
 import org.chromium.chrome.browser.referral.ReferralHelper;
 
@@ -142,6 +145,23 @@ public final class BrowserExpressGuestLogin {
 
         for (Observer observer : sObservers) {
             observer.onGuestSignedIn(accessToken);
+        }
+        showGuestToast(accessToken);
+    }
+
+    /** "You're @name for now" over the browser, when it is in front. */
+    private static void showGuestToast(String accessToken) {
+        String username = UgcGuestToast.usernameFromAccessToken(accessToken);
+        if (username == null) return;
+        try {
+            BraveActivity activity = BraveActivity.getBraveActivity();
+            if (activity.isFinishing()
+                    || ApplicationStatus.getStateForActivity(activity) != ActivityState.RESUMED) {
+                return;
+            }
+            UgcGuestToast.show(activity, username);
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+            // No browser to show it on; the session is saved all the same.
         }
     }
 

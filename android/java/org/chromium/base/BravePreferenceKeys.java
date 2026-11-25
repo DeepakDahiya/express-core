@@ -79,9 +79,10 @@ public final class BravePreferenceKeys {
             "browser_express_push_user_enabled";
     public static final String BROWSER_EXPRESS_PUSH_DEV_FORCE_ENABLED =
             "browser_express_push_dev_force_enabled";
-    // NTP prompts gated on comment scrolling — see browser_express_comments/CommentScrollPrompts.
-    public static final String BROWSER_EXPRESS_COMMENT_SCROLL_COUNT =
-            "browser_express_comment_scroll_count";
+    // Home prompts gated on scrolling past feed posts: see ntp/NtpScrollPrompts.
+    public static final String BROWSER_EXPRESS_NTP_POSTS_PASSED = "browser_express_ntp_posts_passed";
+    public static final String BROWSER_EXPRESS_NTP_LAST_PROMPT_AT_POSTS =
+            "browser_express_ntp_last_prompt_at_posts";
     public static final String BROWSER_EXPRESS_NTP_NOTIFICATION_PROMPTED =
             "browser_express_ntp_notification_prompted";
     public static final String BRAVE_IN_APP_UPDATE_TIMING = "in_app_update_timing";

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- The "UGC." wordmark, from ugc-brand-kit/wordmark/ugc-wordmark-on-{light,dark}.svg (custom
+     letterforms, not a font). The viewport keeps the SVG's 8-unit clear space on every side;
+     44dp tall is the home-page size from the brand kit. Letters use ugc_wordmark_ink, which
+     flips for dark mode; the full stop stays pink. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="141.9dp"
+    android:height="44dp"
+    android:viewportWidth="374.1"
+    android:viewportHeight="116">
+    <group
+        android:translateX="8"
+        android:translateY="8">
+        <!-- U -->
+        <path
+            android:pathData="M13,0 V50 A37,37 0 0,0 87,50 V0"
+            android:strokeColor="@color/ugc_wordmark_ink"
+            android:strokeLineCap="butt"
+            android:strokeWidth="26" />
+        <!-- G: arc and crossbar -->
+        <path
+            android:pathData="M192.34,26.22 A37,37 0 1,0 201,50"
+            android:strokeColor="@color/ugc_wordmark_ink"
+            android:strokeLineCap="butt"
+            android:strokeWidth="26" />
+        <path
+            android:fillColor="@color/ugc_wordmark_ink"
+            android:pathData="M162.5,37 h51.5 v26 h-51.5 z" />
+        <!-- C -->
+        <path
+            android:pathData="M305.5,25.24 A37,37 0 1,0 305.5,74.76"
+            android:strokeColor="@color/ugc_wordmark_ink"
+            android:strokeLineCap="butt"
+            android:strokeWidth="26" />
+        <!-- Full stop -->
+        <path
+            android:fillColor="@color/ugc_wordmark_dot"
+            android:pathData="M336,77.9 h22.1 v22.1 h-22.1 z" />
+    </group>
+</vector>

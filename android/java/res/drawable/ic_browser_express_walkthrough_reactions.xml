@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+<!-- Step 3's icon: a person with sound waves on both sides. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="22dp"
+    android:height="22dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
+    <path
+        android:fillColor="@color/browser_express_walkthrough_ink"
+        android:pathData="M12,6.4a3.6,3.6 0,1 1,0 7.2a3.6,3.6 0,1 1,0 -7.2z" />
+    <path
+        android:fillColor="@color/browser_express_walkthrough_ink"
+        android:pathData="M5.5,22c0,-3.6 2.9,-6 6.5,-6s6.5,2.4 6.5,6z" />
+    <path
+        android:pathData="M6.6,6.8a5.4,5.4 0,0 0,0 6.4M4.1,4.8a8.6,8.6 0,0 0,0 10.4M17.4,6.8a5.4,5.4 0,0 1,0 6.4M19.9,4.8a8.6,8.6 0,0 1,0 10.4"
+        android:strokeWidth="1.6"
+        android:strokeColor="@color/browser_express_walkthrough_ink"
+        android:strokeLineCap="round" />
+</vector>

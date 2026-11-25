@@ -32,8 +32,9 @@
     </org.chromium.chrome.browser.browser_express_comments.SlideScrollHost>
 
     <!-- Sneak peek at the reel below, shown only when the next page is a full-page video.
-         Both heights are set by CommentSlideAdapter: the strip takes the bottom slice the
-         packer kept free of rows, while the image inside is laid out at the height of a whole
+         Both heights are set by CommentSlideAdapter: the strip takes the room the packer found
+         under the rows (comments fill the page first; the strip gets what is left, up to 15% of
+         the page, or nothing), while the image inside is laid out at the height of a whole
          page and clipped to it. Same size and same centre-crop the reel page gives the video,
          so what shows here is literally the top of the next page.
 

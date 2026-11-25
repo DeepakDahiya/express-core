@@ -242,6 +242,24 @@ public class Comment{
         }
         JSONArray attachmentList = obj.optJSONArray("attachments");
         if (attachmentList != null) attachments = CommentAttachment.readList(attachmentList);
+        adoptVideoAttachmentSize();
+    }
+
+    /**
+     * Takes the video's size from its attachment when the comment row itself has none: servers
+     * that predate mediaWidth/mediaHeight still keep the size the app uploaded on the attachment.
+     * Knowing it up front spares the reel pager probing the video before it can lay out.
+     */
+    private void adoptVideoAttachmentSize() {
+        if (hasCachedDimensions() || !hasVideoMedia()) return;
+        for (CommentAttachment attachment : getAttachments()) {
+            if (!attachment.isVideo() || !mediaVideoUrl.equals(attachment.getUrl())) continue;
+            if (attachment.getWidth() > 0 && attachment.getHeight() > 0) {
+                mediaWidth = attachment.getWidth();
+                mediaHeight = attachment.getHeight();
+            }
+            return;
+        }
     }
 
     // ---------------------------------------------------------------------------------------

@@ -58,6 +58,7 @@ import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import org.chromium.chrome.browser.browser_express_comments.CommentListAdapter;
 import org.chromium.chrome.browser.browser_express_comments.Comment;
+import org.chromium.chrome.browser.browser_express_walkthrough.WalkthroughState;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.recyclerview.widget.LinearSnapHelper;
@@ -97,12 +98,8 @@ import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
 import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.ui.base.DeviceFormFactor;
 import android.content.res.Resources;
-import android.text.Layout;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.StaticLayout;
-import android.text.TextPaint;
-import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.text.style.ForegroundColorSpan;
 import android.widget.SeekBar;
@@ -120,6 +117,7 @@ import org.chromium.chrome.browser.browser_express_comments.CommentMediaCache;
 import org.chromium.chrome.browser.browser_express_comments.GlobalVideoPlaybackManager;
 import org.chromium.chrome.browser.browser_express_comments.ReactionMix;
 import org.chromium.chrome.browser.browser_express_comments.SourceChip;
+import org.chromium.chrome.browser.browser_express_share.ShareLinks;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -709,6 +707,104 @@ public class PostListAdapter extends RecyclerView.Adapter {
         }
     }
 
+    // ---------------------------------------------------------------------------------------
+    // For the first-launch walkthrough (browser_express_walkthrough.WalkthroughHome)
+    // ---------------------------------------------------------------------------------------
+
+    /** The feed's posts, in order. */
+    public List<Post> getPosts() {
+        return mPostList;
+    }
+
+    /** Whether the feed failed to load and its row offers a retry. */
+    public boolean isFeedLoadFailed() {
+        return mFooterState == FOOTER_ERROR;
+    }
+
+    /** The header's search box while the header is on screen, else null. */
+    public @Nullable View getSearchBoxView() {
+        if (mHeaderViewHolder == null || !mHeaderViewHolder.itemView.isAttachedToWindow()) {
+            return null;
+        }
+        return mHeaderViewHolder.itemView.findViewById(R.id.ntp_search_box);
+    }
+
+    /** The list position of the post with this id, or -1. */
+    public int getAdapterPositionOfPost(String postId) {
+        for (int i = 0; i < mPostList.size(); i++) {
+            Post post = mPostList.get(i);
+            if (post != null && postId.equals(post.getId())) return i + getPostAdapterOffset();
+        }
+        return -1;
+    }
+
+    /** The card of the post with this id while it is on screen, else null. */
+    public @Nullable View getPostCardView(String postId) {
+        PostHolder holder = attachedHolderOf(postId);
+        return holder != null && holder.mCard.getVisibility() == View.VISIBLE ? holder.mCard : null;
+    }
+
+    /**
+     * Where a tap starts the post: its video's play mark, which sits at the centre of its media,
+     * else the card.
+     */
+    public @Nullable View getPostTapAnchor(String postId) {
+        PostHolder holder = attachedHolderOf(postId);
+        if (holder == null) return null;
+        return holder.mMedia.getVisibility() == View.VISIBLE ? holder.mMedia : holder.mCard;
+    }
+
+    private @Nullable PostHolder attachedHolderOf(String postId) {
+        if (mTopPostRecycler == null) return null;
+        for (int i = 0; i < mTopPostRecycler.getChildCount(); i++) {
+            RecyclerView.ViewHolder holder =
+                    mTopPostRecycler.getChildViewHolder(mTopPostRecycler.getChildAt(i));
+            if (!(holder instanceof PostHolder)) continue;
+            Post post = ((PostHolder) holder).mPost;
+            if (post != null && postId.equals(post.getId())) return (PostHolder) holder;
+        }
+        return null;
+    }
+
+    /** Whether the post's card has a video of its own. */
+    public static boolean hasCardVideo(Post post) {
+        return cardVideoUrl(post) != null;
+    }
+
+    /**
+     * Opens the post's stream straight away, never its video full screen or its article: the
+     * walkthrough's "Dive in" goes to the takes.
+     */
+    public void openPostStream(String postId) {
+        Post post = null;
+        for (Post candidate : mPostList) {
+            if (candidate != null && postId.equals(candidate.getId())) {
+                post = candidate;
+                break;
+            }
+        }
+        if (post == null) return;
+        BraveActivity activity;
+        try {
+            activity = BraveActivity.getBraveActivity();
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+            return;
+        }
+        int position = getAdapterPositionOfPost(postId);
+        mPostsOpened++;
+        FeedEvents.recordOpen(post.getId(), mFeedSessionId, FeedEvents.OPEN_COMMENTS);
+        PostHogUtil.capture(
+                PostHogEventKeys.POST_CLICKED_ON,
+                "post_id",
+                post.getId(),
+                "target",
+                FeedEvents.OPEN_COMMENTS,
+                "position",
+                position < 0 ? -1 : getPostIndex(position));
+        activity.showPostComments(post.getId(), sheetUsername(post), cardCaption(post),
+                cardAvatarUrl(post), sourceMedia(post), null);
+    }
+
     /** The row after the posts: a spinner while the next page loads, or a retry after a failure. */
     private class FooterHolder extends RecyclerView.ViewHolder {
         private final View mProgress;
@@ -1151,10 +1247,17 @@ public class PostListAdapter extends RecyclerView.Adapter {
      */
     private class PostHolder extends RecyclerView.ViewHolder
             implements GlobalVideoPlaybackManager.Playable {
-        /** Caption lines before "… More", with or without media after it. */
-        private static final int CAPTION_MAX_LINES = 6;
+        /**
+         * Caption characters before "… More", with or without media after it (product's call,
+         * 2026-11-19; it was 6 lines).
+         */
+        private static final int CAPTION_MAX_CHARS = 400;
 
-        /** Media keeps its own shape, between 4:5 portrait and 1.91:1 landscape. */
+        /**
+         * The media box keeps the media's own shape, between 4:5 portrait and 1.91:1 landscape.
+         * Taller or wider media is fitted inside the clamped box (bars beside or above it), never
+         * cropped to fill it.
+         */
         private static final float MIN_MEDIA_RATIO = 0.8f;
         private static final float MAX_MEDIA_RATIO = 1.91f;
         private static final float DEFAULT_MEDIA_RATIO = 16f / 9f;
@@ -1244,7 +1347,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
         private boolean mCaptionTruncated;
         /** Whether the reader opened a cut caption; a second tap cuts it again. */
         private boolean mCaptionExpanded;
-        private int mCaptionMaxLines;
 
         PostHolder(View itemView) {
             super(itemView);
@@ -1383,7 +1485,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             String videoUrl = cardVideoUrl(post);
             boolean hasMedia = imageUrl != null || videoUrl != null;
             boolean hasAudio = post.getAudioUrl() != null;
-            bindCaption(cardCaption(post), CAPTION_MAX_LINES);
+            bindCaption(cardCaption(post));
 
             if (hasMedia) bindMedia(post, imageUrl, videoUrl);
             if (hasAudio) bindAudio(post);
@@ -1531,78 +1633,34 @@ public class PostListAdapter extends RecyclerView.Adapter {
             }
         }
 
-        private void bindCaption(String text, int maxLines) {
+        private void bindCaption(String text) {
             mFullCaption = text;
             mCaptionTruncated = false;
             mCaptionExpanded = false;
-            mCaptionMaxLines = maxLines;
             mCaption.setVisibility(text.isEmpty() ? View.GONE : View.VISIBLE);
-            mCaption.setMaxLines(Integer.MAX_VALUE);
             mCaption.setText(text);
-            if (text.isEmpty()) return;
-
-            // Collapse before the first draw when the width is known (a recycled card, or from
-            // the list's width), so a long caption never flashes at full length.
-            int width = captionWidth();
-            if (width > 0) {
-                collapseCaption(buildCaptionLayout(text, width), maxLines);
-                return;
-            }
-            final Post bound = mPost;
-            mCaption.post(
-                    () -> {
-                        if (mPost == bound && mCaption.getLayout() != null) {
-                            collapseCaption(mCaption.getLayout(), maxLines);
-                        }
-                    });
+            collapseCaption();
         }
 
-        /** The caption's text width, from its last layout or else from the list's width. */
-        private int captionWidth() {
-            if (mCaption.getWidth() > 0) {
-                return mCaption.getWidth() - mCaption.getPaddingLeft() - mCaption.getPaddingRight();
-            }
-            if (mTopPostRecycler == null || mTopPostRecycler.getWidth() <= 0) return 0;
-            return mTopPostRecycler.getWidth()
-                    - itemView.getPaddingLeft()
-                    - itemView.getPaddingRight()
-                    - mCard.getPaddingLeft()
-                    - mCard.getPaddingRight();
-        }
-
-        private Layout buildCaptionLayout(String text, int width) {
-            return StaticLayout.Builder.obtain(text, 0, text.length(), mCaption.getPaint(), width)
-                    .setIncludePad(mCaption.getIncludeFontPadding())
-                    .setLineSpacing(
-                            mCaption.getLineSpacingExtra(), mCaption.getLineSpacingMultiplier())
-                    .setBreakStrategy(mCaption.getBreakStrategy())
-                    .setHyphenationFrequency(mCaption.getHyphenationFrequency())
-                    .build();
-        }
-
-        /** Cuts the caption to {@code maxLines} ending in "… More" when it runs longer. */
-        private void collapseCaption(Layout layout, int maxLines) {
+        /**
+         * Cuts the caption to {@link #CAPTION_MAX_CHARS} ending in "… More" when it runs longer.
+         * The cut backs up to the last space when one is near, so a word isn't split, and never
+         * lands inside a surrogate pair (an emoji).
+         */
+        private void collapseCaption() {
             String text = mFullCaption;
-            if (layout.getLineCount() <= maxLines) return;
-            int lastLine = maxLines - 1;
-            int start = layout.getLineStart(lastLine);
-            int end = layout.getLineEnd(lastLine);
-            String more = mCaption.getResources().getString(R.string.browser_express_post_more);
-            TextPaint paint = mCaption.getPaint();
-            float available = layout.getWidth() - paint.measureText("… " + more);
-            CharSequence lastLineText =
-                    TextUtils.ellipsize(
-                            text.substring(start, end).trim(),
-                            paint,
-                            available,
-                            TextUtils.TruncateAt.END);
+            if (text.length() <= CAPTION_MAX_CHARS) return;
+            int cut = CAPTION_MAX_CHARS;
+            if (Character.isLowSurrogate(text.charAt(cut))) cut--;
+            int space = cut;
+            while (space > 0 && !Character.isWhitespace(text.charAt(space))) space--;
+            if (space > CAPTION_MAX_CHARS * 3 / 4) cut = space;
+            int keep = cut;
+            while (keep > 0 && Character.isWhitespace(text.charAt(keep - 1))) keep--;
 
+            String more = mCaption.getResources().getString(R.string.browser_express_post_more);
             SpannableStringBuilder collapsed =
-                    new SpannableStringBuilder(text, 0, start).append(lastLineText);
-            if (collapsed.length() == 0 || collapsed.charAt(collapsed.length() - 1) != '…') {
-                collapsed.append('…');
-            }
-            collapsed.append(' ');
+                    new SpannableStringBuilder(text, 0, keep).append("… ");
             int moreStart = collapsed.length();
             collapsed.append(more);
             collapsed.setSpan(
@@ -1612,24 +1670,19 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     collapsed.length(),
                     Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             mCaption.setText(collapsed);
-            mCaption.setMaxLines(maxLines);
             mCaptionTruncated = true;
         }
 
         private void expandCaption() {
             mCaptionTruncated = false;
             mCaptionExpanded = true;
-            mCaption.setMaxLines(Integer.MAX_VALUE);
             mCaption.setText(mFullCaption);
         }
 
         /** Cuts an opened caption back to its "… More" form. */
         private void foldCaption() {
             mCaptionExpanded = false;
-            int width = captionWidth();
-            Layout layout =
-                    width > 0 ? buildCaptionLayout(mFullCaption, width) : mCaption.getLayout();
-            if (layout != null) collapseCaption(layout, mCaptionMaxLines);
+            collapseCaption();
         }
 
         private void bindMedia(Post post, @Nullable String imageUrl, @Nullable String videoUrl) {
@@ -1979,8 +2032,13 @@ public class PostListAdapter extends RecyclerView.Adapter {
             // While the card says "12 new takes", a tap anywhere opens the stream at the first of
             // them, a video post's too, instead of the post's media or article.
             NewTakes newTakes = post.getNewTakes();
+            // The walkthrough's "Pick another post": the post the reader picks opens on its
+            // takes, where the walkthrough's video step runs.
+            boolean walkthroughPick = WalkthroughState.isPickingPost();
+            if (walkthroughPick) videoUrl = null;
             // A publisher's post may point straight at its article.
             if (newTakes == null
+                    && !walkthroughPick
                     && post.getSubPost() == null
                     && Boolean.TRUE.equals(post.getRedirect())) {
                 String url = urlOrNull(post.getUrl());
@@ -2017,6 +2075,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 applyNewTakes(null);
             }
             reportOpen(post, videoUrl != null ? FeedEvents.OPEN_VIDEO : FeedEvents.OPEN_COMMENTS);
+            if (walkthroughPick) WalkthroughState.onPostOpened("picked_post", post.getId());
             String username = sheetUsername(post);
             String caption = cardCaption(post);
             String avatarUrl = cardAvatarUrl(post);
@@ -2049,14 +2108,46 @@ public class PostListAdapter extends RecyclerView.Adapter {
         }
 
         private void showMenu(View anchor) {
+            final int share = 1;
+            final int notInterested = 2;
             PopupMenu menu = new PopupMenu(mCardContext, anchor);
-            menu.getMenu().add(0, 1, 0, R.string.browser_express_post_not_interested);
+            if (mPost != null && ShareLinks.forPost(mPost.getId()) != null) {
+                menu.getMenu().add(0, share, 0, R.string.browser_express_video_viewer_share);
+            }
+            menu.getMenu().add(0, notInterested, 1, R.string.browser_express_post_not_interested);
             menu.setOnMenuItemClickListener(
                     item -> {
-                        setHidden(true);
+                        if (item.getItemId() == share) {
+                            sharePost();
+                        } else {
+                            setHidden(true);
+                        }
                         return true;
                     });
             menu.show();
+        }
+
+        /**
+         * Shares the post's page on browser.express, which opens the post in the app for people
+         * who have it.
+         */
+        private void sharePost() {
+            Post post = mPost;
+            String link = post != null ? ShareLinks.forPost(post.getId()) : null;
+            if (link == null) return;
+            FeedEvents.recordShare(post.getId(), FeedEvents.SURFACE_FEED);
+            PostHogUtil.capture(
+                    PostHogEventKeys.POST_SHARED,
+                    "post_id",
+                    post.getId(),
+                    "surface",
+                    FeedEvents.SURFACE_FEED,
+                    "position",
+                    feedPosition());
+            Intent send = new Intent(Intent.ACTION_SEND);
+            send.setType("text/plain");
+            send.putExtra(Intent.EXTRA_TEXT, link);
+            mCardContext.startActivity(Intent.createChooser(send, null));
         }
 
         /**

@@ -51,6 +51,13 @@ public interface CommentActionHost {
     @Nullable
     String topicHashtag();
 
+    /**
+     * The post these comments are under, which a shared take's link names; null for a web page's
+     * comments, which have no shared-take page.
+     */
+    @Nullable
+    String sharePostId();
+
     FragmentManager getChildFragmentManager();
 
     boolean isAdded();

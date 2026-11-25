@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2026 The Browser Express Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<!-- The sign-up panel fades into the hero above it: clear at its top edge, 94% at 22dp, solid
+     from 40dp down. -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:height="40dp"
+        android:gravity="top|fill_horizontal">
+        <shape android:shape="rectangle">
+            <gradient
+                android:angle="270"
+                android:centerColor="@color/browser_express_ugc_signup_panel_fade"
+                android:centerY="0.55"
+                android:endColor="@color/browser_express_ugc_signup_bg"
+                android:startColor="@android:color/transparent" />
+        </shape>
+    </item>
+    <item android:top="40dp">
+        <color android:color="@color/browser_express_ugc_signup_bg" />
+    </item>
+</layer-list>

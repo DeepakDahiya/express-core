@@ -96,6 +96,7 @@ import android.text.style.AbsoluteSizeSpan;
 import android.text.style.ForegroundColorSpan;
 import android.widget.PopupMenu;
 import android.widget.SeekBar;
+import org.chromium.chrome.browser.browser_express_share.ShareLinks;
 import org.chromium.chrome.browser.ntp.PostListAdapter;
 import org.chromium.chrome.browser.util.TabUtils;
 
@@ -332,6 +333,11 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
         private boolean mHasVideo;
         private boolean mIsVideoInitialized;
+        /**
+         * The player has been asked to load. A reel page binds its player without loading it
+         * while another reel has the head start (GlobalVideoPlaybackManager#requestReelLoad).
+         */
+        private boolean mPlayerPrepared;
 
         /** Comment currently bound, so the player's size report can be attributed to it. */
         private Comment mBoundComment;
@@ -550,6 +556,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             if (muteButton != null) muteButton.setVisibility(View.GONE);
 
             if (player != null) {
+                GlobalVideoPlaybackManager.getInstance().finishReelLoad(this);
                 player.stop();
                 player.release();
                 player = null;
@@ -610,12 +617,13 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                             v -> openFullScreenViewer(mediaUri, mediaType));
                     // The card takes the design preset nearest the media's own shape (Figma
                     // "Express/Media": 16:9, 4:3 or 1:1) — the same one CommentRowMeasurer
-                    // measured the row with.
+                    // measured the row with. The video fits inside it whole, like the photo
+                    // does (fitCenter): never cropped to fill the preset, with the card's
+                    // background in any bars.
                     int[] ratio = comment.getInlineMediaRatio();
                     setAspectRatio(ratio[0], ratio[1]);
-                    commentVideo.setResizeMode(comment.hasCachedDimensions()
-                                    ? androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_ZOOM
-                                    : androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT);
+                    commentVideo.setResizeMode(
+                            androidx.media3.ui.AspectRatioFrameLayout.RESIZE_MODE_FIT);
                 }
                 bindMediaContent(mediaUri, mediaType);
             }
@@ -865,8 +873,23 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             }
         }
 
+        /**
+         * The link that shares this take: the post's /t page, on the take. Null for takes with no
+         * such page: a web page's, or YouTube's own.
+         */
+        private @Nullable String shareLink(Comment comment) {
+            String postId = comment.getPostParent();
+            // Replies record only their parent comment; they are under the post this sheet shows.
+            if (!ShareLinks.isId(postId) && mParentFragment != null) {
+                postId = mParentFragment.sharePostId();
+            }
+            return ShareLinks.forTake(postId, comment.getId());
+        }
+
         private void shareComment(Comment comment) {
                     if (activity == null) return;
+                    String link = shareLink(comment);
+                    if (link == null) return;
 
                     JSONObject payload = new JSONObject();
                     try {
@@ -876,8 +899,9 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     String accessToken = activity.getAccessToken();
                     sendEventToPostHog(PostHogEventKeys.COMMENT_REPLY_SHARE_CLICKED, accessToken, activity.getCurrentAppVersion(), payload);
 
-                    String link = "https://browser.express/view?id=" + comment.getId();
-                    String message = "People say the craziest stuff! 👀 Check this out 👇\n\n" + link + "\n\n" + "Dive in—it’s where everyone’s talking about everything, nonstop.";
+                    // One short line, then the link: chat apps build the preview card from the
+                    // page itself.
+                    String message = "People say the craziest stuff! 👀 Check this out 👇\n\n" + link;
 
                     Intent sharingIntent = new Intent(Intent.ACTION_SEND);
                     sharingIntent.setType("text/plain");
@@ -1056,6 +1080,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 mMoreButton.setOnClickListener(v -> showOverflowMenu(comment));
             }
             if (mShareButton != null) {
+                mShareButton.setVisibility(shareLink(comment) != null ? View.VISIBLE : View.GONE);
                 mShareButton.setOnClickListener(v -> shareComment(comment));
             }
         }
@@ -1183,7 +1208,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             if (mReplyButton.getVisibility() == View.VISIBLE) {
                 menu.getMenu().add(0, reply, 0, R.string.browser_express_comment_reply);
             }
-            if (mShareButton == null) {
+            if (mShareButton == null && shareLink(comment) != null) {
                 menu.getMenu().add(0, share, 1, R.string.browser_express_comment_menu_share);
             }
             if (comment.getContent() != null && !comment.getContent().trim().isEmpty()) {
@@ -1399,6 +1424,12 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
         @Override
         public void startPlayback() {
+            if (player != null && mIsReelMode
+                    && (!mPlayerPrepared || player.getPlaybackState() != Player.STATE_READY)) {
+                // The reader is on this reel now: it loads ahead of the pages beside it.
+                GlobalVideoPlaybackManager.getInstance().claimReelLoad(this);
+                preparePlayer();
+            }
             if (player != null) player.setPlayWhenReady(true);
             if (playPauseIcon != null) playPauseIcon.setVisibility(View.GONE);
             if (mIsReelMode) {
@@ -1526,17 +1557,20 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         private void initializePlayer(Uri videoUri) {
             if (mFastForward != null) mFastForward.cancel();
             if (player != null) {
+                GlobalVideoPlaybackManager.getInstance().finishReelLoad(this);
                 player.stop();
                 player.release();
             }
-            
+            mPlayerPrepared = false;
+
             // Reads through the shared media disk cache: a reel swiped back to, or an inline
             // card scrolled past twice, replays from local bytes instead of re-streaming from
-            // the origin.
+            // the origin. Starts as soon as half a second is in rather than ExoPlayer's 2.5s.
             player =
                     new ExoPlayer.Builder(context)
                             .setMediaSourceFactory(
                                     CommentMediaCache.mediaSourceFactory(context))
+                            .setLoadControl(CommentMediaCache.newFastStartLoadControl())
                             .build();
             commentVideo.setPlayer(player);
             commentVideo.setUseController(false);
@@ -1559,6 +1593,20 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     // The cached size the page was bound with is first-report-wins; the stream's
                     // own size has the last word on how the reel is framed.
                     if (mIsReelMode) applyReelResizeMode(width, height);
+                }
+
+                // Playable, or never going to be: the reels waiting behind this one may load.
+                @Override
+                public void onPlaybackStateChanged(int state) {
+                    if (state == Player.STATE_READY || state == Player.STATE_ENDED) {
+                        GlobalVideoPlaybackManager.getInstance().finishReelLoad(
+                                CommentHolder.this);
+                    }
+                }
+
+                @Override
+                public void onPlayerError(@NonNull androidx.media3.common.PlaybackException error) {
+                    GlobalVideoPlaybackManager.getInstance().finishReelLoad(CommentHolder.this);
                 }
             });
 
@@ -1601,9 +1649,23 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             }
             
             player.setMediaItem(mediaItem);
-            player.prepare();
+            // The reel the pager opens on loads first. The reels bound beside it, which are only
+            // preloading, wait until it can play instead of sharing the connection with it on the
+            // way to its first frame; the one the reader swipes to loads right away (see
+            // startPlayback). Inline cards load as they bind.
+            if (!mIsReelMode || GlobalVideoPlaybackManager.getInstance().requestReelLoad(
+                        this, this::preparePlayer)) {
+                preparePlayer();
+            }
 
             mIsVideoInitialized = true;
+        }
+
+        /** Starts the bound player loading, once. */
+        private void preparePlayer() {
+            if (player == null || mPlayerPrepared) return;
+            mPlayerPrepared = true;
+            player.prepare();
         }
 
         public void onViewRecycled() {
@@ -1616,11 +1678,14 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             if (mFastForward != null) mFastForward.cancel();
             releaseAudioPlayer();
 
+            // Whether it was loading ahead or waiting its turn, the reels behind it go on.
+            GlobalVideoPlaybackManager.getInstance().finishReelLoad(this);
             if (player != null) {
                 player.stop();
                 player.release();
                 player = null;
             }
+            mPlayerPrepared = false;
             if (commentImage != null && context != null) {
                 Glide.with(context).clear(commentImage);
             }

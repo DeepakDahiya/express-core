@@ -66,15 +66,17 @@
     <!-- Where the reader is in the stream ("38 / 214", the same numbers as the text pages'
          header). It fades in under the hashtag each time this page becomes the reader's page and
          fades out about 2.7s later (ReelStreamProgress; design_handoff_video_progress, option 1b).
-         It spans the title column, from the hashtag's start (16dp padding + 24dp arrow + 8dp gap)
-         to the header's end. Its top is kept 3dp under the hashtag at runtime. It is an overlay,
-         so the header never moves for it, and it takes no touches. -->
+         It spans the design's title column: from the hashtag's start (16dp padding + 24dp arrow +
+         8dp gap) to 8dp short of the folded "Add your take" circle (12dp slot margin + 4dp + 36dp
+         circle + 8dp). The pill keeps its label folded away while the row shows
+         (ReelTakeBubble). Its top is kept 3dp under the hashtag at runtime. It is an overlay, so
+         the header never moves for it, and it takes no touches. -->
     <org.chromium.chrome.browser.browser_express_comments.ReelStreamProgress
         android:id="@+id/reel_stream_progress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="48dp"
-        android:layout_marginEnd="170dp"
+        android:layout_marginEnd="60dp"
         android:alpha="0"
         android:importantForAccessibility="no" />
 
@@ -97,11 +99,12 @@
         android:importantForAccessibility="no"
         android:visibility="invisible" />
 
-    <!-- "Add your take" (ReelTakeBubble): a 36dp pill holding a plus in a white circle, 146dp
-         wide with its label on every third reel and folding to the circle 1.2s after that page
-         settles. The slot is the full pill plus 4dp all round, so the folded pill keeps a 44dp
-         target; the pill is drawn at the current width from the right, and only reel_take_hit,
-         which follows the pill's left edge, takes taps, leaving the rest to the video. -->
+    <!-- "Add your take" (ReelTakeBubble): a 36dp pill holding a plus in a white circle. On every
+         third reel it opens to 146dp with its label once the stream position has faded, and folds
+         back to the circle 1.2s later. The slot is the full pill plus 4dp all round, so the
+         folded pill keeps a 44dp target; the pill is drawn at the current width from the right,
+         and only reel_take_hit, which follows the pill's left edge, takes taps, leaving the rest
+         to the video. -->
     <FrameLayout
         android:id="@+id/reel_take_bubble"
         android:layout_width="154dp"

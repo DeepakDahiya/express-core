@@ -37,9 +37,9 @@ import java.util.List;
  * the optimistic upload states all behave here exactly as they do in the bottom sheet, with no
  * second copy of that logic to keep in step.
  *
- * <p>A text page whose successor is a reel also draws the sneak-peek strip along its bottom; the
- * packer has already reserved that band, so binding it is only a matter of sizing the views and
- * dropping in the frame. See {@link #bindNextReelPeek}.
+ * <p>A text page whose successor is a reel may also draw a sneak-peek strip along its bottom, in
+ * whatever room its comments left (the packer sizes it, up to 15% of the page), so binding it is
+ * only a matter of sizing the views and dropping in the frame. See {@link #bindNextReelPeek}.
  */
 public class CommentSlideAdapter extends RecyclerView.Adapter<CommentSlideAdapter.SlideHolder> {
     private static final int VIEW_TYPE_TEXT = 0;
@@ -80,6 +80,17 @@ public class CommentSlideAdapter extends RecyclerView.Adapter<CommentSlideAdapte
         mSlides.clear();
         if (slides != null) mSlides.addAll(slides);
         notifyDataSetChanged();
+    }
+
+    /**
+     * Adds pages after the last one, leaving the pages already up bound as they are: the opening
+     * reel keeps the player it is loading or playing while the pages behind it arrive.
+     */
+    public void appendSlides(List<CommentSlide> slides) {
+        if (slides == null || slides.isEmpty()) return;
+        int start = mSlides.size();
+        mSlides.addAll(slides);
+        notifyItemRangeInserted(start, slides.size());
     }
 
     /** Sets how far text pages start below the top, re-laying out the pages on screen. */
@@ -225,7 +236,7 @@ public class CommentSlideAdapter extends RecyclerView.Adapter<CommentSlideAdapte
      * Draws the top of the reel below into this page's bottom strip, or hides it when nothing is
      * coming.
      *
-     * <p>The strip is the band the packer kept free; the image inside is laid out at the height
+     * <p>The strip is the room the packer found under the rows; the image inside is laid out at the height
      * of a whole page and clipped to the strip, so the centre-crop lands exactly where the reel
      * page's zoomed video will. The frame arrives asynchronously and the page it was asked for
      * may have been recycled by then, which is what the holder's url tag guards.

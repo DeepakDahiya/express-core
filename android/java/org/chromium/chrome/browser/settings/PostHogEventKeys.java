@@ -60,6 +60,21 @@ public final class PostHogEventKeys {
         public static final String NEW_TAKES_TAPPED = "New Takes Tapped";
         /** take_id, position (1-based, in the stream), post_id: a NEW take's page came up. */
         public static final String NEW_TAKE_VIEWED = "New Take Viewed";
+
+        // First-launch walkthrough (design_handoff_walkthrough)
+        /** step: search, scroll, post or video. Each time a step's prompt or motion starts. */
+        public static final String WALKTHROUGH_STEP_SHOWN = "Walkthrough Step Shown";
+        /**
+         * step, action: what moved it on. search: reveal, skip, card or search_bar; post:
+         * dive_in, card, post, pick_another or picked_post (with post_id).
+         */
+        public static final String WALKTHROUGH_ACTION = "Walkthrough Action";
+        /** nudged: whether the swipe nudge had started before the reader's first swipe. */
+        public static final String WALKTHROUGH_COMPLETED = "Walkthrough Completed";
+        /** dismissed_by: got_it, swipe, timeout, rail or covered. */
+        public static final String WALKTHROUGH_BONUS_TIP_SHOWN = "Walkthrough Bonus Tip Shown";
+        public static final String WALKTHROUGH_BONUS_TIP_DISMISSED =
+                "Walkthrough Bonus Tip Dismissed";
         /** post_id, position: "Not interested". */
         public static final String POST_HIDDEN = "Post Hidden";
         public static final String POST_UNHIDDEN = "Post Unhidden";
@@ -90,6 +105,11 @@ public final class PostHogEventKeys {
         public static final String CLICKED_TO_VIEW_REPLIES = "Clicked to View Replies";
         public static final String CLICKED_TO_VIEW_REPLY2REPLY = "Clicked to View Reply2Reply";
         public static final String COMMENT_REPLY_SHARE_CLICKED = "Comment/Reply Share Clicked";
+        /**
+         * A share link opened in the app. via: app_link, in_app or install_referrer; post_id,
+         * take_id, by (the sharer); result: opened, take_gone, post_gone or failed.
+         */
+        public static final String SHARE_LINK_OPENED = "Share Link Opened";
         /** "Add your take" opened; source: text_box, mic, attach or take_button. */
         public static final String TAKE_COMPOSER_OPENED = "Take Composer Opened";
         /** A draft thrown away from the take sheet. */
@@ -146,6 +166,8 @@ public final class PostHogEventKeys {
         // user's own referral code — previously a +1 that /link clawed back.
         public static final String REFERRAL_SELF_REFERRAL_SKIPPED =
                 "referral_app_self_referral_skipped";
+        // Installed from a shared take's web page (install referrer source=share): post_id, source.
+        public static final String REFERRAL_SHARE_INSTALL = "referral_app_share_install";
 
         // Registration / phone-OTP journey. Funnel order: AUTH_SCREEN_VIEWED ->
         // OTP_REQUESTED -> OTP_VERIFY_SCREEN_VIEWED -> OTP_SUBMITTED ->

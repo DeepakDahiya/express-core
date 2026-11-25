@@ -87,7 +87,10 @@
             android:paddingBottom="14dp"
             android:visibility="gone" />
 
-        <!-- Photo or video, at the media's own aspect ratio (clamped in the adapter). -->
+        <!-- Photo or video, at the media's own aspect ratio (clamped in the adapter to between
+             4:5 portrait and 1.91:1 landscape). Media outside that range is shown whole, never
+             cropped or blown up: it fits inside, and the background fills the bars beside a tall
+             photo or above and below a wide one. -->
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/post_media"
             android:layout_width="match_parent"
@@ -111,7 +114,7 @@
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:importantForAccessibility="no"
-                android:scaleType="centerCrop"
+                android:scaleType="fitCenter"
                 android:visibility="gone"
                 app:layout_constraintBottom_toBottomOf="@id/post_media_ratio"
                 app:layout_constraintEnd_toEndOf="@id/post_media_ratio"
@@ -127,7 +130,7 @@
                 app:layout_constraintEnd_toEndOf="@id/post_media_ratio"
                 app:layout_constraintStart_toStartOf="@id/post_media_ratio"
                 app:layout_constraintTop_toTopOf="@id/post_media_ratio"
-                app:resize_mode="zoom"
+                app:resize_mode="fit"
                 app:shutter_background_color="@android:color/transparent"
                 app:surface_type="texture_view"
                 app:use_controller="false" />

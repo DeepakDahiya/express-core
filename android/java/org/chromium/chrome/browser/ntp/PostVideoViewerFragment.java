@@ -46,6 +46,7 @@ import org.chromium.chrome.browser.browser_express_comments.GlobalVideoPlaybackM
 import org.chromium.chrome.browser.browser_express_comments.HoldToFastForward;
 import org.chromium.chrome.browser.browser_express_comments.EdgeToEdgeUtil;
 import org.chromium.chrome.browser.browser_express_comments.ReactionMix;
+import org.chromium.chrome.browser.browser_express_share.ShareLinks;
 import org.chromium.chrome.browser.settings.PostHogEventKeys;
 import org.chromium.chrome.browser.settings.PostHogUtil;
 
@@ -707,7 +708,10 @@ public class PostVideoViewerFragment extends DialogFragment {
         menu.show();
     }
 
-    /** Shares the original post when there is one, else the video itself. */
+    /**
+     * Shares the post's page on browser.express (which opens the post in the app for people who
+     * have it), else the original source, else the video itself.
+     */
     private void share() {
         if (mPostId != null) {
             FeedEvents.recordShare(mPostId, FeedEvents.SURFACE_VIEWER);
@@ -718,9 +722,11 @@ public class PostVideoViewerFragment extends DialogFragment {
                     "surface",
                     FeedEvents.SURFACE_VIEWER);
         }
+        String link = ShareLinks.forPost(mPostId);
+        if (link == null) link = mSourceUrl != null ? mSourceUrl : mVideoUrl;
         Intent send = new Intent(Intent.ACTION_SEND);
         send.setType("text/plain");
-        send.putExtra(Intent.EXTRA_TEXT, mSourceUrl != null ? mSourceUrl : mVideoUrl);
+        send.putExtra(Intent.EXTRA_TEXT, link);
         startActivity(Intent.createChooser(send, null));
     }
 }

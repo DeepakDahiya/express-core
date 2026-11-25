@@ -134,8 +134,9 @@ public class CommentSlide {
 
     /**
      * The portrait-video comment on the page immediately after this one, or null when nothing
-     * is coming or the next page is not a reel. Present means this slide gives up its bottom
-     * {@link #getPeekHeightPx()} pixels to a preview of that video.
+     * is coming, the next page is not a reel, or this page's comments left no room to preview
+     * it. Present means this slide's bottom {@link #getPeekHeightPx()} pixels, which its rows
+     * don't reach, show a preview of that video.
      */
     public Comment getNextReelComment() {
         return mNextReelComment;
