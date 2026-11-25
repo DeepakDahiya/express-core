@@ -2,6 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import ExpressCore
 import AIChat
 import BraveCore
 import BraveNews
@@ -223,7 +224,8 @@ class SettingsViewController: TableViewController {
       displaySection,
       tabsSection,
       securitySection,
-      supportSection,
+      // Express Browser: Support's two rows open Brave's forum and Brave's App Store page;
+      // hidden until Express has its own (the App Store ID comes with the listing).
       aboutSection,
     ]
 
@@ -361,11 +363,11 @@ class SettingsViewController: TableViewController {
       header: .title(Strings.features),
       rows: [
         Row(
-          text: Strings.braveShieldsAndPrivacySettingsTitle,
+          text: "Privacy & Security",
           selection: { [unowned self] in
-            let controller = UIHostingController(
-              rootView: AdvancedShieldsSettingsView(
-                settings: AdvancedShieldsSettings(
+            // Express Browser: Privacy & Security (Android's screen) in place of Brave's,
+            // which stays one row away as "All Shields settings".
+            let shieldsSettings = AdvancedShieldsSettings(
                   profile: self.profile,
                   tabManager: self.tabManager,
                   feedDataSource: self.feedDataSource,
@@ -401,13 +403,16 @@ class SettingsViewController: TableViewController {
                     }
                   }
                 )
-              )
-            )
 
-            controller.rootView.openURLAction = { [unowned self] url in
-              self.settingsDelegate?.settingsOpenURLInNewTab(url)
-              self.dismiss(animated: true)
-            }
+            let controller = ExpressPrivacySettingsScreen.make(
+              settings: shieldsSettings,
+              profile: self.profile,
+              privateBrowsingManager: self.tabManager.privateBrowsingManager,
+              openURL: { [unowned self] url in
+                self.settingsDelegate?.settingsOpenURLInNewTab(url)
+                self.dismiss(animated: true)
+              }
+            )
 
             self.navigationController?.pushViewController(controller, animated: true)
           },
@@ -469,17 +474,7 @@ class SettingsViewController: TableViewController {
       section.rows.append(vpnSettingsRow)
     }
 
-    section.rows.append(
-      Row(
-        text: Strings.PlayList.playListTitle,
-        selection: { [unowned self] in
-          let playlistSettings = PlaylistSettingsViewController()
-          self.navigationController?.pushViewController(playlistSettings, animated: true)
-        },
-        image: UIImage(braveSystemNamed: "leo.product.playlist"),
-        accessory: .disclosureIndicator
-      )
-    )
+    // Express Browser hides Playlist settings, matching its Android app.
 
     if FeatureList.kBraveTranslateEnabled.enabled {
       section.rows.append(
@@ -515,38 +510,7 @@ class SettingsViewController: TableViewController {
           accessory: .disclosureIndicator,
           cellClass: MultilineValue1Cell.self
         ),
-        Row(
-          text: Strings.Sync.syncTitle,
-          selection: { [unowned self] in
-            if syncAPI.isInSyncGroup {
-              if Reachability.shared.status.connectionType == .offline {
-                self.present(SyncAlerts.noConnection, animated: true)
-                return
-              }
-
-              let syncSettingsViewController = SyncSettingsTableViewController(
-                braveCoreMain: braveCore,
-                windowProtection: windowProtection
-              )
-
-              self.navigationController?
-                .pushViewController(syncSettingsViewController, animated: true)
-            } else {
-              let syncWelcomeViewController = SyncWelcomeViewController(
-                braveCore: braveCore,
-                windowProtection: windowProtection
-              )
-
-              self.navigationController?.pushViewController(
-                syncWelcomeViewController,
-                animated: true
-              )
-            }
-          },
-          image: UIImage(braveSystemNamed: "leo.product.sync"),
-          accessory: .disclosureIndicator,
-          cellClass: MultilineValue1Cell.self
-        ),
+        // Express Browser hides Brave Sync, matching its Android app.
         .boolRow(
           title: Strings.bookmarksLastVisitedFolderTitle,
           option: Preferences.General.showLastVisitedBookmarksFolder,
@@ -739,18 +703,9 @@ class SettingsViewController: TableViewController {
       uuid: displaySectionUUID.uuidString
     )
 
-    display.rows.append(
-      .init(
-        text: Strings.Settings.mediaRootSetting,
-        selection: { [unowned self] in
-          let vc = UIHostingController(rootView: MediaSettingsView())
-          self.navigationController?.pushViewController(vc, animated: true)
-        },
-        image: UIImage(braveSystemNamed: "leo.media.player"),
-        accessory: .disclosureIndicator,
-        cellClass: MultilineValue1Cell.self
-      )
-    )
+    // Express Browser: no Media row, as on Android (`brave_main_preferences.xml` hides it).
+    // Background play and keeping YouTube in the browser are part of Express, so their
+    // switches (and Brave's YouTube quality and blocking options) stay at their defaults.
 
     let themeSubtitle = DefaultTheme(rawValue: Preferences.General.themeNormalMode.value)?
       .displayString
@@ -766,6 +721,13 @@ class SettingsViewController: TableViewController {
         options: DefaultTheme.normalThemesOptions,
         selectedOption: DefaultTheme(rawValue: Preferences.General.themeNormalMode.value),
         optionChanged: { [unowned self] _, option in
+          if Preferences.General.themeNormalMode.value != option.rawValue {
+            // Android's `Theme Changed`.
+            ExpressAnalytics.shared.capture(
+              "Theme Changed",
+              ["theme": option == .light ? "light" : (option == .dark ? "dark" : "system")]
+            )
+          }
           Preferences.General.themeNormalMode.value = option.rawValue
           self.dataSource.reloadCell(row: row, section: display, displayText: option.displayString)
         }
@@ -794,42 +756,9 @@ class SettingsViewController: TableViewController {
       self.navigationController?.pushViewController(optionsViewController, animated: true)
     }
     display.rows.append(row)
-    display.rows.append(
-      Row(
-        text: Strings.AltAppIcon.changeAppIcon,
-        selection: { [unowned self] in
-          let controller = UIHostingController(rootView: AltIconsView(model: altIconsModel))
-          controller.title = Strings.AltAppIcon.changeAppIcon
-          navigationController?.pushViewController(controller, animated: true)
-        },
-        image: selectedAppIcon,
-        accessory: .disclosureIndicator,
-        cellClass: AppIconCell.self,
-        uuid: appIconRowUUID.uuidString
-      )
-    )
-    display.rows.append(
-      Row(
-        text: Strings.NTP.settingsTitle,
-        selection: { [unowned self] in
-          self.navigationController?.pushViewController(
-            NTPTableViewController(
-              rewards: rewards,
-              linkTapped: { [unowned self] request in
-                self.tabManager.addTabAndSelect(
-                  request,
-                  isPrivate: false
-                )
-              }
-            ),
-            animated: true
-          )
-        },
-        image: UIImage(braveSystemNamed: "leo.window.tab-new"),
-        accessory: .disclosureIndicator,
-        cellClass: MultilineValue1Cell.self
-      )
-    )
+    // Express Browser has no alternate app icons yet (Brave's are Brave-branded), so the picker is hidden.
+    // Express Browser: no New Tab Page row. The Express new tab page is the header and feed; the
+    // one option left there (Background) would only put Brave's wallpapers behind it.
 
     // We do NOT persistently save page-zoom settings in Private Browsing
     if !tabManager.privateBrowsingManager.isPrivateBrowsing {
@@ -999,22 +928,8 @@ class SettingsViewController: TableViewController {
           cellClass: MultilineSubtitleCell.self,
           uuid: Preferences.Privacy.lockWithPasscode.key
         ),
-        Row(
-          text: Strings.Login.loginListNavigationTitle,
-          selection: { [unowned self] in
-            let loginsPasswordsViewController = LoginListViewController(
-              passwordAPI: self.passwordAPI,
-              windowProtection: self.windowProtection
-            )
-            loginsPasswordsViewController.settingsDelegate = self.settingsDelegate
-            self.navigationController?.pushViewController(
-              loginsPasswordsViewController,
-              animated: true
-            )
-          },
-          image: UIImage(braveSystemNamed: "leo.outside"),
-          accessory: .disclosureIndicator
-        ),
+        // Express Browser: no "Logins & Passwords" row, as on Android
+        // (`BraveMainPreferencesBase` removes its Passwords row).
       ]
     )
   }()
@@ -1065,8 +980,8 @@ class SettingsViewController: TableViewController {
         UITapGestureRecognizer(target: self, action: #selector(tappedAboutHeader))
       )
     }
-    let coreVersion =
-      "BraveCore \(BraveCoreVersionInfo.braveCoreVersion) (\(BraveCoreVersionInfo.chromiumVersion))"
+    // Express Browser shows only the Chromium version, not BraveCore's.
+    let coreVersion = "Chromium \(BraveCoreVersionInfo.chromiumVersion)"
     return Static.Section(
       header: .autoLayoutView(titleLabel),
       rows: [
@@ -1122,22 +1037,8 @@ class SettingsViewController: TableViewController {
           },
           cellClass: MultilineValue1Cell.self
         ),
-        Row(
-          text: Strings.privacyPolicy,
-          selection: { [unowned self] in
-            settingsDelegate?.settingsOpenURLInNewTab(.brave.privacy)
-          },
-          accessory: .disclosureIndicator,
-          cellClass: MultilineValue1Cell.self
-        ),
-        Row(
-          text: Strings.termsOfUse,
-          selection: { [unowned self] in
-            settingsDelegate?.settingsOpenURLInNewTab(.brave.termsOfUse)
-          },
-          accessory: .disclosureIndicator,
-          cellClass: MultilineValue1Cell.self
-        ),
+        // Express Browser: Privacy Policy and Terms of Use opened brave.com pages; hidden until
+        // Express has its own privacy and terms pages, then they come back here.
         Row(
           text: Strings.settingsLicenses,
           selection: { [unowned self] in

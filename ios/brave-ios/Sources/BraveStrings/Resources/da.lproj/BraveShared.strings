@@ -2,7 +2,7 @@
 "About" = "Om";
 
 /* The title of the screen explaining Brave Shields */
-"AboutBraveShields" = "Om Brave Shields ";
+"AboutBraveShields" = "Om Shields ";
 
 /* The body of the screen explaining Brave Shields */
 "AboutBraveShieldsBody" = "Websteder indeholder ofte cookies og scripts, som forsøger at identificere dig og din enhed. De ønsker at finde ud af, hvem du er og følge dig på tværs af internettet – dvs. spore, hvad du laver på hvert websted.\n\nBrave blokerer disse ting, så du kan browse uden at blive fulgt.";
@@ -11,7 +11,7 @@
 "AccessPhotoDeniedAlertMessage" = "Dette giver dig mulighed for at gemme billedet på din kamerarulle.";
 
 /* See http://mzl.la/1G7uHo7 */
-"AccessPhotoDeniedAlertTitle" = "Brave vil gerne have adgang til dine billeder";
+"AccessPhotoDeniedAlertTitle" = "Express Browser vil gerne have adgang til dine billeder";
 
 /* Label to display in the Discoverability overlay for keyboard shortcuts */
 "addBookmarkTitle" = "Tilføj bogmærke";
@@ -44,7 +44,7 @@
 "AlwaysShow" = "Til";
 
 /* Touch ID or PIN entry prompt subtitle when accessing Brave with the Browser Lock feature enabled */
-"AuthenticationLoginsTouchReason" = "Dette autentificerer din adgang til Brave";
+"AuthenticationLoginsTouchReason" = "Dette autentificerer din adgang til Express Browser";
 
 /* Label for Cancel button */
 "AuthPromptAlertCancelButtonTitle" = "Annuller";
@@ -176,7 +176,7 @@
 "BraveShieldsAdvancedControls" = "Avancerede kontroller ";
 
 /* No comment provided by engineer. */
-"BraveShieldsAndPrivacy" = "Brave Shields og privatliv";
+"BraveShieldsAndPrivacy" = "Shields og privatliv";
 
 /* No comment provided by engineer. */
 "BraveShieldsAndPrivacyTitle" = "Shields og privatliv";
@@ -203,7 +203,7 @@
 "BraveShieldsSiteBroken" = "Hvis dette websted ser ud til at være ødelagt, så prøv at slå Shields fra";
 
 /* Context: 'Brave Shields Up' or 'Brave Shields Down' */
-"BraveShieldsStatusTitle" = "Brave-Skjolde";
+"BraveShieldsStatusTitle" = "Skjolde";
 
 /* Context: The 'Down' in 'Brave Shields Down' */
 "BraveShieldsStatusValueDown" = "Nede";
@@ -212,7 +212,7 @@
 "BraveShieldsStatusValueUp" = "Op";
 
 /* The accessibility hint spoken when focused on the main shields toggle */
-"BraveShieldsToggleHint" = "Dobbelttryk for at skifte til Brave Shields";
+"BraveShieldsToggleHint" = "Dobbelttryk for at skifte til Shields";
 
 /* The name of the feature */
 "bravetalk.braveTalkTitle" = "Brave Talk";
@@ -227,13 +227,13 @@
 "BraveTranslate.searchInputTitle" = "Søg";
 
 /* This text is for the settings menu for all Brave-Translate options. */
-"BraveTranslate.settingsMenuTitle" = "Brave Translate";
+"BraveTranslate.settingsMenuTitle" = "Translate";
 
 /* This text is for the translate settings screen. It's the title of the settings menu. */
-"BraveTranslate.settingsScreenTitle" = "Brave Translate";
+"BraveTranslate.settingsScreenTitle" = "Translate";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
-"BraveTranslate.settingsTranslateEnabledOptionDescription" = "Når Brave Translate er aktiveret, registrerer den automatisk din sides aktuelle sprog og viser en oversættelsesknap i URL-linjen.";
+"BraveTranslate.settingsTranslateEnabledOptionDescription" = "Når funktionen er aktiveret, registrerer Express Browser automatisk din sides aktuelle sprog og viser en oversættelsesknap i URL-linjen.";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
 "BraveTranslate.settingsTranslateEnabledOptionTitle" = "Oversættelse er slået til";
@@ -248,7 +248,7 @@
 "BrowserLock" = "Browserlås";
 
 /* Description for setting to enable the browser lock privacy feature */
-"BrowserLockDescription" = "Lås Brave op med Touch ID, Face ID eller systemadgangskode.";
+"BrowserLockDescription" = "Lås Express Browser op med Touch ID, Face ID eller systemadgangskode.";
 
 /* Settings item for clearing browsing history */
 "BrowsingHistory" = "Browserhistorik";
@@ -263,13 +263,13 @@
 "callout.bottomBarCalloutDescription" = "Flyt adresselinjen, faner, bogmærker og andre værktøjer til bunden af browseren.";
 
 /* Title for Bottom Bar Callout View */
-"callout.bottomBarCalloutTitle" = "Tilpas bjælken Brave-faner";
+"callout.bottomBarCalloutTitle" = "Tilpas bjælken Express Browser-faner";
 
 /* Description - Description used for main button in Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutButtonDescription" = "Indstil Brave som standardbrowser?";
+"callout.defaultBrowserCalloutButtonDescription" = "Indstil Express Browser som standardbrowser?";
 
 /* Subtitle - Description for Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutDescription" = "Med Brave som din standardbrowser bliver alle links, du åbner, åbnet med  Braves privatlivsbeskyttelse.";
+"callout.defaultBrowserCalloutDescription" = "Med Express Browser som din standardbrowser bliver alle links, du åbner, åbnet med  Express Browsers privatlivsbeskyttelse.";
 
 /* Title for main button in Default Browser Full Screen Callout */
 "callout.defaultBrowserCalloutPrimaryButtonTitle" = "Sæt standard";
@@ -596,25 +596,25 @@
 "defaultBrowserCallout.introOpenSettingsButtonText" = "Åbn Indstillinger";
 
 /* Primary text on default browser popup screen */
-"defaultBrowserCallout.introPrimaryText" = "Åbn alle links med Brave for at beskytte dine data";
+"defaultBrowserCallout.introPrimaryText" = "Åbn alle links med Express Browser for at beskytte dine data";
 
 /* Secondary text on default browser popup. */
-"defaultBrowserCallout.introSecondaryText" = "Brave Shields blokerer trackere og annoncer, gemmer data og sparer dig tid på hver eneste hjemmeside, du besøger";
+"defaultBrowserCallout.introSecondaryText" = "Shields blokerer trackere og annoncer, gemmer data og sparer dig tid på hver eneste hjemmeside, du besøger";
 
 /* Tertiary text on default browser popup screen */
-"defaultBrowserCallout.introTertiaryText" = "Åbn Indstillinger, tryk på Standardbrowserapp, og vælg Brave.";
+"defaultBrowserCallout.introTertiaryText" = "Åbn Indstillinger, tryk på Standardbrowserapp, og vælg Express Browser.";
 
 /* Notification body to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationBody" = "Angiv Brave som din standardbrowser";
+"defaultBrowserCallout.notificationBody" = "Angiv Express Browser som din standardbrowser";
 
 /* Notification title to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationTitle" = "Få Brave-beskyttelse på alle links";
+"defaultBrowserCallout.notificationTitle" = "Få Express Browser-beskyttelse på alle links";
 
 /* No comment provided by engineer. */
 "defaultBrowserCalloutCloseAccesabilityLabel" = "Luk opfordring til standardbrowser";
 
 /* Name for default Brave theme. */
-"defaultThemeName" = "Brave standard";
+"defaultThemeName" = "Express Browser standard";
 
 /* No comment provided by engineer. */
 "Delete" = "Slet";
@@ -719,7 +719,7 @@
 "ErrorPageReloadButtonTitle" = "Genindlæs";
 
 /* Additional warning text when clicking the Advanced button on error pages. %@ is a placeholder, do not localize it. Do not localize <br />. */
-"ErrorPagesAdvancedErrorPinningDetails" = "%1$@ bruger normalt kryptering til at beskytte dine oplysninger. Da Brave forsøgte at oprette forbindelse til %2$@ denne gang, sendte hjemmesiden usædvanlige og forkerte legitimationsoplysninger tilbage. Dette kan ske, når en angriber forsøger at foregive at være %3$@, eller en wi-fi-loginskærm har afbrudt forbindelsen. Dine oplysninger er stadig sikre, fordi Brave stoppede forbindelsen, før nogen data blev udvekslet.<br />Du kan ikke besøge %4$@ lige nu, fordi webstedet bruger certifikatfastgørelse. Netværksfejl og angreb er normalt midlertidige, så denne side vil sandsynligvis fungere senere.";
+"ErrorPagesAdvancedErrorPinningDetails" = "%1$@ bruger normalt kryptering til at beskytte dine oplysninger. Da Express Browser forsøgte at oprette forbindelse til %2$@ denne gang, sendte hjemmesiden usædvanlige og forkerte legitimationsoplysninger tilbage. Dette kan ske, når en angriber forsøger at foregive at være %3$@, eller en wi-fi-loginskærm har afbrudt forbindelsen. Dine oplysninger er stadig sikre, fordi Express Browser stoppede forbindelsen, før nogen data blev udvekslet.<br />Du kan ikke besøge %4$@ lige nu, fordi webstedet bruger certifikatfastgørelse. Netværksfejl og angreb er normalt midlertidige, så denne side vil sandsynligvis fungere senere.";
 
 /* Additional warning text when clicking the Advanced button on error pages */
 "ErrorPagesAdvancedWarningDetails" = "Denne server kunne ikke bevise, at den er %@. Din enheds operativsystem har ikke tillid til dens sikkerhedscertifikat.. Dette kan være forårsaget af en fejlkonfiguration eller en hacker, der forsøger at opsnappe din forbindelse.";
@@ -759,6 +759,39 @@
 
 /* Button label to temporarily continue to the site from the certificate error page */
 "ErrorPagesProceedAnywayButton" = "Fortsæt til %@ (usikker)";
+
+/* Link on the private new tab page to a page about private mode. */
+"expressPrivateNTP.learnMore" = "Flere oplysninger";
+
+/* Bullet point: data that private mode doesn't save. Data that websites save on the device, such as sign-in state. */
+"expressPrivateNTP.notSavedCookies" = "Cookies og websitedata";
+
+/* Bullet point: data that private mode doesn't save. Names, addresses, passwords etc. that people enter into forms on the web. */
+"expressPrivateNTP.notSavedForms" = "Oplysninger, der er angivet i formularer";
+
+/* Introduces a bulleted list of data that private mode doesn't save. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.notSavedHeader" = "Express Browser <em>gemmer ikke</em>:";
+
+/* Bullet point: data that private mode doesn't save. 'Browsing history' is the history of visited websites. */
+"expressPrivateNTP.notSavedHistory" = "Din browserhistorik";
+
+/* Subtitle of the private new tab page, under its title. */
+"expressPrivateNTP.subtitle" = "Andre, der bruger denne enhed, kan ikke se din aktivitet, så du kan bruge nettet på en mere privat måde. Dette ændrer ikke på, hvordan data indsamles af websites, du besøger, og de tjenester, de bruger, herunder Express Browser. Downloads og bogmærker gemmes stadig.";
+
+/* Title of the private new tab page. Private mode hides your browsing from other people using the same device; it does not make you anonymous. */
+"expressPrivateNTP.title" = "Du er nu i privat tilstand";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleEmployer" = "Din arbejdsgiver eller skole";
+
+/* Introduces a bulleted list of who might still see what the user does in private mode. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.visibleHeader" = "Din aktivitet <em>er muligvis stadig synlig</em> for:";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleProvider" = "Din internetudbyder";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleWebsites" = "Websites, du besøger";
 
 /* %@ will launch an external application */
 "ExternalAppURLAlertMessage" = "%@ starter en ekstern applikation";
@@ -1187,13 +1220,13 @@
 "OBSearchEngineDetail" = "Vælg din standardsøgemaskine";
 
 /* Title for search engine onboarding screen */
-"OBSearchEngineTitle" = "Velkommen til Brave Browser";
+"OBSearchEngineTitle" = "Velkommen til Express Browser";
 
 /* Detail text for shields onboarding screen */
 "OBShieldsDetail" = "Bloker privatlivsinvaderende trackere, så du kan browse uden at blive fulgt rundt på nettet";
 
 /* Title for shields onboarding screen */
-"OBShieldsTitle" = "Brave-Skjolde";
+"OBShieldsTitle" = "Skjolde";
 
 /* Button to show the Brave Rewards Ads. */
 "OBShowMeButton" = "Vis mig";
@@ -1205,10 +1238,10 @@
 "onboarding.blockedAdsOnboardingBigTechInformationText" = "%1$@ og %2$lld andre annoncer og trackere blokeret";
 
 /* The footnote indicating what Brave shields is blocking */
-"onboarding.blockedAdsOnboardingFootnoteText" = "Med Shields kan du se alt det skadelige fra hver eneste side, som Brave har blokeret.";
+"onboarding.blockedAdsOnboardingFootnoteText" = "Med Shields kan du se alt det skadelige fra hver eneste side, som Express Browser har blokeret.";
 
 /* The text describing user where they should press in order to open Shield panel */
-"onboarding.blockedAdsOnboardingInstructionsText" = "Klik for at se Brave Shields";
+"onboarding.blockedAdsOnboardingInstructionsText" = "Klik for at se Shields";
 
 /* The description text shown when there is no big tech tracker among trackers. Example usage: 31 Ads & trackers blocked. The number here is presented separately so it is not in translation. */
 "onboarding.blockedAdsOnboardingNoBigTechInformationText" = "Annoncer & trackere blokeret";
@@ -1232,13 +1265,13 @@
 "onboarding.ntpOnboardingPopOverTrackerDescription" = "Ved at blokere trackere og annoncer bruger hjemmesider mindre data og indlæses meget hurtigere.";
 
 /* Description for the Omnibox (URL Bar) pop-over that describes faster load times. */
-"onboarding.omniboxOnboardingPopOverDescription" = "Se Brave-forskellen:\nIngen annoncer. Ingen trackere. Langt hurtigere sideindlæsning.";
+"onboarding.omniboxOnboardingPopOverDescription" = "Se Express Browser-forskellen:\nIngen annoncer. Ingen trackere. Langt hurtigere sideindlæsning.";
 
 /* Title for the Omnibox (URL Bar) pop-over that describes faster load times. */
 "onboarding.omniboxOnboardingPopOverTitle" = "Indtast en websides navn eller URL";
 
 /* Title for Welcome Screen in Onboarding */
-"onboarding.welcomeScreenTitle" = "Velkommen til Brave";
+"onboarding.welcomeScreenTitle" = "Velkommen til Express Browser";
 
 /* Continue button to navigate to next onboarding screen. */
 "OnboardingContinueButton" = "Fortsæt";
@@ -1280,7 +1313,7 @@
 "OpenMobileConfigurationAlertTitle" = "Tilgængelig konfigurationsprofil";
 
 /* Context menu option for opening a link in a new private tab */
-"OpenNewPrivateTabButtonTitle" = "Åbn i ny privat fane";
+"OpenNewPrivateTabButtonTitle" = "Åbn i Privat fane";
 
 /* Context menu item for opening a link in a new tab */
 "OpenNewTabButtonTitle" = "Åbn i ny fane";
@@ -1487,7 +1520,7 @@
 "PersistentPrivateBrowsing" = "Vedvarende privat browsing";
 
 /* Persistent private browsing alert message to existing users */
-"PersistentPrivateBrowsingAlertMessage" = "Tillader Brave at gendanne private browsing-faner, selvom du lukker/genåbner appen";
+"PersistentPrivateBrowsingAlertMessage" = "Tillader Express Browser at gendanne private browsing-faner, selvom du lukker/genåbner appen";
 
 /* Persistent private browsing alert title to existing users */
 "PersistentPrivateBrowsingAlertTitle" = "Gendan private faner";
@@ -1931,7 +1964,7 @@
 "privacyHub.lastWeekHeader" = "Sidste uge";
 
 /* Do NOT localize asterisk('*') characters, they are used to make the text bold in the app. It says which tracker was blocked on how many websites, example usage: 'Google Analytics was blocked by Brave Shields on 42 sites' */
-"privacyHub.mostFrequentTrackerAndAdBody" = "**%1$@** blev blokeret af Brave Shields på **%2$lld** websteder";
+"privacyHub.mostFrequentTrackerAndAdBody" = "**%1$@** blev blokeret af Shields på **%2$lld** websteder";
 
 /* Title under which we display a tracker which was most frequently detected by our ad blocking mechanism. */
 "privacyHub.mostFrequentTrackerAndAdTitle" = "Hyppigste tracker og annonce";
@@ -1949,7 +1982,7 @@
 "privacyHub.notificationCalloutButtonText" = "Slå notifikationer fra";
 
 /* Message of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
-"privacyHub.notificationMessage" = "En opsummering af, hvordan Brave beskyttede dig online i denne uge.";
+"privacyHub.notificationMessage" = "En opsummering af, hvordan Express Browser beskyttede dig online i denne uge.";
 
 /* Title of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
 "privacyHub.notificationTitle" = "Ugentlig privatlivsrapport";
@@ -2039,10 +2072,10 @@
 "PrivateBrowsingOnlyWarning" = "Tilstanden Kun privat browsing lukker alle dine nuværende faner og logger dig ud af alle websteder.";
 
 /* Private tab details */
-"PrivateTabBody" = "Private faner gemmes ikke i Brave, men de gør dig ikke anonym online. Sider, du besøger i en privat fane, vises ikke i din historik, og deres cookies forsvinder altid, når du lukker dem - der vil ikke være noget spor af dem tilbage i Brave. Downloads vil dog blive gemt.\nDin mobiloperatør (eller ejeren af det wi-fi-netværk eller den VPN, du er forbundet til) kan se, hvilke sider du besøger, og disse sider vil have adgang til din offentlige IP-adresse, selv i private faner.";
+"PrivateTabBody" = "Private faner gemmes ikke i Express Browser, men de gør dig ikke anonym online. Sider, du besøger i en privat fane, vises ikke i din historik, og deres cookies forsvinder altid, når du lukker dem - der vil ikke være noget spor af dem tilbage i Express Browser. Downloads vil dog blive gemt.\nDin mobiloperatør (eller ejeren af det wi-fi-netværk eller den VPN, du er forbundet til) kan se, hvilke sider du besøger, og disse sider vil have adgang til din offentlige IP-adresse, selv i private faner.";
 
 /* Private tab detail text */
-"PrivateTabDetails" = "Brug af Private faner ændrer kun, hvad Brave gør på din enhed. Det ændrer ikke andres adfærd.\n\nWebsteder har altid adgang din IP-adresse, når du besøger dem. Ud fra den kan de ofte gætte, nogenlunde hvor du befinder dig - typisk din by. Nogle gange kan det gæt på din placering være meget mere specifikt. Websteder ved også alt, hvad du specifikt fortæller dem, såsom søgetermer. Hvis du logger ind på et websted, ved de, at du er ejer af den konto. Du vil stadig blive logget ud, når du lukker de private faner, fordi Brave sletter den cookie, som bevarer dig logget ind.\n\nDen, der forbinder dig til internettet (din internetudbyder), kan se al din netværksaktivitet. Ofte er det din mobiloperatør. Hvis du er forbundet til et wi-fi-netværk, er det ejeren af netværket, og hvis du bruger en VPN, er det den, der driver VPN'en. Din internetudbyder kan se, hvilke sider du besøger, når du besøger dem. Hvis disse sider bruger HTTPS, kan de allerhøjest lave et kvalificeret gæt på, hvad du laver på disse websteder. Men hvis en side kun bruger HTTP, kan din internetudbyder se alt: dine søgetermer, hvilke sider du læser, og hvilke links du følger.\n\nHvis en arbejdsgiver administrerer din enhed, kan de muligvis også holde øje med, hvad du gør med den. Brug af private faner vil sandsynligvis ikke forhindre dem i at vide, hvilke sider du har besøgt. En anden person med adgang til din enhed kan også have installeret software, der overvåger din aktivitet, og Private faner vil heller ikke beskytte dig mod dette.";
+"PrivateTabDetails" = "Brug af Private faner ændrer kun, hvad Express Browser gør på din enhed. Det ændrer ikke andres adfærd.\n\nWebsteder har altid adgang din IP-adresse, når du besøger dem. Ud fra den kan de ofte gætte, nogenlunde hvor du befinder dig - typisk din by. Nogle gange kan det gæt på din placering være meget mere specifikt. Websteder ved også alt, hvad du specifikt fortæller dem, såsom søgetermer. Hvis du logger ind på et websted, ved de, at du er ejer af den konto. Du vil stadig blive logget ud, når du lukker de private faner, fordi Express Browser sletter den cookie, som bevarer dig logget ind.\n\nDen, der forbinder dig til internettet (din internetudbyder), kan se al din netværksaktivitet. Ofte er det din mobiloperatør. Hvis du er forbundet til et wi-fi-netværk, er det ejeren af netværket, og hvis du bruger en VPN, er det den, der driver VPN'en. Din internetudbyder kan se, hvilke sider du besøger, når du besøger dem. Hvis disse sider bruger HTTPS, kan de allerhøjest lave et kvalificeret gæt på, hvad du laver på disse websteder. Men hvis en side kun bruger HTTP, kan din internetudbyder se alt: dine søgetermer, hvilke sider du læser, og hvilke links du følger.\n\nHvis en arbejdsgiver administrerer din enhed, kan de muligvis også holde øje med, hvad du gør med den. Brug af private faner vil sandsynligvis ikke forhindre dem i at vide, hvilke sider du har besøgt. En anden person med adgang til din enhed kan også have installeret software, der overvåger din aktivitet, og Private faner vil heller ikke beskytte dig mod dette.";
 
 /* Private tab information link */
 "PrivateTabLink" = "Læs mere om Private faner.";
@@ -2054,7 +2087,7 @@
 "QuickSearchEngines" = "Kviksøgemaskiner";
 
 /* Open the App Store to rate Brave. */
-"RateBrave" = "Bedøm Brave ";
+"RateBrave" = "Bedøm Express Browser ";
 
 /* Accessibility label for button increasing font size in display settings of reader mode */
 "ReaderModeBiggerFontButtonAccessibilityLabel" = "Gør teksten større";
@@ -2243,10 +2276,10 @@
 "RestoreTabNegativeButtonTitle" = "Nej";
 
 /* Restore Tabs Prompt Description */
-"RestoreTabOnCrashAlertMessage" = "Desværre er Brave gået ned eller har ikke lukket ordentligt.\nVil du gendanne dine faner?";
+"RestoreTabOnCrashAlertMessage" = "Desværre er Express Browser gået ned eller har ikke lukket ordentligt.\nVil du gendanne dine faner?";
 
 /* Restore Tabs Prompt Title */
-"RestoreTabOnCrashAlertTitle" = "Brave lukkede uventet.";
+"RestoreTabOnCrashAlertTitle" = "Express Browser lukkede uventet.";
 
 /* Body for Brave Talk rewards opt-in screen */
 "rewards.braveTalkRewardsOptInBody" = "Med Brave Rewards kan du se annoncer, der beskytter privatlivets fred, fra Brave Ads-netværket. Ingen trackere. Ingen opbremsninger. Og dine data forbliver fuldstændig sikre.";
@@ -2573,7 +2606,7 @@
 "searchSuggestionsSubtitle" = "Vil du gerne aktivere søgeforslag?";
 
 /* Title of an action that allows user to perform a one-click web search for selected text */
-"SearchWithBrave" = "Søg med Brave";
+"SearchWithBrave" = "Søg med Express Browser";
 
 /* Settings security section title */
 "Security" = "Sikkerhed";
@@ -2582,16 +2615,16 @@
 "sendButtonTitle" = "Send";
 
 /* Message displayed in the crash dialog above the buttons used to select when sending reports */
-"SendCrashReportAlertMessage" = "Send en nedbrudsrapport, så Brave kan løse problemet?";
+"SendCrashReportAlertMessage" = "Send en nedbrudsrapport, så Express Browser kan løse problemet?";
 
 /* Title for prompt displayed to user after the app crashes */
-"SendCrashReportAlertTitle" = "Ups! Brave gik ned";
+"SendCrashReportAlertTitle" = "Ups! Express Browser gik ned";
 
 /* Used as a button label for crash dialog prompt */
 "SendReportButtonTitle" = "Send rapport";
 
 /* No comment provided by engineer. */
-"setDefaultBrowserCalloutTitle" = "Brave kan nu indstilles som din standardbrowser i iOS. Tryk her for at åbne indstillinger.";
+"setDefaultBrowserCalloutTitle" = "Express Browser kan nu indstilles som din standardbrowser i iOS. Tryk her for at åbne indstillinger.";
 
 /* Settings item to set the Brave as a default browser on the iOS device. */
 "setDefaultBrowserSettingsCell" = "Indstil som standardbrowser";
@@ -2615,7 +2648,7 @@
 "settings.autocloseTabsSetting" = "Luk faner";
 
 /* Description of autoclose tabs feature. */
-"settings.autocloseTabsSettingFooter" = "Tillad, at Brave automatisk lukker faner, der ikke er blevet vist for nylig.";
+"settings.autocloseTabsSettingFooter" = "Tillad, at Express Browser automatisk lukker faner, der ikke er blevet vist for nylig.";
 
 /* Label for the navigation link to quality settings view */
 "settings.highestQualityPlayback" = "Afspilning i højeste kvalitet";
@@ -2630,7 +2663,7 @@
 "settings.media.rootSetting" = "Medier";
 
 /* A toggle label which lets the user always open YouTube urls in Brave */
-"settings.openYouTubeInBrave" = "Åbn YouTube-links i Brave";
+"settings.openYouTubeInBrave" = "Åbn YouTube-links i Express Browser";
 
 /* No comment provided by engineer. */
 "settings.privacy.screenTimeSetting" = "Aktiver skærmtid";
@@ -2705,7 +2738,7 @@
 "shieldEducation.shareTheNewsTitle" = "Del nyheden";
 
 /* Subtitle for Shield Education Tracker Ad Warning */
-"shieldEducation.trackerAdWarningSubTitle" = "Brave Shields har netop beskyttet dit online privatliv.";
+"shieldEducation.trackerAdWarningSubTitle" = "Shields har netop beskyttet dit online privatliv.";
 
 /* Subtitle for Shield Education Tracker Count Share */
 "shieldEducation.trackerCountShareSubtitle" = "Tillykke. Du er ret speciel.";
@@ -2720,13 +2753,13 @@
 "shieldEducation.videoAdBlockTitle" = "Annoncer blokeres, mens du ser videoer på denne hjemmeside.";
 
 /* Section title for adbblock, tracking protection, HTTPS-E, and cookies */
-"ShieldsDefaults" = "Globale standarder for Brave Shields";
+"ShieldsDefaults" = "Globale standarder for Shields";
 
 /* Section footer for global shields defaults */
 "ShieldsDefaultsFooter" = "Her er Shields' standardindstillinger til nye websider. Hvis du ændrer dem, vil det ikke få indflydelse på dine eksisterende indstillinger for specifikke sider.";
 
 /* No comment provided by engineer. */
-"ShieldsDownDisclaimer" = "Du ser denne side uden Braves privatlivsbeskyttelse. Fungerer den ikke korrekt med Shields slået til? ";
+"ShieldsDownDisclaimer" = "Du ser denne side uden Express Browsers privatlivsbeskyttelse. Fungerer den ikke korrekt med Shields slået til? ";
 
 /* shields overview message */
 "ShieldsOverview" = "Site Shields giver dig mulighed for at kontrollere, hvornår annoncer og trackere blokeres for hvert websted, du besøger. Hvis du foretrækker at se annoncer på et bestemt websted, kan du aktivere dem her.";
@@ -2753,7 +2786,7 @@
 "shortcuts.activityTypeClearHistorySuggestedPhrase" = "Ryd browserhistorik";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeClearHistoryTitle" = "Ryd Brave-browserhistorik";
+"shortcuts.activityTypeClearHistoryTitle" = "Ryd Express Browser-browserhistorik";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeEnableVPNDescription" = "Åbn browser i en ny fane, og aktiver VPN";
@@ -2762,7 +2795,7 @@
 "shortcuts.activityTypeEnableVPNSuggestedPhrase" = "Aktiver VPN";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeEnableVPNTitle" = "Åbn Brave Browser, og aktiver VPN";
+"shortcuts.activityTypeEnableVPNTitle" = "Åbn Express Browser, og aktiver VPN";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeNewPrivateTabSuggestedPhrase" = "Åbn ny privat fane";
@@ -2783,7 +2816,7 @@
 "shortcuts.activityTypeOpenBookmarksSuggestedPhrase" = "Åbn bogmærker";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenBookmarksTitle" = "Åbn Brave-browserens bogmærker";
+"shortcuts.activityTypeOpenBookmarksTitle" = "Åbn Express Browsers bogmærker";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenBraveNewsTitle" = "Åbn Brave News";
@@ -2798,7 +2831,7 @@
 "shortcuts.activityTypeOpenHistoryListSuggestedPhrase" = "Åbn browserhistorik";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenHistoryListTitle" = "Åbn Brave-browserens historik";
+"shortcuts.activityTypeOpenHistoryListTitle" = "Åbn Express Browsers historik";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenPlaylistDescription" = "Begynd at afspille dine videoer i afspilningslisten";
@@ -2819,7 +2852,7 @@
 "shortcuts.activityTypeOpenSyncedTabsTitle" = "Åbn faner fra andre enheder";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeTabDescription" = "Begynd at søge sikkert på nettet med Brave";
+"shortcuts.activityTypeTabDescription" = "Begynd at søge sikkert på nettet med Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.customIntentOpenBookmarkSuggestedPhrase" = "Åbn websted fra bogmærke";
@@ -2831,7 +2864,7 @@
 "shortcuts.customIntentOpenWebsiteSuggestedPhrase" = "Åbn webstedet";
 
 /* Description for opening Brave Settings for altering Siri shortcut. */
-"shortcuts.shortcutOpenApplicationSettingsDescription" = "Denne mulighed åbner indstillingerne for Brave. For at ændre forskellige Siri-indstillinger skal du vælge menupunktet 'Siri og søgning' og tilpasse dine valg.";
+"shortcuts.shortcutOpenApplicationSettingsDescription" = "Denne mulighed åbner indstillingerne for Express Browser. For at ændre forskellige Siri-indstillinger skal du vælge menupunktet 'Siri og søgning' og tilpasse dine valg.";
 
 /* Button title that open application settings */
 "shortcuts.shortcutOpenApplicationSettingsTitle" = "Åbn Indstillinger";
@@ -2927,10 +2960,10 @@
 "SiteShieldSettings" = "Afskærmning";
 
 /* Title used when in warning pop-over when domain specific data save appears */
-"socialSharing.domainSpecificDataSavedTitle" = "Hver dag sparer jeg data ved at bruge Brave som browser.";
+"socialSharing.domainSpecificDataSavedTitle" = "Hver dag sparer jeg data ved at bruge Express Browser som browser.";
 
 /* Text used for social sharing together with Brave Shield values */
-"socialSharing.shareDescriptionTitle" = "Hver dag sparer jeg data ved at bruge Brave som browser.";
+"socialSharing.shareDescriptionTitle" = "Hver dag sparer jeg data ved at bruge Express Browser som browser.";
 
 /* Open search section of settings */
 "StandardTabSearch" = "Standard fane";
@@ -3356,7 +3389,7 @@
 "themeQRCodeShareButton" = "Del...";
 
 /* Title for QR popup encouraging users to share the code with their friends. */
-"themeQRCodeShareTitle" = "Del Brave med dine venner! ";
+"themeQRCodeShareTitle" = "Del Express Browser med dine venner! ";
 
 /* Selection to automatically color/style the user interface. */
 "ThemesAutomaticOption" = "Automatisk";
@@ -3509,19 +3542,19 @@
 "today.promoted" = "Promoveret";
 
 /* Title for long press action sheet list which has item for rate / hide */
-"today.rateBraveCardActionSheetTitle" = "Bedøm Brave i AppStore";
+"today.rateBraveCardActionSheetTitle" = "Bedøm Express Browser i AppStore";
 
 /* Title for long press action that will hide Brave Rate Card */
 "today.rateBraveCardHideActionTitle" = "Skjul";
 
 /* Button title / Title for long press action that will perform an action which open AppStore Rate screen */
-"today.rateBraveCardRateActionTitle" = "Bedøm Brave ";
+"today.rateBraveCardRateActionTitle" = "Bedøm Express Browser ";
 
 /* Subtitle shown on the Rate Brave Card */
 "today.rateBraveCardSubtitle" = "Fortæl os, hvad du synes!";
 
 /* Title shown on the Rate Brave Card */
-"today.rateBraveCardTitle" = "Kan du lide Brave?";
+"today.rateBraveCardTitle" = "Kan du lide Express Browser?";
 
 /* No comment provided by engineer. */
 "today.refresh" = "Opdater";
@@ -3602,13 +3635,13 @@
 "ViewOn" = "Se på %@";
 
 /* Explanation for warning alert why the microphone access required. */
-"voice.search.microphone.description.required" = "Tillad mikrofonadgang i iOS-systemindstillinger for at Brave kan bruge anonym stemmesøgning.";
+"voice.search.microphone.description.required" = "Tillad mikrofonadgang i iOS-systemindstillinger for at Express Browser kan bruge anonym stemmesøgning.";
 
 /* Title for warning alert microphone access is required. */
 "voice.search.microphone.title.required" = "Mikrofonadgang påkrævet";
 
 /* Disclaimer for screen to search using voice. */
-"voice.search.screen.disclaimer" = "Brave gemmer eller deler ikke dine stemmesøgninger.";
+"voice.search.screen.disclaimer" = "Express Browser gemmer eller deler ikke dine stemmesøgninger.";
 
 /* The date your wallet was created */
 "WalletCreationDate" = "Oprettelsesdato for wallet";

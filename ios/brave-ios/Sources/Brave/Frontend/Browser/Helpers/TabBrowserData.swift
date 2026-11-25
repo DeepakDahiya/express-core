@@ -413,6 +413,7 @@ class TabBrowserData: NSObject, TabObserver {
       .mediaBackgroundPlay: Preferences.General.mediaAutoBackgrounding.value,
       .nightMode: Preferences.General.nightModeEnabled.value,
       .braveTranslate: Preferences.Translate.translateEnabled.value != false,
+      .expressYouTube: true,
     ]
 
     userScripts = Set(scriptPreferences.filter({ $0.value }).map({ $0.key }))

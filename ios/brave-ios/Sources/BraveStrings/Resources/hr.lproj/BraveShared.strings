@@ -2,7 +2,7 @@
 "About" = "O opcijama";
 
 /* The title of the screen explaining Brave Shields */
-"AboutBraveShields" = "O značajci Brave Shields";
+"AboutBraveShields" = "O značajci Shields";
 
 /* The body of the screen explaining Brave Shields */
 "AboutBraveShieldsBody" = "Na mrežnim se mjestima obično nalaze kolačići i skripte kojima se pokušavate identificirati vi i vaš uređaj. Njima se želi doznati tko ste i pratiti što radite na svakom mrežnom mjestu.\n\nU pregledniku Brave blokiraju se navedene stavke kako biste mogli pregledavati mrežu bez praćenja.";
@@ -11,7 +11,7 @@
 "AccessPhotoDeniedAlertMessage" = "Ovim se omogućava spremanje slike u album kamere.";
 
 /* See http://mzl.la/1G7uHo7 */
-"AccessPhotoDeniedAlertTitle" = "Brave želi pristupiti vašim fotografijama";
+"AccessPhotoDeniedAlertTitle" = "Express Browser želi pristupiti vašim fotografijama";
 
 /* Label to display in the Discoverability overlay for keyboard shortcuts */
 "addBookmarkTitle" = "Dodaj oznaku";
@@ -44,7 +44,7 @@
 "AlwaysShow" = "Uključi";
 
 /* Touch ID or PIN entry prompt subtitle when accessing Brave with the Browser Lock feature enabled */
-"AuthenticationLoginsTouchReason" = "Ovim se potvrđuje autentičnost vašeg pristupa pregledniku Brave";
+"AuthenticationLoginsTouchReason" = "Ovim se potvrđuje autentičnost vašeg pristupa pregledniku Express Browser";
 
 /* Label for Cancel button */
 "AuthPromptAlertCancelButtonTitle" = "Otkaži";
@@ -176,7 +176,7 @@
 "BraveShieldsAdvancedControls" = "Napredne kontrole";
 
 /* No comment provided by engineer. */
-"BraveShieldsAndPrivacy" = "Brave Štitovi i Privatnost";
+"BraveShieldsAndPrivacy" = "Štitovi i Privatnost";
 
 /* No comment provided by engineer. */
 "BraveShieldsAndPrivacyTitle" = "Štitovi i Privatnost";
@@ -203,7 +203,7 @@
 "BraveShieldsSiteBroken" = "Ako se čini da je mrežno mjesto neispravno, pokušajte isključiti štitove";
 
 /* Context: 'Brave Shields Up' or 'Brave Shields Down' */
-"BraveShieldsStatusTitle" = "Štitnici Brave";
+"BraveShieldsStatusTitle" = "Štitnici";
 
 /* Context: The 'Down' in 'Brave Shields Down' */
 "BraveShieldsStatusValueDown" = "Dolje";
@@ -212,7 +212,7 @@
 "BraveShieldsStatusValueUp" = "Podignuti";
 
 /* The accessibility hint spoken when focused on the main shields toggle */
-"BraveShieldsToggleHint" = "Dvaput dodirnite za uključivanje/isključivanje Štitova Brave";
+"BraveShieldsToggleHint" = "Dvaput dodirnite za uključivanje/isključivanje Štitova";
 
 /* The name of the feature */
 "bravetalk.braveTalkTitle" = "Usluga Razgovor Brave";
@@ -227,13 +227,13 @@
 "BraveTranslate.searchInputTitle" = "Pretraži";
 
 /* This text is for the settings menu for all Brave-Translate options. */
-"BraveTranslate.settingsMenuTitle" = "Brave Prevoditelj";
+"BraveTranslate.settingsMenuTitle" = "Prevoditelj";
 
 /* This text is for the translate settings screen. It's the title of the settings menu. */
-"BraveTranslate.settingsScreenTitle" = "Brave Prevoditelj";
+"BraveTranslate.settingsScreenTitle" = "Prevoditelj";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
-"BraveTranslate.settingsTranslateEnabledOptionDescription" = "Kad je uključena, funkcionalnost Brave Translate automatski prepoznaje jezik vaše stranice i pokazuje gumb za prijevod u polju za URL.";
+"BraveTranslate.settingsTranslateEnabledOptionDescription" = "Kad je ova opcija uključena, Express Browser automatski prepoznaje jezik vaše stranice i pokazuje gumb za prijevod u polju za URL.";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
 "BraveTranslate.settingsTranslateEnabledOptionTitle" = "Translate uključen";
@@ -248,7 +248,7 @@
 "BrowserLock" = "Zaključavanje preglednika";
 
 /* Description for setting to enable the browser lock privacy feature */
-"BrowserLockDescription" = "Otključajte preglednik Brave identifikacijom s pomoću dodira, identifikacijom s pomoću očitavanja lica ili šifrom sustava.";
+"BrowserLockDescription" = "Otključajte preglednik Express Browser identifikacijom s pomoću dodira, identifikacijom s pomoću očitavanja lica ili šifrom sustava.";
 
 /* Settings item for clearing browsing history */
 "BrowsingHistory" = "Povijest pregledavanja";
@@ -263,13 +263,13 @@
 "callout.bottomBarCalloutDescription" = "Pomaknite adresnu traku, kartice, knjižne oznake i druge alate na dno preglednika.";
 
 /* Title for Bottom Bar Callout View */
-"callout.bottomBarCalloutTitle" = "Prilagođavanje trake kartica preglednika Brave";
+"callout.bottomBarCalloutTitle" = "Prilagođavanje trake kartica preglednika Express Browser";
 
 /* Description - Description used for main button in Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutButtonDescription" = "Postaviti preglednik Brave kao zadani preglednik?";
+"callout.defaultBrowserCalloutButtonDescription" = "Postaviti preglednik Express Browser kao zadani preglednik?";
 
 /* Subtitle - Description for Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutDescription" = "Kad je Brave postavljen kao zadani preglednik, svaka veza koju dodirnete otvara se uz zaštite privatnosti preglednika Brave.";
+"callout.defaultBrowserCalloutDescription" = "Kad je Express Browser postavljen kao zadani preglednik, svaka veza koju dodirnete otvara se uz zaštite privatnosti preglednika Express Browser.";
 
 /* Title for main button in Default Browser Full Screen Callout */
 "callout.defaultBrowserCalloutPrimaryButtonTitle" = "Postavi kao zadano";
@@ -596,25 +596,25 @@
 "defaultBrowserCallout.introOpenSettingsButtonText" = "Otvorite Postavke";
 
 /* Primary text on default browser popup screen */
-"defaultBrowserCallout.introPrimaryText" = "Otvori sve poveznice preglednikom Brave radi zaštite privatnosti";
+"defaultBrowserCallout.introPrimaryText" = "Otvori sve poveznice preglednikom Express Browser radi zaštite privatnosti";
 
 /* Secondary text on default browser popup. */
-"defaultBrowserCallout.introSecondaryText" = "Značajkom Štitovi Brave blokiraju se elementi za praćenje i oglasi te štede podatci i vrijeme na svakom mrežnom mjestu koje posjetite";
+"defaultBrowserCallout.introSecondaryText" = "Značajkom Štitovi blokiraju se elementi za praćenje i oglasi te štede podatci i vrijeme na svakom mrežnom mjestu koje posjetite";
 
 /* Tertiary text on default browser popup screen */
-"defaultBrowserCallout.introTertiaryText" = "Otvorite Postavke, dodirnite Zadana aplikacija preglednika i odaberite Brave.";
+"defaultBrowserCallout.introTertiaryText" = "Otvorite Postavke, dodirnite Zadana aplikacija preglednika i odaberite Express Browser.";
 
 /* Notification body to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationBody" = "Postavite Brave kao zadani preglednik";
+"defaultBrowserCallout.notificationBody" = "Postavite Express Browser kao zadani preglednik";
 
 /* Notification title to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationTitle" = "Dobijte zaštitu preglednika Brave na svakoj poveznici";
+"defaultBrowserCallout.notificationTitle" = "Dobijte zaštitu preglednika Express Browser na svakoj poveznici";
 
 /* No comment provided by engineer. */
 "defaultBrowserCalloutCloseAccesabilityLabel" = "Zatvori zadani element za privlačenje pažnje preglednika";
 
 /* Name for default Brave theme. */
-"defaultThemeName" = "Zadani Brave";
+"defaultThemeName" = "Zadani Express Browser";
 
 /* No comment provided by engineer. */
 "Delete" = "Izbriši";
@@ -719,7 +719,7 @@
 "ErrorPageReloadButtonTitle" = "Ponovno učitaj";
 
 /* Additional warning text when clicking the Advanced button on error pages. %@ is a placeholder, do not localize it. Do not localize <br />. */
-"ErrorPagesAdvancedErrorPinningDetails" = "%1$@ obično upotrebljava šifriranje za zaštitu vaših informacija. Kada se u pregledniku Brave pokušavate povezati sa sljedećim: %2$@, mrežnim mjestom vraćaju se neobične i netočne vjerodajnice. To se može dogoditi kada se napadač pretvara da je %3$@ ili kad se zaslonom za prijavu mreže Wi-Fi prekine veza. Vaše informacije i dalje su sigurne jer se preglednikom Brave zaustavila veza prije razmjene podataka.<br />Trenutačno ne možete posjetiti %4$@ jer se na mrežnom mjestu upotrebljava prikvačivanje certifikata. Mrežne pogreške i napadi obično su privremeni, pa će stranica vjerojatno raditi poslije.";
+"ErrorPagesAdvancedErrorPinningDetails" = "%1$@ obično upotrebljava šifriranje za zaštitu vaših informacija. Kada se u pregledniku Express Browser pokušavate povezati sa sljedećim: %2$@, mrežnim mjestom vraćaju se neobične i netočne vjerodajnice. To se može dogoditi kada se napadač pretvara da je %3$@ ili kad se zaslonom za prijavu mreže Wi-Fi prekine veza. Vaše informacije i dalje su sigurne jer se preglednikom Express Browser zaustavila veza prije razmjene podataka.<br />Trenutačno ne možete posjetiti %4$@ jer se na mrežnom mjestu upotrebljava prikvačivanje certifikata. Mrežne pogreške i napadi obično su privremeni, pa će stranica vjerojatno raditi poslije.";
 
 /* Additional warning text when clicking the Advanced button on error pages */
 "ErrorPagesAdvancedWarningDetails" = "Ovaj poslužitelj nije dokazao da je %@. Operativni sustav vašeg uređaja odbacuje njegov sigurnosni certifikat. To se možda događa zbog pogrešne konfiguracije ili zato što napadač pokušava prekinuti vašu vezu.";
@@ -759,6 +759,39 @@
 
 /* Button label to temporarily continue to the site from the certificate error page */
 "ErrorPagesProceedAnywayButton" = "Nastavi na: %@ (nesigurno)";
+
+/* Link on the private new tab page to a page about private mode. */
+"expressPrivateNTP.learnMore" = "Saznajte više";
+
+/* Bullet point: data that private mode doesn't save. Data that websites save on the device, such as sign-in state. */
+"expressPrivateNTP.notSavedCookies" = "kolačiće i podatke web-lokacije";
+
+/* Bullet point: data that private mode doesn't save. Names, addresses, passwords etc. that people enter into forms on the web. */
+"expressPrivateNTP.notSavedForms" = "podatke koje unesete u obrasce.";
+
+/* Introduces a bulleted list of data that private mode doesn't save. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.notSavedHeader" = "Express Browser <em>neće spremati</em>:";
+
+/* Bullet point: data that private mode doesn't save. 'Browsing history' is the history of visited websites. */
+"expressPrivateNTP.notSavedHistory" = "vašu povijest pregledavanja";
+
+/* Subtitle of the private new tab page, under its title. */
+"expressPrivateNTP.subtitle" = "Druge osobe koje upotrebljavaju ovaj uređaj neće vidjeti vašu aktivnost, pa možete pregledavati privatnije. Time se neće promijeniti način na koji podatke prikupljaju web-lokacije koje posjećujete i usluge koje upotrebljavate, uključujući Express Browser. Preuzimanja i oznake spremat će se.";
+
+/* Title of the private new tab page. Private mode hides your browsing from other people using the same device; it does not make you anonymous. */
+"expressPrivateNTP.title" = "U Privatnom ste načinu";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleEmployer" = "vašem poslodavcu ili školi";
+
+/* Introduces a bulleted list of who might still see what the user does in private mode. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.visibleHeader" = "Vaše aktivnosti <em>i dalje mogu biti vidljive</em>:";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleProvider" = "vašem davatelju internetskih usluga.";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleWebsites" = "web-lokacijama koje posjećujete";
 
 /* %@ will launch an external application */
 "ExternalAppURLAlertMessage" = "%@ pokreće vanjsku aplikaciju";
@@ -1187,13 +1220,13 @@
 "OBSearchEngineDetail" = "Odaberite svoju zadanu tražilicu";
 
 /* Title for search engine onboarding screen */
-"OBSearchEngineTitle" = "Dobro došli u preglednik Brave";
+"OBSearchEngineTitle" = "Dobro došli u preglednik Express Browser";
 
 /* Detail text for shields onboarding screen */
 "OBShieldsDetail" = "Blokirajte elemente za praćenje kojima se narušava privatnost kako biste mogli pregledavati mrežu bez praćenja ";
 
 /* Title for shields onboarding screen */
-"OBShieldsTitle" = "Štitnici Brave";
+"OBShieldsTitle" = "Štitnici";
 
 /* Button to show the Brave Rewards Ads. */
 "OBShowMeButton" = "Pokaži mi";
@@ -1205,10 +1238,10 @@
 "onboarding.blockedAdsOnboardingBigTechInformationText" = "Blokirani su %1$@ i sljedeći broj: %2$lld drugih oglasa i elemenata za praćenje";
 
 /* The footnote indicating what Brave shields is blocking */
-"onboarding.blockedAdsOnboardingFootnoteText" = "Pogledajte sve loše stvari koje je Brave blokirao štitovima na svakoj stranici.";
+"onboarding.blockedAdsOnboardingFootnoteText" = "Pogledajte sve loše stvari koje je Express Browser blokirao štitovima na svakoj stranici.";
 
 /* The text describing user where they should press in order to open Shield panel */
-"onboarding.blockedAdsOnboardingInstructionsText" = "Dodirnite za prikaz štitova Brave";
+"onboarding.blockedAdsOnboardingInstructionsText" = "Dodirnite za prikaz štitova";
 
 /* The description text shown when there is no big tech tracker among trackers. Example usage: 31 Ads & trackers blocked. The number here is presented separately so it is not in translation. */
 "onboarding.blockedAdsOnboardingNoBigTechInformationText" = "Oglasi i elementi za praćenje su blokirani";
@@ -1232,13 +1265,13 @@
 "onboarding.ntpOnboardingPopOverTrackerDescription" = "Kada se blokiraju elementi za praćenje i oglasi, mrežna mjesta koriste manje podataka i oni se učitavaju mnogo brže.";
 
 /* Description for the Omnibox (URL Bar) pop-over that describes faster load times. */
-"onboarding.omniboxOnboardingPopOverDescription" = "Pogledajte kako se preglednik Brave razlikuje: \nNema oglasa. Nema elemenata za praćenje. Mnogo brže učitavanje stranice.";
+"onboarding.omniboxOnboardingPopOverDescription" = "Pogledajte kako se preglednik Express Browser razlikuje: \nNema oglasa. Nema elemenata za praćenje. Mnogo brže učitavanje stranice.";
 
 /* Title for the Omnibox (URL Bar) pop-over that describes faster load times. */
 "onboarding.omniboxOnboardingPopOverTitle" = "Upišite naziv ili URL mrežnog mjesta";
 
 /* Title for Welcome Screen in Onboarding */
-"onboarding.welcomeScreenTitle" = "Dobro došli u preglednik Brave";
+"onboarding.welcomeScreenTitle" = "Dobro došli u preglednik Express Browser";
 
 /* Continue button to navigate to next onboarding screen. */
 "OnboardingContinueButton" = "Nastavite";
@@ -1280,7 +1313,7 @@
 "OpenMobileConfigurationAlertTitle" = "Konfiguracijski profil dostupan";
 
 /* Context menu option for opening a link in a new private tab */
-"OpenNewPrivateTabButtonTitle" = "Otvori u novoj privatnoj kartici";
+"OpenNewPrivateTabButtonTitle" = "Otvori u Privatnoj kartici";
 
 /* Context menu item for opening a link in a new tab */
 "OpenNewTabButtonTitle" = "Otvori u novoj kartici";
@@ -1487,7 +1520,7 @@
 "PersistentPrivateBrowsing" = "Stalno privatno pregledavanje";
 
 /* Persistent private browsing alert message to existing users */
-"PersistentPrivateBrowsingAlertMessage" = "Omogućava pregledniku Brave vraćanje kartica privatnog pregledavanja čak kada zatvorite / ponovno otvorite aplikaciju";
+"PersistentPrivateBrowsingAlertMessage" = "Omogućava pregledniku Express Browser vraćanje kartica privatnog pregledavanja čak kada zatvorite / ponovno otvorite aplikaciju";
 
 /* Persistent private browsing alert title to existing users */
 "PersistentPrivateBrowsingAlertTitle" = "Vrati privatne kartice";
@@ -1931,7 +1964,7 @@
 "privacyHub.lastWeekHeader" = "Prošli tjedan";
 
 /* Do NOT localize asterisk('*') characters, they are used to make the text bold in the app. It says which tracker was blocked on how many websites, example usage: 'Google Analytics was blocked by Brave Shields on 42 sites' */
-"privacyHub.mostFrequentTrackerAndAdBody" = "Element **%1$@** za praćenje blokiran je značajkom Štitovi Brave na sljedećem broju mrežnih mjesta: **%2$lld**";
+"privacyHub.mostFrequentTrackerAndAdBody" = "Element **%1$@** za praćenje blokiran je značajkom Štitovi na sljedećem broju mrežnih mjesta: **%2$lld**";
 
 /* Title under which we display a tracker which was most frequently detected by our ad blocking mechanism. */
 "privacyHub.mostFrequentTrackerAndAdTitle" = "Najčešći elementi za praćenje i oglasi";
@@ -1949,7 +1982,7 @@
 "privacyHub.notificationCalloutButtonText" = "Uključi obavijesti";
 
 /* Message of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
-"privacyHub.notificationMessage" = "Rekapitulacija pružene zaštite preglednikom Brave na mreži ovog tjedna.";
+"privacyHub.notificationMessage" = "Rekapitulacija pružene zaštite preglednikom Express Browser na mreži ovog tjedna.";
 
 /* Title of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
 "privacyHub.notificationTitle" = "Tjedno izvješće o privatnosti";
@@ -2039,10 +2072,10 @@
 "PrivateBrowsingOnlyWarning" = "U načinu „Samo privatno pregledavanje” zatvaraju se sve vaše trenutačne kartice i odjavljujete se iz svih mrežnih mjesta.";
 
 /* Private tab details */
-"PrivateTabBody" = "Privatne kartice ne spremaju se u pregledniku Brave, ali njihovom upotrebom niste anonimni na mreži. Mrežna mjesta koja posjećujete u privatnoj kartici ne pojavljuju se u vašoj povijesti i njihovi kolačići uvijek nestaju kada ih zatvorite – u pregledniku Brave ne ostaje nikakav njihov trag. Međutim, preuzimanja se spremaju.\nVaš mobilni operater (ili vlasnik mreže Wi-Fi mreže ili mreže VPN s kojom ste povezani) može vidjeti koja mrežna mjesta posjećujete i ta mrežna mjesta znaju vašu javnu adresu IP čak u privatnim karticama.";
+"PrivateTabBody" = "Privatne kartice ne spremaju se u pregledniku Express Browser, ali njihovom upotrebom niste anonimni na mreži. Mrežna mjesta koja posjećujete u privatnoj kartici ne pojavljuju se u vašoj povijesti i njihovi kolačići uvijek nestaju kada ih zatvorite – u pregledniku Express Browser ne ostaje nikakav njihov trag. Međutim, preuzimanja se spremaju.\nVaš mobilni operater (ili vlasnik mreže Wi-Fi mreže ili mreže VPN s kojom ste povezani) može vidjeti koja mrežna mjesta posjećujete i ta mrežna mjesta znaju vašu javnu adresu IP čak u privatnim karticama.";
 
 /* Private tab detail text */
-"PrivateTabDetails" = "Upotrebom privatnih kartica mijenja se samo ono što preglednik Brave radi na vašem uređaju, a ne mijenja se ponašanje drugih.\n\nMrežna mjesta uvijek znaju vašu adresu IP kada ih posjetite. Na osnovi toga često mogu približno pogoditi gdje se nalazite – obično vaš grad. Ponekad ta pretpostavka o lokaciji može biti mnogo preciznija. Mrežna mjesta također znaju sve što im izravno navedete kao što su pojmovi za pretraživanje. Ako se prijavite u mrežno mjesto, ono zna da ste vlasnik tog računa. No, i dalje ste odjavljeni kada zatvorite privatne kartice jer se preglednikom Brave odbacuje kolačić kojim se održava prijava.\n\nSvatko putem koga se povezujete s internetom (vaš pružatelj internetskih usluga (ISP)) može vidjeti sve vaše mrežne aktivnosti. Često je to vaš mobilni operater. Ako ste povezani s mrežom Wi-Fi, to je vlasnik te mreže, a ako upotrebljavate mrežu VPN, onda je to pružatelj te mreže VPN. Vaš ISP može vidjeti koja mrežna mjesta posjećujete dok ih posjećujete. Ako se na tim mrežnim mjestima upotrebljava HTTPS, ne može napraviti ništa više od pretpostavljanja onoga što radite na tim mrežnim mjestima. No, ako se na mrežnom mjestu upotrebljava samo HTTP, vaš ISP može vidjeti sve: pojmove za pretraživanje, stranice koje čitate i poveznice na koje ste kliknuli.\n\nAko poslodavac upravlja vašim uređajem, mogao bi pratiti i što radite na njemu. Korištenjem privatnih kartica vjerojatno ga ne možete spriječiti da dozna koja ste mrežna mjesta posjetili. Netko drugi s pristupom vašem uređaju također može instalirati softver kojim se prati vaša aktivnost, a u privatnim karticama nemate zaštitu ni od toga.";
+"PrivateTabDetails" = "Upotrebom privatnih kartica mijenja se samo ono što preglednik Express Browser radi na vašem uređaju, a ne mijenja se ponašanje drugih.\n\nMrežna mjesta uvijek znaju vašu adresu IP kada ih posjetite. Na osnovi toga često mogu približno pogoditi gdje se nalazite – obično vaš grad. Ponekad ta pretpostavka o lokaciji može biti mnogo preciznija. Mrežna mjesta također znaju sve što im izravno navedete kao što su pojmovi za pretraživanje. Ako se prijavite u mrežno mjesto, ono zna da ste vlasnik tog računa. No, i dalje ste odjavljeni kada zatvorite privatne kartice jer se preglednikom Express Browser odbacuje kolačić kojim se održava prijava.\n\nSvatko putem koga se povezujete s internetom (vaš pružatelj internetskih usluga (ISP)) može vidjeti sve vaše mrežne aktivnosti. Često je to vaš mobilni operater. Ako ste povezani s mrežom Wi-Fi, to je vlasnik te mreže, a ako upotrebljavate mrežu VPN, onda je to pružatelj te mreže VPN. Vaš ISP može vidjeti koja mrežna mjesta posjećujete dok ih posjećujete. Ako se na tim mrežnim mjestima upotrebljava HTTPS, ne može napraviti ništa više od pretpostavljanja onoga što radite na tim mrežnim mjestima. No, ako se na mrežnom mjestu upotrebljava samo HTTP, vaš ISP može vidjeti sve: pojmove za pretraživanje, stranice koje čitate i poveznice na koje ste kliknuli.\n\nAko poslodavac upravlja vašim uređajem, mogao bi pratiti i što radite na njemu. Korištenjem privatnih kartica vjerojatno ga ne možete spriječiti da dozna koja ste mrežna mjesta posjetili. Netko drugi s pristupom vašem uređaju također može instalirati softver kojim se prati vaša aktivnost, a u privatnim karticama nemate zaštitu ni od toga.";
 
 /* Private tab information link */
 "PrivateTabLink" = "Doznajte više o privatnim karticama.";
@@ -2054,7 +2087,7 @@
 "QuickSearchEngines" = "Brze tražilice";
 
 /* Open the App Store to rate Brave. */
-"RateBrave" = "Ocijenite preglednik Brave";
+"RateBrave" = "Ocijenite preglednik Express Browser";
 
 /* Accessibility label for button increasing font size in display settings of reader mode */
 "ReaderModeBiggerFontButtonAccessibilityLabel" = "Povećaj veličinu teksta";
@@ -2243,10 +2276,10 @@
 "RestoreTabNegativeButtonTitle" = "Ne";
 
 /* Restore Tabs Prompt Description */
-"RestoreTabOnCrashAlertMessage" = "Nažalost, preglednik Brave srušio se ili se nije dobro zatvorio.\nŽelite li vratiti svoje kartice?";
+"RestoreTabOnCrashAlertMessage" = "Nažalost, preglednik Express Browser srušio se ili se nije dobro zatvorio.\nŽelite li vratiti svoje kartice?";
 
 /* Restore Tabs Prompt Title */
-"RestoreTabOnCrashAlertTitle" = "Preglednik Brave neočekivano se zatvorio.";
+"RestoreTabOnCrashAlertTitle" = "Preglednik Express Browser neočekivano se zatvorio.";
 
 /* Body for Brave Talk rewards opt-in screen */
 "rewards.braveTalkRewardsOptInBody" = "Upotrebom značajke Nagrade Brave možete vidjeti oglase kojima se čuva privatnost iz mreže značajke Oglasi Brave. Nema elemenata za praćenje. Nema usporavanja, a vaši podatci ostaju potpuno sigurni.";
@@ -2573,7 +2606,7 @@
 "searchSuggestionsSubtitle" = "Želite li omogućiti Prijedloge pretrage?";
 
 /* Title of an action that allows user to perform a one-click web search for selected text */
-"SearchWithBrave" = "Pretražujte preglednikom Brave";
+"SearchWithBrave" = "Pretražujte preglednikom Express Browser";
 
 /* Settings security section title */
 "Security" = "Sigurnost";
@@ -2582,16 +2615,16 @@
 "sendButtonTitle" = "Pošalji";
 
 /* Message displayed in the crash dialog above the buttons used to select when sending reports */
-"SendCrashReportAlertMessage" = "Poslati izvještaj o padu kako bi se mogao riješiti problem u pregledniku Brave?";
+"SendCrashReportAlertMessage" = "Poslati izvještaj o padu kako bi se mogao riješiti problem u pregledniku Express Browser?";
 
 /* Title for prompt displayed to user after the app crashes */
-"SendCrashReportAlertTitle" = "Ups! Preglednik Brave srušio se";
+"SendCrashReportAlertTitle" = "Ups! Preglednik Express Browser srušio se";
 
 /* Used as a button label for crash dialog prompt */
 "SendReportButtonTitle" = "Pošalji izvještaj";
 
 /* No comment provided by engineer. */
-"setDefaultBrowserCalloutTitle" = "Preglednik Brave sada možete postaviti kao zadani preglednik u sustavu iOS. Dodirnite ovdje za otvaranje postavki.";
+"setDefaultBrowserCalloutTitle" = "Preglednik Express Browser sada možete postaviti kao zadani preglednik u sustavu iOS. Dodirnite ovdje za otvaranje postavki.";
 
 /* Settings item to set the Brave as a default browser on the iOS device. */
 "setDefaultBrowserSettingsCell" = "Postavi kao zadani preglednik";
@@ -2615,7 +2648,7 @@
 "settings.autocloseTabsSetting" = "Zatvori kartice";
 
 /* Description of autoclose tabs feature. */
-"settings.autocloseTabsSettingFooter" = "Dopustite pregledniku Brave automatsko zatvaranje kartica koje se nisu nedavno prikazivale.";
+"settings.autocloseTabsSettingFooter" = "Dopustite pregledniku Express Browser automatsko zatvaranje kartica koje se nisu nedavno prikazivale.";
 
 /* Label for the navigation link to quality settings view */
 "settings.highestQualityPlayback" = "Reprodukcija najviše kvalitete";
@@ -2630,7 +2663,7 @@
 "settings.media.rootSetting" = "Mediji";
 
 /* A toggle label which lets the user always open YouTube urls in Brave */
-"settings.openYouTubeInBrave" = "Otvorite poveznice YouTube u pregledniku Brave";
+"settings.openYouTubeInBrave" = "Otvorite poveznice YouTube u pregledniku Express Browser";
 
 /* No comment provided by engineer. */
 "settings.privacy.screenTimeSetting" = "Omogući vrijeme upotrebe zaslona";
@@ -2705,7 +2738,7 @@
 "shieldEducation.shareTheNewsTitle" = "Podijeli vijest";
 
 /* Subtitle for Shield Education Tracker Ad Warning */
-"shieldEducation.trackerAdWarningSubTitle" = "Značajkom Štitovi Brave upravo se zaštitila vaša privatnost na mreži.";
+"shieldEducation.trackerAdWarningSubTitle" = "Značajkom Štitovi upravo se zaštitila vaša privatnost na mreži.";
 
 /* Subtitle for Shield Education Tracker Count Share */
 "shieldEducation.trackerCountShareSubtitle" = "Čestitamo. Veoma ste posebni.";
@@ -2720,13 +2753,13 @@
 "shieldEducation.videoAdBlockTitle" = "Oglasi su blokirani tijekom gledanja videozapisa na ovom mrežnom mjestu.";
 
 /* Section title for adbblock, tracking protection, HTTPS-E, and cookies */
-"ShieldsDefaults" = "Globalne zadane postavke Štitova Brave";
+"ShieldsDefaults" = "Globalne zadane postavke Štitova";
 
 /* Section footer for global shields defaults */
 "ShieldsDefaultsFooter" = "Ovo su zadane postavke značajke Brave Shields za nova mreža mjesta. Mijenjanjem ovih postavki ne mijenjaju se postojeće postavke prethodno postavljene za određeno mrežno mjesto.";
 
 /* No comment provided by engineer. */
-"ShieldsDownDisclaimer" = "Pregledavate ovo mrežno mjesto bez sigurnosne zaštite i zaštite privatnosti preglednika Brave. Radi li ispravno s uključenom značajkom Štitnika?";
+"ShieldsDownDisclaimer" = "Pregledavate ovo mrežno mjesto bez sigurnosne zaštite i zaštite privatnosti preglednika Express Browser. Radi li ispravno s uključenom značajkom Štitnika?";
 
 /* shields overview message */
 "ShieldsOverview" = "Štitovima mrežnog mjesta omogućava se upravljanje time kada se blokiraju oglasi i elementi za praćenje za svako mrežno mjesto koje posjetite. Ako želite vidjeti oglase na određenom mrežnom mjestu, možete ih omogućiti ovdje.";
@@ -2753,7 +2786,7 @@
 "shortcuts.activityTypeClearHistorySuggestedPhrase" = "Čišćenje povijesti preglednika";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeClearHistoryTitle" = "Čišćenje povijesti pregledavanja preglednika Brave";
+"shortcuts.activityTypeClearHistoryTitle" = "Čišćenje povijesti pregledavanja preglednika Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeEnableVPNDescription" = "Otvorite preglednik u novoj kartici i omogućite mrežu VPN";
@@ -2762,7 +2795,7 @@
 "shortcuts.activityTypeEnableVPNSuggestedPhrase" = "Omogućivanje mreže VPN";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeEnableVPNTitle" = "Otvorite preglednik Brave i omogućite mrežu VPN";
+"shortcuts.activityTypeEnableVPNTitle" = "Otvorite preglednik Express Browser i omogućite mrežu VPN";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeNewPrivateTabSuggestedPhrase" = "Otvaranje nove privatne kartice";
@@ -2783,7 +2816,7 @@
 "shortcuts.activityTypeOpenBookmarksSuggestedPhrase" = "Otvaranje knjižnih oznaka";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenBookmarksTitle" = "Otvaranje knjižnih oznaka preglednika Brave";
+"shortcuts.activityTypeOpenBookmarksTitle" = "Otvaranje knjižnih oznaka preglednika Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenBraveNewsTitle" = "Otvaranje značajke Novosti Brave";
@@ -2798,7 +2831,7 @@
 "shortcuts.activityTypeOpenHistoryListSuggestedPhrase" = "Otvaranje povijesti preglednika";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenHistoryListTitle" = "Otvaranje povijesti preglednika Brave";
+"shortcuts.activityTypeOpenHistoryListTitle" = "Otvaranje povijesti preglednika Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenPlaylistDescription" = "Pokretanje reprodukcije videozapisa na popisu za reprodukciju";
@@ -2819,7 +2852,7 @@
 "shortcuts.activityTypeOpenSyncedTabsTitle" = "Otvaranje kartica s drugih uređaja";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeTabDescription" = "Počnite sigurno pretraživati ​​mrežu upotrebom preglednika Brave";
+"shortcuts.activityTypeTabDescription" = "Počnite sigurno pretraživati ​​mrežu upotrebom preglednika Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.customIntentOpenBookmarkSuggestedPhrase" = "Otvaranje mrežnog mjesta knjižne oznake";
@@ -2831,7 +2864,7 @@
 "shortcuts.customIntentOpenWebsiteSuggestedPhrase" = "Otvori mrežno mjesto";
 
 /* Description for opening Brave Settings for altering Siri shortcut. */
-"shortcuts.shortcutOpenApplicationSettingsDescription" = "Ovom se mogućnosti otvaraju postavke preglednika Brave. Kako biste promijenili razne mogućnosti pomoćnika Siri, odaberite stavku „Siri i pretraživanje” u izborniku te prilagodite svoje odabire.";
+"shortcuts.shortcutOpenApplicationSettingsDescription" = "Ovom se mogućnosti otvaraju postavke preglednika Express Browser. Kako biste promijenili razne mogućnosti pomoćnika Siri, odaberite stavku „Siri i pretraživanje” u izborniku te prilagodite svoje odabire.";
 
 /* Button title that open application settings */
 "shortcuts.shortcutOpenApplicationSettingsTitle" = "Otvorite Postavke";
@@ -2927,10 +2960,10 @@
 "SiteShieldSettings" = "Štitovi";
 
 /* Title used when in warning pop-over when domain specific data save appears */
-"socialSharing.domainSpecificDataSavedTitle" = "Svaki dan smanjujem broj podataka pregledavanjem mreže preglednikom Brave.";
+"socialSharing.domainSpecificDataSavedTitle" = "Svaki dan smanjujem broj podataka pregledavanjem mreže preglednikom Express Browser.";
 
 /* Text used for social sharing together with Brave Shield values */
-"socialSharing.shareDescriptionTitle" = "Svaki dan smanjujem broj podataka pregledavanjem mreže preglednikom Brave.";
+"socialSharing.shareDescriptionTitle" = "Svaki dan smanjujem broj podataka pregledavanjem mreže preglednikom Express Browser.";
 
 /* Open search section of settings */
 "StandardTabSearch" = "Standardna kartica";
@@ -3356,7 +3389,7 @@
 "themeQRCodeShareButton" = "Podijeli...";
 
 /* Title for QR popup encouraging users to share the code with their friends. */
-"themeQRCodeShareTitle" = "Podijelite Brave sa svojim prijateljima!";
+"themeQRCodeShareTitle" = "Podijelite Express Browser sa svojim prijateljima!";
 
 /* Selection to automatically color/style the user interface. */
 "ThemesAutomaticOption" = "Automatski";
@@ -3509,19 +3542,19 @@
 "today.promoted" = "Promovirano";
 
 /* Title for long press action sheet list which has item for rate / hide */
-"today.rateBraveCardActionSheetTitle" = "Ocjenjivanje preglednika Brave u trgovini App Store";
+"today.rateBraveCardActionSheetTitle" = "Ocjenjivanje preglednika Express Browser u trgovini App Store";
 
 /* Title for long press action that will hide Brave Rate Card */
 "today.rateBraveCardHideActionTitle" = "Sakrij";
 
 /* Button title / Title for long press action that will perform an action which open AppStore Rate screen */
-"today.rateBraveCardRateActionTitle" = "Ocijenite preglednik Brave";
+"today.rateBraveCardRateActionTitle" = "Ocijenite preglednik Express Browser";
 
 /* Subtitle shown on the Rate Brave Card */
 "today.rateBraveCardSubtitle" = "Recite nam svoje mišljenje!";
 
 /* Title shown on the Rate Brave Card */
-"today.rateBraveCardTitle" = "Sviđa vam se preglednik Brave?";
+"today.rateBraveCardTitle" = "Sviđa vam se preglednik Express Browser?";
 
 /* No comment provided by engineer. */
 "today.refresh" = "Osvježi";
@@ -3602,13 +3635,13 @@
 "ViewOn" = "Prikaži putem usluge %@";
 
 /* Explanation for warning alert why the microphone access required. */
-"voice.search.microphone.description.required" = "Omogućite pristup mikrofonu u postavkama sustava iOS kako bi se putem preglednika Brave upotrebljavalo anonimno glasovno pretraživanje.";
+"voice.search.microphone.description.required" = "Omogućite pristup mikrofonu u postavkama sustava iOS kako bi se putem preglednika Express Browser upotrebljavalo anonimno glasovno pretraživanje.";
 
 /* Title for warning alert microphone access is required. */
 "voice.search.microphone.title.required" = "Potreban je pristup mikrofonu";
 
 /* Disclaimer for screen to search using voice. */
-"voice.search.screen.disclaimer" = "U pregledniku Brave ne pohranjuju se niti dijele vaša glasovna pretraživanja.";
+"voice.search.screen.disclaimer" = "U pregledniku Express Browser ne pohranjuju se niti dijele vaša glasovna pretraživanja.";
 
 /* The date your wallet was created */
 "WalletCreationDate" = "Datum stvaranja novčanika";

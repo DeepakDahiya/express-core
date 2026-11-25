@@ -2,7 +2,7 @@
 "focusOnboarding.continueButtonTitle" = "Folytatás";
 
 /* The subtitle of the screen that requests user to set Brave as default */
-"focusOnboarding.defaultBrowserScreenDescription" = "Legyen a Brave az alapértelmezett böngészője";
+"focusOnboarding.defaultBrowserScreenDescription" = "Legyen az Express Browser az alapértelmezett böngészője";
 
 /* The title of the screen that requests user to set Brave as default */
 "focusOnboarding.defaultBrowserScreenTitle" = "Tiltsa le a hirdetéseket minden oldalon, amit meglátogat";
@@ -38,5 +38,5 @@
 "focusOnboarding.urlBarIndicatorDescription" = "Nézzen videókat kevesebb hirdetés & tracker nélkül.";
 
 /* The title of the popup which points to URL Bar after onboarding */
-"focusOnboarding.urlBarIndicatorTitle" = "Tapasztalja meg a Brave élményt";
+"focusOnboarding.urlBarIndicatorTitle" = "Tapasztalja meg az Express Browser élményt";
 

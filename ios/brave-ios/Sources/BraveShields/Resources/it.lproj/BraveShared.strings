@@ -17,7 +17,7 @@
 "AntiAdBlockWarningDescription" = "Questo sito ha iniziato a fermare alcuni blocchi delle pubblicità, e il sito potrebbe non funzionare come previsto.";
 
 /* A descriptive message explaining to disable shields on this site. */
-"AntiAdBlockWarningDescription2" = "Per risolvere questo problema, Brave è in grado di regolare le protezioni al posto tuo. Dopo la regolazione, puoi provare a guardare questo contenuto nel Player di Brave.";
+"AntiAdBlockWarningDescription2" = "Per risolvere questo problema, Express Browser è in grado di regolare le protezioni al posto tuo. Dopo la regolazione, puoi provare a guardare questo contenuto nel Player di Brave.";
 
 /* A button that dismisses the warning and does nothing. */
 "AntiAdBlockWarningDismissButton" = "Mantieni le impostazioni attuali";
@@ -95,10 +95,10 @@
 "DomainBlockedGoBackAction" = "Torna indietro";
 
 /* A description in the warning page that appears when a page was blocked */
-"DomainBlockedPageDescription" = "Poiché hai richiesto di bloccare in modo aggressivo i tracker e gli annunci, Brave blocca questo sito prima della prima connessione alla rete.";
+"DomainBlockedPageDescription" = "Poiché hai richiesto di bloccare in modo aggressivo i tracker e gli annunci, Express Browser blocca questo sito prima della prima connessione alla rete.";
 
 /* A message in the warning page that appears when a page was blocked */
-"DomainBlockedPageMessage" = "Brave ha impedito il caricamento del seguente sito:";
+"DomainBlockedPageMessage" = "Express Browser ha impedito il caricamento del seguente sito:";
 
 /* A title in the warning page that appears when a page was blocked */
 "DomainBlockedPageTitle" = "Questo sito potrebbe tentare di tracciare i tuoi comportamenti su altri siti";
@@ -110,7 +110,7 @@
 "DomainBlockedTitle" = "Dominio bloccato";
 
 /* A description of what the Enable GPC toggle does */
-"EnableGPCDescription" = "Chiedi ai siti di non vendere o condividere i tuoi dati. [Scopri di più](https://support.brave.app/hc/en-us/articles/360017989132-How-do-I-change-my-Privacy-Settings#h_01HHFRRT6B5YTRREA4ZDARGTWM)";
+"EnableGPCDescription" = "Chiedi ai siti di non vendere o condividere i tuoi dati.";
 
 /* A label of the GPC toggle */
 "EnableGPCLabel" = "Attiva il Global Privacy Control";

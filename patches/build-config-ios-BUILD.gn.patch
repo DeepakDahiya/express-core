@@ -1,0 +1,56 @@
+diff --git a/build/config/ios/BUILD.gn b/build/config/ios/BUILD.gn
+index 9cd1fb75e02492cf560e032ffc311eb23f70c383..f92cf0026bc152951fda8081e19b8a13d0231c00 100644
+--- a/build/config/ios/BUILD.gn
++++ b/build/config/ios/BUILD.gn
+@@ -161,6 +161,12 @@ config("ios_executable_flags") {
+   if (xcode_version_int >= 2600) {
+     framework_dirs = [ "$ios_sdk_path/System/Library/SubFrameworks" ]
+   }
++  if (xcode_version_int >= 2640 && use_lld) {
++    ldflags += [
++      "-Wl,--ignore-auto-link-option,UIUtilities",
++      "-Wl,--ignore-auto-link-option,CoreAudioTypes",
++    ]
++  }
+ }
+ 
+ config("ios_extension_executable_flags") {
+@@ -183,6 +189,12 @@ config("ios_extension_executable_flags") {
+   if (xcode_version_int >= 2600) {
+     framework_dirs = [ "$ios_sdk_path/System/Library/SubFrameworks" ]
+   }
++  if (xcode_version_int >= 2640 && use_lld) {
++    ldflags += [
++      "-Wl,--ignore-auto-link-option,UIUtilities",
++      "-Wl,--ignore-auto-link-option,CoreAudioTypes",
++    ]
++  }
+ }
+ 
+ config("ios_dynamic_flags") {
+@@ -240,6 +252,12 @@ config("ios_shared_library_flags") {
+   if (xcode_version_int >= 2600) {
+     framework_dirs = [ "$ios_sdk_path/System/Library/SubFrameworks" ]
+   }
++  if (xcode_version_int >= 2640 && use_lld) {
++    ldflags += [
++      "-Wl,--ignore-auto-link-option,UIUtilities",
++      "-Wl,--ignore-auto-link-option,CoreAudioTypes",
++    ]
++  }
+ }
+ 
+ config("xctest_config") {
+@@ -268,6 +286,12 @@ config("xctest_config") {
+   if (xcode_version_int >= 2600) {
+     framework_dirs = [ "$ios_sdk_path/System/Library/SubFrameworks" ]
+   }
++  if (xcode_version_int >= 2640 && use_lld) {
++    ldflags += [
++      "-Wl,--ignore-auto-link-option,UIUtilities",
++      "-Wl,--ignore-auto-link-option,CoreAudioTypes",
++    ]
++  }
+ }
+ 
+ # TODO(crbug.com/40911785): any target that uses this config will miscompile.

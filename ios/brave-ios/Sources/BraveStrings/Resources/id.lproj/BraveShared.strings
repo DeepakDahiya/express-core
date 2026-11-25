@@ -2,7 +2,7 @@
 "About" = "Tentang";
 
 /* The title of the screen explaining Brave Shields */
-"AboutBraveShields" = "Seputar Brave Shields";
+"AboutBraveShields" = "Seputar Shields";
 
 /* The body of the screen explaining Brave Shields */
 "AboutBraveShieldsBody" = "Sering kali saat membuka situs terdapat cookies dan skrip yang berusaha mengidentifikasi pengguna dan perangkatnya.  Mereka ingin mengetahui siapa Anda dan mengikuti Anda di seluruh situs - melacak apa yang Anda lakukan di setiap situs.\n\nBrave memblokir hal-hal tersebut sehingga Anda dapat menjelajah tanpa merasa diikuti.";
@@ -11,7 +11,7 @@
 "AccessPhotoDeniedAlertMessage" = "Ini mengizinkan kamu untuk simpan gambar ke rol kamera anda.";
 
 /* See http://mzl.la/1G7uHo7 */
-"AccessPhotoDeniedAlertTitle" = "Brave ingin mengakses Foto Anda";
+"AccessPhotoDeniedAlertTitle" = "Express Browser ingin mengakses Foto Anda";
 
 /* Label to display in the Discoverability overlay for keyboard shortcuts */
 "addBookmarkTitle" = "Tambahkan Markah";
@@ -44,7 +44,7 @@
 "AlwaysShow" = "Aktifkan";
 
 /* Touch ID or PIN entry prompt subtitle when accessing Brave with the Browser Lock feature enabled */
-"AuthenticationLoginsTouchReason" = "Ini mengautentikasi akses Anda ke Brave";
+"AuthenticationLoginsTouchReason" = "Ini mengautentikasi akses Anda ke Express Browser";
 
 /* Label for Cancel button */
 "AuthPromptAlertCancelButtonTitle" = "Batal";
@@ -176,7 +176,7 @@
 "BraveShieldsAdvancedControls" = "Kontrol lanjutan";
 
 /* No comment provided by engineer. */
-"BraveShieldsAndPrivacy" = "Perisai Brave & Privasi";
+"BraveShieldsAndPrivacy" = "Perisai & Privasi";
 
 /* No comment provided by engineer. */
 "BraveShieldsAndPrivacyTitle" = "Perisai & Privasi";
@@ -203,7 +203,7 @@
 "BraveShieldsSiteBroken" = "Jika situs ini tampak rusak, coba turunkan Shield";
 
 /* Context: 'Brave Shields Up' or 'Brave Shields Down' */
-"BraveShieldsStatusTitle" = "Brave Shields";
+"BraveShieldsStatusTitle" = "Shields";
 
 /* Context: The 'Down' in 'Brave Shields Down' */
 "BraveShieldsStatusValueDown" = "Turun";
@@ -212,7 +212,7 @@
 "BraveShieldsStatusValueUp" = "Naik";
 
 /* The accessibility hint spoken when focused on the main shields toggle */
-"BraveShieldsToggleHint" = "Ketuk dua kali untuk mengalihkan Brave Shields";
+"BraveShieldsToggleHint" = "Ketuk dua kali untuk mengalihkan Shields";
 
 /* The name of the feature */
 "bravetalk.braveTalkTitle" = "Brave Talk";
@@ -227,13 +227,13 @@
 "BraveTranslate.searchInputTitle" = "Cari";
 
 /* This text is for the settings menu for all Brave-Translate options. */
-"BraveTranslate.settingsMenuTitle" = "Terjemahan Brave";
+"BraveTranslate.settingsMenuTitle" = "Terjemahan";
 
 /* This text is for the translate settings screen. It's the title of the settings menu. */
-"BraveTranslate.settingsScreenTitle" = "Terjemahan Brave";
+"BraveTranslate.settingsScreenTitle" = "Terjemahan";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
-"BraveTranslate.settingsTranslateEnabledOptionDescription" = "Ketika diaktifkan, Terjemahan Brave otomatis mendeteksi bahasa di halaman, dan menampilkan tombol terjemahan di bilah URL.";
+"BraveTranslate.settingsTranslateEnabledOptionDescription" = "Ketika diaktifkan, Express Browser otomatis mendeteksi bahasa di halaman, dan menampilkan tombol terjemahan di bilah URL.";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
 "BraveTranslate.settingsTranslateEnabledOptionTitle" = "Terjemahkan Diaktifkan";
@@ -248,7 +248,7 @@
 "BrowserLock" = "Kunci Peramban";
 
 /* Description for setting to enable the browser lock privacy feature */
-"BrowserLockDescription" = "Buka kunci Brave dengan ID Sentuh, ID Wajah, atau kode sandi sistem.";
+"BrowserLockDescription" = "Buka kunci Express Browser dengan ID Sentuh, ID Wajah, atau kode sandi sistem.";
 
 /* Settings item for clearing browsing history */
 "BrowsingHistory" = "Riwayat Ramban";
@@ -263,13 +263,13 @@
 "callout.bottomBarCalloutDescription" = "Pindahkan bilah alamat, tab, markah, dan alat lainnya ke bagian bawah peramban.";
 
 /* Title for Bottom Bar Callout View */
-"callout.bottomBarCalloutTitle" = "Sesuaikan Bilah Tab Brave";
+"callout.bottomBarCalloutTitle" = "Sesuaikan Bilah Tab Express Browser";
 
 /* Description - Description used for main button in Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutButtonDescription" = "Tetapkan Brave sebagai Peramban Bawaan?";
+"callout.defaultBrowserCalloutButtonDescription" = "Tetapkan Express Browser sebagai Peramban Bawaan?";
 
 /* Subtitle - Description for Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutDescription" = "Dengan Brave sebagai bawaan, setiap tautan yang Anda ketuk akan terbuka dengan perlindungan privasi Brave.";
+"callout.defaultBrowserCalloutDescription" = "Dengan Express Browser sebagai bawaan, setiap tautan yang Anda ketuk akan terbuka dengan perlindungan privasi Express Browser.";
 
 /* Title for main button in Default Browser Full Screen Callout */
 "callout.defaultBrowserCalloutPrimaryButtonTitle" = "Tetapkan Bawaan";
@@ -596,25 +596,25 @@
 "defaultBrowserCallout.introOpenSettingsButtonText" = "Buka Setelan";
 
 /* Primary text on default browser popup screen */
-"defaultBrowserCallout.introPrimaryText" = "Buka semua tautan dengan Brave untuk menjaga privasi Anda";
+"defaultBrowserCallout.introPrimaryText" = "Buka semua tautan dengan Express Browser untuk menjaga privasi Anda";
 
 /* Secondary text on default browser popup. */
-"defaultBrowserCallout.introSecondaryText" = "Perisai Brave memblokir pelacak & iklan, menghemat data, dan menghemat waktu Anda di setiap situs yang Anda kunjungi";
+"defaultBrowserCallout.introSecondaryText" = "Perisai memblokir pelacak & iklan, menghemat data, dan menghemat waktu Anda di setiap situs yang Anda kunjungi";
 
 /* Tertiary text on default browser popup screen */
-"defaultBrowserCallout.introTertiaryText" = "Buka pengaturan, ketuk Default Browser App, dan pilih Brave.";
+"defaultBrowserCallout.introTertiaryText" = "Buka pengaturan, ketuk Default Browser App, dan pilih Express Browser.";
 
 /* Notification body to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationBody" = "Setel Brave sebagai browser default Anda";
+"defaultBrowserCallout.notificationBody" = "Setel Express Browser sebagai browser default Anda";
 
 /* Notification title to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationTitle" = "Dapatkan perlindungan Brave, pada setiap tautan";
+"defaultBrowserCallout.notificationTitle" = "Dapatkan perlindungan Express Browser, pada setiap tautan";
 
 /* No comment provided by engineer. */
 "defaultBrowserCalloutCloseAccesabilityLabel" = "Tutup penyorot peramban bawaan";
 
 /* Name for default Brave theme. */
-"defaultThemeName" = "Default Brave";
+"defaultThemeName" = "Default Express Browser";
 
 /* No comment provided by engineer. */
 "Delete" = "Hapus";
@@ -719,7 +719,7 @@
 "ErrorPageReloadButtonTitle" = "Muat Ulang";
 
 /* Additional warning text when clicking the Advanced button on error pages. %@ is a placeholder, do not localize it. Do not localize <br />. */
-"ErrorPagesAdvancedErrorPinningDetails" = "%1$@ biasanya menggunakan enkripsi untuk melindungi informasi Anda. Saat Brave coba menyambung ke %2$@ kali ini, situs web mengirimkan kembali kredensial yang tidak biasa dan salah. Hal ini bisa terjadi saat penyerang mencoba berpura-pura menjadi %3$@, atau layar sign-in Wi-Fi telah mengganggu sambungan. Informasi Anda masih aman karena Brave memutus koneksi sebelum terjadi pertukaran data apa pun.<br />Anda tidak dapat mengunjungi %4$@ sekarang karena situs web menggunakan penyematan sertifikat. Kesalahan dan serangan jaringan biasanya bersifat sementara, jadi halaman ini mungkin bisa berfungsi nanti.";
+"ErrorPagesAdvancedErrorPinningDetails" = "%1$@ biasanya menggunakan enkripsi untuk melindungi informasi Anda. Saat Express Browser coba menyambung ke %2$@ kali ini, situs web mengirimkan kembali kredensial yang tidak biasa dan salah. Hal ini bisa terjadi saat penyerang mencoba berpura-pura menjadi %3$@, atau layar sign-in Wi-Fi telah mengganggu sambungan. Informasi Anda masih aman karena Express Browser memutus koneksi sebelum terjadi pertukaran data apa pun.<br />Anda tidak dapat mengunjungi %4$@ sekarang karena situs web menggunakan penyematan sertifikat. Kesalahan dan serangan jaringan biasanya bersifat sementara, jadi halaman ini mungkin bisa berfungsi nanti.";
 
 /* Additional warning text when clicking the Advanced button on error pages */
 "ErrorPagesAdvancedWarningDetails" = "Peladen ini tidak dapat membuktikan bahwa ini adalah %@; sertifikat keamanannya tidak dipercaya sistem pengoperasian perangkat Anda. Ini mungkin disebabkan karena kesalahan konfigurasi atau penyerang yang mencoba mencegat koneksi Anda.";
@@ -759,6 +759,39 @@
 
 /* Button label to temporarily continue to the site from the certificate error page */
 "ErrorPagesProceedAnywayButton" = "Melanjutkan ke %@ (tidak aman)";
+
+/* Link on the private new tab page to a page about private mode. */
+"expressPrivateNTP.learnMore" = "Pelajari selengkapnya";
+
+/* Bullet point: data that private mode doesn't save. Data that websites save on the device, such as sign-in state. */
+"expressPrivateNTP.notSavedCookies" = "Cookie dan data situs";
+
+/* Bullet point: data that private mode doesn't save. Names, addresses, passwords etc. that people enter into forms on the web. */
+"expressPrivateNTP.notSavedForms" = "Informasi yang dimasukkan dalam formulir";
+
+/* Introduces a bulleted list of data that private mode doesn't save. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.notSavedHeader" = "Express Browser <em>tidak akan menyimpan</em>:";
+
+/* Bullet point: data that private mode doesn't save. 'Browsing history' is the history of visited websites. */
+"expressPrivateNTP.notSavedHistory" = "Histori penjelajahan Anda";
+
+/* Subtitle of the private new tab page, under its title. */
+"expressPrivateNTP.subtitle" = "Orang lain yang menggunakan perangkat ini tidak akan melihat aktivitas Anda, sehingga Anda dapat menjelajah secara lebih pribadi. Hal ini tidak akan mengubah cara pengumpulan data oleh situs web yang Anda kunjungi dan layanan yang mereka gunakan, termasuk Express Browser. Hasil download dan bookmark akan disimpan.";
+
+/* Title of the private new tab page. Private mode hides your browsing from other people using the same device; it does not make you anonymous. */
+"expressPrivateNTP.title" = "Anda telah menjadi Privat";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleEmployer" = "Pihak sekolah atau atasan Anda";
+
+/* Introduces a bulleted list of who might still see what the user does in private mode. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.visibleHeader" = "Aktivitas Anda <em>mungkin tetap dapat dilihat</em> oleh:";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleProvider" = "Internet Service Provider Anda";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleWebsites" = "Situs yang Anda buka";
 
 /* %@ will launch an external application */
 "ExternalAppURLAlertMessage" = "%@ akan meluncurkan aplikasi eksternal";
@@ -1187,13 +1220,13 @@
 "OBSearchEngineDetail" = "Pilih mesin pencari baku Anda";
 
 /* Title for search engine onboarding screen */
-"OBSearchEngineTitle" = "Selamat Datang di Peramban Brave";
+"OBSearchEngineTitle" = "Selamat Datang di Peramban Express Browser";
 
 /* Detail text for shields onboarding screen */
 "OBShieldsDetail" = "Blokir pelacak privasi yang menginvasi agar Anda dapat menjelajahi di web tanpa dikuntit.";
 
 /* Title for shields onboarding screen */
-"OBShieldsTitle" = "Brave Shields";
+"OBShieldsTitle" = "Shields";
 
 /* Button to show the Brave Rewards Ads. */
 "OBShowMeButton" = "Tampilkan Kepada Saya";
@@ -1205,10 +1238,10 @@
 "onboarding.blockedAdsOnboardingBigTechInformationText" = "%1$@ dan %2$lld iklan lain & pelacak diblokir";
 
 /* The footnote indicating what Brave shields is blocking */
-"onboarding.blockedAdsOnboardingFootnoteText" = "Lihatlah semua hal buruk yang diblokir Brave, pada setiap halaman, dengan Perisai.";
+"onboarding.blockedAdsOnboardingFootnoteText" = "Lihatlah semua hal buruk yang diblokir Express Browser, pada setiap halaman, dengan Perisai.";
 
 /* The text describing user where they should press in order to open Shield panel */
-"onboarding.blockedAdsOnboardingInstructionsText" = "Ketuk untuk melihat Perisai Brave";
+"onboarding.blockedAdsOnboardingInstructionsText" = "Ketuk untuk melihat Perisai";
 
 /* The description text shown when there is no big tech tracker among trackers. Example usage: 31 Ads & trackers blocked. The number here is presented separately so it is not in translation. */
 "onboarding.blockedAdsOnboardingNoBigTechInformationText" = "Ads & pelacak telah diblokir";
@@ -1232,13 +1265,13 @@
 "onboarding.ntpOnboardingPopOverTrackerDescription" = "Dengan memblokir pelacak & iklan, situs web pakai lebih sedikit data dan dimuat lebih cepat.";
 
 /* Description for the Omnibox (URL Bar) pop-over that describes faster load times. */
-"onboarding.omniboxOnboardingPopOverDescription" = "Lihat perbedaan Brave:\nTanpa iklan. Tanpa pelacak. Pemuatan halaman yang jauh lebih cepat.";
+"onboarding.omniboxOnboardingPopOverDescription" = "Lihat perbedaan Express Browser:\nTanpa iklan. Tanpa pelacak. Pemuatan halaman yang jauh lebih cepat.";
 
 /* Title for the Omnibox (URL Bar) pop-over that describes faster load times. */
 "onboarding.omniboxOnboardingPopOverTitle" = "Ketik nama atau URL situs web";
 
 /* Title for Welcome Screen in Onboarding */
-"onboarding.welcomeScreenTitle" = "Selamat Datang di Brave";
+"onboarding.welcomeScreenTitle" = "Selamat Datang di Express Browser";
 
 /* Continue button to navigate to next onboarding screen. */
 "OnboardingContinueButton" = "Lanjutkan";
@@ -1280,7 +1313,7 @@
 "OpenMobileConfigurationAlertTitle" = "Profil konfigurasi tersedia";
 
 /* Context menu option for opening a link in a new private tab */
-"OpenNewPrivateTabButtonTitle" = "Buka di Tab Privat Baru";
+"OpenNewPrivateTabButtonTitle" = "Buka di tab Privat";
 
 /* Context menu item for opening a link in a new tab */
 "OpenNewTabButtonTitle" = "Buka di Tab Baru";
@@ -1487,7 +1520,7 @@
 "PersistentPrivateBrowsing" = "Perambanan Privat yang Gigih";
 
 /* Persistent private browsing alert message to existing users */
-"PersistentPrivateBrowsingAlertMessage" = "Izinkan Brave untuk memperbaiki tab peramban privat, bahkan jika Anda menutup/membuka ulang aplikasi";
+"PersistentPrivateBrowsingAlertMessage" = "Izinkan Express Browser untuk memperbaiki tab peramban privat, bahkan jika Anda menutup/membuka ulang aplikasi";
 
 /* Persistent private browsing alert title to existing users */
 "PersistentPrivateBrowsingAlertTitle" = "Pulihkan Tab Privat";
@@ -1931,7 +1964,7 @@
 "privacyHub.lastWeekHeader" = "Minggu lalu";
 
 /* Do NOT localize asterisk('*') characters, they are used to make the text bold in the app. It says which tracker was blocked on how many websites, example usage: 'Google Analytics was blocked by Brave Shields on 42 sites' */
-"privacyHub.mostFrequentTrackerAndAdBody" = "**%1$@** diblokir oleh Perisai Brave pada situs **%2$lld**";
+"privacyHub.mostFrequentTrackerAndAdBody" = "**%1$@** diblokir oleh Perisai pada situs **%2$lld**";
 
 /* Title under which we display a tracker which was most frequently detected by our ad blocking mechanism. */
 "privacyHub.mostFrequentTrackerAndAdTitle" = "Pelacak & Iklan Paling Sering";
@@ -1949,7 +1982,7 @@
 "privacyHub.notificationCalloutButtonText" = "Aktifkan notifikasi";
 
 /* Message of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
-"privacyHub.notificationMessage" = "Rangkuman tentang cara Brave telah melindungi Anda secara daring minggu ini.";
+"privacyHub.notificationMessage" = "Rangkuman tentang cara Express Browser telah melindungi Anda secara daring minggu ini.";
 
 /* Title of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
 "privacyHub.notificationTitle" = "Laporan Privasi Mingguan";
@@ -2039,10 +2072,10 @@
 "PrivateBrowsingOnlyWarning" = "Moda Hanya Peramban Pribadi akan menutup semua tab Anda saat ini dan mengeluarkan Anda dari semua situs.";
 
 /* Private tab details */
-"PrivateTabBody" = "Tab Pribadi tidak disimpan di Brave, tetapi tab tersebut tidak menjadikan Anda anonim secara online. Situs-situs yang Anda kunjungi di tab pribadi tidak akan muncul di riwayat Anda dan kukinya selalu terhapus saat Anda menutup situs, tidak akan ada jejak situs tersebut yang tertinggal di Brave. Namun unduhan Anda akan disimpan.\nOperator seluler Anda (atau pemilik jaringan WiFi atau VPN yang terhubung) dapat melihat situs apa yang Anda kunjungi dan situs tersebut akan mengetahui alamat IP publik Anda, bahkan dalam Tab Pribadi.";
+"PrivateTabBody" = "Tab Pribadi tidak disimpan di Express Browser, tetapi tab tersebut tidak menjadikan Anda anonim secara online. Situs-situs yang Anda kunjungi di tab pribadi tidak akan muncul di riwayat Anda dan kukinya selalu terhapus saat Anda menutup situs, tidak akan ada jejak situs tersebut yang tertinggal di Express Browser. Namun unduhan Anda akan disimpan.\nOperator seluler Anda (atau pemilik jaringan WiFi atau VPN yang terhubung) dapat melihat situs apa yang Anda kunjungi dan situs tersebut akan mengetahui alamat IP publik Anda, bahkan dalam Tab Pribadi.";
 
 /* Private tab detail text */
-"PrivateTabDetails" = "Menggunakan Tab Pribadi hanya akan mengubah fungsi Brave di perangkat Anda, namun tidak mengubah perilaku orang lain.\n\nSitus selalu mengetahui alamat IP Anda saat mengunjunginya. Dari sini, mereka sering kali dapat selalu menebak lokasi Anda, terutama kota. Terkadang lokasi yang diketahui dapat lebih spesifik. Situs juga mengetahui semua yang Anda beri tahu secara spesifik kepada mereka seperti istilah pencarian. Jika masuk, situs akan mengetahui bahwa Anda adalah pemilik akun tersebut. Anda tetap akan keluar saat menutup Tab Pribadi karena Brave akan menghapus kuki yang Anda gunakan untuk masuk.\n\nSiapa pun yang menyambungkan Anda ke Internet (ISP Anda) dapat melihat semua aktivitas jaringan Anda. Sering kali, operator seluler Anda yang melihatnya. Jika Anda tersambung ke jaringan WiFi, maka pemilik jaringan tersebut yang dapat melihat aktivitas jaringan, dan jika Anda menggunakan VPN, maka siapa pun yang menjalankan VPN tersebut yang dapat melihat aktivitas jaringan. ISP Anda dapat melihat situs yang dikunjungi saat Anda mengunjunginya. Jika situs tersebut menggunakan HTTPS, situs tersebut hanya dapat menebak aktivitas Anda di situs tersebut. Namun jika situs hanya menggunakan HTTP, maka ISP dapat melihat semuanya: istilah pencarian Anda, halaman yang dibaca, dan tautan yang diikuti.\n\nJika perusahaan mengelola perangkat Anda, mereka juga dapat melacak aktivitas perangkat Anda. Menggunakan Tab Pribadi mungkin tidak akan menghentikan mereka untuk mengetahui situs yang Anda kunjungi. Orang lain yang memiliki akses ke perangkat Anda juga dapat memasang perangkat lunak yang memantau aktivitas Anda, dan Tab Pribadi tidak akan dapat melindungi Anda dari hal ini.";
+"PrivateTabDetails" = "Menggunakan Tab Pribadi hanya akan mengubah fungsi Express Browser di perangkat Anda, namun tidak mengubah perilaku orang lain.\n\nSitus selalu mengetahui alamat IP Anda saat mengunjunginya. Dari sini, mereka sering kali dapat selalu menebak lokasi Anda, terutama kota. Terkadang lokasi yang diketahui dapat lebih spesifik. Situs juga mengetahui semua yang Anda beri tahu secara spesifik kepada mereka seperti istilah pencarian. Jika masuk, situs akan mengetahui bahwa Anda adalah pemilik akun tersebut. Anda tetap akan keluar saat menutup Tab Pribadi karena Express Browser akan menghapus kuki yang Anda gunakan untuk masuk.\n\nSiapa pun yang menyambungkan Anda ke Internet (ISP Anda) dapat melihat semua aktivitas jaringan Anda. Sering kali, operator seluler Anda yang melihatnya. Jika Anda tersambung ke jaringan WiFi, maka pemilik jaringan tersebut yang dapat melihat aktivitas jaringan, dan jika Anda menggunakan VPN, maka siapa pun yang menjalankan VPN tersebut yang dapat melihat aktivitas jaringan. ISP Anda dapat melihat situs yang dikunjungi saat Anda mengunjunginya. Jika situs tersebut menggunakan HTTPS, situs tersebut hanya dapat menebak aktivitas Anda di situs tersebut. Namun jika situs hanya menggunakan HTTP, maka ISP dapat melihat semuanya: istilah pencarian Anda, halaman yang dibaca, dan tautan yang diikuti.\n\nJika perusahaan mengelola perangkat Anda, mereka juga dapat melacak aktivitas perangkat Anda. Menggunakan Tab Pribadi mungkin tidak akan menghentikan mereka untuk mengetahui situs yang Anda kunjungi. Orang lain yang memiliki akses ke perangkat Anda juga dapat memasang perangkat lunak yang memantau aktivitas Anda, dan Tab Pribadi tidak akan dapat melindungi Anda dari hal ini.";
 
 /* Private tab information link */
 "PrivateTabLink" = "Pelajari tentang Tab Pribadi.";
@@ -2054,7 +2087,7 @@
 "QuickSearchEngines" = "Mesin Pencarian Cepat";
 
 /* Open the App Store to rate Brave. */
-"RateBrave" = "Nilai Brave";
+"RateBrave" = "Nilai Express Browser";
 
 /* Accessibility label for button increasing font size in display settings of reader mode */
 "ReaderModeBiggerFontButtonAccessibilityLabel" = "Tambah ukuran teks";
@@ -2243,10 +2276,10 @@
 "RestoreTabNegativeButtonTitle" = "Tidak";
 
 /* Restore Tabs Prompt Description */
-"RestoreTabOnCrashAlertMessage" = "Sayangnya, Brave mengalami kerusakan dan tidak ditutup dengan benar.\nPulihkan tab Anda?";
+"RestoreTabOnCrashAlertMessage" = "Sayangnya, Express Browser mengalami kerusakan dan tidak ditutup dengan benar.\nPulihkan tab Anda?";
 
 /* Restore Tabs Prompt Title */
-"RestoreTabOnCrashAlertTitle" = "Brave Ditutup Mendadak.";
+"RestoreTabOnCrashAlertTitle" = "Express Browser Ditutup Mendadak.";
 
 /* Body for Brave Talk rewards opt-in screen */
 "rewards.braveTalkRewardsOptInBody" = "Dengan Brave Rewards, Anda dapat melihat iklan yang menghormati privasi dari jaringan Brave Ads. Tanpa pelacak. Tanpa hambatan. Dan data Anda akan tetap aman sepenuhnya.";
@@ -2573,7 +2606,7 @@
 "searchSuggestionsSubtitle" = "Anda mau mengaktifkan Saran Penelusuran?";
 
 /* Title of an action that allows user to perform a one-click web search for selected text */
-"SearchWithBrave" = "Mencari dengan Brave";
+"SearchWithBrave" = "Mencari dengan Express Browser";
 
 /* Settings security section title */
 "Security" = "Keamanan";
@@ -2582,16 +2615,16 @@
 "sendButtonTitle" = "Kirim";
 
 /* Message displayed in the crash dialog above the buttons used to select when sending reports */
-"SendCrashReportAlertMessage" = "Kirim laporan mogok agar Brave dapat memperbaikinya?";
+"SendCrashReportAlertMessage" = "Kirim laporan mogok agar Express Browser dapat memperbaikinya?";
 
 /* Title for prompt displayed to user after the app crashes */
-"SendCrashReportAlertTitle" = "Duh! Brave mogok";
+"SendCrashReportAlertTitle" = "Duh! Express Browser mogok";
 
 /* Used as a button label for crash dialog prompt */
 "SendReportButtonTitle" = "Kirim Laporan";
 
 /* No comment provided by engineer. */
-"setDefaultBrowserCalloutTitle" = "Kini, Brave dapat diatur sebagai peramban bawaan Anda di iOS. Ketuk di sini untuk membuka pengaturan.";
+"setDefaultBrowserCalloutTitle" = "Kini, Express Browser dapat diatur sebagai peramban bawaan Anda di iOS. Ketuk di sini untuk membuka pengaturan.";
 
 /* Settings item to set the Brave as a default browser on the iOS device. */
 "setDefaultBrowserSettingsCell" = "Tetapkan sebagai Peramban Bawaan";
@@ -2615,7 +2648,7 @@
 "settings.autocloseTabsSetting" = "Tutup Tab";
 
 /* Description of autoclose tabs feature. */
-"settings.autocloseTabsSettingFooter" = "Izinkan Brave untuk secara otomatis menutup tab yang belum ditonton baru-baru ini.";
+"settings.autocloseTabsSettingFooter" = "Izinkan Express Browser untuk secara otomatis menutup tab yang belum ditonton baru-baru ini.";
 
 /* Label for the navigation link to quality settings view */
 "settings.highestQualityPlayback" = "Kualitas Tayang Tertinggi";
@@ -2630,7 +2663,7 @@
 "settings.media.rootSetting" = "Media";
 
 /* A toggle label which lets the user always open YouTube urls in Brave */
-"settings.openYouTubeInBrave" = "Buka tautan YouTube di Brave";
+"settings.openYouTubeInBrave" = "Buka tautan YouTube di Express Browser";
 
 /* No comment provided by engineer. */
 "settings.privacy.screenTimeSetting" = "Aktifkan Waktu Melihat Layar";
@@ -2705,7 +2738,7 @@
 "shieldEducation.shareTheNewsTitle" = "Bagikan berita";
 
 /* Subtitle for Shield Education Tracker Ad Warning */
-"shieldEducation.trackerAdWarningSubTitle" = "Brave Shield telah menjaga privasi online Anda.";
+"shieldEducation.trackerAdWarningSubTitle" = "Shield telah menjaga privasi online Anda.";
 
 /* Subtitle for Shield Education Tracker Count Share */
 "shieldEducation.trackerCountShareSubtitle" = "Selamat. Anda cukup spesial.";
@@ -2720,13 +2753,13 @@
 "shieldEducation.videoAdBlockTitle" = "Iklan diblok selagi melihat video pada situs ini.";
 
 /* Section title for adbblock, tracking protection, HTTPS-E, and cookies */
-"ShieldsDefaults" = "Default Global Perisai Brave";
+"ShieldsDefaults" = "Default Global Perisai";
 
 /* Section footer for global shields defaults */
 "ShieldsDefaultsFooter" = "Ini adalah pengaturan bawaan Perisai untuk situs baru. Mengubah hal ini tidak akan memengaruhi pengaturan per-situs Anda yang telah ada.";
 
 /* No comment provided by engineer. */
-"ShieldsDownDisclaimer" = "Anda sedang meramban situs ini tanpa perlindungan privasi Brave. Apakah ini tidak berfungsi dengan benar jika memasang Shield?";
+"ShieldsDownDisclaimer" = "Anda sedang meramban situs ini tanpa perlindungan privasi Express Browser. Apakah ini tidak berfungsi dengan benar jika memasang Shield?";
 
 /* shields overview message */
 "ShieldsOverview" = "Perisai Situs memungkinkan Anda mengontrol saat iklan dan pelacak diblokir untuk setiap situs yang dikunjungi. Jika memilih untuk melihat iklan pada situs tertentu, Anda dapat mengaktifkannya di sini.";
@@ -2753,7 +2786,7 @@
 "shortcuts.activityTypeClearHistorySuggestedPhrase" = "Hapus Riwayat Peramban";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeClearHistoryTitle" = "Hapus Riwayat Peramban Brave";
+"shortcuts.activityTypeClearHistoryTitle" = "Hapus Riwayat Peramban Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeEnableVPNDescription" = "Buka Peramban di Tab Baru dan Aktfkan VPN";
@@ -2762,7 +2795,7 @@
 "shortcuts.activityTypeEnableVPNSuggestedPhrase" = "Aktifkan VPN";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeEnableVPNTitle" = "Buka Peramban Brave dan Aktifkan VPN";
+"shortcuts.activityTypeEnableVPNTitle" = "Buka Peramban Express Browser dan Aktifkan VPN";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeNewPrivateTabSuggestedPhrase" = "Buka di Tab Pribadi Baru";
@@ -2783,7 +2816,7 @@
 "shortcuts.activityTypeOpenBookmarksSuggestedPhrase" = "Buka Markah";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenBookmarksTitle" = "Buka Markah Peramban Brave";
+"shortcuts.activityTypeOpenBookmarksTitle" = "Buka Markah Peramban Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenBraveNewsTitle" = "Buka Brave News";
@@ -2798,7 +2831,7 @@
 "shortcuts.activityTypeOpenHistoryListSuggestedPhrase" = "Buka Riwayat Peramban";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenHistoryListTitle" = "Buka Riwayat Peramban Brave";
+"shortcuts.activityTypeOpenHistoryListTitle" = "Buka Riwayat Peramban Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenPlaylistDescription" = "Mulai Memutar Video Anda di Daftar Putar";
@@ -2819,7 +2852,7 @@
 "shortcuts.activityTypeOpenSyncedTabsTitle" = "Buka Tab dari Perangkat Lain";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeTabDescription" = "Mulai Mencari di Web Dengan Aman Bersama Brave";
+"shortcuts.activityTypeTabDescription" = "Mulai Mencari di Web Dengan Aman Bersama Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.customIntentOpenBookmarkSuggestedPhrase" = "Buka Situs Web Markah";
@@ -2831,7 +2864,7 @@
 "shortcuts.customIntentOpenWebsiteSuggestedPhrase" = "Buka Situs Web";
 
 /* Description for opening Brave Settings for altering Siri shortcut. */
-"shortcuts.shortcutOpenApplicationSettingsDescription" = "Pilihan ini akan membuka Pengaturan Brave. Untuk mengubah berbagai pilihan Siri, pilih item menu 'Siri & Cari' dan sesuaikan pilihan Anda.";
+"shortcuts.shortcutOpenApplicationSettingsDescription" = "Pilihan ini akan membuka Pengaturan Express Browser. Untuk mengubah berbagai pilihan Siri, pilih item menu 'Siri & Cari' dan sesuaikan pilihan Anda.";
 
 /* Button title that open application settings */
 "shortcuts.shortcutOpenApplicationSettingsTitle" = "Buka Setelan";
@@ -2927,10 +2960,10 @@
 "SiteShieldSettings" = "Pelindung";
 
 /* Title used when in warning pop-over when domain specific data save appears */
-"socialSharing.domainSpecificDataSavedTitle" = "Tiap hari saya menghemat data karena melakukan penelusuran web dengan Brave.";
+"socialSharing.domainSpecificDataSavedTitle" = "Tiap hari saya menghemat data karena melakukan penelusuran web dengan Express Browser.";
 
 /* Text used for social sharing together with Brave Shield values */
-"socialSharing.shareDescriptionTitle" = "Tiap hari saya menghemat data karena melakukan penelusuran web dengan Brave.";
+"socialSharing.shareDescriptionTitle" = "Tiap hari saya menghemat data karena melakukan penelusuran web dengan Express Browser.";
 
 /* Open search section of settings */
 "StandardTabSearch" = "Tab Standar";
@@ -3356,7 +3389,7 @@
 "themeQRCodeShareButton" = "Bagikan...";
 
 /* Title for QR popup encouraging users to share the code with their friends. */
-"themeQRCodeShareTitle" = "Bagikan Brave ke teman-teman Anda!";
+"themeQRCodeShareTitle" = "Bagikan Express Browser ke teman-teman Anda!";
 
 /* Selection to automatically color/style the user interface. */
 "ThemesAutomaticOption" = "Otomatis";
@@ -3509,19 +3542,19 @@
 "today.promoted" = "Dipromosikan";
 
 /* Title for long press action sheet list which has item for rate / hide */
-"today.rateBraveCardActionSheetTitle" = "Nilai Brave di App Store";
+"today.rateBraveCardActionSheetTitle" = "Nilai Express Browser di App Store";
 
 /* Title for long press action that will hide Brave Rate Card */
 "today.rateBraveCardHideActionTitle" = "Sembunyikan";
 
 /* Button title / Title for long press action that will perform an action which open AppStore Rate screen */
-"today.rateBraveCardRateActionTitle" = "Nilai Brave";
+"today.rateBraveCardRateActionTitle" = "Nilai Express Browser";
 
 /* Subtitle shown on the Rate Brave Card */
 "today.rateBraveCardSubtitle" = "Beri tahu kami pendapat Anda!";
 
 /* Title shown on the Rate Brave Card */
-"today.rateBraveCardTitle" = "Suka Brave?";
+"today.rateBraveCardTitle" = "Suka Express Browser?";
 
 /* No comment provided by engineer. */
 "today.refresh" = "Segarkan";
@@ -3602,13 +3635,13 @@
 "ViewOn" = "Lihat di %@";
 
 /* Explanation for warning alert why the microphone access required. */
-"voice.search.microphone.description.required" = "Harap izinkan Akses Mikrofon di Pengaturan Sistem iOS agar Brave bisa menggunakan pencarian suara anonim.";
+"voice.search.microphone.description.required" = "Harap izinkan Akses Mikrofon di Pengaturan Sistem iOS agar Express Browser bisa menggunakan pencarian suara anonim.";
 
 /* Title for warning alert microphone access is required. */
 "voice.search.microphone.title.required" = "Diperlukan Akses Mikrofon";
 
 /* Disclaimer for screen to search using voice. */
-"voice.search.screen.disclaimer" = "Brave tidak menyimpan atau membagikan pencarian suara Anda.";
+"voice.search.screen.disclaimer" = "Express Browser tidak menyimpan atau membagikan pencarian suara Anda.";
 
 /* The date your wallet was created */
 "WalletCreationDate" = "Tanggal Pembuatan Dompet";

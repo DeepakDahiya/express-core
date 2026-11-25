@@ -2,7 +2,7 @@
 "focusOnboarding.continueButtonTitle" = "Tiếp tục";
 
 /* The subtitle of the screen that requests user to set Brave as default */
-"focusOnboarding.defaultBrowserScreenDescription" = "Đặt Brave làm trình duyệt mặc định của bạn ngay hôm nay.";
+"focusOnboarding.defaultBrowserScreenDescription" = "Đặt Express Browser làm trình duyệt mặc định của bạn ngay hôm nay.";
 
 /* The title of the screen that requests user to set Brave as default */
 "focusOnboarding.defaultBrowserScreenTitle" = "Chặn quảng cáo trên mọi trang bạn truy cập";
@@ -38,5 +38,5 @@
 "focusOnboarding.urlBarIndicatorDescription" = "Tận hưởng nội dung trực tuyến với ít quảng cáo & trình theo dõi hơn.";
 
 /* The title of the popup which points to URL Bar after onboarding */
-"focusOnboarding.urlBarIndicatorTitle" = "Sự khác biệt mang tên Brave";
+"focusOnboarding.urlBarIndicatorTitle" = "Sự khác biệt mang tên Express Browser";
 

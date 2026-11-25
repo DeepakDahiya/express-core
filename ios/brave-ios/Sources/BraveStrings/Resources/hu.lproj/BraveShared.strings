@@ -2,7 +2,7 @@
 "About" = "Névjegy";
 
 /* The title of the screen explaining Brave Shields */
-"AboutBraveShields" = "Bővebben a Brave Shieldsről";
+"AboutBraveShields" = "Bővebben a Shieldsről";
 
 /* The body of the screen explaining Brave Shields */
 "AboutBraveShieldsBody" = "A webhelyek gyakran tartalmaznak cookie-kat és szkripteket, amelyek megpróbálják azonosítani Önt és eszközét. Ki akarják deríteni, hogy Ön kicsoda, és követni akarják Önt az interneten – minden webhelyen nyomon követik, mit csinál.\n\nA Brave letiltja ezeket a dolgokat, így anélkül böngészhet, hogy követnék.";
@@ -11,7 +11,7 @@
 "AccessPhotoDeniedAlertMessage" = "Ez lehetővé teszi a kép elmentését a kamerafotók közé.";
 
 /* See http://mzl.la/1G7uHo7 */
-"AccessPhotoDeniedAlertTitle" = "A Brave szeretne hozzáférni a fotóihoz";
+"AccessPhotoDeniedAlertTitle" = "Az Express Browser szeretne hozzáférni a fotóihoz";
 
 /* Label to display in the Discoverability overlay for keyboard shortcuts */
 "addBookmarkTitle" = "Könyvjelző hozzáadása";
@@ -44,7 +44,7 @@
 "AlwaysShow" = "Be";
 
 /* Touch ID or PIN entry prompt subtitle when accessing Brave with the Browser Lock feature enabled */
-"AuthenticationLoginsTouchReason" = "Ez hitelesíti az Ön hozzáférését a Brave-hez";
+"AuthenticationLoginsTouchReason" = "Ez hitelesíti az Ön hozzáférését az Express Browserhez";
 
 /* Label for Cancel button */
 "AuthPromptAlertCancelButtonTitle" = "Mégse";
@@ -176,7 +176,7 @@
 "BraveShieldsAdvancedControls" = "Speciális vezérlők";
 
 /* No comment provided by engineer. */
-"BraveShieldsAndPrivacy" = "Brave Shields és adatvédelem";
+"BraveShieldsAndPrivacy" = "Shields és adatvédelem";
 
 /* No comment provided by engineer. */
 "BraveShieldsAndPrivacyTitle" = "Shields és adatvédelem";
@@ -203,7 +203,7 @@
 "BraveShieldsSiteBroken" = "Ha ez a webhely hibásnak tűnik, próbálja ki a Pajzsok funkciót";
 
 /* Context: 'Brave Shields Up' or 'Brave Shields Down' */
-"BraveShieldsStatusTitle" = "Brave védelem";
+"BraveShieldsStatusTitle" = "Védelem";
 
 /* Context: The 'Down' in 'Brave Shields Down' */
 "BraveShieldsStatusValueDown" = "Lefelé";
@@ -212,7 +212,7 @@
 "BraveShieldsStatusValueUp" = "Fel";
 
 /* The accessibility hint spoken when focused on the main shields toggle */
-"BraveShieldsToggleHint" = "Koppintson duplán a Brave pajzsok átkapcsolásához";
+"BraveShieldsToggleHint" = "Koppintson duplán a pajzsok átkapcsolásához";
 
 /* The name of the feature */
 "bravetalk.braveTalkTitle" = "Brave Talk";
@@ -227,13 +227,13 @@
 "BraveTranslate.searchInputTitle" = "Keresés ";
 
 /* This text is for the settings menu for all Brave-Translate options. */
-"BraveTranslate.settingsMenuTitle" = "Brave fordítás";
+"BraveTranslate.settingsMenuTitle" = "Fordítás";
 
 /* This text is for the translate settings screen. It's the title of the settings menu. */
-"BraveTranslate.settingsScreenTitle" = "Brave fordítás";
+"BraveTranslate.settingsScreenTitle" = "Fordítás";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
-"BraveTranslate.settingsTranslateEnabledOptionDescription" = "Ha engedélyezi a Brave Translate-et, akkor az automatikusan felismeri az oldal aktuális nyelvét, és megjeleníti a fordítás gombot az URL sávban.";
+"BraveTranslate.settingsTranslateEnabledOptionDescription" = "Ha engedélyezi, akkor az Express Browser automatikusan felismeri az oldal aktuális nyelvét, és megjeleníti a fordítás gombot az URL sávban.";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
 "BraveTranslate.settingsTranslateEnabledOptionTitle" = "Fordítás engedélyezve";
@@ -248,7 +248,7 @@
 "BrowserLock" = "Böngészőzár";
 
 /* Description for setting to enable the browser lock privacy feature */
-"BrowserLockDescription" = "Oldja fel a Brave feloldását Touch ID, Face ID vagy rendszerjelszó segítségével.";
+"BrowserLockDescription" = "Oldja fel az Express Browser feloldását Touch ID, Face ID vagy rendszerjelszó segítségével.";
 
 /* Settings item for clearing browsing history */
 "BrowsingHistory" = "Böngészési előzmények";
@@ -263,13 +263,13 @@
 "callout.bottomBarCalloutDescription" = "A címsáv, a lapok, a könyvjelzők és az egyéb eszközök áthelyezése a böngésző aljára.";
 
 /* Title for Bottom Bar Callout View */
-"callout.bottomBarCalloutTitle" = "A Brave-lapsáv testreszabása";
+"callout.bottomBarCalloutTitle" = "Az Express Browser-lapsáv testreszabása";
 
 /* Description - Description used for main button in Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutButtonDescription" = "Beállítja a Brave-et alapértelmezett böngészőként?";
+"callout.defaultBrowserCalloutButtonDescription" = "Beállítja az Express Browsert alapértelmezett böngészőként?";
 
 /* Subtitle - Description for Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutDescription" = "A Brave alapértelmezett böngészőként történő beállításával minden hivatkozás, amelyre rákoppint a Brave adatvédelmi beállításaival fog megnyílni.";
+"callout.defaultBrowserCalloutDescription" = "Az Express Browser alapértelmezett böngészőként történő beállításával minden hivatkozás, amelyre rákoppint az Express Browser adatvédelmi beállításaival fog megnyílni.";
 
 /* Title for main button in Default Browser Full Screen Callout */
 "callout.defaultBrowserCalloutPrimaryButtonTitle" = "Beállítás alapértelmezettként";
@@ -596,25 +596,25 @@
 "defaultBrowserCallout.introOpenSettingsButtonText" = "Beállítások megnyitása";
 
 /* Primary text on default browser popup screen */
-"defaultBrowserCallout.introPrimaryText" = "Nyiss meg minden hivatkozást Brave-ben, hogy vigyázz az adataidra.";
+"defaultBrowserCallout.introPrimaryText" = "Nyiss meg minden hivatkozást Express Browserben, hogy vigyázz az adataidra.";
 
 /* Secondary text on default browser popup. */
-"defaultBrowserCallout.introSecondaryText" = "A Brave-védelem blokkolja a követőket és reklámokat, menti az adatokat, és időt takarít meg Önnek minden felkeresett oldalon";
+"defaultBrowserCallout.introSecondaryText" = "A védelem blokkolja a követőket és reklámokat, menti az adatokat, és időt takarít meg Önnek minden felkeresett oldalon";
 
 /* Tertiary text on default browser popup screen */
-"defaultBrowserCallout.introTertiaryText" = "Nyissa meg a Beállításokat, koppintson az Alapértelmezett böngészőalkalmazásra, majd válassza ki a Brave-et.";
+"defaultBrowserCallout.introTertiaryText" = "Nyissa meg a Beállításokat, koppintson az Alapértelmezett böngészőalkalmazásra, majd válassza ki az Express Browsert.";
 
 /* Notification body to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationBody" = "A Brave beállítása alapértelmezett böngészőként";
+"defaultBrowserCallout.notificationBody" = "Az Express Browser beállítása alapértelmezett böngészőként";
 
 /* Notification title to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationTitle" = "Használja ki a Brave által nyújtott védelmet minden hivatkozásnál";
+"defaultBrowserCallout.notificationTitle" = "Használja ki az Express Browser által nyújtott védelmet minden hivatkozásnál";
 
 /* No comment provided by engineer. */
 "defaultBrowserCalloutCloseAccesabilityLabel" = "Alapértelmezett böngésző kiemelésének bezárása";
 
 /* Name for default Brave theme. */
-"defaultThemeName" = "Brave alapértelmezett";
+"defaultThemeName" = "Express Browser alapértelmezett";
 
 /* No comment provided by engineer. */
 "Delete" = "Törlés";
@@ -719,7 +719,7 @@
 "ErrorPageReloadButtonTitle" = "Újratöltés";
 
 /* Additional warning text when clicking the Advanced button on error pages. %@ is a placeholder, do not localize it. Do not localize <br />. */
-"ErrorPagesAdvancedErrorPinningDetails" = "A(z) %1$@ általában titkosítást használ adatai védelme érdekében. Amikor a Brave megpróbált csatlakozni a(z) %2$@ oldalhoz, az szokatlan és hibás hitelesítő adatokat küldött vissza. Ez olyankor fordulhat elő, ha egy hacker a(z) %3$@-nak adja ki magát, vagy egy wifi bejelentkezési képernyő megszakítja a kapcsolatot. Adatai továbbra is biztonságban vannak, mert a Brave leállította a kapcsolatot, mielőtt adatcsere történt volna.<br />Jelenleg nem keresheti fel a(z) %4$@ weboldalt, mert az tanúsítványrögzítést alkalmaz. A hálózati hibák és támadások általában átmenetiek, így az oldal később valószínűleg működni fog.";
+"ErrorPagesAdvancedErrorPinningDetails" = "A(z) %1$@ általában titkosítást használ adatai védelme érdekében. Amikor az Express Browser megpróbált csatlakozni a(z) %2$@ oldalhoz, az szokatlan és hibás hitelesítő adatokat küldött vissza. Ez olyankor fordulhat elő, ha egy hacker a(z) %3$@-nak adja ki magát, vagy egy wifi bejelentkezési képernyő megszakítja a kapcsolatot. Adatai továbbra is biztonságban vannak, mert az Express Browser leállította a kapcsolatot, mielőtt adatcsere történt volna.<br />Jelenleg nem keresheti fel a(z) %4$@ weboldalt, mert az tanúsítványrögzítést alkalmaz. A hálózati hibák és támadások általában átmenetiek, így az oldal később valószínűleg működni fog.";
 
 /* Additional warning text when clicking the Advanced button on error pages */
 "ErrorPagesAdvancedWarningDetails" = "A szerver nem tudta igazolni, hogy az valóban a(z) %@; biztonsági tanúsítványa nem megbízható az eszköze operációs rendszere számára. Ezt okozhatja helytelen konfiguráció, vagy az, hogy egy hacker megpróbálja lehallgatni a kapcsolatát.";
@@ -759,6 +759,39 @@
 
 /* Button label to temporarily continue to the site from the certificate error page */
 "ErrorPagesProceedAnywayButton" = "Folytatás ide: %@ (nem biztonságos)";
+
+/* Link on the private new tab page to a page about private mode. */
+"expressPrivateNTP.learnMore" = "További információ";
+
+/* Bullet point: data that private mode doesn't save. Data that websites save on the device, such as sign-in state. */
+"expressPrivateNTP.notSavedCookies" = "Cookie-k és webhelyadatok";
+
+/* Bullet point: data that private mode doesn't save. Names, addresses, passwords etc. that people enter into forms on the web. */
+"expressPrivateNTP.notSavedForms" = "Űrlapokon megadott információk";
+
+/* Introduces a bulleted list of data that private mode doesn't save. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.notSavedHeader" = "Az Express Browser <em>nem menti</em> a következőket:";
+
+/* Bullet point: data that private mode doesn't save. 'Browsing history' is the history of visited websites. */
+"expressPrivateNTP.notSavedHistory" = "Böngészési előzmények";
+
+/* Subtitle of the private new tab page, under its title. */
+"expressPrivateNTP.subtitle" = "Az ezt az eszközt használó többi személy nem láthatja az Ön tevékenységeit, így Ön privát módon böngészhet. Az inkognitó mód használata nincs hatással az Ön által felkeresett webhelyek és az általuk használt szolgáltatások (például az Express Browser) által végzett adatgyűjtésre. A letöltéseket és a könyvjelzőket menti a böngésző.";
+
+/* Title of the private new tab page. Private mode hides your browsing from other people using the same device; it does not make you anonymous. */
+"expressPrivateNTP.title" = "Privát módra váltottál";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleEmployer" = "Munkaadója vagy iskolája";
+
+/* Introduces a bulleted list of who might still see what the user does in private mode. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.visibleHeader" = "Tevékenysége <em>továbbra is látható maradhat</em> a következők számára:";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleProvider" = "Internetszolgáltatója";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleWebsites" = "A megtekintett webhelyek";
 
 /* %@ will launch an external application */
 "ExternalAppURLAlertMessage" = "A(z) %@ elindít egy külső alkalmazást";
@@ -1187,13 +1220,13 @@
 "OBSearchEngineDetail" = "Válasszon alapértelmezett keresőmotort";
 
 /* Title for search engine onboarding screen */
-"OBSearchEngineTitle" = "Üdvözöljük a Brave böngészőben";
+"OBSearchEngineTitle" = "Üdvözöljük az Express Browserben";
 
 /* Detail text for shields onboarding screen */
 "OBShieldsDetail" = "Blokkolja az adatvédelmet megsértő nyomkövetőket, így anélkül böngészhet, hogy követnék az interneten";
 
 /* Title for shields onboarding screen */
-"OBShieldsTitle" = "Brave védelem";
+"OBShieldsTitle" = "Védelem";
 
 /* Button to show the Brave Rewards Ads. */
 "OBShowMeButton" = "Mutassa meg nekem";
@@ -1205,10 +1238,10 @@
 "onboarding.blockedAdsOnboardingBigTechInformationText" = "%1$@ és %2$lld egyéb hirdetés& nyomkövető blokkolva";
 
 /* The footnote indicating what Brave shields is blocking */
-"onboarding.blockedAdsOnboardingFootnoteText" = "Nézze meg, oldalanként mi mindent blokkolt a Brave a pajzsok segítségével.";
+"onboarding.blockedAdsOnboardingFootnoteText" = "Nézze meg, oldalanként mi mindent blokkolt az Express Browser a pajzsok segítségével.";
 
 /* The text describing user where they should press in order to open Shield panel */
-"onboarding.blockedAdsOnboardingInstructionsText" = "Koppintson a Brave pajzsok megtekintéséhez";
+"onboarding.blockedAdsOnboardingInstructionsText" = "Koppintson a pajzsok megtekintéséhez";
 
 /* The description text shown when there is no big tech tracker among trackers. Example usage: 31 Ads & trackers blocked. The number here is presented separately so it is not in translation. */
 "onboarding.blockedAdsOnboardingNoBigTechInformationText" = "Reklám és nyomkövető blokkolva";
@@ -1232,13 +1265,13 @@
 "onboarding.ntpOnboardingPopOverTrackerDescription" = "A trackerek és hirdetések letiltásával& a webhelyek kevesebb adatot használnak fel, és sokkal gyorsabban töltődnek be.";
 
 /* Description for the Omnibox (URL Bar) pop-over that describes faster load times. */
-"onboarding.omniboxOnboardingPopOverDescription" = "A Brave-vel más:\nNincsenek hirdetések. Nincsenek nyomkövetők. Sokkal gyorsabban töltenek be az oldalak.";
+"onboarding.omniboxOnboardingPopOverDescription" = "Az Express Browserrel más:\nNincsenek hirdetések. Nincsenek nyomkövetők. Sokkal gyorsabban töltenek be az oldalak.";
 
 /* Title for the Omnibox (URL Bar) pop-over that describes faster load times. */
 "onboarding.omniboxOnboardingPopOverTitle" = "Adja meg a weboldal nevét vagy URL-jét";
 
 /* Title for Welcome Screen in Onboarding */
-"onboarding.welcomeScreenTitle" = "Üdvözli önt a Brave";
+"onboarding.welcomeScreenTitle" = "Üdvözli önt az Express Browser";
 
 /* Continue button to navigate to next onboarding screen. */
 "OnboardingContinueButton" = "Folytatás";
@@ -1280,7 +1313,7 @@
 "OpenMobileConfigurationAlertTitle" = "Rendelkezésre álló konfigurációs profil";
 
 /* Context menu option for opening a link in a new private tab */
-"OpenNewPrivateTabButtonTitle" = "Megnyitás új privát lapon";
+"OpenNewPrivateTabButtonTitle" = "Megnyitás privát lapon";
 
 /* Context menu item for opening a link in a new tab */
 "OpenNewTabButtonTitle" = "Megnyitás új lapon";
@@ -1487,7 +1520,7 @@
 "PersistentPrivateBrowsing" = "Privát böngészés állandó visszaállítása";
 
 /* Persistent private browsing alert message to existing users */
-"PersistentPrivateBrowsingAlertMessage" = "Lehetővé teszi a Brave számára, hogy akkor is visszaállítsa a privát böngészést, amikor Ön bezárja/újra megnyitja az alkalmazást";
+"PersistentPrivateBrowsingAlertMessage" = "Lehetővé teszi az Express Browser számára, hogy akkor is visszaállítsa a privát böngészést, amikor Ön bezárja/újra megnyitja az alkalmazást";
 
 /* Persistent private browsing alert title to existing users */
 "PersistentPrivateBrowsingAlertTitle" = "Privát lapok visszaállítása";
@@ -1931,7 +1964,7 @@
 "privacyHub.lastWeekHeader" = "Előző hét";
 
 /* Do NOT localize asterisk('*') characters, they are used to make the text bold in the app. It says which tracker was blocked on how many websites, example usage: 'Google Analytics was blocked by Brave Shields on 42 sites' */
-"privacyHub.mostFrequentTrackerAndAdBody" = "A Brave-védelem **%2$lld** oldalon blokkolta a következőt: **%1$@**";
+"privacyHub.mostFrequentTrackerAndAdBody" = "A védelem **%2$lld** oldalon blokkolta a következőt: **%1$@**";
 
 /* Title under which we display a tracker which was most frequently detected by our ad blocking mechanism. */
 "privacyHub.mostFrequentTrackerAndAdTitle" = "Leggyakoribb tracker& hirdetés";
@@ -1949,7 +1982,7 @@
 "privacyHub.notificationCalloutButtonText" = "Értesítések bekapcsolása";
 
 /* Message of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
-"privacyHub.notificationMessage" = "Összefoglaló a Brave védelmi műveleteiről az Ön e heti online tevékenysége során.";
+"privacyHub.notificationMessage" = "Összefoglaló az Express Browser védelmi műveleteiről az Ön e heti online tevékenysége során.";
 
 /* Title of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
 "privacyHub.notificationTitle" = "Heti adatvédelmi jelentés";
@@ -2039,10 +2072,10 @@
 "PrivateBrowsingOnlyWarning" = "A Csak privát böngészés mód bezárja az összes aktuális lapot, és kijelentkezteti Önt az összes webhelyről.";
 
 /* Private tab details */
-"PrivateTabBody" = "A Brave nem menti el a privát lapokat, de ezek nem teszik Önt névtelenné az interneten. A privát lapon meglátogatott webhelyek nem jelennek meg az előzményekben, és a cookie-jaik mindig eltűnnek, amikor bezárja őket – a Brave-ben nem marad nyomuk. A letöltések azonban mentésre kerülnek.\nMobilszolgáltatója (vagy annak a Wi-Fi-hálózatnak vagy VPN-nek a tulajdonosa, amelyhez csatlakozik) láthatja, hogy mely webhelyeket keresi fel, és ezek a webhelyek megtudják nyilvános IP-címét, még a Privát lapokon is.";
+"PrivateTabBody" = "Az Express Browser nem menti el a privát lapokat, de ezek nem teszik Önt névtelenné az interneten. A privát lapon meglátogatott webhelyek nem jelennek meg az előzményekben, és a cookie-jaik mindig eltűnnek, amikor bezárja őket – az Express Browserben nem marad nyomuk. A letöltések azonban mentésre kerülnek.\nMobilszolgáltatója (vagy annak a Wi-Fi-hálózatnak vagy VPN-nek a tulajdonosa, amelyhez csatlakozik) láthatja, hogy mely webhelyeket keresi fel, és ezek a webhelyek megtudják nyilvános IP-címét, még a Privát lapokon is.";
 
 /* Private tab detail text */
-"PrivateTabDetails" = "A Privát lapok használata csak azt változtatja meg, amit a Brave az Ön eszközén végez, mások viselkedését nem.\n\nA webhelyek mindig megismerik az Ön IP-címét, amikor meglátogatja őket. Ebből gyakran kitalálják, hogy nagyjából hol van – jellemzően a várost. Néha ez a helymeghatározás sokkal pontosabb lehet. A webhelyek mindent tudnak, amit kifejezetten elmond nekik, például a keresési kifejezéseket. Ha bejelentkezik egy webhelyre, tudni fogják, hogy Ön a fiók tulajdonosa. A Privát lapok bezárásakor továbbra is ki lesz jelentkezve, mert a Brave eldobja a cookie-t, amely bejelentkezve tartja Önt.\n\nBárki, aki csatlakoztatja Önt az internethez (az Ön internetszolgáltatója), láthatja az összes hálózati tevékenységét. Ez gyakran az Ön mobilszolgáltatója. Ha Wi-Fi hálózathoz csatlakozik, akkor ez a hálózat tulajdonosa, ha pedig VPN-t használ, akkor az, aki a VPN-t futtatja. Internetszolgáltatója láthatja, hogy mely webhelyeket keresi fel, amikor felkeresi azokat. Ha ezek a webhelyek HTTPS-t használnak, akkor nem tehetnek többet, mint megtippelik, hogy mit csinál ezeken a webhelyeken. Viszont ha egy webhely csak HTTP-t használ, akkor az internetszolgáltató mindent láthat: a keresési kifejezéseket, az olvasott oldalakat és a követett linkeket.\n\nHa egy munkáltató kezeli az eszközt, akkor azt is nyomon követheti, hogy Ön mit csinál vele. A Privát lapok használata valószínűleg nem akadályozza meg őket abban, hogy tudják, mely webhelyeket kereste fel. Valaki más, aki hozzáfér az eszközéhez, szintén telepíthetett olyan szoftvert, amely figyeli az Ön tevékenységét, és a Privát lapok sem védenek meg ettől.";
+"PrivateTabDetails" = "A Privát lapok használata csak azt változtatja meg, amit az Express Browser az Ön eszközén végez, mások viselkedését nem.\n\nA webhelyek mindig megismerik az Ön IP-címét, amikor meglátogatja őket. Ebből gyakran kitalálják, hogy nagyjából hol van – jellemzően a várost. Néha ez a helymeghatározás sokkal pontosabb lehet. A webhelyek mindent tudnak, amit kifejezetten elmond nekik, például a keresési kifejezéseket. Ha bejelentkezik egy webhelyre, tudni fogják, hogy Ön a fiók tulajdonosa. A Privát lapok bezárásakor továbbra is ki lesz jelentkezve, mert az Express Browser eldobja a cookie-t, amely bejelentkezve tartja Önt.\n\nBárki, aki csatlakoztatja Önt az internethez (az Ön internetszolgáltatója), láthatja az összes hálózati tevékenységét. Ez gyakran az Ön mobilszolgáltatója. Ha Wi-Fi hálózathoz csatlakozik, akkor ez a hálózat tulajdonosa, ha pedig VPN-t használ, akkor az, aki a VPN-t futtatja. Internetszolgáltatója láthatja, hogy mely webhelyeket keresi fel, amikor felkeresi azokat. Ha ezek a webhelyek HTTPS-t használnak, akkor nem tehetnek többet, mint megtippelik, hogy mit csinál ezeken a webhelyeken. Viszont ha egy webhely csak HTTP-t használ, akkor az internetszolgáltató mindent láthat: a keresési kifejezéseket, az olvasott oldalakat és a követett linkeket.\n\nHa egy munkáltató kezeli az eszközt, akkor azt is nyomon követheti, hogy Ön mit csinál vele. A Privát lapok használata valószínűleg nem akadályozza meg őket abban, hogy tudják, mely webhelyeket kereste fel. Valaki más, aki hozzáfér az eszközéhez, szintén telepíthetett olyan szoftvert, amely figyeli az Ön tevékenységét, és a Privát lapok sem védenek meg ettől.";
 
 /* Private tab information link */
 "PrivateTabLink" = "További információ a privát lapokról.";
@@ -2054,7 +2087,7 @@
 "QuickSearchEngines" = "Gyorskeresők";
 
 /* Open the App Store to rate Brave. */
-"RateBrave" = "Értékeld a Brave-et";
+"RateBrave" = "Értékeld az Express Browsert";
 
 /* Accessibility label for button increasing font size in display settings of reader mode */
 "ReaderModeBiggerFontButtonAccessibilityLabel" = "Szövegméret növelése";
@@ -2243,10 +2276,10 @@
 "RestoreTabNegativeButtonTitle" = "Nem";
 
 /* Restore Tabs Prompt Description */
-"RestoreTabOnCrashAlertMessage" = "A Brave sajnos összeomlott, vagy nem záródott be megfelelően.\nVisszaállítja a korábbi lapokat?";
+"RestoreTabOnCrashAlertMessage" = "Az Express Browser sajnos összeomlott, vagy nem záródott be megfelelően.\nVisszaállítja a korábbi lapokat?";
 
 /* Restore Tabs Prompt Title */
-"RestoreTabOnCrashAlertTitle" = "A Brave váratlanul bezárult.";
+"RestoreTabOnCrashAlertTitle" = "Az Express Browser váratlanul bezárult.";
 
 /* Body for Brave Talk rewards opt-in screen */
 "rewards.braveTalkRewardsOptInBody" = "A Brave-jutalmakkal az adatvédelmet tiszteletben tartó hirdetéseket láthat, a Brave-hirdetések hálózatáról. Nincsenek nyomkövetők, nincs lassulás, az adatai pedig teljes biztonságban maradnak.";
@@ -2573,7 +2606,7 @@
 "searchSuggestionsSubtitle" = "Szeretné engedélyezni a keresési javaslatokat?";
 
 /* Title of an action that allows user to perform a one-click web search for selected text */
-"SearchWithBrave" = "Keresés a Brave-vel";
+"SearchWithBrave" = "Keresés az Express Browserrel";
 
 /* Settings security section title */
 "Security" = "Biztonság";
@@ -2582,16 +2615,16 @@
 "sendButtonTitle" = "Küldés";
 
 /* Message displayed in the crash dialog above the buttons used to select when sending reports */
-"SendCrashReportAlertMessage" = "Elküldi az összeomlási jelentést, hogy a Brave kijavíthassa a problémát?";
+"SendCrashReportAlertMessage" = "Elküldi az összeomlási jelentést, hogy az Express Browser kijavíthassa a problémát?";
 
 /* Title for prompt displayed to user after the app crashes */
-"SendCrashReportAlertTitle" = "Hoppá! A Brave összeomlott";
+"SendCrashReportAlertTitle" = "Hoppá! Az Express Browser összeomlott";
 
 /* Used as a button label for crash dialog prompt */
 "SendReportButtonTitle" = "Jelentés küldése";
 
 /* No comment provided by engineer. */
-"setDefaultBrowserCalloutTitle" = "A Brave mostantól beállítható alapértelmezett böngészőként iOS rendszeren. Koppintson ide a beállítások megnyitásához.";
+"setDefaultBrowserCalloutTitle" = "Az Express Browser mostantól beállítható alapértelmezett böngészőként iOS rendszeren. Koppintson ide a beállítások megnyitásához.";
 
 /* Settings item to set the Brave as a default browser on the iOS device. */
 "setDefaultBrowserSettingsCell" = "Beállítás alapértelmezett böngészőként";
@@ -2615,7 +2648,7 @@
 "settings.autocloseTabsSetting" = "Lapok bezárása";
 
 /* Description of autoclose tabs feature. */
-"settings.autocloseTabsSettingFooter" = "Annak engedélyezése, hogy a Brave automatikusan bezárja a közelmúltban nem megtekintett lapokat.";
+"settings.autocloseTabsSettingFooter" = "Annak engedélyezése, hogy az Express Browser automatikusan bezárja a közelmúltban nem megtekintett lapokat.";
 
 /* Label for the navigation link to quality settings view */
 "settings.highestQualityPlayback" = "Legmagasabb minőségű lejátszás";
@@ -2630,7 +2663,7 @@
 "settings.media.rootSetting" = "Média";
 
 /* A toggle label which lets the user always open YouTube urls in Brave */
-"settings.openYouTubeInBrave" = "YouTube-hivatkozások megnyitása a Brave-ben";
+"settings.openYouTubeInBrave" = "YouTube-hivatkozások megnyitása az Express Browserben";
 
 /* No comment provided by engineer. */
 "settings.privacy.screenTimeSetting" = "Böngészési idő engedélyezése";
@@ -2705,7 +2738,7 @@
 "shieldEducation.shareTheNewsTitle" = "Ossza meg a hírt";
 
 /* Subtitle for Shield Education Tracker Ad Warning */
-"shieldEducation.trackerAdWarningSubTitle" = "A Brave-védelem épp segített megvédeni az Ön adatait.";
+"shieldEducation.trackerAdWarningSubTitle" = "A védelem épp segített megvédeni az Ön adatait.";
 
 /* Subtitle for Shield Education Tracker Count Share */
 "shieldEducation.trackerCountShareSubtitle" = "Gratulálunk, Ön igazán különleges!";
@@ -2720,13 +2753,13 @@
 "shieldEducation.videoAdBlockTitle" = "A reklámok blokkolva vannak, míg videót nézel ezen az oldalon.";
 
 /* Section title for adbblock, tracking protection, HTTPS-E, and cookies */
-"ShieldsDefaults" = "Brave pajzsok globális alapbeállításai";
+"ShieldsDefaults" = "Pajzsok globális alapbeállításai";
 
 /* Section footer for global shields defaults */
 "ShieldsDefaultsFooter" = "Ezek az alapértelmezett Shields beállítások új oldalak esetén. Ezek módosítása nem lesz hatással a meglévő oldalankénti beállításokra.";
 
 /* No comment provided by engineer. */
-"ShieldsDownDisclaimer" = "A Brave adatvédelmi rendszere nélkül böngészel. Nem működik megfelelően ha be van kapcsolva Shields?";
+"ShieldsDownDisclaimer" = "Az Express Browser adatvédelmi rendszere nélkül böngészel. Nem működik megfelelően ha be van kapcsolva Shields?";
 
 /* shields overview message */
 "ShieldsOverview" = "A Webhelyvédelem segítségével szabályozhatja, hogy a hirdetések és a nyomkövetők blokkolva legyenek-e az egyes felkeresett webhelyeken. Ha egy adott webhelyen szeretne hirdetéseket látni, itt engedélyezheti őket.";
@@ -2753,7 +2786,7 @@
 "shortcuts.activityTypeClearHistorySuggestedPhrase" = "Böngészési előzmények törlése";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeClearHistoryTitle" = "A Brave böngészési előzményeinek törlése";
+"shortcuts.activityTypeClearHistoryTitle" = "Az Express Browser böngészési előzményeinek törlése";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeEnableVPNDescription" = "Új böngészőlap megnyitása és a VPN engedélyezése";
@@ -2762,7 +2795,7 @@
 "shortcuts.activityTypeEnableVPNSuggestedPhrase" = "VPN engedélyezése";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeEnableVPNTitle" = "A Brave böngésző megnyitása és a VPN engedélyezése";
+"shortcuts.activityTypeEnableVPNTitle" = "Az Express Browser megnyitása és a VPN engedélyezése";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeNewPrivateTabSuggestedPhrase" = "Új privát lap megnyitása";
@@ -2783,7 +2816,7 @@
 "shortcuts.activityTypeOpenBookmarksSuggestedPhrase" = "A Könyvjelzők megnyitása";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenBookmarksTitle" = "A Brave böngésző könyvjelzőinek megnyitása";
+"shortcuts.activityTypeOpenBookmarksTitle" = "Az Express Browser könyvjelzőinek megnyitása";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenBraveNewsTitle" = "A Brave-hírek megnyitása";
@@ -2798,7 +2831,7 @@
 "shortcuts.activityTypeOpenHistoryListSuggestedPhrase" = "A Böngészési előzmények megnyitása";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenHistoryListTitle" = "A Brave böngészési előzményeinek megnyitása";
+"shortcuts.activityTypeOpenHistoryListTitle" = "Az Express Browser böngészési előzményeinek megnyitása";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenPlaylistDescription" = "A lejátszási listán szereplő videók lejátszásának megkezdése";
@@ -2819,7 +2852,7 @@
 "shortcuts.activityTypeOpenSyncedTabsTitle" = "Más eszközökön nyitott lapok megnyitása";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeTabDescription" = "Biztonságos webes keresés megkezdése a Brave segítségével";
+"shortcuts.activityTypeTabDescription" = "Biztonságos webes keresés megkezdése az Express Browser segítségével";
 
 /* No comment provided by engineer. */
 "shortcuts.customIntentOpenBookmarkSuggestedPhrase" = "Könyvjelző webhelyének megnyitása";
@@ -2831,7 +2864,7 @@
 "shortcuts.customIntentOpenWebsiteSuggestedPhrase" = "Webhely megnyitása";
 
 /* Description for opening Brave Settings for altering Siri shortcut. */
-"shortcuts.shortcutOpenApplicationSettingsDescription" = "Ez a lehetőség megnyitja a Brave beállításait. A Siri beállításainak módosításához válassza a „Siri& keresés” menüpontot, és szabja személyre a beállításokat.";
+"shortcuts.shortcutOpenApplicationSettingsDescription" = "Ez a lehetőség megnyitja az Express Browser beállításait. A Siri beállításainak módosításához válassza a „Siri& keresés” menüpontot, és szabja személyre a beállításokat.";
 
 /* Button title that open application settings */
 "shortcuts.shortcutOpenApplicationSettingsTitle" = "Beállítások megnyitása";
@@ -2927,10 +2960,10 @@
 "SiteShieldSettings" = "Védelmek";
 
 /* Title used when in warning pop-over when domain specific data save appears */
-"socialSharing.domainSpecificDataSavedTitle" = "Minden nap spórolok az adatforgalmon, amikor a Brave-vel böngészek az interneten.";
+"socialSharing.domainSpecificDataSavedTitle" = "Minden nap spórolok az adatforgalmon, amikor az Express Browserrel böngészek az interneten.";
 
 /* Text used for social sharing together with Brave Shield values */
-"socialSharing.shareDescriptionTitle" = "Minden nap spórolok az adatforgalmon, amikor a Brave-vel böngészek az interneten.";
+"socialSharing.shareDescriptionTitle" = "Minden nap spórolok az adatforgalmon, amikor az Express Browserrel böngészek az interneten.";
 
 /* Open search section of settings */
 "StandardTabSearch" = "Szabványos fül";
@@ -3356,7 +3389,7 @@
 "themeQRCodeShareButton" = "Megosztás...";
 
 /* Title for QR popup encouraging users to share the code with their friends. */
-"themeQRCodeShareTitle" = "Oszd meg a Brave-et barátaiddal!";
+"themeQRCodeShareTitle" = "Oszd meg az Express Browsert barátaiddal!";
 
 /* Selection to automatically color/style the user interface. */
 "ThemesAutomaticOption" = "Automatikus";
@@ -3509,19 +3542,19 @@
 "today.promoted" = "Promotált";
 
 /* Title for long press action sheet list which has item for rate / hide */
-"today.rateBraveCardActionSheetTitle" = "Értékelje a Brave-et az App Store-ban";
+"today.rateBraveCardActionSheetTitle" = "Értékelje az Express Browsert az App Store-ban";
 
 /* Title for long press action that will hide Brave Rate Card */
 "today.rateBraveCardHideActionTitle" = "Elrejtés";
 
 /* Button title / Title for long press action that will perform an action which open AppStore Rate screen */
-"today.rateBraveCardRateActionTitle" = "Értékeld a Brave-et";
+"today.rateBraveCardRateActionTitle" = "Értékeld az Express Browsert";
 
 /* Subtitle shown on the Rate Brave Card */
 "today.rateBraveCardSubtitle" = "Mondja el, mit gondol!";
 
 /* Title shown on the Rate Brave Card */
-"today.rateBraveCardTitle" = "Tetszik a Brave?";
+"today.rateBraveCardTitle" = "Tetszik az Express Browser?";
 
 /* No comment provided by engineer. */
 "today.refresh" = "Frissítés";
@@ -3602,13 +3635,13 @@
 "ViewOn" = "Megtekintés itt: %@";
 
 /* Explanation for warning alert why the microphone access required. */
-"voice.search.microphone.description.required" = "A névtelen hangalapú keresés használatához engedélyezze a mikrofon-hozzáférést a Brave számára az iOS rendszerbeállításaiban.";
+"voice.search.microphone.description.required" = "A névtelen hangalapú keresés használatához engedélyezze a mikrofon-hozzáférést az Express Browser számára az iOS rendszerbeállításaiban.";
 
 /* Title for warning alert microphone access is required. */
 "voice.search.microphone.title.required" = "Mikrofon-hozzáférés szükséges";
 
 /* Disclaimer for screen to search using voice. */
-"voice.search.screen.disclaimer" = "A Brave nem tárolja és nem osztja meg hangalapú kereséseit.";
+"voice.search.screen.disclaimer" = "Az Express Browser nem tárolja és nem osztja meg hangalapú kereséseit.";
 
 /* The date your wallet was created */
 "WalletCreationDate" = "Pénztárca létrehozási dátuma";

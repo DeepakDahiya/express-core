@@ -2,7 +2,7 @@
 "focusOnboarding.continueButtonTitle" = "Fortsæt";
 
 /* The subtitle of the screen that requests user to set Brave as default */
-"focusOnboarding.defaultBrowserScreenDescription" = "Angiv Brave som din standardbrowser i dag.";
+"focusOnboarding.defaultBrowserScreenDescription" = "Angiv Express Browser som din standardbrowser i dag.";
 
 /* The title of the screen that requests user to set Brave as default */
 "focusOnboarding.defaultBrowserScreenTitle" = "Få blokering af annoncer på alle sider, du besøger";
@@ -38,5 +38,5 @@
 "focusOnboarding.urlBarIndicatorDescription" = "Begynd at streame, og nyd færre annoncer og trackers.";
 
 /* The title of the popup which points to URL Bar after onboarding */
-"focusOnboarding.urlBarIndicatorTitle" = "Se Brave-forskellen";
+"focusOnboarding.urlBarIndicatorTitle" = "Se Express Browser-forskellen";
 

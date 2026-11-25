@@ -61,6 +61,7 @@ class TabLocationView: UIView {
 
   var loading: Bool = false {
     didSet {
+      updateTrustMarker()
       if loading {
         reloadButton.setImage(UIImage(systemName: "xmark"), for: .normal)
         reloadButton.accessibilityLabel = Strings.tabToolbarStopButtonAccessibilityLabel
@@ -120,7 +121,14 @@ class TabLocationView: UIView {
       $0.isHidden = true
     }
 
-    if !secureContentState.shouldDisplayWarning {
+    // Express Browser: on web pages the trust marker says how secure the connection is, in
+    // place of Brave's lock and "Not Secure" warning; reader mode and translate sit beside it.
+    let showsTrustMarker = Self.isWebPage(url)
+    trustMarkerButton.isHidden = !showsTrustMarker
+    expressPiPButton.isHidden = !Self.isYouTubeWatchPage(url)
+    updateTrustMarker()
+
+    if !secureContentState.shouldDisplayWarning || showsTrustMarker {
       // Consider reader mode
       secureContentStateButton.configuration = secureContentStateButtonConfiguration
       readerModeButton.isHidden = readerModeState == .unavailable
@@ -133,6 +141,78 @@ class TabLocationView: UIView {
     // Display security status
     secureContentStateButton.configuration = secureContentStateButtonConfiguration
     secureContentStateButton.isHidden = false
+  }
+
+  // MARK: Express trust marker
+
+  /// Opens the site trust sheet; set by the browser.
+  var onTrustMarkerTap: (() -> Void)?
+  /// Express: the gold picture-in-picture button on YouTube watch pages.
+  var onPictureInPictureTap: (() -> Void)?
+
+  /// Android's gold PiP button (`#A67C00` light / `#D4AF37` dark).
+  private(set) lazy var expressPiPButton = ToolbarButton().then {
+    $0.accessibilityIdentifier = "TabLocationView.expressPiPButton"
+    $0.isAccessibilityElement = true
+    $0.accessibilityLabel = "Play in picture-in-picture"
+    $0.setImage(UIImage(systemName: "pip.enter"), for: .normal)
+    $0.tintColor = UIColor(expressLight: 0xA67C00, expressDark: 0xD4AF37)
+    $0.isHidden = true
+    $0.addTarget(self, action: #selector(didTapExpressPiPButton), for: .touchUpInside)
+  }
+
+  @objc private func didTapExpressPiPButton() {
+    onPictureInPictureTap?()
+  }
+
+  /// A YouTube watch page with a video id (Android also needs the page to have loaded).
+  static func isYouTubeWatchPage(_ url: URL?) -> Bool {
+    guard let url, let host = url.host?.lowercased(),
+      host == "m.youtube.com" || host == "www.youtube.com" || host == "youtube.com",
+      url.path == "/watch",
+      URLComponents(url: url, resolvingAgainstBaseURL: false)?.queryItems?
+        .contains(where: { $0.name == "v" && !($0.value ?? "").isEmpty }) == true
+    else { return false }
+    return true
+  }
+
+  let trustMarker = ExpressTrustMarkerModel()
+
+  private(set) lazy var trustMarkerButton = ExpressTrustMarkerButton(model: trustMarker).then {
+    $0.addAction(
+      UIAction { [weak self] _ in self?.onTrustMarkerTap?() },
+      for: .touchUpInside
+    )
+  }
+
+  /// The marker's status for the page's connection (Android's `SiteTrust.fromSecurityLevel`).
+  private var trustStatus: ExpressTrustStatus {
+    switch secureContentState {
+    case .secure, .localhost: return .secure
+    case .invalidCertificate: return .dangerous
+    case .missingSSL, .mixedContent, .unknown: return .warning
+    }
+  }
+
+  static func isWebPage(_ url: URL?) -> Bool {
+    guard let url, let scheme = url.scheme?.lowercased(), scheme == "http" || scheme == "https"
+    else { return false }
+    return !InternalURL.isValid(url: url)
+  }
+
+  /// Scans while the page loads, then plays the result once (Android's `TrustMarkers.sync`).
+  private func updateTrustMarker() {
+    guard !trustMarkerButton.isHidden else { return }
+    let status = trustStatus
+    if loading {
+      trustMarker.setPendingStatus(status)
+      trustMarker.startScan()
+    } else if trustMarker.isScanning {
+      trustMarker.showResult(status)
+    } else if trustMarker.status != status {
+      trustMarker.setStatus(status)
+    }
+    trustMarkerButton.accessibilityLabel = status.label
   }
 
   deinit {
@@ -333,7 +413,7 @@ class TabLocationView: UIView {
     addGestureRecognizer(UITapGestureRecognizer(target: self, action: #selector(didTapLocationBar)))
 
     let leadingItemSubviews: [UIView] = [
-      readerModeButton, translateButton, secureContentStateButton,
+      trustMarkerButton, readerModeButton, translateButton, secureContentStateButton,
     ]
     leadingItemSubviews.forEach {
       $0.setContentCompressionResistancePriority(.defaultHigh, for: .horizontal)
@@ -341,7 +421,7 @@ class TabLocationView: UIView {
       leadingItemStackView.addArrangedSubview($0)
     }
 
-    var trailingOptionSubviews: [UIView] = [walletButton, playlistButton, voiceSearchButton]
+    var trailingOptionSubviews: [UIView] = [expressPiPButton, walletButton, playlistButton, voiceSearchButton]
     voiceSearchButton.isHidden = !speechRecognizer.isVoiceSearchAvailable
     trailingOptionSubviews.append(contentsOf: [reloadButton])
 

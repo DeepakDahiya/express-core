@@ -111,69 +111,8 @@ class ShortcutSettingsViewController: TableViewController {
       )
     )
 
-    dataSource.sections.append(
-      Section(
-        rows: [
-          Row(
-            text: Strings.Shortcuts.shortcutSettingsEnableVPNTitle,
-            selection: { [unowned self] in
-              manageShortcutActivity(for: .enableBraveVPN)
-            },
-            accessory: .disclosureIndicator,
-            cellClass: MultilineValue1Cell.self
-          )
-        ],
-        footer: .title(Strings.Shortcuts.shortcutSettingsEnableVPNDescription)
-      )
-    )
-
-    dataSource.sections.append(
-      Section(
-        rows: [
-          Row(
-            text: Strings.Shortcuts.shortcutSettingsOpenBraveNewsTitle,
-            selection: { [unowned self] in
-              manageShortcutActivity(for: .openBraveNews)
-            },
-            accessory: .disclosureIndicator,
-            cellClass: MultilineValue1Cell.self
-          )
-        ],
-        footer: .title(Strings.Shortcuts.shortcutSettingsOpenBraveNewsDescription)
-      )
-    )
-
-    dataSource.sections.append(
-      Section(
-        rows: [
-          Row(
-            text: Strings.Shortcuts.shortcutSettingsOpenPlaylistTitle,
-            selection: { [unowned self] in
-              manageShortcutActivity(for: .openPlayList)
-            },
-            accessory: .disclosureIndicator,
-            cellClass: MultilineValue1Cell.self
-          )
-        ],
-        footer: .title(Strings.Shortcuts.shortcutSettingsOpenPlaylistDescription)
-      )
-    )
-
-    dataSource.sections.append(
-      Section(
-        rows: [
-          Row(
-            text: Strings.Shortcuts.shortcutSettingsOpenSyncedTabsTitle,
-            selection: { [unowned self] in
-              manageShortcutActivity(for: .openSyncedTabs)
-            },
-            accessory: .disclosureIndicator,
-            cellClass: MultilineValue1Cell.self
-          )
-        ],
-        footer: .title(Strings.Shortcuts.shortcutSettingsOpenSyncedTabsDescription)
-      )
-    )
+    // Express Browser hides Brave VPN, Brave News, Playlist and Sync, so their shortcuts
+    // (Enable VPN, Open Brave News, Open Playlist, Open Synced Tabs) are not offered.
 
     dataSource.sections.append(
       Section(

@@ -21,6 +21,8 @@ public let adsRewardsLog = Logger(subsystem: Bundle.main.bundleIdentifier!, cate
 extension BrowserViewController {
   func updateRewardsButtonState() {
     if !isViewLoaded { return }
+    // The Shields/Rewards stack hides itself when both buttons are hidden.
+    defer { topToolbar.refreshShieldsRewardsVisibility() }
     if !BraveRewards.isSupported(prefService: profileController.profile.prefs) {
       self.topToolbar.rewardsButton.isHidden = true
       return

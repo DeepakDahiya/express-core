@@ -2,7 +2,7 @@
 "About" = "Sobre";
 
 /* The title of the screen explaining Brave Shields */
-"AboutBraveShields" = "Sobre as Proteções do Brave";
+"AboutBraveShields" = "Sobre as Proteções";
 
 /* The body of the screen explaining Brave Shields */
 "AboutBraveShieldsBody" = "Geralmente, os sites contêm cookies e scripts que tentam identificar você e seu dispositivo. Eles querem descobrir quem você é e seguir você pela web, monitorando o que você faz em todos os sites.\n\nO Brave bloqueia esses itens para que você possa navegar sem ser vigiado.";
@@ -11,7 +11,7 @@
 "AccessPhotoDeniedAlertMessage" = "Isso permite que você salve a imagem no Rolo da Câmera.";
 
 /* See http://mzl.la/1G7uHo7 */
-"AccessPhotoDeniedAlertTitle" = "O Brave deseja acessar suas fotos";
+"AccessPhotoDeniedAlertTitle" = "O Express Browser deseja acessar suas fotos";
 
 /* Label to display in the Discoverability overlay for keyboard shortcuts */
 "addBookmarkTitle" = "Adicionar favorito";
@@ -44,7 +44,7 @@
 "AlwaysShow" = "Ativar";
 
 /* Touch ID or PIN entry prompt subtitle when accessing Brave with the Browser Lock feature enabled */
-"AuthenticationLoginsTouchReason" = "Isso autentica seu acesso ao Brave";
+"AuthenticationLoginsTouchReason" = "Isso autentica seu acesso ao Express Browser";
 
 /* Label for Cancel button */
 "AuthPromptAlertCancelButtonTitle" = "Cancelar";
@@ -182,7 +182,7 @@
 "BraveShieldsAdvancedControls" = "Controles avançados";
 
 /* No comment provided by engineer. */
-"BraveShieldsAndPrivacy" = "Brave Shields e privacidade";
+"BraveShieldsAndPrivacy" = "Shields e privacidade";
 
 /* No comment provided by engineer. */
 "BraveShieldsAndPrivacyTitle" = "Shields e Privacidade";
@@ -203,7 +203,7 @@
 "BraveShieldsSiteBroken" = "Se este site não estiver funcionando, tente desativar as Proteções";
 
 /* Context: 'Brave Shields Up' or 'Brave Shields Down' */
-"BraveShieldsStatusTitle" = "Proteções Brave";
+"BraveShieldsStatusTitle" = "Proteções";
 
 /* Context: The 'Down' in 'Brave Shields Down' */
 "BraveShieldsStatusValueDown" = "Desativadas";
@@ -212,7 +212,7 @@
 "BraveShieldsStatusValueUp" = "Ativadas";
 
 /* The accessibility hint spoken when focused on the main shields toggle */
-"BraveShieldsToggleHint" = "Toque duas vezes para ativar/desativar o Brave Shields";
+"BraveShieldsToggleHint" = "Toque duas vezes para ativar/desativar o Shields";
 
 /* The name of the feature */
 "bravetalk.braveTalkTitle" = "Brave Talk";
@@ -221,7 +221,7 @@
 "BrowserLock" = "Bloqueio do navegador";
 
 /* Description for setting to enable the browser lock privacy feature */
-"BrowserLockDescription" = "Desbloqueie o Brave com o Touch ID, o Face ID ou o código de acesso do sistema.";
+"BrowserLockDescription" = "Desbloqueie o Express Browser com o Touch ID, o Face ID ou o código de acesso do sistema.";
 
 /* Settings item for clearing browsing history */
 "BrowsingHistory" = "Histórico de navegação";
@@ -236,13 +236,13 @@
 "callout.bottomBarCalloutDescription" = "Mova a barra de endereço, guias, favoritos e outras ferramentas para a parte inferior do navegador.";
 
 /* Title for Bottom Bar Callout View */
-"callout.bottomBarCalloutTitle" = "Personalizar a barra de guias do Brave";
+"callout.bottomBarCalloutTitle" = "Personalizar a barra de guias do Express Browser";
 
 /* Description - Description used for main button in Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutButtonDescription" = "Definir o Brave como navegador padrão?";
+"callout.defaultBrowserCalloutButtonDescription" = "Definir o Express Browser como navegador padrão?";
 
 /* Subtitle - Description for Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutDescription" = "Com o Brave como padrão, todos os links em que você tocar serão abertos com as proteções de privacidade do Brave.";
+"callout.defaultBrowserCalloutDescription" = "Com o Express Browser como padrão, todos os links em que você tocar serão abertos com as proteções de privacidade do Express Browser.";
 
 /* Title for main button in Default Browser Full Screen Callout */
 "callout.defaultBrowserCalloutPrimaryButtonTitle" = "Definir como padrão";
@@ -566,25 +566,25 @@
 "defaultBrowserCallout.introOpenSettingsButtonText" = "Abrir configurações";
 
 /* Primary text on default browser popup screen */
-"defaultBrowserCallout.introPrimaryText" = "Abra todos os links com o Brave para proteger sua privacidade";
+"defaultBrowserCallout.introPrimaryText" = "Abra todos os links com o Express Browser para proteger sua privacidade";
 
 /* Secondary text on default browser popup. */
-"defaultBrowserCallout.introSecondaryText" = "O Brave Shields bloqueia rastreadores e anúncios, economiza dados e poupa seu tempo em todos os sites que você acessa";
+"defaultBrowserCallout.introSecondaryText" = "O Shields bloqueia rastreadores e anúncios, economiza dados e poupa seu tempo em todos os sites que você acessa";
 
 /* Tertiary text on default browser popup screen */
-"defaultBrowserCallout.introTertiaryText" = "Abra os Ajustes, toque em \"App de Navegador Padrão\" e selecione \"Brave\".";
+"defaultBrowserCallout.introTertiaryText" = "Abra os Ajustes, toque em \"App de Navegador Padrão\" e selecione \"Express Browser\".";
 
 /* Notification body to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationBody" = "Definir o Brave como seu navegador padrão";
+"defaultBrowserCallout.notificationBody" = "Definir o Express Browser como seu navegador padrão";
 
 /* Notification title to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationTitle" = "Obtenha a proteção do Brave, em cada link";
+"defaultBrowserCallout.notificationTitle" = "Obtenha a proteção do Express Browser, em cada link";
 
 /* No comment provided by engineer. */
 "defaultBrowserCalloutCloseAccesabilityLabel" = "Fechar texto explicativo padrão do navegador";
 
 /* Name for default Brave theme. */
-"defaultThemeName" = "Padrão do Brave";
+"defaultThemeName" = "Padrão do Express Browser";
 
 /* No comment provided by engineer. */
 "Delete" = "Excluir";
@@ -689,7 +689,7 @@
 "ErrorPageReloadButtonTitle" = "Recarregar";
 
 /* Additional warning text when clicking the Advanced button on error pages. %@ is a placeholder, do not localize it. Do not localize <br />. */
-"ErrorPagesAdvancedErrorPinningDetails" = "%1$@ costuma encriptar a sua informação para a proteger. Quando o Brave tentou ligar-se a %2$@ desta vez, o website devolveu credenciais invulgares e incorretas. Isto pode ocorrar quando um atacante tenta fingir ser %3$@, ou um ecrã de início de sessão na rede Wi-Fi interrompeu a ligação. A sua informação continua segura porque o Brave interrompeu a ligação antes de qualquer comunicação de dados.<br />Não é possível aceder a %4$@ de momento, porque o website usa a aficação de certificados. Os erros e ataques de rede costumam ser temporário, por isso deverá conseguir aceder a esta página mais tarde.";
+"ErrorPagesAdvancedErrorPinningDetails" = "%1$@ costuma encriptar a sua informação para a proteger. Quando o Express Browser tentou ligar-se a %2$@ desta vez, o website devolveu credenciais invulgares e incorretas. Isto pode ocorrar quando um atacante tenta fingir ser %3$@, ou um ecrã de início de sessão na rede Wi-Fi interrompeu a ligação. A sua informação continua segura porque o Express Browser interrompeu a ligação antes de qualquer comunicação de dados.<br />Não é possível aceder a %4$@ de momento, porque o website usa a aficação de certificados. Os erros e ataques de rede costumam ser temporário, por isso deverá conseguir aceder a esta página mais tarde.";
 
 /* Additional warning text when clicking the Advanced button on error pages */
 "ErrorPagesAdvancedWarningDetails" = "Este servidor não conseguiu comprovar que é %@; o certificado de segurança dele não é considerado confiável pelo sistema operacional do seu dispositivo. Isso pode ser causado por uma configuração incorreta ou um invasor tentando interceptar sua conexão.";
@@ -729,6 +729,39 @@
 
 /* Button label to temporarily continue to the site from the certificate error page */
 "ErrorPagesProceedAnywayButton" = "Ir para %@ (não seguro)";
+
+/* Link on the private new tab page to a page about private mode. */
+"expressPrivateNTP.learnMore" = "Saiba mais";
+
+/* Bullet point: data that private mode doesn't save. Data that websites save on the device, such as sign-in state. */
+"expressPrivateNTP.notSavedCookies" = "Cookies e dados de sites";
+
+/* Bullet point: data that private mode doesn't save. Names, addresses, passwords etc. that people enter into forms on the web. */
+"expressPrivateNTP.notSavedForms" = "Informações inseridas em formulários";
+
+/* Introduces a bulleted list of data that private mode doesn't save. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.notSavedHeader" = "O Express Browser <em>não vai salvar</em>:";
+
+/* Bullet point: data that private mode doesn't save. 'Browsing history' is the history of visited websites. */
+"expressPrivateNTP.notSavedHistory" = "Seu histórico de navegação";
+
+/* Subtitle of the private new tab page, under its title. */
+"expressPrivateNTP.subtitle" = "Como outros usuários deste dispositivo não terão acesso à sua atividade, você pode navegar com mais privacidade. Isso não vai mudar a forma como os dados são coletados pelos sites que você acessa e pelos serviços que eles usam, incluindo o Express Browser. Downloads e favoritos serão salvos.";
+
+/* Title of the private new tab page. Private mode hides your browsing from other people using the same device; it does not make you anonymous. */
+"expressPrivateNTP.title" = "Você está no modo privado";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleEmployer" = "Seu empregador ou sua escola";
+
+/* Introduces a bulleted list of who might still see what the user does in private mode. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.visibleHeader" = "É possível que sua atividade <em>ainda esteja visível</em> para:";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleProvider" = "Seu provedor de acesso à Internet";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleWebsites" = "Os websites que você visita";
 
 /* %@ will launch an external application */
 "ExternalAppURLAlertMessage" = "%@ abrirá um aplicativo externo";
@@ -1139,13 +1172,13 @@
 "OBSearchEngineDetail" = "Selecione seu mecanismo de pesquisa padrão";
 
 /* Title for search engine onboarding screen */
-"OBSearchEngineTitle" = "Bem-vindo ao navegador Brave";
+"OBSearchEngineTitle" = "Bem-vindo ao navegador Express Browser";
 
 /* Detail text for shields onboarding screen */
 "OBShieldsDetail" = "Bloqueie rastreadores que invadem sua privacidade para poder navegar sem ser seguido na web";
 
 /* Title for shields onboarding screen */
-"OBShieldsTitle" = "Proteções Brave";
+"OBShieldsTitle" = "Proteções";
 
 /* Button to show the Brave Rewards Ads. */
 "OBShowMeButton" = "Mostrar";
@@ -1157,10 +1190,10 @@
 "onboarding.blockedAdsOnboardingBigTechInformationText" = "%1$@ e mais %2$lld anúncios e rastreadores bloqueados";
 
 /* The footnote indicating what Brave shields is blocking */
-"onboarding.blockedAdsOnboardingFootnoteText" = "Veja todo o conteúdo indesejado bloqueado pelo Brave, em todas as páginas, com as Proteções.";
+"onboarding.blockedAdsOnboardingFootnoteText" = "Veja todo o conteúdo indesejado bloqueado pelo Express Browser, em todas as páginas, com as Proteções.";
 
 /* The text describing user where they should press in order to open Shield panel */
-"onboarding.blockedAdsOnboardingInstructionsText" = "Toque para ver as Proteções do Brave";
+"onboarding.blockedAdsOnboardingInstructionsText" = "Toque para ver as Proteções";
 
 /* The description text shown when there is no big tech tracker among trackers. Example usage: 31 Ads & trackers blocked. The number here is presented separately so it is not in translation. */
 "onboarding.blockedAdsOnboardingNoBigTechInformationText" = "Anúncios e rastreadores bloqueados";
@@ -1184,13 +1217,13 @@
 "onboarding.ntpOnboardingPopOverTrackerDescription" = "Com o bloqueio de rastreadores e anúncios, os sites usam menos dados e carregam bem mais rapidamente.";
 
 /* Description for the Omnibox (URL Bar) pop-over that describes faster load times. */
-"onboarding.omniboxOnboardingPopOverDescription" = "Veja o diferencial do Brave:\nNada de anúncios. Nada de rastreadores. Páginas que carregam bem mais rápido.";
+"onboarding.omniboxOnboardingPopOverDescription" = "Veja o diferencial do Express Browser:\nNada de anúncios. Nada de rastreadores. Páginas que carregam bem mais rápido.";
 
 /* Title for the Omnibox (URL Bar) pop-over that describes faster load times. */
 "onboarding.omniboxOnboardingPopOverTitle" = "Digite o nome ou URL de um site";
 
 /* Title for Welcome Screen in Onboarding */
-"onboarding.welcomeScreenTitle" = "Este é o Brave";
+"onboarding.welcomeScreenTitle" = "Este é o Express Browser";
 
 /* Continue button to navigate to next onboarding screen. */
 "OnboardingContinueButton" = "Continuar";
@@ -1226,7 +1259,7 @@
 "OpenInNewWindowTitle" = "Abrir em nova janela";
 
 /* Context menu option for opening a link in a new private tab */
-"OpenNewPrivateTabButtonTitle" = "Abrir em uma nova aba privada";
+"OpenNewPrivateTabButtonTitle" = "Abrir em uma guia privada";
 
 /* Context menu item for opening a link in a new tab */
 "OpenNewTabButtonTitle" = "Abrir em uma nova aba";
@@ -1427,7 +1460,7 @@
 "PersistentPrivateBrowsing" = "Navegação privada persistente";
 
 /* Persistent private browsing alert message to existing users */
-"PersistentPrivateBrowsingAlertMessage" = "Permite que o Brave restaure as guias de navegação privadas, mesmo se você fechar/reabrir o aplicativo";
+"PersistentPrivateBrowsingAlertMessage" = "Permite que o Express Browser restaure as guias de navegação privadas, mesmo se você fechar/reabrir o aplicativo";
 
 /* Persistent private browsing alert title to existing users */
 "PersistentPrivateBrowsingAlertTitle" = "Restaurar abas particulares";
@@ -1877,7 +1910,7 @@
 "privacyHub.lastWeekHeader" = "Última semana";
 
 /* Do NOT localize asterisk('*') characters, they are used to make the text bold in the app. It says which tracker was blocked on how many websites, example usage: 'Google Analytics was blocked by Brave Shields on 42 sites' */
-"privacyHub.mostFrequentTrackerAndAdBody" = "**%1$@** foi bloqueado pelas Proteções do Brave em **%2$lld** sites";
+"privacyHub.mostFrequentTrackerAndAdBody" = "**%1$@** foi bloqueado pelas Proteções em **%2$lld** sites";
 
 /* Title under which we display a tracker which was most frequently detected by our ad blocking mechanism. */
 "privacyHub.mostFrequentTrackerAndAdTitle" = "Rastreador e anúncio mais frequentes";
@@ -1895,7 +1928,7 @@
 "privacyHub.notificationCalloutButtonText" = "Ativar notificações";
 
 /* Message of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
-"privacyHub.notificationMessage" = "Um resumo de como o Brave protegeu você on-line nesta semana.";
+"privacyHub.notificationMessage" = "Um resumo de como o Express Browser protegeu você on-line nesta semana.";
 
 /* Title of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
 "privacyHub.notificationTitle" = "Relatório de privacidade semanal";
@@ -1985,10 +2018,10 @@
 "PrivateBrowsingOnlyWarning" = "O modo Somente navegação privada fechará todas as guias atuais e encerrará suas sessões em todos os sites.";
 
 /* Private tab details */
-"PrivateTabBody" = "As Abas privadas não são salvas no Brave, mas elas não garantem navegação anônima on-line. Os sites que você acessar em uma aba privada não serão exibidos no seu histórico, e os cookies deles serão excluídos quando você os fechar (nenhuma informação ficará salva no Brave). No entanto, os downloads serão salvos.\nSua operadora de telefonia móvel (ou o proprietário da rede Wi-Fi ou VPN à qual você está conectado) poderá ver quais sites você acessa, e esses sites detectarão seu endereço IP público, mesmo nas Abas privadas.";
+"PrivateTabBody" = "As Abas privadas não são salvas no Express Browser, mas elas não garantem navegação anônima on-line. Os sites que você acessar em uma aba privada não serão exibidos no seu histórico, e os cookies deles serão excluídos quando você os fechar (nenhuma informação ficará salva no Express Browser). No entanto, os downloads serão salvos.\nSua operadora de telefonia móvel (ou o proprietário da rede Wi-Fi ou VPN à qual você está conectado) poderá ver quais sites você acessa, e esses sites detectarão seu endereço IP público, mesmo nas Abas privadas.";
 
 /* Private tab detail text */
-"PrivateTabDetails" = "O uso das Abas privadas só muda o que o Brave faz no seu dispositivo. O comportamento das outras partes envolvidas não é alterado.\n\nOs sites sempre detectam seu endereço IP quando você os acessa. Com base nisso, normalmente é possível ter uma ideia geral de onde você está, como sua cidade. Às vezes, essa estimativa de localização pode ser bem mais específica. Os sites também têm acesso a todas as informações que você fornece a eles (por exemplo, termos de pesquisa). Se você fizer login em um site, ele saberá que você é o proprietário dessa conta. Sua sessão será encerrada quando você fechar as Abas privadas, pois o Brave excluirá o cookie que mantém você conectado à conta.\n\nO responsável pela sua conexão com a internet (seu provedor de serviços de internet), que em muitos casos é sua operadora, pode ver toda a sua atividade na rede. Se você está conectado a uma rede Wi-Fi, o provedor é o proprietário dessa rede. Se você está usando uma VPN, o proprietário é quem a mantém em funcionamento. Seu provedor pode ver os sites que você acessa no momento em que isso acontece. Se esses sites usam HTTPS, ele não tem como saber exatamente o que você faz neles. No entanto, se um site só utiliza HTTP, seu provedor pode ver tudo: seus termos de pesquisa, quais páginas você acessa e em quais links você clica.\n\nSe a empresa na qual você trabalha gerencia seu dispositivo, é possível que ela monitore o que você faz com ele. O uso das Abas privadas provavelmente não a impedirá de saber os sites que você acessou. É possível que outra pessoa que tenha acesso ao seu dispositivo tenha instalado um software para monitorar sua atividade; nesse caso, as Abas privadas não poderão proteger você.";
+"PrivateTabDetails" = "O uso das Abas privadas só muda o que o Express Browser faz no seu dispositivo. O comportamento das outras partes envolvidas não é alterado.\n\nOs sites sempre detectam seu endereço IP quando você os acessa. Com base nisso, normalmente é possível ter uma ideia geral de onde você está, como sua cidade. Às vezes, essa estimativa de localização pode ser bem mais específica. Os sites também têm acesso a todas as informações que você fornece a eles (por exemplo, termos de pesquisa). Se você fizer login em um site, ele saberá que você é o proprietário dessa conta. Sua sessão será encerrada quando você fechar as Abas privadas, pois o Express Browser excluirá o cookie que mantém você conectado à conta.\n\nO responsável pela sua conexão com a internet (seu provedor de serviços de internet), que em muitos casos é sua operadora, pode ver toda a sua atividade na rede. Se você está conectado a uma rede Wi-Fi, o provedor é o proprietário dessa rede. Se você está usando uma VPN, o proprietário é quem a mantém em funcionamento. Seu provedor pode ver os sites que você acessa no momento em que isso acontece. Se esses sites usam HTTPS, ele não tem como saber exatamente o que você faz neles. No entanto, se um site só utiliza HTTP, seu provedor pode ver tudo: seus termos de pesquisa, quais páginas você acessa e em quais links você clica.\n\nSe a empresa na qual você trabalha gerencia seu dispositivo, é possível que ela monitore o que você faz com ele. O uso das Abas privadas provavelmente não a impedirá de saber os sites que você acessou. É possível que outra pessoa que tenha acesso ao seu dispositivo tenha instalado um software para monitorar sua atividade; nesse caso, as Abas privadas não poderão proteger você.";
 
 /* Private tab information link */
 "PrivateTabLink" = "Saiba mais sobre abas privadas.";
@@ -2000,7 +2033,7 @@
 "QuickSearchEngines" = "Mecanismos de pesquisa rápida";
 
 /* Open the App Store to rate Brave. */
-"RateBrave" = "Avaliar o Brave";
+"RateBrave" = "Avaliar o Express Browser";
 
 /* Accessibility label for button increasing font size in display settings of reader mode */
 "ReaderModeBiggerFontButtonAccessibilityLabel" = "Aumentar o tamanho do texto";
@@ -2186,10 +2219,10 @@
 "RestoreTabNegativeButtonTitle" = "Não";
 
 /* Restore Tabs Prompt Description */
-"RestoreTabOnCrashAlertMessage" = "Infelizmente, o Brave travou ou não fechou corretamente.\nRestaurar suas abas?";
+"RestoreTabOnCrashAlertMessage" = "Infelizmente, o Express Browser travou ou não fechou corretamente.\nRestaurar suas abas?";
 
 /* Restore Tabs Prompt Title */
-"RestoreTabOnCrashAlertTitle" = "O Brave fechou inesperadamente.";
+"RestoreTabOnCrashAlertTitle" = "O Express Browser fechou inesperadamente.";
 
 /* Body for Brave Talk rewards opt-in screen */
 "rewards.braveTalkRewardsOptInBody" = "Com o Brave Rewards, você pode visualizar anúncios da rede do Brave Ads que preservam sua privacidade. Sem rastreadores. Sem lentidão. E seus dados ficam totalmente seguros.";
@@ -2510,7 +2543,7 @@
 "SearchSuggestionsSectionHeader" = "Sugestões de pesquisa";
 
 /* Title of an action that allows user to perform a one-click web search for selected text */
-"SearchWithBrave" = "Pesquisar com o Brave";
+"SearchWithBrave" = "Pesquisar com o Express Browser";
 
 /* Settings security section title */
 "Security" = "Segurança";
@@ -2519,16 +2552,16 @@
 "sendButtonTitle" = "Enviar";
 
 /* Message displayed in the crash dialog above the buttons used to select when sending reports */
-"SendCrashReportAlertMessage" = "Enviar um relatório de falha para que o Brave possa corrigir o problema?";
+"SendCrashReportAlertMessage" = "Enviar um relatório de falha para que o Express Browser possa corrigir o problema?";
 
 /* Title for prompt displayed to user after the app crashes */
-"SendCrashReportAlertTitle" = "Opa! Houve uma falha no Brave";
+"SendCrashReportAlertTitle" = "Opa! Houve uma falha no Express Browser";
 
 /* Used as a button label for crash dialog prompt */
 "SendReportButtonTitle" = "Enviar relatório";
 
 /* No comment provided by engineer. */
-"setDefaultBrowserCalloutTitle" = "Agora o Brave pode ser definido como seu navegador padrão no iOS. Toque aqui para abrir as configurações.";
+"setDefaultBrowserCalloutTitle" = "Agora o Express Browser pode ser definido como seu navegador padrão no iOS. Toque aqui para abrir as configurações.";
 
 /* Settings item to set the Brave as a default browser on the iOS device. */
 "setDefaultBrowserSettingsCell" = "Definir como navegador padrão";
@@ -2552,7 +2585,7 @@
 "settings.autocloseTabsSetting" = "Fechar abas";
 
 /* Description of autoclose tabs feature. */
-"settings.autocloseTabsSettingFooter" = "Permita que o Brave feche automaticamente as abas que não foram visualizadas recentemente.";
+"settings.autocloseTabsSettingFooter" = "Permita que o Express Browser feche automaticamente as abas que não foram visualizadas recentemente.";
 
 /* Label for the navigation link to quality settings view */
 "settings.highestQualityPlayback" = "Reprodução da mais alta qualidade";
@@ -2567,7 +2600,7 @@
 "settings.media.rootSetting" = "Mídia";
 
 /* A toggle label which lets the user always open YouTube urls in Brave */
-"settings.openYouTubeInBrave" = "Abrir links do YouTube no Brave";
+"settings.openYouTubeInBrave" = "Abrir links do YouTube no Express Browser";
 
 /* No comment provided by engineer. */
 "settings.privacy.screenTimeSetting" = "Ativar tempo de tela";
@@ -2645,7 +2678,7 @@
 "shieldEducation.shareTheNewsTitle" = "Compartilhe a novidade";
 
 /* Subtitle for Shield Education Tracker Ad Warning */
-"shieldEducation.trackerAdWarningSubTitle" = "O Brave Shields acabou de proteger sua privacidade on-line.";
+"shieldEducation.trackerAdWarningSubTitle" = "O Shields acabou de proteger sua privacidade on-line.";
 
 /* Subtitle for Shield Education Tracker Count Share */
 "shieldEducation.trackerCountShareSubtitle" = "Parabéns. Você é muito especial.";
@@ -2660,13 +2693,13 @@
 "shieldEducation.videoAdBlockTitle" = "Os anúncios são bloqueados enquanto você assiste a vídeos neste site.";
 
 /* Section title for adbblock, tracking protection, HTTPS-E, and cookies */
-"ShieldsDefaults" = "Padrões globais do Brave Shields";
+"ShieldsDefaults" = "Padrões globais do Shields";
 
 /* Section footer for global shields defaults */
 "ShieldsDefaultsFooter" = "Essas são as configurações padrão do Shields para novos sites. A alteração delas não afetará suas atuais configurações específicas por site.";
 
 /* No comment provided by engineer. */
-"ShieldsDownDisclaimer" = "Você está navegando neste site sem as proteções de privacidade do Brave. O site não funciona com as Proteções ativadas?";
+"ShieldsDownDisclaimer" = "Você está navegando neste site sem as proteções de privacidade do Express Browser. O site não funciona com as Proteções ativadas?";
 
 /* shields overview message */
 "ShieldsOverview" = "As Proteções de site permitem que você controle quando anúncios e rastreadores são bloqueados em cada site que você acessa. Se preferir ver anúncios em um site específico, você poderá ativá-los aqui.";
@@ -2693,7 +2726,7 @@
 "shortcuts.activityTypeClearHistorySuggestedPhrase" = "Limpar histórico do navegador";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeClearHistoryTitle" = "Limpar histórico de navegação do Brave";
+"shortcuts.activityTypeClearHistoryTitle" = "Limpar histórico de navegação do Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeEnableVPNDescription" = "Abrir o navegador em uma nova aba e ativar a VPN";
@@ -2702,7 +2735,7 @@
 "shortcuts.activityTypeEnableVPNSuggestedPhrase" = "Ativar a VPN";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeEnableVPNTitle" = "Abrir o navegador Brave e ativar a VPN";
+"shortcuts.activityTypeEnableVPNTitle" = "Abrir o navegador Express Browser e ativar a VPN";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeNewPrivateTabSuggestedPhrase" = "Abrir nova aba privada";
@@ -2723,7 +2756,7 @@
 "shortcuts.activityTypeOpenBookmarksSuggestedPhrase" = "Abrir Favoritos";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenBookmarksTitle" = "Abrir Favoritos do Brave";
+"shortcuts.activityTypeOpenBookmarksTitle" = "Abrir Favoritos do Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenBraveNewsTitle" = "Abrir o Brave News";
@@ -2738,7 +2771,7 @@
 "shortcuts.activityTypeOpenHistoryListSuggestedPhrase" = "Abrir histórico de navegação";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenHistoryListTitle" = "Abrir histórico de navegação do Brave";
+"shortcuts.activityTypeOpenHistoryListTitle" = "Abrir histórico de navegação do Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenPlaylistDescription" = "Começar a reproduzir seus vídeos na playlist";
@@ -2759,7 +2792,7 @@
 "shortcuts.activityTypeOpenSyncedTabsTitle" = "Abrir abas de outros dispositivos";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeTabDescription" = "Começar a pesquisar com segurança na web com o Brave";
+"shortcuts.activityTypeTabDescription" = "Começar a pesquisar com segurança na web com o Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.customIntentOpenBookmarkSuggestedPhrase" = "Abrir site dos favoritos";
@@ -2771,7 +2804,7 @@
 "shortcuts.customIntentOpenWebsiteSuggestedPhrase" = "Abrir site";
 
 /* Description for opening Brave Settings for altering Siri shortcut. */
-"shortcuts.shortcutOpenApplicationSettingsDescription" = "Esta opção abrirá as configurações do Brave. Para alterar várias opções da Siri, selecione o item de menu \"Siri e Busca\" e personalize suas escolhas.";
+"shortcuts.shortcutOpenApplicationSettingsDescription" = "Esta opção abrirá as configurações do Express Browser. Para alterar várias opções da Siri, selecione o item de menu \"Siri e Busca\" e personalize suas escolhas.";
 
 /* Button title that open application settings */
 "shortcuts.shortcutOpenApplicationSettingsTitle" = "Abrir configurações";
@@ -2867,10 +2900,10 @@
 "SiteShieldSettings" = "Proteções";
 
 /* Title used when in warning pop-over when domain specific data save appears */
-"socialSharing.domainSpecificDataSavedTitle" = "Economizo dados diariamente navegando na web com o Brave.";
+"socialSharing.domainSpecificDataSavedTitle" = "Economizo dados diariamente navegando na web com o Express Browser.";
 
 /* Text used for social sharing together with Brave Shield values */
-"socialSharing.shareDescriptionTitle" = "Economizo dados diariamente navegando na web com o Brave.";
+"socialSharing.shareDescriptionTitle" = "Economizo dados diariamente navegando na web com o Express Browser.";
 
 /* Open search section of settings */
 "StandardTabSearch" = "Aba padrão";
@@ -3296,7 +3329,7 @@
 "themeQRCodeShareButton" = "Compartilhar...";
 
 /* Title for QR popup encouraging users to share the code with their friends. */
-"themeQRCodeShareTitle" = "Compartilhe o Brave com seus amigos!";
+"themeQRCodeShareTitle" = "Compartilhe o Express Browser com seus amigos!";
 
 /* Selection to automatically color/style the user interface. */
 "ThemesAutomaticOption" = "Automático";
@@ -3449,19 +3482,19 @@
 "today.promoted" = "Promovido";
 
 /* Title for long press action sheet list which has item for rate / hide */
-"today.rateBraveCardActionSheetTitle" = "Avaliar o Brave na App Store";
+"today.rateBraveCardActionSheetTitle" = "Avaliar o Express Browser na App Store";
 
 /* Title for long press action that will hide Brave Rate Card */
 "today.rateBraveCardHideActionTitle" = "Ocultar";
 
 /* Button title / Title for long press action that will perform an action which open AppStore Rate screen */
-"today.rateBraveCardRateActionTitle" = "Avaliar o Brave";
+"today.rateBraveCardRateActionTitle" = "Avaliar o Express Browser";
 
 /* Subtitle shown on the Rate Brave Card */
 "today.rateBraveCardSubtitle" = "Diga-nos o que pensa.";
 
 /* Title shown on the Rate Brave Card */
-"today.rateBraveCardTitle" = "Está a gostar do Brave?";
+"today.rateBraveCardTitle" = "Está a gostar do Express Browser?";
 
 /* No comment provided by engineer. */
 "today.refresh" = "Atualizar";
@@ -3539,13 +3572,13 @@
 "ViewOn" = "Ver no %@";
 
 /* Explanation for warning alert why the microphone access required. */
-"voice.search.microphone.description.required" = "Permita o acesso ao microfone nas configurações do sistema iOS para o Brave usar a pesquisa por voz anônima.";
+"voice.search.microphone.description.required" = "Permita o acesso ao microfone nas configurações do sistema iOS para o Express Browser usar a pesquisa por voz anônima.";
 
 /* Title for warning alert microphone access is required. */
 "voice.search.microphone.title.required" = "Acesso ao microfone necessário";
 
 /* Disclaimer for screen to search using voice. */
-"voice.search.screen.disclaimer" = "O Brave não armazena nem compartilha suas pesquisas por voz.";
+"voice.search.screen.disclaimer" = "O Express Browser não armazena nem compartilha suas pesquisas por voz.";
 
 /* Pop up extra description for billing issue of subcription VPN about to expire */
 "vpn.autoReneSoonExpirePopOverSubDescription" = "Quer se proteger? Basta renovar antes que sua assinatura termine. Como agradecimento pela renovação, daremos até 20% de desconto nos próximos 3 meses.";

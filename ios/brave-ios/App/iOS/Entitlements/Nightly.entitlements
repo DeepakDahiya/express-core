@@ -6,7 +6,8 @@
 	<string>production</string>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:vpn.brave.com</string>
+		<string>applinks:browser.express</string>
+		<string>applinks:www.browser.express</string>
 	</array>
 	<key>com.apple.developer.authentication-services.autofill-credential-provider</key>
 	<true/>
@@ -24,15 +25,11 @@
 	</array>
 	<key>com.apple.developer.siri</key>
 	<true/>
+	<key>com.apple.developer.web-browser</key>
+	<true/>
 	<key>com.apple.security.application-groups</key>
 	<array>
 		<string>group.$(MOZ_BUNDLE_ID).unique</string>
 	</array>
-	<key>com.apple.developer.web-browser</key>
-	<true/>
-	<key>com.apple.developer.carplay-audio</key>
-	<true/>
-	<key>com.apple.developer.playable-content</key>
-	<true/>
 </dict>
 </plist>

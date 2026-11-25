@@ -17,7 +17,7 @@
 "AntiAdBlockWarningDescription" = "Ez a webhely elkezdett blokkolni néhány hirdetésblokkolót, ami azt eredményezheti, hogy webhelyük nem a várt módon fog működni.";
 
 /* A descriptive message explaining to disable shields on this site. */
-"AntiAdBlockWarningDescription2" = "A probléma megoldása érdekében a Brave módosíthatja a pajzsok beállításait. A beállítás után megpróbálhatja megnézni ezt a tartalmat a Brave lejátszóban.";
+"AntiAdBlockWarningDescription2" = "A probléma megoldása érdekében az Express Browser módosíthatja a pajzsok beállításait. A beállítás után megpróbálhatja megnézni ezt a tartalmat a Brave lejátszóban.";
 
 /* A button that dismisses the warning and does nothing. */
 "AntiAdBlockWarningDismissButton" = "Aktuális beállítások megtartása";
@@ -95,10 +95,10 @@
 "DomainBlockedGoBackAction" = "Vissza";
 
 /* A description in the warning page that appears when a page was blocked */
-"DomainBlockedPageDescription" = "Mivel a követők és a hirdetés agresszív tiltását kérte, a Brave még az első hálózati csatlakozás előtt tiltja az oldalt.";
+"DomainBlockedPageDescription" = "Mivel a követők és a hirdetés agresszív tiltását kérte, az Express Browser még az első hálózati csatlakozás előtt tiltja az oldalt.";
 
 /* A message in the warning page that appears when a page was blocked */
-"DomainBlockedPageMessage" = "A Brave megakadályozta a következő oldal betöltését:";
+"DomainBlockedPageMessage" = "Az Express Browser megakadályozta a következő oldal betöltését:";
 
 /* A title in the warning page that appears when a page was blocked */
 "DomainBlockedPageTitle" = "Ez a webhely megkísérelheti nyomon követni Önt más webhelyeken";
@@ -110,7 +110,7 @@
 "DomainBlockedTitle" = "Domén blokkolva";
 
 /* A description of what the Enable GPC toggle does */
-"EnableGPCDescription" = "Kérje meg a weboldalakat, hogy ne adják el vagy osszák meg az adatait. [További információk](https://support.brave.app/hc/en-us/articles/360017989132-How-do-I-change-my-Privacy-Settings#h_01HHFRRT6B5YTRREA4ZDARGTWM)";
+"EnableGPCDescription" = "Kérje meg a weboldalakat, hogy ne adják el vagy osszák meg az adatait.";
 
 /* A label of the GPC toggle */
 "EnableGPCLabel" = "A Global Privacy Control engedélyezése";

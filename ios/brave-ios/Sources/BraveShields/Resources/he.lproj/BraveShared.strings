@@ -17,7 +17,7 @@
 "AntiAdBlockWarningDescription" = "האתר התחיל לחסום חוסמי-פרסומות, אז ייתכן שהאתר שלהם לא עובד כפי שמצופה.";
 
 /* A descriptive message explaining to disable shields on this site. */
-"AntiAdBlockWarningDescription2" = "כדי לטפל בבעיה, Brave יכול להתאים עבורך את הגדרות המגנים שלך. לאחר ההתאמה, תהיה לך אפשרות לנסות לצפות בתוכן הזה בנגן Brave במקום זאת.";
+"AntiAdBlockWarningDescription2" = "כדי לטפל בבעיה, Express Browser יכול להתאים עבורך את הגדרות המגנים שלך. לאחר ההתאמה, תהיה לך אפשרות לנסות לצפות בתוכן הזה בנגן Brave במקום זאת.";
 
 /* A button that dismisses the warning and does nothing. */
 "AntiAdBlockWarningDismissButton" = "שמירת ההגדרות הנוכחיות";
@@ -95,10 +95,10 @@
 "DomainBlockedGoBackAction" = "חזור";
 
 /* A description in the warning page that appears when a page was blocked */
-"DomainBlockedPageDescription" = "מכיוון שביקשת לחסום באגרסיביות עוקבים ופרסומות, Brave חוסמת את האתר הזה לפני החיבור הראשון לרשת.";
+"DomainBlockedPageDescription" = "מכיוון שביקשת לחסום באגרסיביות עוקבים ופרסומות, Express Browser חוסמת את האתר הזה לפני החיבור הראשון לרשת.";
 
 /* A message in the warning page that appears when a page was blocked */
-"DomainBlockedPageMessage" = "Brave מנע את טעינת האתר הבא";
+"DomainBlockedPageMessage" = "Express Browser מנע את טעינת האתר הבא";
 
 /* A title in the warning page that appears when a page was blocked */
 "DomainBlockedPageTitle" = "ייתכן שהאתר הזה ינסה לעקוב אחריך במהלך השימוש באתרים אחרים";
@@ -110,7 +110,7 @@
 "DomainBlockedTitle" = "הדומיין חסום";
 
 /* A description of what the Enable GPC toggle does */
-"EnableGPCDescription" = "לבקש מאתרי אינטרנט לא למכור או לשתף את הנתונים שלך. [למידע נוסף](https://support.brave.app/hc/en-us/articles/360017989132-How-do-I-change-my-Privacy-Settings#h_01HHFRRT6B5YTRREA4ZDARGTWM)";
+"EnableGPCDescription" = "לבקש מאתרי אינטרנט לא למכור או לשתף את הנתונים שלך.";
 
 /* A label of the GPC toggle */
 "EnableGPCLabel" = "הפעלת Global Privacy Control";

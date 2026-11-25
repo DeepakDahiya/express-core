@@ -2,7 +2,7 @@
 "About" = "Thông tin";
 
 /* The title of the screen explaining Brave Shields */
-"AboutBraveShields" = "Thông tin về Lá chắn của Brave";
+"AboutBraveShields" = "Thông tin về Lá chắn";
 
 /* The body of the screen explaining Brave Shields */
 "AboutBraveShieldsBody" = "Các trang web thường bao gồm cookie và tập lệnh cố gắng xác định bạn và thiết bị của bạn. Các trang đó muốn tìm ra bạn là ai và theo dõi bạn trên khắp môi trường mạng, theo dõi những gì bạn làm trên mọi trang web.\n\nBrave chặn những thứ này để bạn có thể duyệt web mà không bị theo dõi.";
@@ -11,7 +11,7 @@
 "AccessPhotoDeniedAlertMessage" = "Điều này cho phép bạn lưu ảnh vào Cuộn camera.";
 
 /* See http://mzl.la/1G7uHo7 */
-"AccessPhotoDeniedAlertTitle" = "Brave muốn truy cập Ảnh của bạn";
+"AccessPhotoDeniedAlertTitle" = "Express Browser muốn truy cập Ảnh của bạn";
 
 /* Label to display in the Discoverability overlay for keyboard shortcuts */
 "addBookmarkTitle" = "Thêm Dấu trang";
@@ -44,7 +44,7 @@
 "AlwaysShow" = "Bật";
 
 /* Touch ID or PIN entry prompt subtitle when accessing Brave with the Browser Lock feature enabled */
-"AuthenticationLoginsTouchReason" = "Điều này xác thực quyền truy cập của bạn đối với Brave";
+"AuthenticationLoginsTouchReason" = "Điều này xác thực quyền truy cập của bạn đối với Express Browser";
 
 /* Label for Cancel button */
 "AuthPromptAlertCancelButtonTitle" = "Hủy";
@@ -176,7 +176,7 @@
 "BraveShieldsAdvancedControls" = "Nút điều khiển nâng cao";
 
 /* No comment provided by engineer. */
-"BraveShieldsAndPrivacy" = "Lá chắn Brave & Quyền riêng tư";
+"BraveShieldsAndPrivacy" = "Lá chắn & Quyền riêng tư";
 
 /* No comment provided by engineer. */
 "BraveShieldsAndPrivacyTitle" = "Lá chắn & Quyền riêng tư";
@@ -203,7 +203,7 @@
 "BraveShieldsSiteBroken" = "Nếu trang web hiển thị lỗi, hãy thử tắt Lá chắn";
 
 /* Context: 'Brave Shields Up' or 'Brave Shields Down' */
-"BraveShieldsStatusTitle" = "Lá chắn Brave";
+"BraveShieldsStatusTitle" = "Lá chắn";
 
 /* Context: The 'Down' in 'Brave Shields Down' */
 "BraveShieldsStatusValueDown" = "Tắt";
@@ -212,7 +212,7 @@
 "BraveShieldsStatusValueUp" = "Bật";
 
 /* The accessibility hint spoken when focused on the main shields toggle */
-"BraveShieldsToggleHint" = "Nhấn đúp để hiển thị Lá chắn Brave";
+"BraveShieldsToggleHint" = "Nhấn đúp để hiển thị Lá chắn";
 
 /* The name of the feature */
 "bravetalk.braveTalkTitle" = "Trò chuyện Brave";
@@ -227,13 +227,13 @@
 "BraveTranslate.searchInputTitle" = "Tìm kiếm";
 
 /* This text is for the settings menu for all Brave-Translate options. */
-"BraveTranslate.settingsMenuTitle" = "Brave Dịch";
+"BraveTranslate.settingsMenuTitle" = "Dịch";
 
 /* This text is for the translate settings screen. It's the title of the settings menu. */
-"BraveTranslate.settingsScreenTitle" = "Brave Dịch";
+"BraveTranslate.settingsScreenTitle" = "Dịch";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
-"BraveTranslate.settingsTranslateEnabledOptionDescription" = "Khi được bật, Brave Dịch sẽ tự động phát hiện ngôn ngữ hiện tại của trang và hiển thị nút dịch trên thanh URL.";
+"BraveTranslate.settingsTranslateEnabledOptionDescription" = "Khi được bật, Express Browser sẽ tự động phát hiện ngôn ngữ hiện tại của trang và hiển thị nút dịch trên thanh URL.";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
 "BraveTranslate.settingsTranslateEnabledOptionTitle" = "Đã bật Dịch";
@@ -248,7 +248,7 @@
 "BrowserLock" = "Khóa trình duyệt";
 
 /* Description for setting to enable the browser lock privacy feature */
-"BrowserLockDescription" = "Mở khóa Brave với Touch ID, Face ID hoặc mật mã của hệ thống.";
+"BrowserLockDescription" = "Mở khóa Express Browser với Touch ID, Face ID hoặc mật mã của hệ thống.";
 
 /* Settings item for clearing browsing history */
 "BrowsingHistory" = "Lịch sử duyệt web";
@@ -263,13 +263,13 @@
 "callout.bottomBarCalloutDescription" = "Chuyển thanh địa chỉ, thẻ, dấu trang và các công cụ khác xuống phía dưới trình duyệt.";
 
 /* Title for Bottom Bar Callout View */
-"callout.bottomBarCalloutTitle" = "Tùy chỉnh thanh thẻ của Brave";
+"callout.bottomBarCalloutTitle" = "Tùy chỉnh thanh thẻ của Express Browser";
 
 /* Description - Description used for main button in Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutButtonDescription" = "Đặt Brave làm trình duyệt mặc định?";
+"callout.defaultBrowserCalloutButtonDescription" = "Đặt Express Browser làm trình duyệt mặc định?";
 
 /* Subtitle - Description for Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutDescription" = "Với việc đặt Brave làm mặc định, mọi liên kết bạn chạm vào sẽ mở ra với các biện pháp bảo vệ quyền riêng tư của Brave.";
+"callout.defaultBrowserCalloutDescription" = "Với việc đặt Express Browser làm mặc định, mọi liên kết bạn chạm vào sẽ mở ra với các biện pháp bảo vệ quyền riêng tư của Express Browser.";
 
 /* Title for main button in Default Browser Full Screen Callout */
 "callout.defaultBrowserCalloutPrimaryButtonTitle" = "Đặt mặc định";
@@ -596,25 +596,25 @@
 "defaultBrowserCallout.introOpenSettingsButtonText" = "Mở Cài đặt";
 
 /* Primary text on default browser popup screen */
-"defaultBrowserCallout.introPrimaryText" = "Mở tất cả các đường liên kết bằng Brave để bảo vệ quyền riêng tư của bạn";
+"defaultBrowserCallout.introPrimaryText" = "Mở tất cả các đường liên kết bằng Express Browser để bảo vệ quyền riêng tư của bạn";
 
 /* Secondary text on default browser popup. */
-"defaultBrowserCallout.introSecondaryText" = "Lá chắn Brave chặn trình theo dõi và quảng cáo, tiết kiệm dữ liệu và giúp bạn tiết kiệm thời gian trên mọi trang web bạn truy cập";
+"defaultBrowserCallout.introSecondaryText" = "Lá chắn chặn trình theo dõi và quảng cáo, tiết kiệm dữ liệu và giúp bạn tiết kiệm thời gian trên mọi trang web bạn truy cập";
 
 /* Tertiary text on default browser popup screen */
-"defaultBrowserCallout.introTertiaryText" = "Mở Cài đặt, nhấn vào Ứng dụng trình duyệt mặc định và chọn Brave.";
+"defaultBrowserCallout.introTertiaryText" = "Mở Cài đặt, nhấn vào Ứng dụng trình duyệt mặc định và chọn Express Browser.";
 
 /* Notification body to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationBody" = "Đặt Brave là trình duyệt mặc định của bạn";
+"defaultBrowserCallout.notificationBody" = "Đặt Express Browser là trình duyệt mặc định của bạn";
 
 /* Notification title to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationTitle" = "Được Brave bảo vệ, với mọi liên kết";
+"defaultBrowserCallout.notificationTitle" = "Được Express Browser bảo vệ, với mọi liên kết";
 
 /* No comment provided by engineer. */
 "defaultBrowserCalloutCloseAccesabilityLabel" = "Đóng hộp thông tin về trình duyệt mặc định";
 
 /* Name for default Brave theme. */
-"defaultThemeName" = "Brave mặc định";
+"defaultThemeName" = "Express Browser mặc định";
 
 /* No comment provided by engineer. */
 "Delete" = "Xóa";
@@ -719,7 +719,7 @@
 "ErrorPageReloadButtonTitle" = "Tải lại";
 
 /* Additional warning text when clicking the Advanced button on error pages. %@ is a placeholder, do not localize it. Do not localize <br />. */
-"ErrorPagesAdvancedErrorPinningDetails" = "%1$@ thường sử dụng mã hóa để bảo vệ thông tin của bạn. Khi Brave cố gắng kết nối với %2$@ lần này, trang web đã gửi lại thông tin đăng nhập bất thường và không chính xác. Điều này có thể xảy ra khi kẻ tấn công cố gắng giả mạo là %3$@ hoặc màn hình đăng nhập Wi-Fi đã làm gián đoạn kết nối. Thông tin của bạn vẫn an toàn vì Brave đã dừng kết nối trước khi bất kỳ dữ liệu nào được trao đổi.<br />Bạn không thể truy cập %4$@ ngay thời điểm này vì trang web sử dụng cơ chế ghim chứng chỉ. Lỗi mạng và các cuộc tấn công thường là tạm thời, vì vậy trang này có thể sẽ hoạt động sau.";
+"ErrorPagesAdvancedErrorPinningDetails" = "%1$@ thường sử dụng mã hóa để bảo vệ thông tin của bạn. Khi Express Browser cố gắng kết nối với %2$@ lần này, trang web đã gửi lại thông tin đăng nhập bất thường và không chính xác. Điều này có thể xảy ra khi kẻ tấn công cố gắng giả mạo là %3$@ hoặc màn hình đăng nhập Wi-Fi đã làm gián đoạn kết nối. Thông tin của bạn vẫn an toàn vì Express Browser đã dừng kết nối trước khi bất kỳ dữ liệu nào được trao đổi.<br />Bạn không thể truy cập %4$@ ngay thời điểm này vì trang web sử dụng cơ chế ghim chứng chỉ. Lỗi mạng và các cuộc tấn công thường là tạm thời, vì vậy trang này có thể sẽ hoạt động sau.";
 
 /* Additional warning text when clicking the Advanced button on error pages */
 "ErrorPagesAdvancedWarningDetails" = "Máy chủ này không thể chứng minh rằng đó là %@; chứng chỉ bảo mật không được hệ điều hành của thiết bị của bạn tin tưởng. Điều này có thể do cấu hình sai hoặc có kẻ tấn công cố gắng chặn kết nối của bạn.";
@@ -759,6 +759,39 @@
 
 /* Button label to temporarily continue to the site from the certificate error page */
 "ErrorPagesProceedAnywayButton" = "Tiếp tục truy cập %@ (không an toàn)";
+
+/* Link on the private new tab page to a page about private mode. */
+"expressPrivateNTP.learnMore" = "Tìm hiểu thêm";
+
+/* Bullet point: data that private mode doesn't save. Data that websites save on the device, such as sign-in state. */
+"expressPrivateNTP.notSavedCookies" = "Cookie và dữ liệu trang web";
+
+/* Bullet point: data that private mode doesn't save. Names, addresses, passwords etc. that people enter into forms on the web. */
+"expressPrivateNTP.notSavedForms" = "Thông tin đã nhập vào biểu mẫu";
+
+/* Introduces a bulleted list of data that private mode doesn't save. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.notSavedHeader" = "Express Browser <em>sẽ không lưu</em>:";
+
+/* Bullet point: data that private mode doesn't save. 'Browsing history' is the history of visited websites. */
+"expressPrivateNTP.notSavedHistory" = "Nhật ký duyệt web";
+
+/* Subtitle of the private new tab page, under its title. */
+"expressPrivateNTP.subtitle" = "Những người khác sử dụng thiết bị này sẽ không thấy hoạt động của bạn. Vì vậy, bạn có thể duyệt web riêng tư hơn. Việc này sẽ không thay đổi cách các trang web mà bạn truy cập và dịch vụ mà họ sử dụng (bao gồm cả Express Browser) thu thập dữ liệu. Hệ thống sẽ lưu các tệp đã tải xuống và dấu trang.";
+
+/* Title of the private new tab page. Private mode hides your browsing from other people using the same device; it does not make you anonymous. */
+"expressPrivateNTP.title" = "Bạn đã chuyển sang chế độ Riêng tư";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleEmployer" = "Chủ lao động hoặc trường học của bạn";
+
+/* Introduces a bulleted list of who might still see what the user does in private mode. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.visibleHeader" = "Hoạt động của bạn <em>có thể vẫn hiển thị</em> với:";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleProvider" = "Nhà cung cấp dịch vụ Internet của bạn";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleWebsites" = "Trang web bạn truy cập";
 
 /* %@ will launch an external application */
 "ExternalAppURLAlertMessage" = "%@ sẽ khởi động một ứng dụng bên ngoài";
@@ -1187,13 +1220,13 @@
 "OBSearchEngineDetail" = "Chọn công cụ tìm kiếm mặc định của bạn";
 
 /* Title for search engine onboarding screen */
-"OBSearchEngineTitle" = "Chào mừng bạn đến với Trình duyệt Brave";
+"OBSearchEngineTitle" = "Chào mừng bạn đến với Trình duyệt Express Browser";
 
 /* Detail text for shields onboarding screen */
 "OBShieldsDetail" = "Chặn các trình theo dõi xâm phạm quyền riêng tư để bạn có thể duyệt web mà không bị theo dõi";
 
 /* Title for shields onboarding screen */
-"OBShieldsTitle" = "Lá chắn Brave";
+"OBShieldsTitle" = "Lá chắn";
 
 /* Button to show the Brave Rewards Ads. */
 "OBShowMeButton" = "Hiển thị cho tôi";
@@ -1205,10 +1238,10 @@
 "onboarding.blockedAdsOnboardingBigTechInformationText" = "%1$@ và %2$lld quảng cáo & trình theo dõi khác đã bị chặn";
 
 /* The footnote indicating what Brave shields is blocking */
-"onboarding.blockedAdsOnboardingFootnoteText" = "Xem tất cả nội dung xấu mà Brave đã chặn, trên mọi trang, với Lá chắn.";
+"onboarding.blockedAdsOnboardingFootnoteText" = "Xem tất cả nội dung xấu mà Express Browser đã chặn, trên mọi trang, với Lá chắn.";
 
 /* The text describing user where they should press in order to open Shield panel */
-"onboarding.blockedAdsOnboardingInstructionsText" = "Chạm để xem Lá chắn Brave";
+"onboarding.blockedAdsOnboardingInstructionsText" = "Chạm để xem Lá chắn";
 
 /* The description text shown when there is no big tech tracker among trackers. Example usage: 31 Ads & trackers blocked. The number here is presented separately so it is not in translation. */
 "onboarding.blockedAdsOnboardingNoBigTechInformationText" = "Quảng cáo & trình theo dõi bị chặn";
@@ -1232,13 +1265,13 @@
 "onboarding.ntpOnboardingPopOverTrackerDescription" = "Khi chặn trình theo dõi & quảng cáo, các trang web sử dụng ít dữ liệu hơn và tải nhanh hơn nhiều.";
 
 /* Description for the Omnibox (URL Bar) pop-over that describes faster load times. */
-"onboarding.omniboxOnboardingPopOverDescription" = "Sự khác biệt Brave mang lại:\nKhông quảng cáo. Không trình theo dõi. Tải trang nhanh hơn nhiều.";
+"onboarding.omniboxOnboardingPopOverDescription" = "Sự khác biệt Express Browser mang lại:\nKhông quảng cáo. Không trình theo dõi. Tải trang nhanh hơn nhiều.";
 
 /* Title for the Omnibox (URL Bar) pop-over that describes faster load times. */
 "onboarding.omniboxOnboardingPopOverTitle" = "Nhập tên trang web hoặc URL";
 
 /* Title for Welcome Screen in Onboarding */
-"onboarding.welcomeScreenTitle" = "Chào mứng tới Brave";
+"onboarding.welcomeScreenTitle" = "Chào mứng tới Express Browser";
 
 /* Continue button to navigate to next onboarding screen. */
 "OnboardingContinueButton" = "Tiếp tục";
@@ -1280,7 +1313,7 @@
 "OpenMobileConfigurationAlertTitle" = "Hồ sơ cấu hình có sẵn";
 
 /* Context menu option for opening a link in a new private tab */
-"OpenNewPrivateTabButtonTitle" = "Mở trong thẻ riêng tư mới";
+"OpenNewPrivateTabButtonTitle" = "Mở trong tab Riêng tư";
 
 /* Context menu item for opening a link in a new tab */
 "OpenNewTabButtonTitle" = "Mở trong thẻ mới";
@@ -1487,7 +1520,7 @@
 "PersistentPrivateBrowsing" = "Duyệt web riêng tư xuyên suốt";
 
 /* Persistent private browsing alert message to existing users */
-"PersistentPrivateBrowsingAlertMessage" = "Cho phép Brave khôi phục các thẻ duyệt riêng tư, ngay cả khi bạn đóng / mở lại ứng dụng";
+"PersistentPrivateBrowsingAlertMessage" = "Cho phép Express Browser khôi phục các thẻ duyệt riêng tư, ngay cả khi bạn đóng / mở lại ứng dụng";
 
 /* Persistent private browsing alert title to existing users */
 "PersistentPrivateBrowsingAlertTitle" = "Khôi phục Thẻ riêng tư";
@@ -1931,7 +1964,7 @@
 "privacyHub.lastWeekHeader" = "Tuần trước";
 
 /* Do NOT localize asterisk('*') characters, they are used to make the text bold in the app. It says which tracker was blocked on how many websites, example usage: 'Google Analytics was blocked by Brave Shields on 42 sites' */
-"privacyHub.mostFrequentTrackerAndAdBody" = "**%1$@** đã bị chặn bởi Lá chắn Brave trên **%2$lld** trang web";
+"privacyHub.mostFrequentTrackerAndAdBody" = "**%1$@** đã bị chặn bởi Lá chắn trên **%2$lld** trang web";
 
 /* Title under which we display a tracker which was most frequently detected by our ad blocking mechanism. */
 "privacyHub.mostFrequentTrackerAndAdTitle" = "Trình theo dõi & Quảng cáo thường gặp nhất";
@@ -1949,7 +1982,7 @@
 "privacyHub.notificationCalloutButtonText" = "Bật thông báo";
 
 /* Message of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
-"privacyHub.notificationMessage" = "Thông tin về việc Brave đã bảo vệ khi bạn trực tuyến thế nào trong tuần này.";
+"privacyHub.notificationMessage" = "Thông tin về việc Express Browser đã bảo vệ khi bạn trực tuyến thế nào trong tuần này.";
 
 /* Title of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
 "privacyHub.notificationTitle" = "Báo cáo Quyền riêng tư hằng tuần";
@@ -2039,10 +2072,10 @@
 "PrivateBrowsingOnlyWarning" = "Chế độ Chỉ duyệt riêng tư sẽ đóng tất cả thẻ hiện tại của bạn và đăng xuất bạn ra khỏi tất cả các trang web.";
 
 /* Private tab details */
-"PrivateTabBody" = "Các Thẻ riêng tư không được lưu trong Brave, nhưng điều đó không đồng nghĩa với việc làm bạn ẩn danh trong môi trường trực tuyến. Các trang web bạn truy cập trong thẻ riêng tư sẽ không hiển thị trong lịch sử của bạn và cookie của chúng luôn biến mất khi bạn đóng trang — không có dấu vết nào của chúng còn sót lại trong Brave. Tuy nhiên, thông tin tải xuống sẽ được lưu.\nNhà mạng di động của bạn (hoặc chủ sở hữu mạng Wi-Fi hoặc VPN mà bạn kết nối) có thể xem bạn truy cập trang web nào và các trang web đó sẽ biết địa chỉ IP công khai của bạn, ngay cả trong các Thẻ riêng tư.";
+"PrivateTabBody" = "Các Thẻ riêng tư không được lưu trong Express Browser, nhưng điều đó không đồng nghĩa với việc làm bạn ẩn danh trong môi trường trực tuyến. Các trang web bạn truy cập trong thẻ riêng tư sẽ không hiển thị trong lịch sử của bạn và cookie của chúng luôn biến mất khi bạn đóng trang — không có dấu vết nào của chúng còn sót lại trong Express Browser. Tuy nhiên, thông tin tải xuống sẽ được lưu.\nNhà mạng di động của bạn (hoặc chủ sở hữu mạng Wi-Fi hoặc VPN mà bạn kết nối) có thể xem bạn truy cập trang web nào và các trang web đó sẽ biết địa chỉ IP công khai của bạn, ngay cả trong các Thẻ riêng tư.";
 
 /* Private tab detail text */
-"PrivateTabDetails" = "Sử dụng Thẻ riêng tư chỉ thay đổi những gì Brave thực hiện trên thiết bị của bạn, không thay đổi hành vi của bất kỳ ai khác.\n\nCác trang web luôn biết địa chỉ IP của bạn khi bạn truy cập. Từ đó, họ thường có thể đoán sơ bộ vị trí của bạn — thường là thành phố của bạn. Đôi khi, thông tin vị trí đó có thể cụ thể hơn nhiều. Các trang web cũng biết mọi thứ bạn chia sẻ với họ, chẳng hạn như các cụm từ tìm kiếm. Nếu bạn đăng nhập vào một trang web, họ sẽ biết bạn là chủ sở hữu của tài khoản đó. Bạn vẫn sẽ bị đăng xuất khi đóng Thẻ riêng tư vì Brave sẽ xóa cookie có tác dụng giúp bạn duy trì trạng thái đăng nhập.\n\nBất kỳ ai kết nối bạn với Internet (ISP của bạn) đều có thể thấy mọi hoạt động mạng của bạn. Thông thường, đó sẽ là nhà mạng di động của bạn. Nếu bạn kết nối với mạng Wi-Fi, đó là chủ sở hữu của mạng đó và nếu bạn đang sử dụng VPN, thì đó là bên điều hành VPN đó. ISP của bạn có thể thấy những đó là trang web nào ngay khi bạn truy cập. Nếu các trang web đó sử dụng HTTPS, họ chỉ có thể phỏng đoán có căn cứ về những gì bạn làm trên các trang web đó. Nhưng nếu một trang web chỉ sử dụng HTTP thì ISP của bạn có thể thấy mọi thứ: các cụm từ tìm kiếm của bạn, những trang bạn đọc và những liên kết bạn theo dõi.\n\nNếu một nhà tuyển dụng quản lý thiết bị của bạn, họ cũng có thể theo dõi những gì bạn làm với thiết bị đó. Sử dụng Thẻ riêng tư có lẽ sẽ không ngăn họ biết những trang web bạn đã truy cập. Một người khác có quyền truy cập vào thiết bị của bạn cũng có thể đã cài đặt phần mềm theo dõi hoạt động của bạn và Thẻ riêng tư cũng sẽ không bảo vệ bạn khỏi điều này.";
+"PrivateTabDetails" = "Sử dụng Thẻ riêng tư chỉ thay đổi những gì Express Browser thực hiện trên thiết bị của bạn, không thay đổi hành vi của bất kỳ ai khác.\n\nCác trang web luôn biết địa chỉ IP của bạn khi bạn truy cập. Từ đó, họ thường có thể đoán sơ bộ vị trí của bạn — thường là thành phố của bạn. Đôi khi, thông tin vị trí đó có thể cụ thể hơn nhiều. Các trang web cũng biết mọi thứ bạn chia sẻ với họ, chẳng hạn như các cụm từ tìm kiếm. Nếu bạn đăng nhập vào một trang web, họ sẽ biết bạn là chủ sở hữu của tài khoản đó. Bạn vẫn sẽ bị đăng xuất khi đóng Thẻ riêng tư vì Express Browser sẽ xóa cookie có tác dụng giúp bạn duy trì trạng thái đăng nhập.\n\nBất kỳ ai kết nối bạn với Internet (ISP của bạn) đều có thể thấy mọi hoạt động mạng của bạn. Thông thường, đó sẽ là nhà mạng di động của bạn. Nếu bạn kết nối với mạng Wi-Fi, đó là chủ sở hữu của mạng đó và nếu bạn đang sử dụng VPN, thì đó là bên điều hành VPN đó. ISP của bạn có thể thấy những đó là trang web nào ngay khi bạn truy cập. Nếu các trang web đó sử dụng HTTPS, họ chỉ có thể phỏng đoán có căn cứ về những gì bạn làm trên các trang web đó. Nhưng nếu một trang web chỉ sử dụng HTTP thì ISP của bạn có thể thấy mọi thứ: các cụm từ tìm kiếm của bạn, những trang bạn đọc và những liên kết bạn theo dõi.\n\nNếu một nhà tuyển dụng quản lý thiết bị của bạn, họ cũng có thể theo dõi những gì bạn làm với thiết bị đó. Sử dụng Thẻ riêng tư có lẽ sẽ không ngăn họ biết những trang web bạn đã truy cập. Một người khác có quyền truy cập vào thiết bị của bạn cũng có thể đã cài đặt phần mềm theo dõi hoạt động của bạn và Thẻ riêng tư cũng sẽ không bảo vệ bạn khỏi điều này.";
 
 /* Private tab information link */
 "PrivateTabLink" = "Tìm hiểu về Thẻ riêng tư.";
@@ -2054,7 +2087,7 @@
 "QuickSearchEngines" = "Tìm nhanh công cụ tìm kiếm";
 
 /* Open the App Store to rate Brave. */
-"RateBrave" = "Đánh giá Brave";
+"RateBrave" = "Đánh giá Express Browser";
 
 /* Accessibility label for button increasing font size in display settings of reader mode */
 "ReaderModeBiggerFontButtonAccessibilityLabel" = "Tăng kích thước chữ";
@@ -2243,10 +2276,10 @@
 "RestoreTabNegativeButtonTitle" = "No";
 
 /* Restore Tabs Prompt Description */
-"RestoreTabOnCrashAlertMessage" = "Thật không may, Brave bị lỗi đóng đột ngột hoặc không được đóng đúng cách.\nKhôi phục các thẻ?";
+"RestoreTabOnCrashAlertMessage" = "Thật không may, Express Browser bị lỗi đóng đột ngột hoặc không được đóng đúng cách.\nKhôi phục các thẻ?";
 
 /* Restore Tabs Prompt Title */
-"RestoreTabOnCrashAlertTitle" = "Brave đóng đột ngột.";
+"RestoreTabOnCrashAlertTitle" = "Express Browser đóng đột ngột.";
 
 /* Body for Brave Talk rewards opt-in screen */
 "rewards.braveTalkRewardsOptInBody" = "Với Phần thưởng Brave, bạn có thể xem quảng cáo với cam kết bảo vệ quyền riêng tư từ mạng lưới Quảng cáo Brave. Không có trình theo dõi. Không làm giảm tốc độ. Và dữ liệu của bạn được bảo mật hoàn toàn.";
@@ -2573,7 +2606,7 @@
 "searchSuggestionsSubtitle" = "Bạn có muốn bật Gợi ý tìm kiếm?";
 
 /* Title of an action that allows user to perform a one-click web search for selected text */
-"SearchWithBrave" = "Tìm kiếm với Brave";
+"SearchWithBrave" = "Tìm kiếm với Express Browser";
 
 /* Settings security section title */
 "Security" = "Bảo mật";
@@ -2582,16 +2615,16 @@
 "sendButtonTitle" = "Gửi";
 
 /* Message displayed in the crash dialog above the buttons used to select when sending reports */
-"SendCrashReportAlertMessage" = "Gửi báo cáo lỗi đóng đột ngột để Brave khắc phục?";
+"SendCrashReportAlertMessage" = "Gửi báo cáo lỗi đóng đột ngột để Express Browser khắc phục?";
 
 /* Title for prompt displayed to user after the app crashes */
-"SendCrashReportAlertTitle" = "Ôi! Brave đã bị lỗi đóng đột ngột";
+"SendCrashReportAlertTitle" = "Ôi! Express Browser đã bị lỗi đóng đột ngột";
 
 /* Used as a button label for crash dialog prompt */
 "SendReportButtonTitle" = "Gửi báo cáo";
 
 /* No comment provided by engineer. */
-"setDefaultBrowserCalloutTitle" = "Brave hiện có thể được đặt làm trình duyệt mặc định của bạn trong iOS. Nhấn vào đây để mở cài đặt.";
+"setDefaultBrowserCalloutTitle" = "Express Browser hiện có thể được đặt làm trình duyệt mặc định của bạn trong iOS. Nhấn vào đây để mở cài đặt.";
 
 /* Settings item to set the Brave as a default browser on the iOS device. */
 "setDefaultBrowserSettingsCell" = "Đặt làm Trình duyệt mặc định";
@@ -2615,7 +2648,7 @@
 "settings.autocloseTabsSetting" = "Đóng thẻ";
 
 /* Description of autoclose tabs feature. */
-"settings.autocloseTabsSettingFooter" = "Cho phép Brave tự động đóng thẻ không được xem gần đây.";
+"settings.autocloseTabsSettingFooter" = "Cho phép Express Browser tự động đóng thẻ không được xem gần đây.";
 
 /* Label for the navigation link to quality settings view */
 "settings.highestQualityPlayback" = "Chất lượng phát cao nhất";
@@ -2630,7 +2663,7 @@
 "settings.media.rootSetting" = "Truyền thông";
 
 /* A toggle label which lets the user always open YouTube urls in Brave */
-"settings.openYouTubeInBrave" = "Mở liên kết YouTube trong Brave";
+"settings.openYouTubeInBrave" = "Mở liên kết YouTube trong Express Browser";
 
 /* No comment provided by engineer. */
 "settings.privacy.screenTimeSetting" = "Bật Thống kê thời gian";
@@ -2705,7 +2738,7 @@
 "shieldEducation.shareTheNewsTitle" = "Chia sẻ tin tức";
 
 /* Subtitle for Shield Education Tracker Ad Warning */
-"shieldEducation.trackerAdWarningSubTitle" = "Lá chắn Brave vừa bảo vệ quyền riêng tư trực tuyến của bạn.";
+"shieldEducation.trackerAdWarningSubTitle" = "Lá chắn vừa bảo vệ quyền riêng tư trực tuyến của bạn.";
 
 /* Subtitle for Shield Education Tracker Count Share */
 "shieldEducation.trackerCountShareSubtitle" = "Xin chúc mừng. Người đặc biệt.";
@@ -2720,13 +2753,13 @@
 "shieldEducation.videoAdBlockTitle" = "Các quảng cáo đã bị chặn trong khi bạn xem video trên trang web này.";
 
 /* Section title for adbblock, tracking protection, HTTPS-E, and cookies */
-"ShieldsDefaults" = "Mặc định toàn cầu của Lá chắn Brave";
+"ShieldsDefaults" = "Mặc định toàn cầu của Lá chắn";
 
 /* Section footer for global shields defaults */
 "ShieldsDefaultsFooter" = "Đây là những cài đặt Lá chắn mặc định cho các trang web mới. Thay đổi chúng sẽ không ảnh hưởng đến các cài đặt cho từng trang web hiện tại của bạn.";
 
 /* No comment provided by engineer. */
-"ShieldsDownDisclaimer" = "Bạn đang duyệt trang web này mà không được Brave bảo vệ quyền riêng tư. Mọi thứ không hoạt động đúng khi bật Lá chắn sao?";
+"ShieldsDownDisclaimer" = "Bạn đang duyệt trang web này mà không được Express Browser bảo vệ quyền riêng tư. Mọi thứ không hoạt động đúng khi bật Lá chắn sao?";
 
 /* shields overview message */
 "ShieldsOverview" = "Lá chắn trang web giúp bạn kiểm soát khi nào quảng cáo và trình theo dõi được chặn ở trang web bạn truy cập. Nếu bạn muốn thấy quảng cáo ở một trang nhất định, bạn có thể bật ở đây.";
@@ -2753,7 +2786,7 @@
 "shortcuts.activityTypeClearHistorySuggestedPhrase" = "Xóa lịch sử trình duyệt";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeClearHistoryTitle" = "Xóa lịch sử duyệt Brave";
+"shortcuts.activityTypeClearHistoryTitle" = "Xóa lịch sử duyệt Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeEnableVPNDescription" = "Mở trình duyệt trong thẻ mới và bật VPN";
@@ -2762,7 +2795,7 @@
 "shortcuts.activityTypeEnableVPNSuggestedPhrase" = "Bật VPN";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeEnableVPNTitle" = "Mở trình duyệt Brave và bật VPN";
+"shortcuts.activityTypeEnableVPNTitle" = "Mở trình duyệt Express Browser và bật VPN";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeNewPrivateTabSuggestedPhrase" = "Mở thẻ riêng tư mới";
@@ -2783,7 +2816,7 @@
 "shortcuts.activityTypeOpenBookmarksSuggestedPhrase" = "Mở dấu trang";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenBookmarksTitle" = "Mở Dấu trang của trình duyệt Brave";
+"shortcuts.activityTypeOpenBookmarksTitle" = "Mở Dấu trang của trình duyệt Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenBraveNewsTitle" = "Mở Tin tức Brave";
@@ -2798,7 +2831,7 @@
 "shortcuts.activityTypeOpenHistoryListSuggestedPhrase" = "Mở lịch sử trình duyệt";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenHistoryListTitle" = "Mở lịch sử trình duyệt Brave";
+"shortcuts.activityTypeOpenHistoryListTitle" = "Mở lịch sử trình duyệt Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenPlaylistDescription" = "Bắt đầu phát video của bạn trong Danh sách phát";
@@ -2819,7 +2852,7 @@
 "shortcuts.activityTypeOpenSyncedTabsTitle" = "Mở thẻ từ các thiết bị khác";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeTabDescription" = "Bắt đầu tìm kiếm an toàn trên web với Brave";
+"shortcuts.activityTypeTabDescription" = "Bắt đầu tìm kiếm an toàn trên web với Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.customIntentOpenBookmarkSuggestedPhrase" = "Mở trang web dấu trang";
@@ -2831,7 +2864,7 @@
 "shortcuts.customIntentOpenWebsiteSuggestedPhrase" = "Mở trang web";
 
 /* Description for opening Brave Settings for altering Siri shortcut. */
-"shortcuts.shortcutOpenApplicationSettingsDescription" = "Tùy chọn này sẽ mở Cài đặt Brave. Để thay đổi nhiều tùy chọn Siri khác nhau, vui lòng chọn mục \"Siri & Tìm kiếm\" trên menu và tùy chỉnh các lựa chọn của bạn.";
+"shortcuts.shortcutOpenApplicationSettingsDescription" = "Tùy chọn này sẽ mở Cài đặt Express Browser. Để thay đổi nhiều tùy chọn Siri khác nhau, vui lòng chọn mục \"Siri & Tìm kiếm\" trên menu và tùy chỉnh các lựa chọn của bạn.";
 
 /* Button title that open application settings */
 "shortcuts.shortcutOpenApplicationSettingsTitle" = "Mở Cài đặt";
@@ -2927,10 +2960,10 @@
 "SiteShieldSettings" = "Lá chắn";
 
 /* Title used when in warning pop-over when domain specific data save appears */
-"socialSharing.domainSpecificDataSavedTitle" = "Tôi tiết kiệm được dữ liệu mỗi ngày bằng cách duyệt web với Brave";
+"socialSharing.domainSpecificDataSavedTitle" = "Tôi tiết kiệm được dữ liệu mỗi ngày bằng cách duyệt web với Express Browser";
 
 /* Text used for social sharing together with Brave Shield values */
-"socialSharing.shareDescriptionTitle" = "Tôi tiết kiệm được dữ liệu mỗi ngày bằng cách duyệt web với Brave";
+"socialSharing.shareDescriptionTitle" = "Tôi tiết kiệm được dữ liệu mỗi ngày bằng cách duyệt web với Express Browser";
 
 /* Open search section of settings */
 "StandardTabSearch" = "Thẻ tiêu chuẩn";
@@ -3356,7 +3389,7 @@
 "themeQRCodeShareButton" = "Chia sẻ...";
 
 /* Title for QR popup encouraging users to share the code with their friends. */
-"themeQRCodeShareTitle" = "Chia sẻ Brave với bạn bè của bạn!";
+"themeQRCodeShareTitle" = "Chia sẻ Express Browser với bạn bè của bạn!";
 
 /* Selection to automatically color/style the user interface. */
 "ThemesAutomaticOption" = "Tự động";
@@ -3509,19 +3542,19 @@
 "today.promoted" = "Được quảng bá";
 
 /* Title for long press action sheet list which has item for rate / hide */
-"today.rateBraveCardActionSheetTitle" = "Đánh giá Brave trên App Store";
+"today.rateBraveCardActionSheetTitle" = "Đánh giá Express Browser trên App Store";
 
 /* Title for long press action that will hide Brave Rate Card */
 "today.rateBraveCardHideActionTitle" = "Ẩn";
 
 /* Button title / Title for long press action that will perform an action which open AppStore Rate screen */
-"today.rateBraveCardRateActionTitle" = "Đánh giá Brave";
+"today.rateBraveCardRateActionTitle" = "Đánh giá Express Browser";
 
 /* Subtitle shown on the Rate Brave Card */
 "today.rateBraveCardSubtitle" = "Hãy cho chúng tôi biết bạn nghĩ gì!";
 
 /* Title shown on the Rate Brave Card */
-"today.rateBraveCardTitle" = "Thích Brave?";
+"today.rateBraveCardTitle" = "Thích Express Browser?";
 
 /* No comment provided by engineer. */
 "today.refresh" = "Làm mới";
@@ -3602,13 +3635,13 @@
 "ViewOn" = "Xem trên %@";
 
 /* Explanation for warning alert why the microphone access required. */
-"voice.search.microphone.description.required" = "Vui lòng cho phép truy cập micrô trong Cài đặt hệ thống iOS để Brave sử dụng tìm kiếm bằng giọng nói ẩn danh.";
+"voice.search.microphone.description.required" = "Vui lòng cho phép truy cập micrô trong Cài đặt hệ thống iOS để Express Browser sử dụng tìm kiếm bằng giọng nói ẩn danh.";
 
 /* Title for warning alert microphone access is required. */
 "voice.search.microphone.title.required" = "Cần có quyền truy cập micrô";
 
 /* Disclaimer for screen to search using voice. */
-"voice.search.screen.disclaimer" = "Brave không lưu trữ hoặc chia sẻ tìm kiếm bằng giọng nói của bạn.";
+"voice.search.screen.disclaimer" = "Express Browser không lưu trữ hoặc chia sẻ tìm kiếm bằng giọng nói của bạn.";
 
 /* The date your wallet was created */
 "WalletCreationDate" = "Ngày tạo Ví";

@@ -2,7 +2,7 @@
 "focusOnboarding.continueButtonTitle" = "続ける";
 
 /* The subtitle of the screen that requests user to set Brave as default */
-"focusOnboarding.defaultBrowserScreenDescription" = "Braveを今すぐデフォルトブラウザに設定。";
+"focusOnboarding.defaultBrowserScreenDescription" = "Express Browserを今すぐデフォルトブラウザに設定。";
 
 /* The title of the screen that requests user to set Brave as default */
 "focusOnboarding.defaultBrowserScreenTitle" = "アクセスするすべてのサイトで広告をブロック";
@@ -38,5 +38,5 @@
 "focusOnboarding.urlBarIndicatorDescription" = "広告&トラッカーを減らして、動画を楽しみましょう。";
 
 /* The title of the popup which points to URL Bar after onboarding */
-"focusOnboarding.urlBarIndicatorTitle" = "Braveと他社ブラウザの比較を見る";
+"focusOnboarding.urlBarIndicatorTitle" = "Express Browserと他社ブラウザの比較を見る";
 

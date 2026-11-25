@@ -72,6 +72,13 @@ import UIKit
 
   /// Whether or not actions should be handled
   var isEnabled: Bool = true
+  /// Express: YouTube pages keep the toolbars (and the comments pill) on screen, like Android's
+  /// `showControlsPersistent` there.
+  var isPinned: Bool = false {
+    didSet {
+      if isPinned, toolbarState != .expanded { toolbarState = .expanded }
+    }
+  }
 
   /// The current toolbar state based on previous actions sent
   @Published var toolbarState: ToolbarState = .expanded {
@@ -152,7 +159,7 @@ import UIKit
       // can be made to the UI itself, we will disable collapsing it on VisionOS
       return
     }
-    if !isEnabled { return }
+    if !isEnabled || isPinned { return }
     switch action {
     case .dragged(let snapshot, let panData):
       if initialSnapshot == nil {

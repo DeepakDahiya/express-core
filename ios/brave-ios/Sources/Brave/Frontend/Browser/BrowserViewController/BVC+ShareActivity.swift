@@ -264,7 +264,9 @@ extension BrowserViewController {
     } else {
       // Add Feed To Brave News Activity
       // Check if it's a feed, url is a temp document file URL
-      if let selectedTab = tabManager.selectedTab,
+      // Express Browser hides Brave News.
+      if profileController.profile.prefs.isBraveNewsAvailable,
+        let selectedTab = tabManager.selectedTab,
         selectedTab.contentsMimeType == "application/xml"
           || selectedTab.contentsMimeType == "application/json",
         let tabURL = selectedTab.url

@@ -17,7 +17,7 @@
 "AntiAdBlockWarningDescription" = "Αυτός ο ιστότοπος έχει αρχίσει να αποκλείει ορισμένα προγράμματα αποκλεισμού διαφημίσεων, πράγμα που σημαίνει ότι ο ιστότοπος ενδέχεται να μην λειτουργεί όπως αναμένεται.";
 
 /* A descriptive message explaining to disable shields on this site. */
-"AntiAdBlockWarningDescription2" = "Για την αντιμετώπιση αυτού του ζητήματος, το Brave μπορεί να προσαρμόσει τις ρυθμίσεις των ασπίδων σας για εσάς. Μετά την προσαρμογή, μπορείτε να δοκιμάσετε να παρακολουθήσετε αυτό το περιεχόμενο στο Brave Player.";
+"AntiAdBlockWarningDescription2" = "Για την αντιμετώπιση αυτού του ζητήματος, το Express Browser μπορεί να προσαρμόσει τις ρυθμίσεις των ασπίδων σας για εσάς. Μετά την προσαρμογή, μπορείτε να δοκιμάσετε να παρακολουθήσετε αυτό το περιεχόμενο στο Brave Player.";
 
 /* A button that dismisses the warning and does nothing. */
 "AntiAdBlockWarningDismissButton" = "Διατήρηση τρεχουσών ρυθμίσεων";
@@ -95,10 +95,10 @@
 "DomainBlockedGoBackAction" = "Πίσω";
 
 /* A description in the warning page that appears when a page was blocked */
-"DomainBlockedPageDescription" = "Επειδή ζητήσατε τον αυστηρό αποκλεισμό των tracker και των διαφημίσεων, ο Brave έχει αποκλείσει αυτόν τον ιστότοπο πριν από την πρώτη σύνδεση σε δίκτυο.";
+"DomainBlockedPageDescription" = "Επειδή ζητήσατε τον αυστηρό αποκλεισμό των tracker και των διαφημίσεων, το Express Browser έχει αποκλείσει αυτόν τον ιστότοπο πριν από την πρώτη σύνδεση σε δίκτυο.";
 
 /* A message in the warning page that appears when a page was blocked */
-"DomainBlockedPageMessage" = "Το Brave απέτρεψε τη φόρτωση του ακόλουθου ιστότοπου:";
+"DomainBlockedPageMessage" = "Το Express Browser απέτρεψε τη φόρτωση του ακόλουθου ιστότοπου:";
 
 /* A title in the warning page that appears when a page was blocked */
 "DomainBlockedPageTitle" = "Αυτός ο ιστότοπος μπορεί να επιχειρήσει να σας παρακολουθήσει σε άλλους ιστότοπους";
@@ -110,7 +110,7 @@
 "DomainBlockedTitle" = "Ο Τομέας αποκλείστηκε";
 
 /* A description of what the Enable GPC toggle does */
-"EnableGPCDescription" = "Ζήτα από τους ιστότοπους να μην πωλούν ή μοιράζονται τα δεδομένα σου. [Μάθε περισσότερα](https://support.brave.app/hc/en-us/articles/360017989132-How-do-I-change-my-Privacy-Settings#h_01HHFRRT6B5YTRREA4ZDARGTWM)";
+"EnableGPCDescription" = "Ζήτα από τους ιστότοπους να μην πωλούν ή μοιράζονται τα δεδομένα σου.";
 
 /* A label of the GPC toggle */
 "EnableGPCLabel" = "Ενεργοποίηση καθολικού ελέγχου απορρήτου";

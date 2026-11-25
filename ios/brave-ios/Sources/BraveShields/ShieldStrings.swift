@@ -211,7 +211,7 @@ extension Strings.Shields {
     tableName: "BraveShared",
     bundle: .module,
     value:
-      "To address this issue, Brave can adjust your shields settings for you. Once adjusted, you can try watching this content in Brave Player instead.",
+      "To address this issue, Express Browser can adjust your shields settings for you. Once adjusted, you can try watching this content in Brave Player instead.",
     comment: "A descriptive message explaining to disable shields on this site."
   )
 
@@ -321,8 +321,7 @@ extension Strings.Shields {
     "EnableGPCDescription",
     tableName: "BraveShared",
     bundle: .module,
-    value:
-      "Ask websites not to sell or share your data. [Learn more](https://support.brave.app/hc/en-us/articles/360017989132-How-do-I-change-my-Privacy-Settings#h_01HHFRRT6B5YTRREA4ZDARGTWM)",
+    value: "Ask websites not to sell or share your data.",
     comment: "A description of what the Enable GPC toggle does"
   )
 }
@@ -488,7 +487,7 @@ extension Strings.Shields {
     "DomainBlockedPageMessage",
     tableName: "BraveShared",
     bundle: .module,
-    value: "Brave has prevented the following site from loading:",
+    value: "Express Browser has prevented the following site from loading:",
     comment: "A message in the warning page that appears when a page was blocked"
   )
 
@@ -498,7 +497,7 @@ extension Strings.Shields {
     tableName: "BraveShared",
     bundle: .module,
     value:
-      "Because you requested to aggressively block trackers and ads, Brave is blocking this site before the first network connection.",
+      "Because you requested to aggressively block trackers and ads, Express Browser is blocking this site before the first network connection.",
     comment: "A description in the warning page that appears when a page was blocked"
   )
 

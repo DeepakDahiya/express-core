@@ -2,7 +2,7 @@
 "focusOnboarding.continueButtonTitle" = "متابعة";
 
 /* The subtitle of the screen that requests user to set Brave as default */
-"focusOnboarding.defaultBrowserScreenDescription" = "‏اختيار Brave كمتصفِّحك التلقائي اليوم.";
+"focusOnboarding.defaultBrowserScreenDescription" = "‏اختيار Express Browser كمتصفِّحك التلقائي اليوم.";
 
 /* The title of the screen that requests user to set Brave as default */
 "focusOnboarding.defaultBrowserScreenTitle" = "احصل على ميزة حظر الإعلانات مع كل موقع تزوره";
@@ -38,5 +38,5 @@
 "focusOnboarding.urlBarIndicatorDescription" = "ابدأ البث واستمتع بعدد أقل من الإعلانات & المتتبعات.";
 
 /* The title of the popup which points to URL Bar after onboarding */
-"focusOnboarding.urlBarIndicatorTitle" = "شاهد اختلاف Brave";
+"focusOnboarding.urlBarIndicatorTitle" = "شاهد اختلاف Express Browser";
 

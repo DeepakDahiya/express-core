@@ -128,6 +128,9 @@ class UserScriptManager {
     case youtubeQuality
     case braveLeoAIChat
     case braveTranslate
+    /// Express Browser's youtube.com changes (background play, no feed autoplay, picture in
+    /// picture allowed, resume position, YouTube's comments hidden). The script checks the host.
+    case expressYouTube
 
     fileprivate var script: WKUserScript? {
       switch self {
@@ -172,6 +175,8 @@ class UserScriptManager {
       case .braveTranslate:
         return Preferences.UserScript.translate.value && FeatureList.kBraveTranslateEnabled.enabled
           ? BraveTranslateScriptHandler.userScript : nil
+      case .expressYouTube:
+        return ExpressYouTubeScriptHandler.userScript
       }
     }
 

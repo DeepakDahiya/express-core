@@ -34,7 +34,8 @@ extension BrowserViewController: TabObserver {
       ResourceDownloadScriptHandler(),
       DownloadContentScriptHandler(browserController: self),
       PlaylistScriptHandler(tab: tab),
-      PlaylistFolderSharingScriptHandler(),
+      // Express Browser hides Playlist, so PlaylistFolderSharingScriptHandler() isn't injected
+      // (it opened Playlist from playlist.brave.com share pages).
       AdsMediaReportingScriptHandler(rewards: rewards),
       ReadyStateScriptHandler(),
       DeAmpScriptHandler(),
@@ -44,6 +45,9 @@ extension BrowserViewController: TabObserver {
       FaviconScriptHandler(),
       Web3NameServiceScriptHandler(),
       YoutubeQualityScriptHandler(),
+      ExpressYouTubeScriptHandler(onMessage: { [weak self] tab, event, body in
+        self?.expressYouTube.handle(tab: tab, event: event, body: body)
+      }),
       BraveLeoScriptHandler(),
       BraveSkusScriptHandler(),
       RequestBlockingContentScriptHandler(),
@@ -229,6 +233,7 @@ extension BrowserViewController: TabObserver {
   }
 
   public func tabDidFinishNavigation(_ tab: some TabState) {
+    expressYouTube.pageDidLoad(in: tab)
     if !Preferences.Privacy.privateBrowsingOnly.value
       && (!tab.isPrivate || Preferences.Privacy.persistentPrivateBrowsing.value)
     {
@@ -426,6 +431,13 @@ extension BrowserViewController: TabObserver {
   }
 
   public func tabDidStopLoading(_ tab: some TabState) {
+    // Express: the site counts as protected once something was blocked on it.
+    ExpressProtectedSites.record(tab: tab)
+    // Express: new sites join the new tab page's tiles (not from private tabs).
+    if !tab.isPrivate {
+      ExpressNTPSites.record(tab.visibleURL)
+      expressCapturePageVisit(tab.visibleURL)
+    }
     guard tab === tabManager.selectedTab else { return }
     topToolbar.locationView.loading = tab.isLoading
     if tab.estimatedProgress != 1 {

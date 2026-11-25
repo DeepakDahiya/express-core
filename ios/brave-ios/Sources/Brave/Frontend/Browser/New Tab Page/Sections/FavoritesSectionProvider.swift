@@ -127,7 +127,10 @@ class FavoritesSectionProvider: NSObject, NTPObservableSectionProvider {
     }
 
     let fav = frc.object(at: IndexPath(item: indexPath.item, section: 0))
-    cell.textLabel.textColor = .white
+    // Express Browser's new tab page is light, so labels use Android's site-label grey
+    // (`browser_express_ntp_site_label`); private tabs keep white on the dark private page.
+    cell.textLabel.textColor =
+      isPrivateBrowsing ? .white : UIColor(red: 0x80 / 255, green: 0x80 / 255, blue: 0x80 / 255, alpha: 1)
     cell.textLabel.text = fav.displayTitle ?? fav.url
 
     // Reset Fav-icon loading and image-view to default

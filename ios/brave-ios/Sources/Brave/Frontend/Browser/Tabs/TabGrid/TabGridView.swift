@@ -127,9 +127,10 @@ struct TabGridView: View {
         if !viewModel.isPrivateTabsLocked {
           GeometryReader { proxy in
             ScrollView {
-              PrivateModeInfoView()
-                .padding(40)
-                .frame(maxWidth: .infinity, minHeight: proxy.size.height)
+              // Express Android's private new tab page text (Android has no empty private tab
+              // switcher; it opens a private tab on that page instead).
+              ExpressPrivateNTPContent(layout: .init(size: proxy.size))
+                .frame(maxWidth: .infinity, minHeight: proxy.size.height, alignment: .top)
             }
             .scrollBounceBehavior(.basedOnSize)
           }
@@ -158,15 +159,7 @@ struct TabGridView: View {
         .padding(insets)
         .padding(.top, viewModel.isSearching ? 44 + 8 : 0)
     }
-    .background(alignment: .top) {
-      if viewModel.isPrivateBrowsing, horizontalSizeClass == .compact {
-        // Decorative blur
-        Color(braveSystemName: .primitivePrivateWindow20)
-          .aspectRatio(1.5, contentMode: .fit)
-          .ignoresSafeArea()
-          .blur(radius: 100)
-      }
-    }
+    // Express Android's private tab switcher is flat grey, without Brave's purple blur.
     .background(Color(uiColor: browserColors.tabSwitcherBackground))
     .overlay(alignment: .top) {
       VStack {
@@ -587,17 +580,17 @@ private struct PrivateBrowsingPicker: UIViewRepresentable {
   }
   func updateUIView(_ uiView: UIViewType, context: Context) {
     uiView.selectedSegmentIndex = isPrivateBrowsing ? 1 : 0
-    uiView.backgroundColor = UIColor(
-      braveSystemName: isPrivateBrowsing ? .privateWindow10 : .neutral10
-    )
-    uiView.selectedSegmentTintColor = UIColor(
-      braveSystemName: isPrivateBrowsing ? .privateWindow30 : .containerBackground
-    )
+    // Private mode uses Express Android's grey tab switcher toggle colours.
+    uiView.backgroundColor =
+      isPrivateBrowsing
+      ? ExpressIncognitoColors.toggleBackground : UIColor(braveSystemName: .neutral10)
+    uiView.selectedSegmentTintColor =
+      isPrivateBrowsing
+      ? ExpressIncognitoColors.toggleSelected : UIColor(braveSystemName: .containerBackground)
     uiView.setTitleTextAttributes(
       [
-        .foregroundColor: UIColor(
-          braveSystemName: isPrivateBrowsing ? .iconInteractive : .iconDefault
-        )
+        .foregroundColor: isPrivateBrowsing
+          ? ExpressIncognitoColors.textPrimary : UIColor(braveSystemName: .iconDefault)
       ],
       for: .selected
     )
@@ -612,64 +605,6 @@ private struct PrivateBrowsingPicker: UIViewRepresentable {
     context: Context
   ) -> CGSize? {
     return .init(width: uiView.intrinsicContentSize.width + 44, height: 40)
-  }
-}
-
-private struct PrivateModeInfoView: View {
-  var body: some View {
-    VStack(spacing: 48) {
-      Label {
-        Text(Strings.TabGrid.privateBrowsingInfoTitle)
-          .foregroundStyle(.white)
-      } icon: {
-        Image(braveSystemName: "leo.product.private-window")
-          .foregroundStyle(Color(braveSystemName: .iconInteractive))
-      }
-      .font(.title2.weight(.semibold))
-      VStack(spacing: 24) {
-        BulletPointView(
-          icon: "leo.product.private-window",
-          title: Strings.TabGrid.privateBrowsingInfoBulletOneTitle,
-          description: Strings.TabGrid.privateBrowsingInfoBulletOneBody
-        )
-        BulletPointView(
-          icon: "leo.antenna",
-          title: Strings.TabGrid.privateBrowsingInfoBulletTwoTitle,
-          description: Strings.TabGrid.privateBrowsingInfoBulletTwoBody
-        )
-        BulletPointView(
-          icon: "leo.product.vpn",
-          title: Strings.TabGrid.privateBrowsingInfoBulletThreeTitle,
-          description: Strings.TabGrid.privateBrowsingInfoBulletThreeBody
-        )
-      }
-    }
-  }
-
-  private struct BulletPointView: View {
-    var icon: String
-    var title: String
-    var description: String
-
-    @ScaledMetric private var iconSize = 32
-
-    var body: some View {
-      HStack(alignment: .top, spacing: 16) {
-        Image(braveSystemName: icon)
-          .foregroundStyle(Color(braveSystemName: .primitivePrivateWindow60))
-          .frame(width: iconSize, height: iconSize)
-          .background(Color(braveSystemName: .primitivePrivateWindow20), in: .circle)
-        VStack(alignment: .leading, spacing: 2) {
-          Text(title)
-            .foregroundStyle(Color(braveSystemName: .primitivePrivateWindow90))
-            .font(.callout.weight(.semibold))
-          Text(description)
-            .foregroundStyle(Color(braveSystemName: .primitivePrivateWindow80))
-            .font(.footnote)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-      }
-    }
   }
 }
 

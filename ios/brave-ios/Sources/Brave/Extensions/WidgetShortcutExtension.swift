@@ -11,14 +11,11 @@ import Strings
 import UIKit
 
 extension WidgetShortcut {
+  // Express Browser hides Playlist, Wallet, News and Leo, so they aren't shortcuts either.
   static let eligibleButtonShortcuts: [WidgetShortcut] = [
     .bookmarks,
     .history,
     .downloads,
-    .playlist,
-    .wallet,
-    .braveNews,
-    .braveLeo,
   ]
 
   var displayString: String {
@@ -31,14 +28,6 @@ extension WidgetShortcut {
       return Strings.historyMenuItem
     case .downloads:
       return Strings.downloadsMenuItem
-    case .playlist:
-      return Strings.bravePlaylistItemTitle
-    case .wallet:
-      return Strings.Wallet.wallet
-    case .braveNews:
-      return Strings.braveNewsItemTitle
-    case .braveLeo:
-      return Strings.leoMenuItem
     default:
       return ""
     }
@@ -58,18 +47,10 @@ extension WidgetShortcut {
       return "leo.history"
     case .downloads:
       return "leo.download"
-    case .playlist:
-      return "leo.product.playlist"
     case .search:
       return "leo.search"
-    case .wallet:
-      return "leo.product.brave-wallet"
     case .scanQRCode:
       return "leo.qr.code"
-    case .braveNews:
-      return "leo.product.brave-news"
-    case .braveLeo:
-      return "leo.product.brave-leo"
     @unknown default:
       return nil
     }

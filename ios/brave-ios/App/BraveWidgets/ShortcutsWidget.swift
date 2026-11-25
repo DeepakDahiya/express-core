@@ -55,7 +55,7 @@ private struct ShortcutProvider: IntentTimelineProvider {
   func placeholder(in context: Context) -> ShortcutEntry {
     .init(
       date: Date(),
-      shortcutSlots: context.isPreview ? [] : [.playlist, .newPrivateTab, .bookmarks]
+      shortcutSlots: context.isPreview ? [] : [.history, .newPrivateTab, .bookmarks]
     )
   }
 
@@ -136,20 +136,10 @@ extension WidgetShortcut {
       return Strings.Widgets.historyMenuItem
     case .downloads:
       return Strings.Widgets.downloadsMenuItem
-    case .playlist:
-      // We usually use `Brave Playlist` to describe this feature.
-      // Here we try to be more concise and use 'Playlist' word only.
-      return Strings.Widgets.shortcutsPlaylistButton
     case .search:
       return Strings.Widgets.searchShortcutTitle
-    case .wallet:
-      return Strings.Widgets.walletShortcutTitle
     case .scanQRCode:
       return Strings.Widgets.QRCode
-    case .braveNews:
-      return Strings.Widgets.braveNews
-    case .braveLeo:
-      return Strings.Widgets.braveLeo
     @unknown default:
       assertionFailure()
       return ""
@@ -171,18 +161,10 @@ extension WidgetShortcut {
       return Image(braveSystemName: "leo.history")
     case .downloads:
       return Image(braveSystemName: "leo.download")
-    case .playlist:
-      return Image(braveSystemName: "leo.product.playlist")
     case .search:
       return Image(braveSystemName: "leo.search")
-    case .wallet:
-      return Image(braveSystemName: "leo.product.brave-wallet")
     case .scanQRCode:
       return Image(braveSystemName: "leo.qr.code")
-    case .braveNews:
-      return Image(braveSystemName: "leo.product.brave-news")
-    case .braveLeo:
-      return Image(braveSystemName: "leo.product.brave-leo")
     @unknown default:
       assertionFailure()
       return Image(systemName: "xmark.octagon")

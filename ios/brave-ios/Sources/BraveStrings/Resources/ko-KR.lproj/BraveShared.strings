@@ -2,7 +2,7 @@
 "About" = "정보";
 
 /* The title of the screen explaining Brave Shields */
-"AboutBraveShields" = "Brave Shields 정보";
+"AboutBraveShields" = "Shields 정보";
 
 /* The body of the screen explaining Brave Shields */
 "AboutBraveShieldsBody" = "사이트에는 방문자와 방문자의 기기를 식별하기 위한 쿠키 및 스크립트가 포함되어 있을 수 있습니다. 이러한 요소는 방문자를 식별하고 방문자가 방문하는 웹사이트를 따라다니며 모든 사이트에서의 방문자 행동 패턴을 추적합니다.\n\nBrave는 이러한 요소를 차단하므로 추적되지 않고 브라우징을 즐길 수 있습니다.";
@@ -11,7 +11,7 @@
 "AccessPhotoDeniedAlertMessage" = "이는 카메라 롤에 이미지를 저장하도록 허용합니다.";
 
 /* See http://mzl.la/1G7uHo7 */
-"AccessPhotoDeniedAlertTitle" = "Brave 브라우저가 내 사진에 액세스하려고 합니다.";
+"AccessPhotoDeniedAlertTitle" = "Express Browser가 내 사진에 액세스하려고 합니다.";
 
 /* Label to display in the Discoverability overlay for keyboard shortcuts */
 "addBookmarkTitle" = "북마크 추가";
@@ -44,7 +44,7 @@
 "AlwaysShow" = "켬";
 
 /* Touch ID or PIN entry prompt subtitle when accessing Brave with the Browser Lock feature enabled */
-"AuthenticationLoginsTouchReason" = "이 방법으로 Brave 액세스를 인증합니다.";
+"AuthenticationLoginsTouchReason" = "이 방법으로 Express Browser 액세스를 인증합니다.";
 
 /* Label for Cancel button */
 "AuthPromptAlertCancelButtonTitle" = "취소";
@@ -182,7 +182,7 @@
 "BraveShieldsAdvancedControls" = "고급 컨트롤";
 
 /* No comment provided by engineer. */
-"BraveShieldsAndPrivacy" = "Brave Shields 및 프라이버시";
+"BraveShieldsAndPrivacy" = "Shields 및 프라이버시";
 
 /* No comment provided by engineer. */
 "BraveShieldsAndPrivacyTitle" = "Shields 및 프라이버시";
@@ -203,7 +203,7 @@
 "BraveShieldsSiteBroken" = "사이트가 깨진 것으로 표시되면 Shields 해제 권장";
 
 /* Context: 'Brave Shields Up' or 'Brave Shields Down' */
-"BraveShieldsStatusTitle" = "Brave Shields";
+"BraveShieldsStatusTitle" = "Shields";
 
 /* Context: The 'Down' in 'Brave Shields Down' */
 "BraveShieldsStatusValueDown" = "해제";
@@ -212,7 +212,7 @@
 "BraveShieldsStatusValueUp" = "사용";
 
 /* The accessibility hint spoken when focused on the main shields toggle */
-"BraveShieldsToggleHint" = "두 번 탭하여 Brave Shields 토글";
+"BraveShieldsToggleHint" = "두 번 탭하여 Shields 토글";
 
 /* The name of the feature */
 "bravetalk.braveTalkTitle" = "Brave Talk";
@@ -221,7 +221,7 @@
 "BrowserLock" = "브라우저 잠금";
 
 /* Description for setting to enable the browser lock privacy feature */
-"BrowserLockDescription" = "Touch ID, Face ID 또는 시스템 패스코드로 Brave를 잠금 해제합니다.";
+"BrowserLockDescription" = "Touch ID, Face ID 또는 시스템 패스코드로 Express Browser를 잠금 해제합니다.";
 
 /* Settings item for clearing browsing history */
 "BrowsingHistory" = "방문 기록";
@@ -236,13 +236,13 @@
 "callout.bottomBarCalloutDescription" = "주소창, 탭, 북마크 등 각종 도구를 브라우저 하단으로 이동합니다.";
 
 /* Title for Bottom Bar Callout View */
-"callout.bottomBarCalloutTitle" = "Brave 탭 바 맞춤 설정";
+"callout.bottomBarCalloutTitle" = "Express Browser 탭 바 맞춤 설정";
 
 /* Description - Description used for main button in Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutButtonDescription" = "Brave를 기본 브라우저로 설정하시겠습니까?";
+"callout.defaultBrowserCalloutButtonDescription" = "Express Browser를 기본 브라우저로 설정하시겠습니까?";
 
 /* Subtitle - Description for Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutDescription" = "Brave를 기본으로 설정하면 탭한 모든 링크가 Brave의 프라이버시 보호가 적용되어 열립니다.";
+"callout.defaultBrowserCalloutDescription" = "Express Browser를 기본으로 설정하면 탭한 모든 링크가 Express Browser의 프라이버시 보호가 적용되어 열립니다.";
 
 /* Title for main button in Default Browser Full Screen Callout */
 "callout.defaultBrowserCalloutPrimaryButtonTitle" = "기본값으로 설정";
@@ -566,25 +566,25 @@
 "defaultBrowserCallout.introOpenSettingsButtonText" = "설정 열기";
 
 /* Primary text on default browser popup screen */
-"defaultBrowserCallout.introPrimaryText" = "모든 링크를 Brave로 열어 프라이버시를 보호하세요.";
+"defaultBrowserCallout.introPrimaryText" = "모든 링크를 Express Browser로 열어 프라이버시를 보호하세요.";
 
 /* Secondary text on default browser popup. */
-"defaultBrowserCallout.introSecondaryText" = "Brave Shields가 트래커와 광고를 차단하여 사이트를 방문할 때마다 데이터와 시간을 절약합니다.";
+"defaultBrowserCallout.introSecondaryText" = "Shields가 트래커와 광고를 차단하여 사이트를 방문할 때마다 데이터와 시간을 절약합니다.";
 
 /* Tertiary text on default browser popup screen */
-"defaultBrowserCallout.introTertiaryText" = "설정을 열고 기본 브라우저 앱을 탭한 다음 Brave를 선택하세요.";
+"defaultBrowserCallout.introTertiaryText" = "설정을 열고 기본 브라우저 앱을 탭한 다음 Express Browser를 선택하세요.";
 
 /* Notification body to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationBody" = "Brave을 기본 브라우저로 설정";
+"defaultBrowserCallout.notificationBody" = "Express Browser를 기본 브라우저로 설정";
 
 /* Notification title to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationTitle" = "Brave의 든든한 보호를 모든 링크에서";
+"defaultBrowserCallout.notificationTitle" = "Express Browser의 든든한 보호를 모든 링크에서";
 
 /* No comment provided by engineer. */
 "defaultBrowserCalloutCloseAccesabilityLabel" = "기본 브라우저 설정 안내 닫기";
 
 /* Name for default Brave theme. */
-"defaultThemeName" = "Brave 기본값";
+"defaultThemeName" = "Express Browser 기본값";
 
 /* No comment provided by engineer. */
 "Delete" = "삭제";
@@ -689,7 +689,7 @@
 "ErrorPageReloadButtonTitle" = "다시 로드";
 
 /* Additional warning text when clicking the Advanced button on error pages. %@ is a placeholder, do not localize it. Do not localize <br />. */
-"ErrorPagesAdvancedErrorPinningDetails" = "%1$@에서는 보통 암호화를 사용하여 사용자의 정보를 보호합니다. 이번에 Brave가 %2$@에 연결을 시도할 때 웹사이트가 비정상적이고 정확하지 않은 자격증명을 보냈습니다. 이는 공격자가 %3$@임을 가장하려고 시도하거나 Wi-Fi 로그인 화면이 연결을 방해할 때 주로 발생합니다. 어떠한 정보도 교환되기 전에 Brave가 연결을 중단했기 때문에 귀하의 정보는 안전합니다.<br />%4$@ 웹사이트가 인증서 피닝을 사용하기 때문에 지금은 이 사이트를 방문하실 수 없습니다. 네트워크 오류든 공격이든 일시적인 게 일반적이므로 잠시 후에는 이 페이지가 다시 작동할 가능성이 큽니다.";
+"ErrorPagesAdvancedErrorPinningDetails" = "%1$@에서는 보통 암호화를 사용하여 사용자의 정보를 보호합니다. 이번에 Express Browser가 %2$@에 연결을 시도할 때 웹사이트가 비정상적이고 정확하지 않은 자격증명을 보냈습니다. 이는 공격자가 %3$@임을 가장하려고 시도하거나 Wi-Fi 로그인 화면이 연결을 방해할 때 주로 발생합니다. 어떠한 정보도 교환되기 전에 Express Browser가 연결을 중단했기 때문에 귀하의 정보는 안전합니다.<br />%4$@ 웹사이트가 인증서 피닝을 사용하기 때문에 지금은 이 사이트를 방문하실 수 없습니다. 네트워크 오류든 공격이든 일시적인 게 일반적이므로 잠시 후에는 이 페이지가 다시 작동할 가능성이 큽니다.";
 
 /* Additional warning text when clicking the Advanced button on error pages */
 "ErrorPagesAdvancedWarningDetails" = "이 서버는 %@인지 입증할 수 없습니다. 서버의 보안 인증서를 귀하의 기기 운영체제에서 신뢰하고 있지 않습니다. 오구성 또는 공격자의 연결 탈취 시도가 원인일 수 있습니다.";
@@ -729,6 +729,39 @@
 
 /* Button label to temporarily continue to the site from the certificate error page */
 "ErrorPagesProceedAnywayButton" = "%@ 계속(안전하지 않음)";
+
+/* Link on the private new tab page to a page about private mode. */
+"expressPrivateNTP.learnMore" = "자세히 알아보기";
+
+/* Bullet point: data that private mode doesn't save. Data that websites save on the device, such as sign-in state. */
+"expressPrivateNTP.notSavedCookies" = "쿠키 및 사이트 데이터";
+
+/* Bullet point: data that private mode doesn't save. Names, addresses, passwords etc. that people enter into forms on the web. */
+"expressPrivateNTP.notSavedForms" = "양식에 입력된 정보";
+
+/* Introduces a bulleted list of data that private mode doesn't save. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.notSavedHeader" = "Express Browser에 <em>저장되지 않는 항목</em>:";
+
+/* Bullet point: data that private mode doesn't save. 'Browsing history' is the history of visited websites. */
+"expressPrivateNTP.notSavedHistory" = "방문 기록";
+
+/* Subtitle of the private new tab page, under its title. */
+"expressPrivateNTP.subtitle" = "이 기기를 사용하는 다른 사용자가 내 활동을 볼 수 없으므로 비공개로 탐색할 수 있습니다. 방문하는 웹사이트와 Express Browser를 비롯하여 해당 웹사이트에서 사용하는 서비스에서 데이터를 수집하는 방식은 변경되지 않습니다. 다운로드 및 북마크 항목은 계속해서 저장됩니다";
+
+/* Title of the private new tab page. Private mode hides your browsing from other people using the same device; it does not make you anonymous. */
+"expressPrivateNTP.title" = "시크릿 모드로 전환됨";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleEmployer" = "고용주 또는 학교";
+
+/* Introduces a bulleted list of who might still see what the user does in private mode. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.visibleHeader" = "다음의 관계자는 내 활동 내역을 <em>확인할 수도 있습니다</em>.";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleProvider" = "인터넷 서비스 제공업체";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleWebsites" = "방문한 웹사이트";
 
 /* %@ will launch an external application */
 "ExternalAppURLAlertMessage" = "%@에서 외부 프로그램을 실행합니다.";
@@ -1139,13 +1172,13 @@
 "OBSearchEngineDetail" = "기본 검색 엔진 선택";
 
 /* Title for search engine onboarding screen */
-"OBSearchEngineTitle" = "Brave 브라우저에 오신 것을 환영합니다.";
+"OBSearchEngineTitle" = "Express Browser에 오신 것을 환영합니다.";
 
 /* Detail text for shields onboarding screen */
 "OBShieldsDetail" = "프라이버시를 침해하는 트래커를 차단하여 웹에서 불필요한 사이트 방문 없이 브라우징 가능";
 
 /* Title for shields onboarding screen */
-"OBShieldsTitle" = "Brave Shields";
+"OBShieldsTitle" = "Shields";
 
 /* Button to show the Brave Rewards Ads. */
 "OBShowMeButton" = "표시";
@@ -1157,10 +1190,10 @@
 "onboarding.blockedAdsOnboardingBigTechInformationText" = "%1$@ 외 %2$lld개의 광고 및 트래커 차단됨";
 
 /* The footnote indicating what Brave shields is blocking */
-"onboarding.blockedAdsOnboardingFootnoteText" = "모든 페이지에서 Brave가 Shields로 차단한 악성 콘텐츠를 모두 확인해보세요.";
+"onboarding.blockedAdsOnboardingFootnoteText" = "모든 페이지에서 Express Browser가 Shields로 차단한 악성 콘텐츠를 모두 확인해보세요.";
 
 /* The text describing user where they should press in order to open Shield panel */
-"onboarding.blockedAdsOnboardingInstructionsText" = "Brave Shields를 보려면 탭";
+"onboarding.blockedAdsOnboardingInstructionsText" = "Shields를 보려면 탭";
 
 /* The description text shown when there is no big tech tracker among trackers. Example usage: 31 Ads & trackers blocked. The number here is presented separately so it is not in translation. */
 "onboarding.blockedAdsOnboardingNoBigTechInformationText" = "광고 및 트래커 차단됨";
@@ -1184,13 +1217,13 @@
 "onboarding.ntpOnboardingPopOverTrackerDescription" = "트래커와 광고를 차단하여 웹사이트에서 데이터를 적게 사용하여 로딩이 빨라집니다.";
 
 /* Description for the Omnibox (URL Bar) pop-over that describes faster load times. */
-"onboarding.omniboxOnboardingPopOverDescription" = "Brave의 차별점:\n광고 없음. 트래커 없음. 더욱 빠른 페이지 로드.";
+"onboarding.omniboxOnboardingPopOverDescription" = "Express Browser의 차별점:\n광고 없음. 트래커 없음. 더욱 빠른 페이지 로드.";
 
 /* Title for the Omnibox (URL Bar) pop-over that describes faster load times. */
 "onboarding.omniboxOnboardingPopOverTitle" = "웹사이트 이름 또는 URL 타이핑";
 
 /* Title for Welcome Screen in Onboarding */
-"onboarding.welcomeScreenTitle" = "반갑습니다, Brave입니다";
+"onboarding.welcomeScreenTitle" = "반갑습니다, Express Browser입니다";
 
 /* Continue button to navigate to next onboarding screen. */
 "OnboardingContinueButton" = "계속";
@@ -1226,7 +1259,7 @@
 "OpenInNewWindowTitle" = "새 창에서 열기";
 
 /* Context menu option for opening a link in a new private tab */
-"OpenNewPrivateTabButtonTitle" = "새 비공개 탭에서 열기";
+"OpenNewPrivateTabButtonTitle" = "비공개 탭에서 열기";
 
 /* Context menu item for opening a link in a new tab */
 "OpenNewTabButtonTitle" = "새 탭에서 열기";
@@ -1427,7 +1460,7 @@
 "PersistentPrivateBrowsing" = "비공개 브라우징 자동 복원";
 
 /* Persistent private browsing alert message to existing users */
-"PersistentPrivateBrowsingAlertMessage" = "앱을 닫고 새로 열었을 때 Brave가 비공개 브라우징 탭을 복원합니다.";
+"PersistentPrivateBrowsingAlertMessage" = "앱을 닫고 새로 열었을 때 Express Browser가 비공개 브라우징 탭을 복원합니다.";
 
 /* Persistent private browsing alert title to existing users */
 "PersistentPrivateBrowsingAlertTitle" = "비공개 탭 복원";
@@ -1877,7 +1910,7 @@
 "privacyHub.lastWeekHeader" = "지난주";
 
 /* Do NOT localize asterisk('*') characters, they are used to make the text bold in the app. It says which tracker was blocked on how many websites, example usage: 'Google Analytics was blocked by Brave Shields on 42 sites' */
-"privacyHub.mostFrequentTrackerAndAdBody" = "**%1$@**이(가) Brave Shields에 의해 **%2$lld**개 사이트에서 차단됨";
+"privacyHub.mostFrequentTrackerAndAdBody" = "**%1$@**이(가) Shields에 의해 **%2$lld**개 사이트에서 차단됨";
 
 /* Title under which we display a tracker which was most frequently detected by our ad blocking mechanism. */
 "privacyHub.mostFrequentTrackerAndAdTitle" = "가장 자주 탐지된 트래커 및 광고";
@@ -1895,7 +1928,7 @@
 "privacyHub.notificationCalloutButtonText" = "알림 켜기";
 
 /* Message of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
-"privacyHub.notificationMessage" = "이번 주 Brave가 온라인 프라이버시를 어떻게 보호해드렸는지 요약해드립니다.";
+"privacyHub.notificationMessage" = "이번 주 Express Browser가 온라인 프라이버시를 어떻게 보호해드렸는지 요약해드립니다.";
 
 /* Title of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
 "privacyHub.notificationTitle" = "주간 프라이버시 보고서";
@@ -1985,10 +2018,10 @@
 "PrivateBrowsingOnlyWarning" = "비공개 브라우징으로만 열기 모드를 사용하면 현재 탭을 모두 닫고 모든 사이트에서 로그아웃됩니다.";
 
 /* Private tab details */
-"PrivateTabBody" = "비공개 탭은 Brave에 저장되지 않지만 이를 통해 온라인에서 익명으로 활동할 수 있는 것은 아닙니다. 비공개 탭에서 방문한 사이트는 방문 기록에 표시되지 않으며, 탭을 닫으면 항상 해당 쿠키가 사라집니다. 즉, Brave에는 해당 사이트에 대한 어떤 흔적도 남지 않게 됩니다. 하지만 다운로드는 저장됩니다.\n비공개 탭에서 방문했더라도 귀하의 이동통신 사업자(또는 귀하가 접속하고 있는 Wi-Fi 네트워크나 VPN의 소유자)는 귀하가 어느 사이트를 방문했는지 볼 수 있으며, 해당 사이트에서는 귀하의 공용 IP 주소를 확인할 수 있습니다.";
+"PrivateTabBody" = "비공개 탭은 Express Browser에 저장되지 않지만 이를 통해 온라인에서 익명으로 활동할 수 있는 것은 아닙니다. 비공개 탭에서 방문한 사이트는 방문 기록에 표시되지 않으며, 탭을 닫으면 항상 해당 쿠키가 사라집니다. 즉, Express Browser에는 해당 사이트에 대한 어떤 흔적도 남지 않게 됩니다. 하지만 다운로드는 저장됩니다.\n비공개 탭에서 방문했더라도 귀하의 이동통신 사업자(또는 귀하가 접속하고 있는 Wi-Fi 네트워크나 VPN의 소유자)는 귀하가 어느 사이트를 방문했는지 볼 수 있으며, 해당 사이트에서는 귀하의 공용 IP 주소를 확인할 수 있습니다.";
 
 /* Private tab detail text */
-"PrivateTabDetails" = "비공개 탭을 사용할 경우 귀하의 기기에서 수행된 Brave 작업만이 변경되며, 다른 사용자의 동작은 변경되지 않습니다.\n\n사이트를 방문하면 사이트에서 항상 귀하의 IP 주소를 학습합니다. 즉, 사이트에서 귀하의 위치(주로 도시)를 대략적으로 추측할 수 있습니다. 경우에 따라서는 위치가 훨씬 구체적으로 추측되기도 합니다. 또한 귀하가 사이트에서 수행한 모든 작업(검색어 등)이 해당 사이트에 기록됩니다. 귀하가 사이트에 로그인하면 해당 사이트에서 귀하가 해당 계정의 소유자임을 인식합니다. 비공개 탭을 닫으면 Brave에서 로그인 상태를 유지하는 쿠키를 지우기 때문에 로그아웃 상태가 됩니다.\n\n인터넷 연결을 위해 귀하가 이용하는 ISP에서는 귀하의 네트워크 활동을 모두 확인할 수 있습니다. 대부분의 경우 이러한 ISP는 이동통신 사업자입니다. Wi-Fi 네트워크에 연결한 경우 ISP는 해당 네트워크의 소유자이며, VPN을 사용하는 경우에는 해당 VPN의 운영자입니다. 귀하가 이용하는 ISP에서는 귀하가 사이트를 방문하면 귀하가 방문한 사이트를 알 수 있습니다. 해당 사이트에서 HTTPS를 사용하는 경우 ISP에서는 귀하가 해당 사이트에서 수행하는 작업을 기록에 따라 추측만 할 수 있습니다. 그러나 사이트에서 HTTP만을 사용한다면 ISP에서 귀하가 사용한 검색어, 귀하가 읽은 페이지와 따라 간 링크 등 모든 것을 알 수 있습니다.\n\n고용주가 귀하의 기기를 관리하는 경우 고용주는 귀하가 해당 기기로 무엇을 하는지 추적할 수도 있습니다. 비공개 탭을 사용한다고 해도 귀하가 방문한 사이트를 고용주가 알지 못하도록 차단하지는 못할 것입니다. 귀하의 기기에 액세스할 수 있는 권한을 가진 다른 사람도 귀하의 활동을 모니터링하는 소프트웨어를 설치할 수 있으며, 이것 또한 비공개 탭으로는 차단하지 못합니다.";
+"PrivateTabDetails" = "비공개 탭을 사용할 경우 귀하의 기기에서 수행된 Express Browser 작업만이 변경되며, 다른 사용자의 동작은 변경되지 않습니다.\n\n사이트를 방문하면 사이트에서 항상 귀하의 IP 주소를 학습합니다. 즉, 사이트에서 귀하의 위치(주로 도시)를 대략적으로 추측할 수 있습니다. 경우에 따라서는 위치가 훨씬 구체적으로 추측되기도 합니다. 또한 귀하가 사이트에서 수행한 모든 작업(검색어 등)이 해당 사이트에 기록됩니다. 귀하가 사이트에 로그인하면 해당 사이트에서 귀하가 해당 계정의 소유자임을 인식합니다. 비공개 탭을 닫으면 Express Browser에서 로그인 상태를 유지하는 쿠키를 지우기 때문에 로그아웃 상태가 됩니다.\n\n인터넷 연결을 위해 귀하가 이용하는 ISP에서는 귀하의 네트워크 활동을 모두 확인할 수 있습니다. 대부분의 경우 이러한 ISP는 이동통신 사업자입니다. Wi-Fi 네트워크에 연결한 경우 ISP는 해당 네트워크의 소유자이며, VPN을 사용하는 경우에는 해당 VPN의 운영자입니다. 귀하가 이용하는 ISP에서는 귀하가 사이트를 방문하면 귀하가 방문한 사이트를 알 수 있습니다. 해당 사이트에서 HTTPS를 사용하는 경우 ISP에서는 귀하가 해당 사이트에서 수행하는 작업을 기록에 따라 추측만 할 수 있습니다. 그러나 사이트에서 HTTP만을 사용한다면 ISP에서 귀하가 사용한 검색어, 귀하가 읽은 페이지와 따라 간 링크 등 모든 것을 알 수 있습니다.\n\n고용주가 귀하의 기기를 관리하는 경우 고용주는 귀하가 해당 기기로 무엇을 하는지 추적할 수도 있습니다. 비공개 탭을 사용한다고 해도 귀하가 방문한 사이트를 고용주가 알지 못하도록 차단하지는 못할 것입니다. 귀하의 기기에 액세스할 수 있는 권한을 가진 다른 사람도 귀하의 활동을 모니터링하는 소프트웨어를 설치할 수 있으며, 이것 또한 비공개 탭으로는 차단하지 못합니다.";
 
 /* Private tab information link */
 "PrivateTabLink" = "비공개 탭에 대해 자세히 알아보기";
@@ -2000,7 +2033,7 @@
 "QuickSearchEngines" = "빠른 검색 엔진";
 
 /* Open the App Store to rate Brave. */
-"RateBrave" = "Brave 평가하기";
+"RateBrave" = "Express Browser 평가하기";
 
 /* Accessibility label for button increasing font size in display settings of reader mode */
 "ReaderModeBiggerFontButtonAccessibilityLabel" = "텍스트 크기 확대";
@@ -2186,10 +2219,10 @@
 "RestoreTabNegativeButtonTitle" = "아니요";
 
 /* Restore Tabs Prompt Description */
-"RestoreTabOnCrashAlertMessage" = "Brave가 다운되어 제대로 닫히지 않았습니다.\n탭을 복원하시겠습니까?";
+"RestoreTabOnCrashAlertMessage" = "Express Browser가 다운되어 제대로 닫히지 않았습니다.\n탭을 복원하시겠습니까?";
 
 /* Restore Tabs Prompt Title */
-"RestoreTabOnCrashAlertTitle" = "Brave가 예기치 않게 닫혔습니다.";
+"RestoreTabOnCrashAlertTitle" = "Express Browser가 예기치 않게 닫혔습니다.";
 
 /* Body for Brave Talk rewards opt-in screen */
 "rewards.braveTalkRewardsOptInBody" = "Brave Rewards를 이용하면 Brave Ads 네트워크에서 프라이버시 보장 광고를 볼 수 있습니다. 트래커가 없어 느려지지 않습니다. 그리고 데이터가 완벽히 안전하게 보호됩니다.";
@@ -2510,7 +2543,7 @@
 "SearchSuggestionsSectionHeader" = "추천 검색어";
 
 /* Title of an action that allows user to perform a one-click web search for selected text */
-"SearchWithBrave" = "Brave로 검색";
+"SearchWithBrave" = "Express Browser로 검색";
 
 /* Settings security section title */
 "Security" = "보안";
@@ -2519,16 +2552,16 @@
 "sendButtonTitle" = "보내기";
 
 /* Message displayed in the crash dialog above the buttons used to select when sending reports */
-"SendCrashReportAlertMessage" = "Brave에서 문제를 해결할 수 있도록 오류 보고서를 전송하시겠습니까?";
+"SendCrashReportAlertMessage" = "Express Browser에서 문제를 해결할 수 있도록 오류 보고서를 전송하시겠습니까?";
 
 /* Title for prompt displayed to user after the app crashes */
-"SendCrashReportAlertTitle" = "Brave에서 오류가 발생했습니다.";
+"SendCrashReportAlertTitle" = "Express Browser에서 오류가 발생했습니다.";
 
 /* Used as a button label for crash dialog prompt */
 "SendReportButtonTitle" = "보고서 보내기";
 
 /* No comment provided by engineer. */
-"setDefaultBrowserCalloutTitle" = "이제 iOS에서 Brave를 기본 브라우저로 설정할 수 있습니다. 여기를 탭하여 설정을 여세요.";
+"setDefaultBrowserCalloutTitle" = "이제 iOS에서 Express Browser를 기본 브라우저로 설정할 수 있습니다. 여기를 탭하여 설정을 여세요.";
 
 /* Settings item to set the Brave as a default browser on the iOS device. */
 "setDefaultBrowserSettingsCell" = "기본 브라우저로 설정";
@@ -2552,7 +2585,7 @@
 "settings.autocloseTabsSetting" = "탭 닫기";
 
 /* Description of autoclose tabs feature. */
-"settings.autocloseTabsSettingFooter" = "최근에 본 적이 없는 탭을 Brave가 자동으로 닫을 수 있도록 허용합니다.";
+"settings.autocloseTabsSettingFooter" = "최근에 본 적이 없는 탭을 Express Browser가 자동으로 닫을 수 있도록 허용합니다.";
 
 /* Label for the navigation link to quality settings view */
 "settings.highestQualityPlayback" = "최고 품질 재생";
@@ -2567,7 +2600,7 @@
 "settings.media.rootSetting" = "미디어";
 
 /* A toggle label which lets the user always open YouTube urls in Brave */
-"settings.openYouTubeInBrave" = "Brave에서 YouTube 링크 열기";
+"settings.openYouTubeInBrave" = "Express Browser에서 YouTube 링크 열기";
 
 /* No comment provided by engineer. */
 "settings.privacy.screenTimeSetting" = "화면 시간 활성화";
@@ -2645,7 +2678,7 @@
 "shieldEducation.shareTheNewsTitle" = "뉴스 공유";
 
 /* Subtitle for Shield Education Tracker Ad Warning */
-"shieldEducation.trackerAdWarningSubTitle" = "Brave Shields가 방금 온라인 프라이버시를 보호해드렸습니다.";
+"shieldEducation.trackerAdWarningSubTitle" = "Shields가 방금 온라인 프라이버시를 보호해드렸습니다.";
 
 /* Subtitle for Shield Education Tracker Count Share */
 "shieldEducation.trackerCountShareSubtitle" = "축하합니다. 정말 특별하십니다.";
@@ -2660,13 +2693,13 @@
 "shieldEducation.videoAdBlockTitle" = "이 웹사이트에서 동영상을 시청하는 동안 광고가 차단되었습니다.";
 
 /* Section title for adbblock, tracking protection, HTTPS-E, and cookies */
-"ShieldsDefaults" = "Brave Shields 전역 기본값";
+"ShieldsDefaults" = "Shields 전역 기본값";
 
 /* Section footer for global shields defaults */
 "ShieldsDefaultsFooter" = "새로운 사이트에 적용되는 기본 Shields 설정입니다. 이 설정을 변경해도 기존 사이트별 설정에는 영향을 주지 않습니다.";
 
 /* No comment provided by engineer. */
-"ShieldsDownDisclaimer" = "Brave의 개인정보 보호 없이 이 사이트를 브라우징하고 계십니다. Shields 사용 시 제대로 작동하지 않나요?";
+"ShieldsDownDisclaimer" = "Express Browser의 개인정보 보호 없이 이 사이트를 브라우징하고 계십니다. Shields 사용 시 제대로 작동하지 않나요?";
 
 /* shields overview message */
 "ShieldsOverview" = "사이트 차단을 사용하면 방문하는 사이트별로 광고와 트래커를 차단할지 관리할 수 있습니다. 특정 사이트에서 광고를 표시하려면 여기에서 해당 기능을 활성화할 수 있습니다.";
@@ -2693,7 +2726,7 @@
 "shortcuts.activityTypeClearHistorySuggestedPhrase" = "브라우저 기록 지우기";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeClearHistoryTitle" = "Brave 방문 기록 지우기";
+"shortcuts.activityTypeClearHistoryTitle" = "Express Browser 방문 기록 지우기";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeEnableVPNDescription" = "새 탭에서 브라우저를 열고 VPN 활성화";
@@ -2702,7 +2735,7 @@
 "shortcuts.activityTypeEnableVPNSuggestedPhrase" = "VPN 활성화";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeEnableVPNTitle" = "새 탭에서 Brave 브라우저를 열고 VPN 활성화";
+"shortcuts.activityTypeEnableVPNTitle" = "새 탭에서 Express Browser를 열고 VPN 활성화";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeNewPrivateTabSuggestedPhrase" = "새 비공개 탭 열기";
@@ -2723,7 +2756,7 @@
 "shortcuts.activityTypeOpenBookmarksSuggestedPhrase" = "북마크 열기";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenBookmarksTitle" = "Brave 브라우저 북마크 열기";
+"shortcuts.activityTypeOpenBookmarksTitle" = "Express Browser 북마크 열기";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenBraveNewsTitle" = "Brave News 열기";
@@ -2738,7 +2771,7 @@
 "shortcuts.activityTypeOpenHistoryListSuggestedPhrase" = "브라우저 기록 열기";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenHistoryListTitle" = "Brave 브라우저 기록 열기";
+"shortcuts.activityTypeOpenHistoryListTitle" = "Express Browser 기록 열기";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenPlaylistDescription" = "재생목록 내 동영상 재생 시작";
@@ -2759,7 +2792,7 @@
 "shortcuts.activityTypeOpenSyncedTabsTitle" = "다른 기기에서 탭 열기";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeTabDescription" = "Brave로 안전하게 웹 검색 시작";
+"shortcuts.activityTypeTabDescription" = "Express Browser로 안전하게 웹 검색 시작";
 
 /* No comment provided by engineer. */
 "shortcuts.customIntentOpenBookmarkSuggestedPhrase" = "북마크 웹사이트 열기";
@@ -2771,7 +2804,7 @@
 "shortcuts.customIntentOpenWebsiteSuggestedPhrase" = "웹사이트 열기";
 
 /* Description for opening Brave Settings for altering Siri shortcut. */
-"shortcuts.shortcutOpenApplicationSettingsDescription" = "이 옵션은 Brave 설정을 엽니다. 다양한 Siri 옵션을 변경하려면 '시리 및 검색' 메뉴 항목을 선택하고 원하는 대로 맞춤 설정하세요.";
+"shortcuts.shortcutOpenApplicationSettingsDescription" = "이 옵션은 Express Browser 설정을 엽니다. 다양한 Siri 옵션을 변경하려면 '시리 및 검색' 메뉴 항목을 선택하고 원하는 대로 맞춤 설정하세요.";
 
 /* Button title that open application settings */
 "shortcuts.shortcutOpenApplicationSettingsTitle" = "설정 열기";
@@ -2867,10 +2900,10 @@
 "SiteShieldSettings" = "차단";
 
 /* Title used when in warning pop-over when domain specific data save appears */
-"socialSharing.domainSpecificDataSavedTitle" = "매일 웹 브라우징에 Brave를 사용하여 데이터를 절약합니다.";
+"socialSharing.domainSpecificDataSavedTitle" = "매일 웹 브라우징에 Express Browser를 사용하여 데이터를 절약합니다.";
 
 /* Text used for social sharing together with Brave Shield values */
-"socialSharing.shareDescriptionTitle" = "매일 웹 브라우징에 Brave를 사용하여 데이터를 절약합니다.";
+"socialSharing.shareDescriptionTitle" = "매일 웹 브라우징에 Express Browser를 사용하여 데이터를 절약합니다.";
 
 /* Open search section of settings */
 "StandardTabSearch" = "표준 탭";
@@ -3296,7 +3329,7 @@
 "themeQRCodeShareButton" = "공유...";
 
 /* Title for QR popup encouraging users to share the code with their friends. */
-"themeQRCodeShareTitle" = "친구에게 Brave를 공유해주세요!";
+"themeQRCodeShareTitle" = "친구에게 Express Browser를 공유해주세요!";
 
 /* Selection to automatically color/style the user interface. */
 "ThemesAutomaticOption" = "자동";
@@ -3449,19 +3482,19 @@
 "today.promoted" = "프로모션";
 
 /* Title for long press action sheet list which has item for rate / hide */
-"today.rateBraveCardActionSheetTitle" = "App Store에서 Brave 평가하기";
+"today.rateBraveCardActionSheetTitle" = "App Store에서 Express Browser 평가하기";
 
 /* Title for long press action that will hide Brave Rate Card */
 "today.rateBraveCardHideActionTitle" = "숨기기";
 
 /* Button title / Title for long press action that will perform an action which open AppStore Rate screen */
-"today.rateBraveCardRateActionTitle" = "Brave 평가하기";
+"today.rateBraveCardRateActionTitle" = "Express Browser 평가하기";
 
 /* Subtitle shown on the Rate Brave Card */
 "today.rateBraveCardSubtitle" = "어떻게 생각하시는지 알려주세요!";
 
 /* Title shown on the Rate Brave Card */
-"today.rateBraveCardTitle" = "Brave가 마음에 드십니까?";
+"today.rateBraveCardTitle" = "Express Browser가 마음에 드십니까?";
 
 /* No comment provided by engineer. */
 "today.refresh" = "새로고침";
@@ -3539,13 +3572,13 @@
 "ViewOn" = "%@에서 보기";
 
 /* Explanation for warning alert why the microphone access required. */
-"voice.search.microphone.description.required" = "Brave가 익명 음성 검색을 사용할 수 있도록 iOS 시스템 설정에서 마이크 액세스를 허용해주세요.";
+"voice.search.microphone.description.required" = "Express Browser가 익명 음성 검색을 사용할 수 있도록 iOS 시스템 설정에서 마이크 액세스를 허용해주세요.";
 
 /* Title for warning alert microphone access is required. */
 "voice.search.microphone.title.required" = "마이크 액세스 필요";
 
 /* Disclaimer for screen to search using voice. */
-"voice.search.screen.disclaimer" = "Brave는 음성 검색 내역을 저장하거나 공유하지 않습니다.";
+"voice.search.screen.disclaimer" = "Express Browser는 음성 검색 내역을 저장하거나 공유하지 않습니다.";
 
 /* Pop up extra description for billing issue of subcription VPN about to expire */
 "vpn.autoReneSoonExpirePopOverSubDescription" = "계속 보호받으셔야죠? 구독 종료 전에 갱신하시면 됩니다. 갱신하시면 감사의 의미로 3개월간 20% 할인해드리겠습니다.";

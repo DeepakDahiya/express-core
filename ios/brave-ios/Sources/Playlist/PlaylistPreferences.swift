@@ -41,11 +41,13 @@ extension Preferences {
     /// The option to start the playback where user left-off
     public static let playbackLeftOff = Option<Bool>(key: "playlist.playbackLeftOff", default: true)
     /// The option to disable long-press-to-add-to-playlist gesture.
+    /// Off by default: Express Browser hides Playlist, matching its Android app.
     public static let enableLongPressAddToPlaylist =
-      Option<Bool>(key: "playlist.longPressAddToPlaylist", default: true)
+      Option<Bool>(key: "playlist.longPressAddToPlaylist", default: false)
     /// The option to enable or disable the URL-Bar button for playlist
+    /// (off by default in Express Browser).
     public static let enablePlaylistURLBarButton =
-      Option<Bool>(key: "playlist.enablePlaylistURLBarButton", default: true)
+      Option<Bool>(key: "playlist.enablePlaylistURLBarButton", default: false)
     /// The option to enable or disable the continue where left-off playback in CarPlay
     public static let enableCarPlayRestartPlayback =
       Option<Bool>(key: "playlist.enableCarPlayRestartPlayback", default: false)

@@ -2,7 +2,7 @@
 "About" = "Σχετικά με";
 
 /* The title of the screen explaining Brave Shields */
-"AboutBraveShields" = "Σχετικά με το Brave Shields";
+"AboutBraveShields" = "Σχετικά με το Shields";
 
 /* The body of the screen explaining Brave Shields */
 "AboutBraveShieldsBody" = "Οι ιστότοποι συχνά περιλαμβάνουν cookie και δέσμες ενεργειών που επιχειρούν να ταυτοποιήσουν εσάς και τη συσκευή σας. Θέλουν να εξακριβώσουν ποιος είστε και να σας ακολουθούν στον ιστό, παρακολουθώντας τι κάνετε σε κάθε ιστότοπο.\n\nΤο Brave αποκλείει αυτά τα στοιχεία, ώστε να μπορείτε να περιηγηθείτε χωρίς να σας ακολουθούν.";
@@ -11,7 +11,7 @@
 "AccessPhotoDeniedAlertMessage" = "Αυτό σας επιτρέπει να αποθηκεύσετε την εικόνα στο Άλμπουμ κάμερας.";
 
 /* See http://mzl.la/1G7uHo7 */
-"AccessPhotoDeniedAlertTitle" = "Το Brave θα ήθελε να έχει πρόσβαση στις Φωτογραφίες σας";
+"AccessPhotoDeniedAlertTitle" = "Το Express Browser θα ήθελε να έχει πρόσβαση στις Φωτογραφίες σας";
 
 /* Label to display in the Discoverability overlay for keyboard shortcuts */
 "addBookmarkTitle" = "Προσθήκη σελιδοδείκτη";
@@ -44,7 +44,7 @@
 "AlwaysShow" = "Ενεργό";
 
 /* Touch ID or PIN entry prompt subtitle when accessing Brave with the Browser Lock feature enabled */
-"AuthenticationLoginsTouchReason" = "Αυτό ελέγχει την ταυτότητά σας για πρόσβαση στο Brave";
+"AuthenticationLoginsTouchReason" = "Αυτό ελέγχει την ταυτότητά σας για πρόσβαση στο Express Browser";
 
 /* Label for Cancel button */
 "AuthPromptAlertCancelButtonTitle" = "Ακύρωση";
@@ -176,7 +176,7 @@
 "BraveShieldsAdvancedControls" = "Ρυθμίσεις για προχωρημένους";
 
 /* No comment provided by engineer. */
-"BraveShieldsAndPrivacy" = "Ασπίδες Brave & απόρρητο";
+"BraveShieldsAndPrivacy" = "Ασπίδες & απόρρητο";
 
 /* No comment provided by engineer. */
 "BraveShieldsAndPrivacyTitle" = "Ασπίδες & απόρρητο";
@@ -203,7 +203,7 @@
 "BraveShieldsSiteBroken" = "Εάν αυτός ο ιστότοπος φαίνεται να μην λειτουργεί σωστά, δοκιμάστε να απενεργοποιήσετε τις Ασπίδες";
 
 /* Context: 'Brave Shields Up' or 'Brave Shields Down' */
-"BraveShieldsStatusTitle" = "Ασπίδες Brave ";
+"BraveShieldsStatusTitle" = "Ασπίδες ";
 
 /* Context: The 'Down' in 'Brave Shields Down' */
 "BraveShieldsStatusValueDown" = "Κάτω";
@@ -212,7 +212,7 @@
 "BraveShieldsStatusValueUp" = "Επάνω";
 
 /* The accessibility hint spoken when focused on the main shields toggle */
-"BraveShieldsToggleHint" = "Πατήστε δύο φορές για εναλλαγή των Ασπίδων Brave";
+"BraveShieldsToggleHint" = "Πατήστε δύο φορές για εναλλαγή των Ασπίδων";
 
 /* The name of the feature */
 "bravetalk.braveTalkTitle" = "Συνομιλία Brave";
@@ -227,13 +227,13 @@
 "BraveTranslate.searchInputTitle" = "Αναζήτηση";
 
 /* This text is for the settings menu for all Brave-Translate options. */
-"BraveTranslate.settingsMenuTitle" = "Μετάφραση Brave";
+"BraveTranslate.settingsMenuTitle" = "Μετάφραση";
 
 /* This text is for the translate settings screen. It's the title of the settings menu. */
-"BraveTranslate.settingsScreenTitle" = "Μετάφραση Brave";
+"BraveTranslate.settingsScreenTitle" = "Μετάφραση";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
-"BraveTranslate.settingsTranslateEnabledOptionDescription" = "Όταν είναι ενεργοποιημένο, η Μετάφραση Brave θα ανιχνεύσει αυτόματα την τρέχουσα γλώσσα της σελίδας σας και θα εμφανίσει ένα κουμπί μετάφρασης στη γραμμή URL.";
+"BraveTranslate.settingsTranslateEnabledOptionDescription" = "Όταν είναι ενεργοποιημένο, το Express Browser θα ανιχνεύσει αυτόματα την τρέχουσα γλώσσα της σελίδας σας και θα εμφανίσει ένα κουμπί μετάφρασης στη γραμμή URL.";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
 "BraveTranslate.settingsTranslateEnabledOptionTitle" = "Μετάφραση ενεργοποιημένη";
@@ -248,7 +248,7 @@
 "BrowserLock" = "Κλείδωμα προγράμματος περιήγησης";
 
 /* Description for setting to enable the browser lock privacy feature */
-"BrowserLockDescription" = "Ξεκλειδώστε το Brave με Touch ID, Face ID ή συνθηματικό συστήματος.";
+"BrowserLockDescription" = "Ξεκλειδώστε το Express Browser με Touch ID, Face ID ή συνθηματικό συστήματος.";
 
 /* Settings item for clearing browsing history */
 "BrowsingHistory" = "Ιστορικό περιήγησης";
@@ -263,13 +263,13 @@
 "callout.bottomBarCalloutDescription" = "Μετακινήστε τη γραμμή διευθύνσεων, τις καρτέλες, τους σελιδοδείκτες και άλλα εργαλεία στο κάτω μέρος του προγράμματος περιήγησης.";
 
 /* Title for Bottom Bar Callout View */
-"callout.bottomBarCalloutTitle" = "Προσαρμογή γραμμής καρτελών του Brave";
+"callout.bottomBarCalloutTitle" = "Προσαρμογή γραμμής καρτελών του Express Browser";
 
 /* Description - Description used for main button in Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutButtonDescription" = "Ορισμός του Brave ως προεπιλεγμένου προγράμματος περιήγησης;";
+"callout.defaultBrowserCalloutButtonDescription" = "Ορισμός του Express Browser ως προεπιλεγμένου προγράμματος περιήγησης;";
 
 /* Subtitle - Description for Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutDescription" = "Με το Brave ως προεπιλογή, κάθε σύνδεσμος που πατάτε ανοίγει με την προστασία απορρήτου του Brave.";
+"callout.defaultBrowserCalloutDescription" = "Με το Express Browser ως προεπιλογή, κάθε σύνδεσμος που πατάτε ανοίγει με την προστασία απορρήτου του Express Browser.";
 
 /* Title for main button in Default Browser Full Screen Callout */
 "callout.defaultBrowserCalloutPrimaryButtonTitle" = "Ορισμός προεπιλογής";
@@ -596,25 +596,25 @@
 "defaultBrowserCallout.introOpenSettingsButtonText" = "Άνοιγμα ρυθμίσεων";
 
 /* Primary text on default browser popup screen */
-"defaultBrowserCallout.introPrimaryText" = "Ανοίγετε όλους τους συνδέσμους με το Brave για να προστατεύετε το απόρρητό σας";
+"defaultBrowserCallout.introPrimaryText" = "Ανοίγετε όλους τους συνδέσμους με το Express Browser για να προστατεύετε το απόρρητό σας";
 
 /* Secondary text on default browser popup. */
-"defaultBrowserCallout.introSecondaryText" = "Οι Ασπίδες Brave αποκλείουν προγράμματα παρακολούθησης & διαφημίσεις, αποθηκεύουν δεδομένα και σας βοηθούν να εξοικονομείτε χρόνο σε κάθε ιστότοπο που επισκέπτεστε";
+"defaultBrowserCallout.introSecondaryText" = "Οι Ασπίδες αποκλείουν προγράμματα παρακολούθησης & διαφημίσεις, αποθηκεύουν δεδομένα και σας βοηθούν να εξοικονομείτε χρόνο σε κάθε ιστότοπο που επισκέπτεστε";
 
 /* Tertiary text on default browser popup screen */
-"defaultBrowserCallout.introTertiaryText" = "Ανοίξτε τις Ρυθμίσεις, πατήστε «Προεπιλεγμένη εφαρμογή προγράμματος περιήγησης» και επιλέξτε «Brave».";
+"defaultBrowserCallout.introTertiaryText" = "Ανοίξτε τις Ρυθμίσεις, πατήστε «Προεπιλεγμένη εφαρμογή προγράμματος περιήγησης» και επιλέξτε «Express Browser».";
 
 /* Notification body to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationBody" = "Ορισμός του Brave ως προεπιλεγμένο πρόγραμμα περιήγησης";
+"defaultBrowserCallout.notificationBody" = "Ορισμός του Express Browser ως προεπιλεγμένο πρόγραμμα περιήγησης";
 
 /* Notification title to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationTitle" = "Εξασφαλίστε την προστασία Brave, σε κάθε σύνδεσμο";
+"defaultBrowserCallout.notificationTitle" = "Εξασφαλίστε την προστασία Express Browser, σε κάθε σύνδεσμο";
 
 /* No comment provided by engineer. */
 "defaultBrowserCalloutCloseAccesabilityLabel" = "Κλείσιμο επεξήγησης προεπιλεγμένου προγράμματος περιήγησης";
 
 /* Name for default Brave theme. */
-"defaultThemeName" = "Προεπιλογή Brave";
+"defaultThemeName" = "Προεπιλογή Express Browser";
 
 /* No comment provided by engineer. */
 "Delete" = "Διαγραφή";
@@ -719,7 +719,7 @@
 "ErrorPageReloadButtonTitle" = "Επαναφόρτωση";
 
 /* Additional warning text when clicking the Advanced button on error pages. %@ is a placeholder, do not localize it. Do not localize <br />. */
-"ErrorPagesAdvancedErrorPinningDetails" = "Το %1$@ συνήθως χρησιμοποιεί κρυπτογράφηση για την προστασία των πληροφοριών σας. Όταν το Brave προσπάθησε να συνδεθεί με το %2$@ αυτήν τη φορά, ο ιστότοπος επέστρεψε ασυνήθιστα και εσφαλμένα διαπιστευτήρια. Αυτό μπορεί να συμβεί όταν ένας εισβολέας προσπαθεί να προσποιηθεί ότι είναι το %3$@ ή μια οθόνη σύνδεσης Wi-Fi διέκοψε τη σύνδεση. Οι πληροφορίες σας εξακολουθούν να είναι ασφαλείς, επειδή το Brave διέκοψε τη σύνδεση πριν από την ανταλλαγή δεδομένων.<br />Δεν μπορείτε να επισκεφθείτε το %4$@ αυτήν τη στιγμή, επειδή ο ιστότοπος χρησιμοποιεί καρφίτσωμα πιστοποιητικού. Τα σφάλματα και οι επιθέσεις δικτύου είναι συνήθως προσωρινά, επομένως, αυτή η σελίδα πιθανότατα θα λειτουργεί αργότερα.";
+"ErrorPagesAdvancedErrorPinningDetails" = "Το %1$@ συνήθως χρησιμοποιεί κρυπτογράφηση για την προστασία των πληροφοριών σας. Όταν το Express Browser προσπάθησε να συνδεθεί με το %2$@ αυτήν τη φορά, ο ιστότοπος επέστρεψε ασυνήθιστα και εσφαλμένα διαπιστευτήρια. Αυτό μπορεί να συμβεί όταν ένας εισβολέας προσπαθεί να προσποιηθεί ότι είναι το %3$@ ή μια οθόνη σύνδεσης Wi-Fi διέκοψε τη σύνδεση. Οι πληροφορίες σας εξακολουθούν να είναι ασφαλείς, επειδή το Express Browser διέκοψε τη σύνδεση πριν από την ανταλλαγή δεδομένων.<br />Δεν μπορείτε να επισκεφθείτε το %4$@ αυτήν τη στιγμή, επειδή ο ιστότοπος χρησιμοποιεί καρφίτσωμα πιστοποιητικού. Τα σφάλματα και οι επιθέσεις δικτύου είναι συνήθως προσωρινά, επομένως, αυτή η σελίδα πιθανότατα θα λειτουργεί αργότερα.";
 
 /* Additional warning text when clicking the Advanced button on error pages */
 "ErrorPagesAdvancedWarningDetails" = "Αυτός ο διακομιστής δεν μπόρεσε να αποδείξει ότι είναι %@. Το πιστοποιητικό ασφαλείας του δεν θεωρείται αξιόπιστο από το λειτουργικό σύστημα της συσκευής σας. Αυτό μπορεί να οφείλεται σε εσφαλμένη διαμόρφωση ή σε απόπειρα κάποιου εισβολέα να παραβιάσει τη σύνδεσή σας.";
@@ -759,6 +759,39 @@
 
 /* Button label to temporarily continue to the site from the certificate error page */
 "ErrorPagesProceedAnywayButton" = "Συνέχεια στο %@ (μη ασφαλές)";
+
+/* Link on the private new tab page to a page about private mode. */
+"expressPrivateNTP.learnMore" = "Μάθετε περισσότερα";
+
+/* Bullet point: data that private mode doesn't save. Data that websites save on the device, such as sign-in state. */
+"expressPrivateNTP.notSavedCookies" = "Cookie και δεδομένα ιστοτόπου";
+
+/* Bullet point: data that private mode doesn't save. Names, addresses, passwords etc. that people enter into forms on the web. */
+"expressPrivateNTP.notSavedForms" = "Πληροφορίες που εισάγετε σε φόρμες";
+
+/* Introduces a bulleted list of data that private mode doesn't save. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.notSavedHeader" = "Το Express Browser <em>δεν θα αποθηκεύει</em>:";
+
+/* Bullet point: data that private mode doesn't save. 'Browsing history' is the history of visited websites. */
+"expressPrivateNTP.notSavedHistory" = "Το ιστορικό περιήγησής σας";
+
+/* Subtitle of the private new tab page, under its title. */
+"expressPrivateNTP.subtitle" = "Η δραστηριότητά σας δεν θα είναι ορατή σε άλλα άτομα που χρησιμοποιούν αυτή τη συσκευή, επομένως μπορείτε να περιηγείστε πιο ιδιωτικά. Αυτό δεν θα αλλάξει τον τρόπο με τον οποίο συλλέγονται δεδομένα από τους ιστοτόπους που επισκέπτεστε και τις υπηρεσίες που χρησιμοποιούν, συμπεριλαμβανομένου του Express Browser. Οι λήψεις και οι σελιδοδείκτες θα αποθηκεύονται.";
+
+/* Title of the private new tab page. Private mode hides your browsing from other people using the same device; it does not make you anonymous. */
+"expressPrivateNTP.title" = "Πραγματοποιείτε Ιδιωτική περιήγηση";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleEmployer" = "Στον εργοδότη ή στο σχολείο σας";
+
+/* Introduces a bulleted list of who might still see what the user does in private mode. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.visibleHeader" = "Η δραστηριότητά σας <em>μπορεί να εξακολουθήσει να είναι ορατή</em>:";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleProvider" = "Στον πάροχο υπηρεσιών διαδικτύου σας";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleWebsites" = "Στους ιστοτόπους που επισκέπτεστε";
 
 /* %@ will launch an external application */
 "ExternalAppURLAlertMessage" = "Το %@ θα εκκινήσει μια εξωτερική εφαρμογή";
@@ -1187,13 +1220,13 @@
 "OBSearchEngineDetail" = "Επιλέξτε την προεπιλεγμένη μηχανή αναζήτησης";
 
 /* Title for search engine onboarding screen */
-"OBSearchEngineTitle" = "Καλώς ήρθατε στο πρόγραμμα περιήγησης Brave ";
+"OBSearchEngineTitle" = "Καλώς ήρθατε στο πρόγραμμα περιήγησης Express Browser ";
 
 /* Detail text for shields onboarding screen */
 "OBShieldsDetail" = "Αποκλεισμός προγραμμάτων παρακολούθησης που δεν σέβονται το απόρρητο, ώστε να μπορείτε να περιηγείστε στο διαδίκτυο, χωρίς να σας ακολουθούν";
 
 /* Title for shields onboarding screen */
-"OBShieldsTitle" = "Ασπίδες Brave ";
+"OBShieldsTitle" = "Ασπίδες ";
 
 /* Button to show the Brave Rewards Ads. */
 "OBShowMeButton" = "Εμφάνιση";
@@ -1205,10 +1238,10 @@
 "onboarding.blockedAdsOnboardingBigTechInformationText" = "%1$@ και %2$lld άλλες διαφημίσεις & προγράμματα παρακολούθησης αποκλείστηκαν";
 
 /* The footnote indicating what Brave shields is blocking */
-"onboarding.blockedAdsOnboardingFootnoteText" = "Δείτε όλα τα βλαβερά στοιχεία που έχει αποκλείσει το Brave, σε κάθε σελίδα, με τις Ασπίδες.";
+"onboarding.blockedAdsOnboardingFootnoteText" = "Δείτε όλα τα βλαβερά στοιχεία που έχει αποκλείσει το Express Browser, σε κάθε σελίδα, με τις Ασπίδες.";
 
 /* The text describing user where they should press in order to open Shield panel */
-"onboarding.blockedAdsOnboardingInstructionsText" = "Πατήστε για να προβάλλετε τις Ασπίδες Brave ";
+"onboarding.blockedAdsOnboardingInstructionsText" = "Πατήστε για να προβάλλετε τις Ασπίδες ";
 
 /* The description text shown when there is no big tech tracker among trackers. Example usage: 31 Ads & trackers blocked. The number here is presented separately so it is not in translation. */
 "onboarding.blockedAdsOnboardingNoBigTechInformationText" = "Διαφημίσεις & ιχνηλάτες που αποκλείστηκαν";
@@ -1232,13 +1265,13 @@
 "onboarding.ntpOnboardingPopOverTrackerDescription" = "Αποκλείοντας προγράμματα παρακολούθησης & διαφημίσεις, οι ιστότοποι χρησιμοποιούν λιγότερα δεδομένα και φορτώνονται πολύ πιο γρήγορα.";
 
 /* Description for the Omnibox (URL Bar) pop-over that describes faster load times. */
-"onboarding.omniboxOnboardingPopOverDescription" = "Δείτε τη διαφορά του Brave:\nΧωρίς διαφημίσεις. Χωρίς προγράμματα παρακολούθησης. Πολύ πιο γρήγορη φόρτωση σελίδων.";
+"onboarding.omniboxOnboardingPopOverDescription" = "Δείτε τη διαφορά του Express Browser:\nΧωρίς διαφημίσεις. Χωρίς προγράμματα παρακολούθησης. Πολύ πιο γρήγορη φόρτωση σελίδων.";
 
 /* Title for the Omnibox (URL Bar) pop-over that describes faster load times. */
 "onboarding.omniboxOnboardingPopOverTitle" = "Πληκτρολογήστε ένα όνομα ιστοτόπου ή μια διεύθυνση URL";
 
 /* Title for Welcome Screen in Onboarding */
-"onboarding.welcomeScreenTitle" = "Καλώς ήλθατε στο Brave";
+"onboarding.welcomeScreenTitle" = "Καλώς ήλθατε στο Express Browser";
 
 /* Continue button to navigate to next onboarding screen. */
 "OnboardingContinueButton" = "Συνέχεια";
@@ -1280,7 +1313,7 @@
 "OpenMobileConfigurationAlertTitle" = "Διαθέσιμο προφίλ διαμόρφωσης";
 
 /* Context menu option for opening a link in a new private tab */
-"OpenNewPrivateTabButtonTitle" = "Άνοιγμα σε νέα Iδιωτική καρτέλα";
+"OpenNewPrivateTabButtonTitle" = "Άνοιγμα σε Ιδιωτική καρτέλα";
 
 /* Context menu item for opening a link in a new tab */
 "OpenNewTabButtonTitle" = "Άνοιγμα σε νέα καρτέλα";
@@ -1487,7 +1520,7 @@
 "PersistentPrivateBrowsing" = "Μόνιμη ιδιωτική περιήγηση";
 
 /* Persistent private browsing alert message to existing users */
-"PersistentPrivateBrowsingAlertMessage" = "Επιτρέπει στο Brave να επαναφέρει τις καρτέλες ιδιωτικής περιήγησης, ακόμα κι αν κλείσετε/ανοίξετε ξανά την εφαρμογή";
+"PersistentPrivateBrowsingAlertMessage" = "Επιτρέπει στο Express Browser να επαναφέρει τις καρτέλες ιδιωτικής περιήγησης, ακόμα κι αν κλείσετε/ανοίξετε ξανά την εφαρμογή";
 
 /* Persistent private browsing alert title to existing users */
 "PersistentPrivateBrowsingAlertTitle" = "Επαναφορά ιδιωτικών καρτελών";
@@ -1931,7 +1964,7 @@
 "privacyHub.lastWeekHeader" = "Προηγούμενη εβδομάδα";
 
 /* Do NOT localize asterisk('*') characters, they are used to make the text bold in the app. It says which tracker was blocked on how many websites, example usage: 'Google Analytics was blocked by Brave Shields on 42 sites' */
-"privacyHub.mostFrequentTrackerAndAdBody" = "Το **%1$@** αποκλείστηκε από τις Ασπίδες Brave σε **%2$lld** ιστότοπους";
+"privacyHub.mostFrequentTrackerAndAdBody" = "Το **%1$@** αποκλείστηκε από τις Ασπίδες σε **%2$lld** ιστότοπους";
 
 /* Title under which we display a tracker which was most frequently detected by our ad blocking mechanism. */
 "privacyHub.mostFrequentTrackerAndAdTitle" = "Πιο συχνό πρόγραμμα παρακολούθησης & διαφήμιση";
@@ -1949,7 +1982,7 @@
 "privacyHub.notificationCalloutButtonText" = "Ενεργοποίηση ειδοποιήσεων";
 
 /* Message of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
-"privacyHub.notificationMessage" = "Μια ανακεφαλαίωση του τρόπου με τον οποίο η Brave σάς προστάτευσε online αυτή την εβδομάδα.";
+"privacyHub.notificationMessage" = "Μια ανακεφαλαίωση του τρόπου με τον οποίο το Express Browser σάς προστάτευσε online αυτή την εβδομάδα.";
 
 /* Title of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
 "privacyHub.notificationTitle" = "Εβδομαδιαία αναφορά απορρήτου";
@@ -2039,10 +2072,10 @@
 "PrivateBrowsingOnlyWarning" = "Η λειτουργία «Μόνο ιδιωτική περιήγηση» θα κλείσει όλες τις τρέχουσες καρτέλες σας και θα σας αποσυνδέσει από όλους τους ιστότοπους.";
 
 /* Private tab details */
-"PrivateTabBody" = "Οι ιδιωτικές καρτέλες δεν αποθηκεύονται στο Brave, αλλά δεν σας καθιστούν ανώνυμο online. Οι ιστότοποι που επισκέπτεστε σε μια ιδιωτική καρτέλα δεν θα εμφανίζονται στο ιστορικό σας και τα cookie τους εξαφανίζονται πάντα όταν τους κλείνετε. Δεν θα μένει κανένα ίχνος τους στο Brave. Ωστόσο, οι λήψεις θα αποθηκεύονται.\nΗ εταιρεία κινητής τηλεφωνίας σας (ή ο κάτοχος του δικτύου Wi-Fi ή του VPN στο οποίο έχετε συνδεθεί) μπορεί να δει ποιους ιστότοπους επισκέπτεστε και αυτοί οι ιστότοποι θα μαθαίνουν τη δημόσια διεύθυνση IP σας, ακόμη και σε ιδιωτικές καρτέλες.";
+"PrivateTabBody" = "Οι ιδιωτικές καρτέλες δεν αποθηκεύονται στο Express Browser, αλλά δεν σας καθιστούν ανώνυμο online. Οι ιστότοποι που επισκέπτεστε σε μια ιδιωτική καρτέλα δεν θα εμφανίζονται στο ιστορικό σας και τα cookie τους εξαφανίζονται πάντα όταν τους κλείνετε. Δεν θα μένει κανένα ίχνος τους στο Express Browser. Ωστόσο, οι λήψεις θα αποθηκεύονται.\nΗ εταιρεία κινητής τηλεφωνίας σας (ή ο κάτοχος του δικτύου Wi-Fi ή του VPN στο οποίο έχετε συνδεθεί) μπορεί να δει ποιους ιστότοπους επισκέπτεστε και αυτοί οι ιστότοποι θα μαθαίνουν τη δημόσια διεύθυνση IP σας, ακόμη και σε ιδιωτικές καρτέλες.";
 
 /* Private tab detail text */
-"PrivateTabDetails" = "Η χρήση ιδιωτικών καρτελών αλλάζει μόνο ό,τι κάνει το Brave στη συσκευή σας και δεν αλλάζει τη συμπεριφορά κανενός άλλου.\n\nΟι ιστότοποι μαθαίνουν πάντα τη διεύθυνση IP σας όταν τους επισκέπτεστε. Από αυτό, συχνά μπορούν να μαντέψουν περίπου πού βρίσκεστε, συνήθως την πόλη σας. Μερικές φορές αυτή η εικασία τοποθεσίας μπορεί να είναι πολύ πιο συγκεκριμένη. Οι ιστότοποι γνωρίζουν επίσης όλα όσα τους λέτε συγκεκριμένα, όπως τους όρους αναζήτησης. Εάν συνδεθείτε σε έναν ιστότοπο, θα γνωρίζει ότι είστε ο κάτοχος αυτού του λογαριασμού. Θα αποσυνδεθείτε και πάλι, όταν κλείσετε τις ιδιωτικές καρτέλες, επειδή το Brave θα απορρίψει το cookie που σας διατηρεί συνδεδεμένους.\n\nΌποιος σας συνδέει στο Internet (ο ISP που χρησιμοποιείτε) μπορεί να δει όλη τη δραστηριότητα δικτύου σας. Συχνά, πρόκειται για την εταιρεία κινητής τηλεφωνίας σας. Εάν είστε συνδεδεμένοι σε ένα δίκτυο Wi-Fi, πρόκειται για τον κάτοχο αυτού του δικτύου και, εάν χρησιμοποιείτε VPN, τότε πρόκειται για όποιον διαχειρίζεται αυτό το VPN. Ο ISP σας μπορεί να δει ποιους ιστότοπους επισκέπτεστε καθώς τους επισκέπτεστε. Εάν αυτοί οι ιστότοποι χρησιμοποιούν HTTPS, δεν μπορεί παρά να υποθέσει τι κάνετε σε αυτούς τους ιστότοπους βάσει ορισμένων στοιχείων. Ωστόσο, εάν ένας ιστότοπος χρησιμοποιεί μόνο HTTP, τότε ο ISP σας μπορεί να δει τα πάντα: τους όρους αναζήτησής σας, ποιες σελίδες διαβάζετε και ποιους συνδέσμους ακολουθείτε.\n\nΕάν ένας εργοδότης διαχειρίζεται τη συσκευή σας, μπορεί επίσης να παρακολουθεί τι κάνετε με αυτήν. Η χρήση ιδιωτικών καρτελών πιθανότατα δεν θα τον εμποδίσει να γνωρίζει ποιους ιστότοπους έχετε επισκεφτεί. Κάποιος άλλος με πρόσβαση στη συσκευή σας θα μπορούσε επίσης να έχει εγκαταστήσει λογισμικό που παρακολουθεί τη δραστηριότητά σας και οι ιδιωτικές καρτέλες δεν θα σας προστατεύσουν ούτε από αυτό.";
+"PrivateTabDetails" = "Η χρήση ιδιωτικών καρτελών αλλάζει μόνο ό,τι κάνει το Express Browser στη συσκευή σας και δεν αλλάζει τη συμπεριφορά κανενός άλλου.\n\nΟι ιστότοποι μαθαίνουν πάντα τη διεύθυνση IP σας όταν τους επισκέπτεστε. Από αυτό, συχνά μπορούν να μαντέψουν περίπου πού βρίσκεστε, συνήθως την πόλη σας. Μερικές φορές αυτή η εικασία τοποθεσίας μπορεί να είναι πολύ πιο συγκεκριμένη. Οι ιστότοποι γνωρίζουν επίσης όλα όσα τους λέτε συγκεκριμένα, όπως τους όρους αναζήτησης. Εάν συνδεθείτε σε έναν ιστότοπο, θα γνωρίζει ότι είστε ο κάτοχος αυτού του λογαριασμού. Θα αποσυνδεθείτε και πάλι, όταν κλείσετε τις ιδιωτικές καρτέλες, επειδή το Express Browser θα απορρίψει το cookie που σας διατηρεί συνδεδεμένους.\n\nΌποιος σας συνδέει στο Internet (ο ISP που χρησιμοποιείτε) μπορεί να δει όλη τη δραστηριότητα δικτύου σας. Συχνά, πρόκειται για την εταιρεία κινητής τηλεφωνίας σας. Εάν είστε συνδεδεμένοι σε ένα δίκτυο Wi-Fi, πρόκειται για τον κάτοχο αυτού του δικτύου και, εάν χρησιμοποιείτε VPN, τότε πρόκειται για όποιον διαχειρίζεται αυτό το VPN. Ο ISP σας μπορεί να δει ποιους ιστότοπους επισκέπτεστε καθώς τους επισκέπτεστε. Εάν αυτοί οι ιστότοποι χρησιμοποιούν HTTPS, δεν μπορεί παρά να υποθέσει τι κάνετε σε αυτούς τους ιστότοπους βάσει ορισμένων στοιχείων. Ωστόσο, εάν ένας ιστότοπος χρησιμοποιεί μόνο HTTP, τότε ο ISP σας μπορεί να δει τα πάντα: τους όρους αναζήτησής σας, ποιες σελίδες διαβάζετε και ποιους συνδέσμους ακολουθείτε.\n\nΕάν ένας εργοδότης διαχειρίζεται τη συσκευή σας, μπορεί επίσης να παρακολουθεί τι κάνετε με αυτήν. Η χρήση ιδιωτικών καρτελών πιθανότατα δεν θα τον εμποδίσει να γνωρίζει ποιους ιστότοπους έχετε επισκεφτεί. Κάποιος άλλος με πρόσβαση στη συσκευή σας θα μπορούσε επίσης να έχει εγκαταστήσει λογισμικό που παρακολουθεί τη δραστηριότητά σας και οι ιδιωτικές καρτέλες δεν θα σας προστατεύσουν ούτε από αυτό.";
 
 /* Private tab information link */
 "PrivateTabLink" = "Μάθετε για τις ιδιωτικές καρτέλες.";
@@ -2054,7 +2087,7 @@
 "QuickSearchEngines" = "Μηχανές γρήγορης αναζήτησης";
 
 /* Open the App Store to rate Brave. */
-"RateBrave" = "Αξιολογήστε το Brave";
+"RateBrave" = "Αξιολογήστε το Express Browser";
 
 /* Accessibility label for button increasing font size in display settings of reader mode */
 "ReaderModeBiggerFontButtonAccessibilityLabel" = "Αύξηση μεγέθους κειμένου";
@@ -2243,10 +2276,10 @@
 "RestoreTabNegativeButtonTitle" = "Όχι";
 
 /* Restore Tabs Prompt Description */
-"RestoreTabOnCrashAlertMessage" = "Δυστυχώς, το Brave παρουσίασε σφάλμα ή δεν έκλεισε σωστά.\nΘέλετε να επαναφέρετε τις καρτέλες σας;";
+"RestoreTabOnCrashAlertMessage" = "Δυστυχώς, το Express Browser παρουσίασε σφάλμα ή δεν έκλεισε σωστά.\nΘέλετε να επαναφέρετε τις καρτέλες σας;";
 
 /* Restore Tabs Prompt Title */
-"RestoreTabOnCrashAlertTitle" = "Το Brave έκλεισε απροσδόκητα.";
+"RestoreTabOnCrashAlertTitle" = "Το Express Browser έκλεισε απροσδόκητα.";
 
 /* Body for Brave Talk rewards opt-in screen */
 "rewards.braveTalkRewardsOptInBody" = "Με τις Ανταμοιβές Brave, μπορείτε να προβάλλετε διαφημίσεις που διατηρούν το απόρρητο από το δίκτυο Διαφημίσεων Brave. Χωρίς προγράμματα παρακολούθησης. Χωρίς καθυστερήσεις. Και τα δεδομένα σας παραμένουν απολύτως ασφαλή.";
@@ -2573,7 +2606,7 @@
 "searchSuggestionsSubtitle" = "Θα θέλατε να ενεργοποιήσετε την Προτάσεις αναζήτησης;";
 
 /* Title of an action that allows user to perform a one-click web search for selected text */
-"SearchWithBrave" = "Αναζήτηση με το Brave";
+"SearchWithBrave" = "Αναζήτηση με το Express Browser";
 
 /* Settings security section title */
 "Security" = "Ασφάλεια";
@@ -2582,16 +2615,16 @@
 "sendButtonTitle" = "Αποστολή";
 
 /* Message displayed in the crash dialog above the buttons used to select when sending reports */
-"SendCrashReportAlertMessage" = "Θέλετε να αποσταλεί μια αναφορά σφάλματος, ώστε η Brave να διορθώσει το πρόβλημα;";
+"SendCrashReportAlertMessage" = "Θέλετε να αποσταλεί μια αναφορά σφάλματος, ώστε το Express Browser να διορθώσει το πρόβλημα;";
 
 /* Title for prompt displayed to user after the app crashes */
-"SendCrashReportAlertTitle" = "Ωχ! Το Brave παρουσίασε σφάλμα";
+"SendCrashReportAlertTitle" = "Ωχ! Το Express Browser παρουσίασε σφάλμα";
 
 /* Used as a button label for crash dialog prompt */
 "SendReportButtonTitle" = "Αποστολή αναφοράς";
 
 /* No comment provided by engineer. */
-"setDefaultBrowserCalloutTitle" = "Το Brave μπορεί πλέον να οριστεί ως το προεπιλεγμένο πρόγραμμα περιήγησής σας στο iOS. Πατήστε εδώ για να ανοίξετε τις ρυθμίσεις.";
+"setDefaultBrowserCalloutTitle" = "Το Express Browser μπορεί πλέον να οριστεί ως το προεπιλεγμένο πρόγραμμα περιήγησής σας στο iOS. Πατήστε εδώ για να ανοίξετε τις ρυθμίσεις.";
 
 /* Settings item to set the Brave as a default browser on the iOS device. */
 "setDefaultBrowserSettingsCell" = "Να οριστεί ως προεπιλεγμένο πρόγραμμα περιήγησης";
@@ -2615,7 +2648,7 @@
 "settings.autocloseTabsSetting" = "Κλείσιμο καρτελών";
 
 /* Description of autoclose tabs feature. */
-"settings.autocloseTabsSettingFooter" = "Επιτρέψτε στο Brave να κλείνει αυτόματα τις καρτέλες που δεν έχουν προβληθεί πρόσφατα.";
+"settings.autocloseTabsSettingFooter" = "Επιτρέψτε στο Express Browser να κλείνει αυτόματα τις καρτέλες που δεν έχουν προβληθεί πρόσφατα.";
 
 /* Label for the navigation link to quality settings view */
 "settings.highestQualityPlayback" = "Υψηλότερη ποιότητα αναπαραγωγής";
@@ -2630,7 +2663,7 @@
 "settings.media.rootSetting" = "Μέσα";
 
 /* A toggle label which lets the user always open YouTube urls in Brave */
-"settings.openYouTubeInBrave" = "Άνοιγμα συνδέσμων YouTube στο Brave";
+"settings.openYouTubeInBrave" = "Άνοιγμα συνδέσμων YouTube στο Express Browser";
 
 /* No comment provided by engineer. */
 "settings.privacy.screenTimeSetting" = "Ενεργοποίηση Χρόνου επί οθόνης";
@@ -2705,7 +2738,7 @@
 "shieldEducation.shareTheNewsTitle" = "Μοιραστείτε τα νέα";
 
 /* Subtitle for Shield Education Tracker Ad Warning */
-"shieldEducation.trackerAdWarningSubTitle" = "Οι Ασπίδες Brave μόλις προστάτευσαν το online απόρρητό σας.";
+"shieldEducation.trackerAdWarningSubTitle" = "Οι Ασπίδες μόλις προστάτευσαν το online απόρρητό σας.";
 
 /* Subtitle for Shield Education Tracker Count Share */
 "shieldEducation.trackerCountShareSubtitle" = "Συγχαρητήρια. Ξεχωρίζετε.";
@@ -2720,13 +2753,13 @@
 "shieldEducation.videoAdBlockTitle" = "Οι διαφημίσεις αποκλείονται κατά την παρακολούθηση βίντεο σ' αυτόν τον ιστότοπο.";
 
 /* Section title for adbblock, tracking protection, HTTPS-E, and cookies */
-"ShieldsDefaults" = "Καθολικές προεπιλογές Ασπίδων Brave";
+"ShieldsDefaults" = "Καθολικές προεπιλογές Ασπίδων";
 
 /* Section footer for global shields defaults */
 "ShieldsDefaultsFooter" = "Αυτές είναι οι προεπιλεγμένες ρυθμίσεις των Ασπίδων για νέες τοποθεσίες. Η αλλαγή αυτών δεν θα επηρεάσει τις υπάρχουσες ρυθμίσεις ανά ιστότοπο.";
 
 /* No comment provided by engineer. */
-"ShieldsDownDisclaimer" = "Περιηγείστε σε αυτήν την ιστοσελίδα χωρίς την προστασία απορρήτου του Brave. Δεν λειτουργεί σωστά με τις Ασπίδες ενεργές;";
+"ShieldsDownDisclaimer" = "Περιηγείστε σε αυτήν την ιστοσελίδα χωρίς την προστασία απορρήτου του Express Browser. Δεν λειτουργεί σωστά με τις Ασπίδες ενεργές;";
 
 /* shields overview message */
 "ShieldsOverview" = "Οι Ασπίδες ιστότοπου σας επιτρέπουν να ελέγχετε πότε αποκλείονται οι διαφημίσεις και τα προγράμματα παρακολούθησης για κάθε ιστότοπο που επισκέπτεστε. Εάν προτιμάτε να βλέπετε διαφημίσεις σε έναν συγκεκριμένο ιστότοπο, μπορείτε να τις ενεργοποιήσετε εδώ.";
@@ -2753,7 +2786,7 @@
 "shortcuts.activityTypeClearHistorySuggestedPhrase" = "Εκκαθάριση ιστορικού προγράμματος περιήγησης";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeClearHistoryTitle" = "Εκκαθάριση ιστορικού περιήγησης Brave";
+"shortcuts.activityTypeClearHistoryTitle" = "Εκκαθάριση ιστορικού περιήγησης Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeEnableVPNDescription" = "Άνοιγμα προγράμματος περιήγησης σε νέα καρτέλα και ενεργοποίηση VPN";
@@ -2762,7 +2795,7 @@
 "shortcuts.activityTypeEnableVPNSuggestedPhrase" = "Ενεργοποίηση VPN";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeEnableVPNTitle" = "Άνοιγμα προγράμματος περιήγησης Brave και ενεργοποίηση VPN";
+"shortcuts.activityTypeEnableVPNTitle" = "Άνοιγμα προγράμματος περιήγησης Express Browser και ενεργοποίηση VPN";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeNewPrivateTabSuggestedPhrase" = "Άνοιγμα νέας ιδιωτικής καρτέλας";
@@ -2783,7 +2816,7 @@
 "shortcuts.activityTypeOpenBookmarksSuggestedPhrase" = "Άνοιγμα σελιδοδεικτών";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenBookmarksTitle" = "Άνοιγμα σελιδοδεικτών προγράμματος περιήγησης Brave";
+"shortcuts.activityTypeOpenBookmarksTitle" = "Άνοιγμα σελιδοδεικτών προγράμματος περιήγησης Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenBraveNewsTitle" = "Άνοιγμα Brave News";
@@ -2798,7 +2831,7 @@
 "shortcuts.activityTypeOpenHistoryListSuggestedPhrase" = "Άνοιγμα ιστορικού προγράμματος περιήγησης";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenHistoryListTitle" = "Άνοιγμα ιστορικού προγράμματος περιήγησης Brave";
+"shortcuts.activityTypeOpenHistoryListTitle" = "Άνοιγμα ιστορικού προγράμματος περιήγησης Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenPlaylistDescription" = "Έναρξη αναπαραγωγής των βίντεό σας στη λίστα αναπαραγωγής";
@@ -2819,7 +2852,7 @@
 "shortcuts.activityTypeOpenSyncedTabsTitle" = "Άνοιγμα καρτελών από άλλες συσκευές";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeTabDescription" = "Ξεκινήστε την ασφαλή αναζήτηση στον ιστό με το Brave";
+"shortcuts.activityTypeTabDescription" = "Ξεκινήστε την ασφαλή αναζήτηση στον ιστό με το Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.customIntentOpenBookmarkSuggestedPhrase" = "Άνοιγμα ιστότοπου σελιδοδείκτη";
@@ -2831,7 +2864,7 @@
 "shortcuts.customIntentOpenWebsiteSuggestedPhrase" = "Άνοιγμα ιστότοπου";
 
 /* Description for opening Brave Settings for altering Siri shortcut. */
-"shortcuts.shortcutOpenApplicationSettingsDescription" = "Αυτή η επιλογή θα ανοίξει τις Ρυθμίσεις Brave. Για να αλλάξετε διάφορες επιλογές Siri, επιλέξτε το στοιχείο μενού «Siri & αναζήτηση» και προσαρμόστε τις επιλογές σας.";
+"shortcuts.shortcutOpenApplicationSettingsDescription" = "Αυτή η επιλογή θα ανοίξει τις Ρυθμίσεις Express Browser. Για να αλλάξετε διάφορες επιλογές Siri, επιλέξτε το στοιχείο μενού «Siri & αναζήτηση» και προσαρμόστε τις επιλογές σας.";
 
 /* Button title that open application settings */
 "shortcuts.shortcutOpenApplicationSettingsTitle" = "Άνοιγμα ρυθμίσεων";
@@ -2927,10 +2960,10 @@
 "SiteShieldSettings" = "Ασπίδες";
 
 /* Title used when in warning pop-over when domain specific data save appears */
-"socialSharing.domainSpecificDataSavedTitle" = "Κάθε μέρα γλιτώνω δεδομένα με την περιήγηση στον ιστό με το Brave.";
+"socialSharing.domainSpecificDataSavedTitle" = "Κάθε μέρα γλιτώνω δεδομένα με την περιήγηση στον ιστό με το Express Browser.";
 
 /* Text used for social sharing together with Brave Shield values */
-"socialSharing.shareDescriptionTitle" = "Κάθε μέρα γλιτώνω δεδομένα με την περιήγηση στον ιστό με το Brave.";
+"socialSharing.shareDescriptionTitle" = "Κάθε μέρα γλιτώνω δεδομένα με την περιήγηση στον ιστό με το Express Browser.";
 
 /* Open search section of settings */
 "StandardTabSearch" = "Τυπική καρτέλα";
@@ -3356,7 +3389,7 @@
 "themeQRCodeShareButton" = "Κοινοποίηση...";
 
 /* Title for QR popup encouraging users to share the code with their friends. */
-"themeQRCodeShareTitle" = "Μοιραστείτε το Brave με τους φίλους σας!";
+"themeQRCodeShareTitle" = "Μοιραστείτε το Express Browser με τους φίλους σας!";
 
 /* Selection to automatically color/style the user interface. */
 "ThemesAutomaticOption" = "Αυτόματη";
@@ -3509,19 +3542,19 @@
 "today.promoted" = "Προωθήθηκε";
 
 /* Title for long press action sheet list which has item for rate / hide */
-"today.rateBraveCardActionSheetTitle" = "Αξιολόγηση του Brave στο App Store";
+"today.rateBraveCardActionSheetTitle" = "Αξιολόγηση του Express Browser στο App Store";
 
 /* Title for long press action that will hide Brave Rate Card */
 "today.rateBraveCardHideActionTitle" = "Απόκρυψη";
 
 /* Button title / Title for long press action that will perform an action which open AppStore Rate screen */
-"today.rateBraveCardRateActionTitle" = "Αξιολογήστε το Brave";
+"today.rateBraveCardRateActionTitle" = "Αξιολογήστε το Express Browser";
 
 /* Subtitle shown on the Rate Brave Card */
 "today.rateBraveCardSubtitle" = "Πείτε μας τι σκέφτεστε!";
 
 /* Title shown on the Rate Brave Card */
-"today.rateBraveCardTitle" = "Σας αρέσει ο Brave;";
+"today.rateBraveCardTitle" = "Σας αρέσει το Express Browser;";
 
 /* No comment provided by engineer. */
 "today.refresh" = "Ανανέωση";
@@ -3602,13 +3635,13 @@
 "ViewOn" = "Προβολή στο %@";
 
 /* Explanation for warning alert why the microphone access required. */
-"voice.search.microphone.description.required" = "Επιτρέψτε την πρόσβαση μικροφώνου στις Ρυθμίσεις συστήματος iOS, προκειμένου το Brave να χρησιμοποιεί ανώνυμη φωνητική αναζήτηση.";
+"voice.search.microphone.description.required" = "Επιτρέψτε την πρόσβαση μικροφώνου στις Ρυθμίσεις συστήματος iOS, προκειμένου το Express Browser να χρησιμοποιεί ανώνυμη φωνητική αναζήτηση.";
 
 /* Title for warning alert microphone access is required. */
 "voice.search.microphone.title.required" = "Απαιτείται πρόσβαση στο μικρόφωνο";
 
 /* Disclaimer for screen to search using voice. */
-"voice.search.screen.disclaimer" = "Το Brave δεν αποθηκεύει ούτε κοινοποιεί τις φωνητικές αναζητήσεις σας.";
+"voice.search.screen.disclaimer" = "Το Express Browser δεν αποθηκεύει ούτε κοινοποιεί τις φωνητικές αναζητήσεις σας.";
 
 /* The date your wallet was created */
 "WalletCreationDate" = "Ημερομηνία δημιουργίας πορτοφολιού";

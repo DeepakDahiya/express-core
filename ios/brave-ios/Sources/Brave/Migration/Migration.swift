@@ -77,11 +77,56 @@ public class Migration {
         // Default Value for preference of tab bar visibility for new users changed to landscape only
         Preferences.General.tabBarVisibility.value = TabBarVisibility.landscapeOnly.rawValue
       }
-      // Default url bar location for new users is bottom
-      Preferences.General.isUsingBottomBar.value = true
+      // Express Browser: the address bar starts at the top, as on Android (Brave puts new users'
+      // at the bottom).
+      Preferences.General.isUsingBottomBar.value = false
       Preferences.Playlist.firstLoadAutoPlay.value = true
     }
+    // Express Browser: installs from before the top default move there once; after that the
+    // reader's choice in Settings stands.
+    if !Migration.expressTopURLBarMigrated.value {
+      Preferences.General.isUsingBottomBar.value = false
+      Migration.expressTopURLBarMigrated.value = true
+    }
+    // Express Browser: YouTube links stay in the browser, as on Android. Installs that stored
+    // Brave's old "off" move once (there's no switch for it any more).
+    if !Migration.expressKeepYouTubeMigrated.value {
+      Preferences.General.keepYouTubeInBrave.value = true
+      Migration.expressKeepYouTubeMigrated.value = true
+    }
+    // Express Browser: private tabs search with Google, as on Android. Installs still on the
+    // Brave Search private default that Brave set at first launch move once; a private engine
+    // the reader picked themselves stays.
+    if !Migration.expressPrivateSearchMigrated.value {
+      let braveSearchNames = [
+        InitialSearchEngines.SearchEngineID.braveSearch.rawValue,
+        InitialSearchEngines.SearchEngineID.braveSearch.legacyName,
+        "Brave Search",
+      ]
+      if Preferences.Search.userPickedPrivateDSEName.value == nil,
+        braveSearchNames.contains(Preferences.Search.defaultPrivateEngineName.value)
+      {
+        Preferences.Search.defaultPrivateEngineName.value =
+          InitialSearchEngines.SearchEngineID.google.rawValue
+      }
+      Migration.expressPrivateSearchMigrated.value = true
+    }
   }
+
+  private static let expressPrivateSearchMigrated = Preferences.Option<Bool>(
+    key: "express.migration.private-search-google",
+    default: false
+  )
+
+  private static let expressKeepYouTubeMigrated = Preferences.Option<Bool>(
+    key: "express.migration.keep-youtube",
+    default: false
+  )
+
+  private static let expressTopURLBarMigrated = Preferences.Option<Bool>(
+    key: "express.migration.top-url-bar",
+    default: false
+  )
 
   public static func migrateLostTabsActiveWindow() {
     if UIApplication.shared.supportsMultipleScenes { return }

@@ -2,7 +2,7 @@
 "About" = "Informació";
 
 /* The title of the screen explaining Brave Shields */
-"AboutBraveShields" = "Sobre Escuts de Brave";
+"AboutBraveShields" = "Sobre Escuts";
 
 /* The body of the screen explaining Brave Shields */
 "AboutBraveShieldsBody" = "Els llocs sovint inclouen galetes i scripts que intenten identificar-te a tu i al teu dispositiu. Volen esbrinar qui ets i seguir-te al web, fent un rastrejament de què fas a cada lloc.\n\nBrave bloqueja aquestes coses perquè puguis navegar sense ser perseguit.";
@@ -11,7 +11,7 @@
 "AccessPhotoDeniedAlertMessage" = "Això et permet desar la imatge al carret de la càmera.";
 
 /* See http://mzl.la/1G7uHo7 */
-"AccessPhotoDeniedAlertTitle" = "Brave voldria accedir a les teves fotos";
+"AccessPhotoDeniedAlertTitle" = "Express Browser voldria accedir a les teves fotos";
 
 /* Label to display in the Discoverability overlay for keyboard shortcuts */
 "addBookmarkTitle" = "Afegeix adreça d'interès";
@@ -44,7 +44,7 @@
 "AlwaysShow" = "Activat";
 
 /* Touch ID or PIN entry prompt subtitle when accessing Brave with the Browser Lock feature enabled */
-"AuthenticationLoginsTouchReason" = "Això autentica el teu accés a Brave";
+"AuthenticationLoginsTouchReason" = "Això autentica el teu accés a Express Browser";
 
 /* Label for Cancel button */
 "AuthPromptAlertCancelButtonTitle" = "Cancel·la";
@@ -176,7 +176,7 @@
 "BraveShieldsAdvancedControls" = "Controls avançats";
 
 /* No comment provided by engineer. */
-"BraveShieldsAndPrivacy" = "Privacitat i Escuts de Brave";
+"BraveShieldsAndPrivacy" = "Privacitat i Escuts";
 
 /* No comment provided by engineer. */
 "BraveShieldsAndPrivacyTitle" = "Escuts & Privacitat";
@@ -203,7 +203,7 @@
 "BraveShieldsSiteBroken" = "Si aquest enllaç apareix trencat, prova de desactivar Escuts";
 
 /* Context: 'Brave Shields Up' or 'Brave Shields Down' */
-"BraveShieldsStatusTitle" = "Escuts de Brave";
+"BraveShieldsStatusTitle" = "Escuts";
 
 /* Context: The 'Down' in 'Brave Shields Down' */
 "BraveShieldsStatusValueDown" = "Avall";
@@ -212,7 +212,7 @@
 "BraveShieldsStatusValueUp" = "Amunt";
 
 /* The accessibility hint spoken when focused on the main shields toggle */
-"BraveShieldsToggleHint" = "Fes doble toc per activar Escuts de Brave";
+"BraveShieldsToggleHint" = "Fes doble toc per activar Escuts";
 
 /* The name of the feature */
 "bravetalk.braveTalkTitle" = "Conversa de Brave";
@@ -227,13 +227,13 @@
 "BraveTranslate.searchInputTitle" = "Cerca";
 
 /* This text is for the settings menu for all Brave-Translate options. */
-"BraveTranslate.settingsMenuTitle" = "Brave Translate";
+"BraveTranslate.settingsMenuTitle" = "Translate";
 
 /* This text is for the translate settings screen. It's the title of the settings menu. */
-"BraveTranslate.settingsScreenTitle" = "Brave Translate";
+"BraveTranslate.settingsScreenTitle" = "Translate";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
-"BraveTranslate.settingsTranslateEnabledOptionDescription" = "Si està habilitat, Brave Translate detecta automàticament l'idioma de la pàgina actual i mostra un botó de traducció a la barra d'URL.";
+"BraveTranslate.settingsTranslateEnabledOptionDescription" = "Si està habilitat, Express Browser detecta automàticament l'idioma de la pàgina actual i mostra un botó de traducció a la barra d'URL.";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
 "BraveTranslate.settingsTranslateEnabledOptionTitle" = "Traductor habilitat";
@@ -248,7 +248,7 @@
 "BrowserLock" = "Bloqueig del navegador";
 
 /* Description for setting to enable the browser lock privacy feature */
-"BrowserLockDescription" = "Desbloqueja Brave amb Touch ID, Face ID o contrasenya del sistema.";
+"BrowserLockDescription" = "Desbloqueja Express Browser amb Touch ID, Face ID o contrasenya del sistema.";
 
 /* Settings item for clearing browsing history */
 "BrowsingHistory" = "Historial de navegació";
@@ -263,13 +263,13 @@
 "callout.bottomBarCalloutDescription" = "Mou la barra d'adreces, pestanyes, preferits, i altres eines a la part inferior del navegador. ";
 
 /* Title for Bottom Bar Callout View */
-"callout.bottomBarCalloutTitle" = "Personalitza la barra de pestanyes de Brave";
+"callout.bottomBarCalloutTitle" = "Personalitza la barra de pestanyes d'Express Browser";
 
 /* Description - Description used for main button in Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutButtonDescription" = "Vols establir Brave com a navegador predeterminat?";
+"callout.defaultBrowserCalloutButtonDescription" = "Vols establir Express Browser com a navegador predeterminat?";
 
 /* Subtitle - Description for Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutDescription" = "Si Brave és el teu navegador predeterminat, tots els enllaços en què facis clic s'obriran amb les proteccions de privacitat de Brave.";
+"callout.defaultBrowserCalloutDescription" = "Si Express Browser és el teu navegador predeterminat, tots els enllaços en què facis clic s'obriran amb les proteccions de privacitat d'Express Browser.";
 
 /* Title for main button in Default Browser Full Screen Callout */
 "callout.defaultBrowserCalloutPrimaryButtonTitle" = "Estableix com a predeterminat";
@@ -596,25 +596,25 @@
 "defaultBrowserCallout.introOpenSettingsButtonText" = "Obre Configuració";
 
 /* Primary text on default browser popup screen */
-"defaultBrowserCallout.introPrimaryText" = "Obre tots els enllaços amb Brave per protegir la teva privacitat";
+"defaultBrowserCallout.introPrimaryText" = "Obre tots els enllaços amb Express Browser per protegir la teva privacitat";
 
 /* Secondary text on default browser popup. */
-"defaultBrowserCallout.introSecondaryText" = "Escuts de Brave bloqueja els rastrejadors i els anuncis, desa dades i t'estalvia temps a cada lloc que visites";
+"defaultBrowserCallout.introSecondaryText" = "Escuts bloqueja els rastrejadors i els anuncis, desa dades i t'estalvia temps a cada lloc que visites";
 
 /* Tertiary text on default browser popup screen */
-"defaultBrowserCallout.introTertiaryText" = "Obre Configuració, prem l'app del navegador predeterminat i selecciona Brave.";
+"defaultBrowserCallout.introTertiaryText" = "Obre Configuració, prem l'app del navegador predeterminat i selecciona Express Browser.";
 
 /* Notification body to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationBody" = "Defineix Brave com a navegador predeterminat";
+"defaultBrowserCallout.notificationBody" = "Defineix Express Browser com a navegador predeterminat";
 
 /* Notification title to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationTitle" = "Aconsegueix la protecció de Brave a cada enllaç";
+"defaultBrowserCallout.notificationTitle" = "Aconsegueix la protecció d'Express Browser a cada enllaç";
 
 /* No comment provided by engineer. */
 "defaultBrowserCalloutCloseAccesabilityLabel" = "Tanca les crides del navegador predeterminat";
 
 /* Name for default Brave theme. */
-"defaultThemeName" = "Brave predeterminat";
+"defaultThemeName" = "Express Browser predeterminat";
 
 /* No comment provided by engineer. */
 "Delete" = "Suprimeix";
@@ -719,7 +719,7 @@
 "ErrorPageReloadButtonTitle" = "Recarrega";
 
 /* Additional warning text when clicking the Advanced button on error pages. %@ is a placeholder, do not localize it. Do not localize <br />. */
-"ErrorPagesAdvancedErrorPinningDetails" = "%1$@ normalment utilitza el xifratge per protegir la teva informació. Quan Brave va intentar connectar-se a %2$@ aquesta vegada, el lloc web va enviar credencials inusuals i incorrectes. Això pot passar quan un atacant intenta fingir ser %3$@ o una pantalla d'inici de sessió per Wi-Fi ha interromput la connexió. La teva informació encara està segura perquè Brave va aturar la connexió abans que s'intercanviés cap dada.<br /> No pots visitar %4$@ ara mateix perquè el lloc web utilitza la fixació de certificats. Els errors i els atacs de xarxa solen ser temporals, de manera que probablement aquesta pàgina funcionarà més tard.";
+"ErrorPagesAdvancedErrorPinningDetails" = "%1$@ normalment utilitza el xifratge per protegir la teva informació. Quan Express Browser va intentar connectar-se a %2$@ aquesta vegada, el lloc web va enviar credencials inusuals i incorrectes. Això pot passar quan un atacant intenta fingir ser %3$@ o una pantalla d'inici de sessió per Wi-Fi ha interromput la connexió. La teva informació encara està segura perquè Express Browser va aturar la connexió abans que s'intercanviés cap dada.<br /> No pots visitar %4$@ ara mateix perquè el lloc web utilitza la fixació de certificats. Els errors i els atacs de xarxa solen ser temporals, de manera que probablement aquesta pàgina funcionarà més tard.";
 
 /* Additional warning text when clicking the Advanced button on error pages */
 "ErrorPagesAdvancedWarningDetails" = "Aquest servidor no ha pogut demostrar que és %@; el seu certificat de seguretat no és de confiança pel sistema operatiu del teu dispositiu. Això pot ser causat per una configuració incorrecta o per un atacant que intenta interceptar la teva connexió.";
@@ -759,6 +759,39 @@
 
 /* Button label to temporarily continue to the site from the certificate error page */
 "ErrorPagesProceedAnywayButton" = "Passeu a %@ (no segur)";
+
+/* Link on the private new tab page to a page about private mode. */
+"expressPrivateNTP.learnMore" = "Més informació";
+
+/* Bullet point: data that private mode doesn't save. Data that websites save on the device, such as sign-in state. */
+"expressPrivateNTP.notSavedCookies" = "Les galetes i les dades de llocs web";
+
+/* Bullet point: data that private mode doesn't save. Names, addresses, passwords etc. that people enter into forms on the web. */
+"expressPrivateNTP.notSavedForms" = "La informació introduïda en formularis";
+
+/* Introduces a bulleted list of data that private mode doesn't save. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.notSavedHeader" = "Express Browser <em>no desarà</em>:";
+
+/* Bullet point: data that private mode doesn't save. 'Browsing history' is the history of visited websites. */
+"expressPrivateNTP.notSavedHistory" = "El teu historial de navegació";
+
+/* Subtitle of the private new tab page, under its title. */
+"expressPrivateNTP.subtitle" = "La resta de persones que utilitzin aquest dispositiu no veuran la teva activitat, de manera que pots navegar de manera més privada. Això no afectarà la manera com recullen les dades els llocs web que visites ni els serveis que utilitzen, incloent-hi Express Browser. Les baixades i les adreces d'interès sí que es desaran.";
+
+/* Title of the private new tab page. Private mode hides your browsing from other people using the same device; it does not make you anonymous. */
+"expressPrivateNTP.title" = "Heu passat al mode d'incògnit";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleEmployer" = "la teva empresa o el teu centre educatiu";
+
+/* Introduces a bulleted list of who might still see what the user does in private mode. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.visibleHeader" = "És possible que la teva activitat <em>continuï sent visible</em> per a:";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleProvider" = "el teu proveïdor d'Internet";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleWebsites" = "els llocs web que visitis";
 
 /* %@ will launch an external application */
 "ExternalAppURLAlertMessage" = "%@ activarà una aplicació externa";
@@ -1187,13 +1220,13 @@
 "OBSearchEngineDetail" = "Selecciona el teu motor de cerca predeterminat";
 
 /* Title for search engine onboarding screen */
-"OBSearchEngineTitle" = "Et donem la benvinguda al navegador de Brave";
+"OBSearchEngineTitle" = "Et donem la benvinguda a Express Browser";
 
 /* Detail text for shields onboarding screen */
 "OBShieldsDetail" = "Bloqueja els rastrejadors que envaeixen la privacitat perquè puguis navegar sense ser perseguit per la web";
 
 /* Title for shields onboarding screen */
-"OBShieldsTitle" = "Escuts de Brave";
+"OBShieldsTitle" = "Escuts";
 
 /* Button to show the Brave Rewards Ads. */
 "OBShowMeButton" = "Mostra-m'ho";
@@ -1205,10 +1238,10 @@
 "onboarding.blockedAdsOnboardingBigTechInformationText" = "%1$@ i %2$lld altres anuncis i rastrejadors bloquejats";
 
 /* The footnote indicating what Brave shields is blocking */
-"onboarding.blockedAdsOnboardingFootnoteText" = "Consulta tots els elements indesitjables que ha bloquejat Brave, a cada pàgina, amb Escuts.";
+"onboarding.blockedAdsOnboardingFootnoteText" = "Consulta tots els elements indesitjables que ha bloquejat Express Browser, a cada pàgina, amb Escuts.";
 
 /* The text describing user where they should press in order to open Shield panel */
-"onboarding.blockedAdsOnboardingInstructionsText" = "Clica per veure Escuts de Brave";
+"onboarding.blockedAdsOnboardingInstructionsText" = "Clica per veure Escuts";
 
 /* The description text shown when there is no big tech tracker among trackers. Example usage: 31 Ads & trackers blocked. The number here is presented separately so it is not in translation. */
 "onboarding.blockedAdsOnboardingNoBigTechInformationText" = "Anuncis i rastrejadors bloquejats";
@@ -1232,13 +1265,13 @@
 "onboarding.ntpOnboardingPopOverTrackerDescription" = "En bloquejar els rastrejadors i els anuncis, els llocs web utilitzen menys dades i es carreguen molt més ràpidament.";
 
 /* Description for the Omnibox (URL Bar) pop-over that describes faster load times. */
-"onboarding.omniboxOnboardingPopOverDescription" = "Mira la diferència de Brave:\nSense anuncis. Sense rastrejadors. Càrrega de la pàgina molt més ràpida.";
+"onboarding.omniboxOnboardingPopOverDescription" = "Mira la diferència d'Express Browser:\nSense anuncis. Sense rastrejadors. Càrrega de la pàgina molt més ràpida.";
 
 /* Title for the Omnibox (URL Bar) pop-over that describes faster load times. */
 "onboarding.omniboxOnboardingPopOverTitle" = "Introdueix el nom o l'URL d'un lloc web";
 
 /* Title for Welcome Screen in Onboarding */
-"onboarding.welcomeScreenTitle" = "Benvingut a Brave";
+"onboarding.welcomeScreenTitle" = "Benvingut a Express Browser";
 
 /* Continue button to navigate to next onboarding screen. */
 "OnboardingContinueButton" = "Continua";
@@ -1280,7 +1313,7 @@
 "OpenMobileConfigurationAlertTitle" = "Perfil de configuració disponible";
 
 /* Context menu option for opening a link in a new private tab */
-"OpenNewPrivateTabButtonTitle" = "Obre en una pestanya d'incògnit nova";
+"OpenNewPrivateTabButtonTitle" = "Obre en una pestanya d'incògnit";
 
 /* Context menu item for opening a link in a new tab */
 "OpenNewTabButtonTitle" = "Obre en una pestanya nova";
@@ -1487,7 +1520,7 @@
 "PersistentPrivateBrowsing" = "Navegació d'incògnit persistent";
 
 /* Persistent private browsing alert message to existing users */
-"PersistentPrivateBrowsingAlertMessage" = "Permet a Brave restablir les pestanyes de navegació d'incògnit, fins i tot si tanques/tornes a obrir l'aplicació";
+"PersistentPrivateBrowsingAlertMessage" = "Permet a Express Browser restablir les pestanyes de navegació d'incògnit, fins i tot si tanques/tornes a obrir l'aplicació";
 
 /* Persistent private browsing alert title to existing users */
 "PersistentPrivateBrowsingAlertTitle" = "Restaura les pestanyes d'incògnit";
@@ -1931,7 +1964,7 @@
 "privacyHub.lastWeekHeader" = "Darrera setmana";
 
 /* Do NOT localize asterisk('*') characters, they are used to make the text bold in the app. It says which tracker was blocked on how many websites, example usage: 'Google Analytics was blocked by Brave Shields on 42 sites' */
-"privacyHub.mostFrequentTrackerAndAdBody" = "Escuts de Brave ha bloquejat **%1$@** a **%2$lld** llocs";
+"privacyHub.mostFrequentTrackerAndAdBody" = "Escuts ha bloquejat **%1$@** a **%2$lld** llocs";
 
 /* Title under which we display a tracker which was most frequently detected by our ad blocking mechanism. */
 "privacyHub.mostFrequentTrackerAndAdTitle" = "Rastrejador & anunci més freqüent";
@@ -1949,7 +1982,7 @@
 "privacyHub.notificationCalloutButtonText" = "Activa les notificacions";
 
 /* Message of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
-"privacyHub.notificationMessage" = "Un resum de com Brave et va protegir en línia aquesta setmana.";
+"privacyHub.notificationMessage" = "Un resum de com Express Browser et va protegir en línia aquesta setmana.";
 
 /* Title of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
 "privacyHub.notificationTitle" = "Informe setmanal de privacitat";
@@ -2039,10 +2072,10 @@
 "PrivateBrowsingOnlyWarning" = "El mode Només navegació d'incògnit tancarà totes les pestanyes actuals i tancarà la sessió de tots els llocs.";
 
 /* Private tab details */
-"PrivateTabBody" = "Les pestanyes d'incògnit no es guarden a Brave, però no et fan anònim en línia. Els llocs que visites en una pestanya d'incògnit no apareixeran a l'historial i les teves galetes sempre s'esvaeixen quan les tanques; no en quedarà cap rastre a Brave. Tanmateix, les descàrregues es desaran.\nEl teu operador de telefonia mòbil (o el propietari de la xarxa Wi-Fi o VPN a la qual estàs connectat) pot veure quins llocs visites i aquests llocs aprendran la teva adreça IP pública, fins i tot a les pestanyes d'incògnit.";
+"PrivateTabBody" = "Les pestanyes d'incògnit no es guarden a Express Browser, però no et fan anònim en línia. Els llocs que visites en una pestanya d'incògnit no apareixeran a l'historial i les teves galetes sempre s'esvaeixen quan les tanques; no en quedarà cap rastre a Express Browser. Tanmateix, les descàrregues es desaran.\nEl teu operador de telefonia mòbil (o el propietari de la xarxa Wi-Fi o VPN a la qual estàs connectat) pot veure quins llocs visites i aquests llocs aprendran la teva adreça IP pública, fins i tot a les pestanyes d'incògnit.";
 
 /* Private tab detail text */
-"PrivateTabDetails" = "L'ús de les pestanyes d'incògnit només canvia el que fa Brave al teu dispositiu, no canvia el comportament de ningú més.\n\nEls llocs sempre aprenen la teva adreça IP quan els visites. A partir d'això, sovint poden endevinar aproximadament on ets, normalment la teva ciutat. De vegades, aquesta estimació de la ubicació pot ser molt més específica. Els llocs també saben tot el que els dius específicament, com ara els termes de cerca. Si inicies sessió en un lloc, sabran que sou el propietari d'aquell compte. Encara estaràs fora de sessió quan tanquis les pestanyes d'incògnit perquè Brave llençarà la galeta que et manté connectat.\n\nQui et connecti a Internet (el teu ISP) pot veure tota l'activitat de la teva xarxa. Sovint, aquest és el teu operador de telefonia mòbil. Si estàs connectat a una xarxa Wi-Fi, aquest és el propietari d'aquesta xarxa i, si fas servir una VPN, és qui la dirigeix. El teu ISP pot veure quins llocs visites mentre els visites. Si aquests llocs utilitzen HTTPS, no poden fer molt més que una conjectura educada sobre el que fas en aquests llocs. Però si un lloc només utilitza HTTP, el teu ISP pot veure-ho tot: els termes de cerca, quines pàgines llegeixes i quins enllaços segueixes.\n\nSi un ocupador gestiona el teu dispositiu, també pots fer un rastrejament d'allò que fas amb ell. Probablement, l'ús de pestanyes d'incògnit no els impedirà saber quins llocs has visitat. Una altra persona amb accés al teu dispositiu també podria tenir instal·lat programari que supervisa la teva activitat, i les pestanyes d'incògnit tampoc et protegiran d'això.";
+"PrivateTabDetails" = "L'ús de les pestanyes d'incògnit només canvia el que fa Express Browser al teu dispositiu, no canvia el comportament de ningú més.\n\nEls llocs sempre aprenen la teva adreça IP quan els visites. A partir d'això, sovint poden endevinar aproximadament on ets, normalment la teva ciutat. De vegades, aquesta estimació de la ubicació pot ser molt més específica. Els llocs també saben tot el que els dius específicament, com ara els termes de cerca. Si inicies sessió en un lloc, sabran que sou el propietari d'aquell compte. Encara estaràs fora de sessió quan tanquis les pestanyes d'incògnit perquè Express Browser llençarà la galeta que et manté connectat.\n\nQui et connecti a Internet (el teu ISP) pot veure tota l'activitat de la teva xarxa. Sovint, aquest és el teu operador de telefonia mòbil. Si estàs connectat a una xarxa Wi-Fi, aquest és el propietari d'aquesta xarxa i, si fas servir una VPN, és qui la dirigeix. El teu ISP pot veure quins llocs visites mentre els visites. Si aquests llocs utilitzen HTTPS, no poden fer molt més que una conjectura educada sobre el que fas en aquests llocs. Però si un lloc només utilitza HTTP, el teu ISP pot veure-ho tot: els termes de cerca, quines pàgines llegeixes i quins enllaços segueixes.\n\nSi un ocupador gestiona el teu dispositiu, també pots fer un rastrejament d'allò que fas amb ell. Probablement, l'ús de pestanyes d'incògnit no els impedirà saber quins llocs has visitat. Una altra persona amb accés al teu dispositiu també podria tenir instal·lat programari que supervisa la teva activitat, i les pestanyes d'incògnit tampoc et protegiran d'això.";
 
 /* Private tab information link */
 "PrivateTabLink" = "Saber més sobre pestanyes d'incògnit";
@@ -2054,7 +2087,7 @@
 "QuickSearchEngines" = "Motors de cerca ràpida";
 
 /* Open the App Store to rate Brave. */
-"RateBrave" = "Valora Brave";
+"RateBrave" = "Valora Express Browser";
 
 /* Accessibility label for button increasing font size in display settings of reader mode */
 "ReaderModeBiggerFontButtonAccessibilityLabel" = "Augmenta la mida del text";
@@ -2243,10 +2276,10 @@
 "RestoreTabNegativeButtonTitle" = "No";
 
 /* Restore Tabs Prompt Description */
-"RestoreTabOnCrashAlertMessage" = "Malauradament, Brave va col·lapsar o no es va tancar correctament.\nVols restaurar les teves pestanyes?";
+"RestoreTabOnCrashAlertMessage" = "Malauradament, Express Browser va col·lapsar o no es va tancar correctament.\nVols restaurar les teves pestanyes?";
 
 /* Restore Tabs Prompt Title */
-"RestoreTabOnCrashAlertTitle" = "Brave s'ha tancat inesperadament.";
+"RestoreTabOnCrashAlertTitle" = "Express Browser s'ha tancat inesperadament.";
 
 /* Body for Brave Talk rewards opt-in screen */
 "rewards.braveTalkRewardsOptInBody" = "Amb Recompenses de Brave, pots veure anuncis que preserven la privacitat des de la xarxa d'Anuncis de Brave. Sense rastrejadors. Sense alentiments. I les teves dades es mantenen totalment segures.";
@@ -2573,7 +2606,7 @@
 "searchSuggestionsSubtitle" = "T'agradaria activar els suggeriments de cerca?";
 
 /* Title of an action that allows user to perform a one-click web search for selected text */
-"SearchWithBrave" = "Cerca amb Brave";
+"SearchWithBrave" = "Cerca amb Express Browser";
 
 /* Settings security section title */
 "Security" = "Seguretat";
@@ -2582,16 +2615,16 @@
 "sendButtonTitle" = "Envia";
 
 /* Message displayed in the crash dialog above the buttons used to select when sending reports */
-"SendCrashReportAlertMessage" = "Vols enviar un informe d'error perquè Brave pugui solucionar el problema?";
+"SendCrashReportAlertMessage" = "Vols enviar un informe d'error perquè Express Browser pugui solucionar el problema?";
 
 /* Title for prompt displayed to user after the app crashes */
-"SendCrashReportAlertTitle" = "Oops! Brave s'ha col·lapsat";
+"SendCrashReportAlertTitle" = "Oops! Express Browser s'ha col·lapsat";
 
 /* Used as a button label for crash dialog prompt */
 "SendReportButtonTitle" = "Envia un informe";
 
 /* No comment provided by engineer. */
-"setDefaultBrowserCalloutTitle" = "Ara es pot configurar Brave com a navegador predeterminat a iOS. Prem aquí per obrir la configuració.";
+"setDefaultBrowserCalloutTitle" = "Ara es pot configurar Express Browser com a navegador predeterminat a iOS. Prem aquí per obrir la configuració.";
 
 /* Settings item to set the Brave as a default browser on the iOS device. */
 "setDefaultBrowserSettingsCell" = "Configura com a navegador predeterminat";
@@ -2615,7 +2648,7 @@
 "settings.autocloseTabsSetting" = "Tanca les pestanyes";
 
 /* Description of autoclose tabs feature. */
-"settings.autocloseTabsSettingFooter" = "Permet que Brave tanqui automàticament les pestanyes que no s'han vist recentment.";
+"settings.autocloseTabsSettingFooter" = "Permet que Express Browser tanqui automàticament les pestanyes que no s'han vist recentment.";
 
 /* Label for the navigation link to quality settings view */
 "settings.highestQualityPlayback" = "Reproducció de màxima qualitat";
@@ -2630,7 +2663,7 @@
 "settings.media.rootSetting" = "Multimèdia";
 
 /* A toggle label which lets the user always open YouTube urls in Brave */
-"settings.openYouTubeInBrave" = "Obre els enllaços de YouTube a Brave";
+"settings.openYouTubeInBrave" = "Obre els enllaços de YouTube a Express Browser";
 
 /* No comment provided by engineer. */
 "settings.privacy.screenTimeSetting" = "Activa el temps de pantalla";
@@ -2705,7 +2738,7 @@
 "shieldEducation.shareTheNewsTitle" = "Comparteix les notícies";
 
 /* Subtitle for Shield Education Tracker Ad Warning */
-"shieldEducation.trackerAdWarningSubTitle" = "Escuts de Brave acaba de protegir la teva privacitat en línia.";
+"shieldEducation.trackerAdWarningSubTitle" = "Escuts acaba de protegir la teva privacitat en línia.";
 
 /* Subtitle for Shield Education Tracker Count Share */
 "shieldEducation.trackerCountShareSubtitle" = "Enhorabona. Ets força especial.";
@@ -2720,13 +2753,13 @@
 "shieldEducation.videoAdBlockTitle" = "Els anuncis es bloquegen mentre es visualitzen els vídeos d'aquest lloc web.";
 
 /* Section title for adbblock, tracking protection, HTTPS-E, and cookies */
-"ShieldsDefaults" = "Valors predeterminats globals d'Escuts de Brave";
+"ShieldsDefaults" = "Valors predeterminats globals d'Escuts";
 
 /* Section footer for global shields defaults */
 "ShieldsDefaultsFooter" = "Aquestes són les proteccions predeterminades d'Escuts pels nous llocs web. Si les canvies, no afectarà la configuració existent per a cada lloc web.";
 
 /* No comment provided by engineer. */
-"ShieldsDownDisclaimer" = "Estàs navegant per aquest lloc sense les proteccions de privacitat de Brave. No funciona correctament amb Escuts?";
+"ShieldsDownDisclaimer" = "Estàs navegant per aquest lloc sense les proteccions de privacitat d'Express Browser. No funciona correctament amb Escuts?";
 
 /* shields overview message */
 "ShieldsOverview" = "El lloc web d'Escuts permet controlar quan es bloquegen els anuncis i els rastrejadors per a cada lloc que visites. Si prefereixes veure anuncis en un lloc específic, pots activar-los aquí.";
@@ -2753,7 +2786,7 @@
 "shortcuts.activityTypeClearHistorySuggestedPhrase" = "Esborra l'historial del navegador";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeClearHistoryTitle" = " Esborra l'historial de navegació de Brave";
+"shortcuts.activityTypeClearHistoryTitle" = " Esborra l'historial de navegació d'Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeEnableVPNDescription" = "Obre el navegador en una pestanya nova i activa la VPN";
@@ -2762,7 +2795,7 @@
 "shortcuts.activityTypeEnableVPNSuggestedPhrase" = "Activa la VPN";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeEnableVPNTitle" = "Obre el navegador de Brave i activa la VPN";
+"shortcuts.activityTypeEnableVPNTitle" = "Obre Express Browser i activa la VPN";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeNewPrivateTabSuggestedPhrase" = "Obre una pestanya nova d'incògnit";
@@ -2783,7 +2816,7 @@
 "shortcuts.activityTypeOpenBookmarksSuggestedPhrase" = "Obre adreces d'interès";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenBookmarksTitle" = "Obre les adreces d'interès del navegador de Brave";
+"shortcuts.activityTypeOpenBookmarksTitle" = "Obre les adreces d'interès d'Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenBraveNewsTitle" = "Obre Notícies de Brave";
@@ -2798,7 +2831,7 @@
 "shortcuts.activityTypeOpenHistoryListSuggestedPhrase" = "Obre l'historial del navegador";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenHistoryListTitle" = "Obre l'historial del navegador de Brave";
+"shortcuts.activityTypeOpenHistoryListTitle" = "Obre l'historial d'Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenPlaylistDescription" = "Comença a reproduir els teus vídeos a la llista de reproducció";
@@ -2819,7 +2852,7 @@
 "shortcuts.activityTypeOpenSyncedTabsTitle" = "Obre pestanyes d'altres dispositius";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeTabDescription" = "Comença a cercar al web de manera segura amb Brave";
+"shortcuts.activityTypeTabDescription" = "Comença a cercar al web de manera segura amb Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.customIntentOpenBookmarkSuggestedPhrase" = "Obre el lloc web de les adreces d'interès";
@@ -2831,7 +2864,7 @@
 "shortcuts.customIntentOpenWebsiteSuggestedPhrase" = "Obre lloc web";
 
 /* Description for opening Brave Settings for altering Siri shortcut. */
-"shortcuts.shortcutOpenApplicationSettingsDescription" = "Aquesta opció obrirà la configuració de Brave. Per canviar diverses opcions de Siri, selecciona l'element de menú \"Siri i cerca\" i personalitza les teves opcions.";
+"shortcuts.shortcutOpenApplicationSettingsDescription" = "Aquesta opció obrirà la configuració d'Express Browser. Per canviar diverses opcions de Siri, selecciona l'element de menú \"Siri i cerca\" i personalitza les teves opcions.";
 
 /* Button title that open application settings */
 "shortcuts.shortcutOpenApplicationSettingsTitle" = "Obre Configuració";
@@ -2927,10 +2960,10 @@
 "SiteShieldSettings" = "Escuts";
 
 /* Title used when in warning pop-over when domain specific data save appears */
-"socialSharing.domainSpecificDataSavedTitle" = "Cada dia deso les dades explorant la web amb Brave.";
+"socialSharing.domainSpecificDataSavedTitle" = "Cada dia deso les dades explorant la web amb Express Browser.";
 
 /* Text used for social sharing together with Brave Shield values */
-"socialSharing.shareDescriptionTitle" = "Cada dia deso les dades explorant la web amb Brave.";
+"socialSharing.shareDescriptionTitle" = "Cada dia deso les dades explorant la web amb Express Browser.";
 
 /* Open search section of settings */
 "StandardTabSearch" = "Pestanya estàndard";
@@ -3356,7 +3389,7 @@
 "themeQRCodeShareButton" = "Comparteix...";
 
 /* Title for QR popup encouraging users to share the code with their friends. */
-"themeQRCodeShareTitle" = "Comparteix Brave amb els amics!";
+"themeQRCodeShareTitle" = "Comparteix Express Browser amb els amics!";
 
 /* Selection to automatically color/style the user interface. */
 "ThemesAutomaticOption" = "Automàtic";
@@ -3509,19 +3542,19 @@
 "today.promoted" = "Promocionat";
 
 /* Title for long press action sheet list which has item for rate / hide */
-"today.rateBraveCardActionSheetTitle" = "Valora Brave a l'App Store";
+"today.rateBraveCardActionSheetTitle" = "Valora Express Browser a l'App Store";
 
 /* Title for long press action that will hide Brave Rate Card */
 "today.rateBraveCardHideActionTitle" = "Amaga";
 
 /* Button title / Title for long press action that will perform an action which open AppStore Rate screen */
-"today.rateBraveCardRateActionTitle" = "Valora Brave";
+"today.rateBraveCardRateActionTitle" = "Valora Express Browser";
 
 /* Subtitle shown on the Rate Brave Card */
 "today.rateBraveCardSubtitle" = "Dona'ns la teva opinió!";
 
 /* Title shown on the Rate Brave Card */
-"today.rateBraveCardTitle" = "T'agrada Brave?";
+"today.rateBraveCardTitle" = "T'agrada Express Browser?";
 
 /* No comment provided by engineer. */
 "today.refresh" = "Actualitza";
@@ -3602,13 +3635,13 @@
 "ViewOn" = "Veure a %@";
 
 /* Explanation for warning alert why the microphone access required. */
-"voice.search.microphone.description.required" = "Permet l'accés al micròfon a la configuració del sistema iOS perquè Brave utilitzi la cerca per veu anònima.";
+"voice.search.microphone.description.required" = "Permet l'accés al micròfon a la configuració del sistema iOS perquè Express Browser utilitzi la cerca per veu anònima.";
 
 /* Title for warning alert microphone access is required. */
 "voice.search.microphone.title.required" = "Accés al micròfon requerit";
 
 /* Disclaimer for screen to search using voice. */
-"voice.search.screen.disclaimer" = "Brave no emmagatzema ni comparteix les teves cerques per veu.";
+"voice.search.screen.disclaimer" = "Express Browser no emmagatzema ni comparteix les teves cerques per veu.";
 
 /* The date your wallet was created */
 "WalletCreationDate" = "Data de creació de la cartera";

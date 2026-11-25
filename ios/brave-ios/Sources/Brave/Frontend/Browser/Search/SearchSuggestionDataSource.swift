@@ -70,6 +70,9 @@ class SearchSuggestionDataSource {
   }
 
   var braveSearchPromotionAvailable: Bool {
+    // Express Browser doesn't show the "Try Brave Search" banner.
+    return false
+
     guard Preferences.Review.launchCount.value > 1,
       searchEngines?.defaultEngine(forType: isPrivate ? .privateMode : .standard)?
         .shortName != OpenSearchEngine.EngineNames.brave,

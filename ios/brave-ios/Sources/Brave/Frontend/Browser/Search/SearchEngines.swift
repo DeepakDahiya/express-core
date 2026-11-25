@@ -162,9 +162,10 @@ public class SearchEngines {
   func setInitialDefaultEngine(_ engine: String) {
     // update engine
     DefaultEngineType.standard.option.value = engine
-    // set Brave Search as the DSE for private mode
+    // Express Browser: Google for private tabs too, as on Android
+    // (`search_engine_provider_util.cc`), where Brave sets Brave Search.
     DefaultEngineType.privateMode.option.value =
-      InitialSearchEngines.SearchEngineID.braveSearch.rawValue
+      InitialSearchEngines.SearchEngineID.google.rawValue
 
     let priorityEngine = initialSearchEngines.priorityEngine?.rawValue
     let defEngine = defaultEngine(forType: .standard)

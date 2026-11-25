@@ -19,15 +19,10 @@ import UIKit
 extension BrowserViewController {
 
   func presentOnboardingIntro() {
-    if Preferences.DebugFlag.skipOnboardingIntro == true { return }
-
-    // If locale is onboarding_region, start the new onboarding process
-    // This will be the case as long as new onboarding is active for JAPAN
-    if Locale.current.isNewOnboardingRegion {
-      presentFocusOnboarding()
-    } else {
-      presentOnboardingWelcomeScreen()
-    }
+    // Express Browser skips Brave's first-run screens, matching its Android app. Record
+    // onboarding as done (as `completeOnboarding` does) so later prompts behave normally.
+    Preferences.Onboarding.basicOnboardingCompleted.value = OnboardingState.completed.rawValue
+    Preferences.AppState.shouldDeferPromotedPurchase.value = false
   }
 
   // MARK: Welcome Onboarding - Regions except JAPAN

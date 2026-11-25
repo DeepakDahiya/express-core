@@ -130,16 +130,6 @@
 				</dict>
 				<dict>
 					<key>INEnumValueDisplayName</key>
-					<string>Brave Playlist</string>
-					<key>INEnumValueDisplayNameID</key>
-					<string>FGO5qW</string>
-					<key>INEnumValueIndex</key>
-					<integer>6</integer>
-					<key>INEnumValueName</key>
-					<string>playlist</string>
-				</dict>
-				<dict>
-					<key>INEnumValueDisplayName</key>
 					<string>Search</string>
 					<key>INEnumValueDisplayNameID</key>
 					<string>Y7TWy8</string>
@@ -150,16 +140,6 @@
 				</dict>
 				<dict>
 					<key>INEnumValueDisplayName</key>
-					<string>Brave Wallet</string>
-					<key>INEnumValueDisplayNameID</key>
-					<string>jXiFQY</string>
-					<key>INEnumValueIndex</key>
-					<integer>8</integer>
-					<key>INEnumValueName</key>
-					<string>wallet</string>
-				</dict>
-				<dict>
-					<key>INEnumValueDisplayName</key>
 					<string>Scan QR Code</string>
 					<key>INEnumValueDisplayNameID</key>
 					<string>qKrzyX</string>
@@ -167,26 +147,6 @@
 					<integer>9</integer>
 					<key>INEnumValueName</key>
 					<string>scanQRCode</string>
-				</dict>
-				<dict>
-					<key>INEnumValueDisplayName</key>
-					<string>Brave News</string>
-					<key>INEnumValueDisplayNameID</key>
-					<string>XCyA8c</string>
-					<key>INEnumValueIndex</key>
-					<integer>10</integer>
-					<key>INEnumValueName</key>
-					<string>braveNews</string>
-				</dict>
-				<dict>
-					<key>INEnumValueDisplayName</key>
-					<string>Leo AI</string>
-					<key>INEnumValueDisplayNameID</key>
-					<string>U0eRbw</string>
-					<key>INEnumValueIndex</key>
-					<integer>11</integer>
-					<key>INEnumValueName</key>
-					<string>braveLeo</string>
 				</dict>
 			</array>
 		</dict>
@@ -519,7 +479,7 @@
 					<key>INIntentParameterMetadata</key>
 					<dict>
 						<key>INIntentParameterMetadataDefaultValue</key>
-						<string>braveLeo</string>
+						<string>history</string>
 					</dict>
 					<key>INIntentParameterName</key>
 					<string>slot4</string>

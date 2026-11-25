@@ -2,7 +2,7 @@
 "focusOnboarding.continueButtonTitle" = "ดำเนินการต่อ";
 
 /* The subtitle of the screen that requests user to set Brave as default */
-"focusOnboarding.defaultBrowserScreenDescription" = "ตั้ง Brave เป็นเบราว์เซอร์เริ่มต้นของคุณวันนี้";
+"focusOnboarding.defaultBrowserScreenDescription" = "ตั้ง Express Browser เป็นเบราว์เซอร์เริ่มต้นของคุณวันนี้";
 
 /* The title of the screen that requests user to set Brave as default */
 "focusOnboarding.defaultBrowserScreenTitle" = "บล็อกโฆษณาทุกครั้งที่คุณเยี่ยมชมเว็บไซต์";
@@ -38,5 +38,5 @@
 "focusOnboarding.urlBarIndicatorDescription" = "เริ่มสตรีมและสนุกกับโฆษณา& และตัวติดตามที่น้อยลง";
 
 /* The title of the popup which points to URL Bar after onboarding */
-"focusOnboarding.urlBarIndicatorTitle" = "ดูความแตกต่างของ Brave";
+"focusOnboarding.urlBarIndicatorTitle" = "ดูความแตกต่างของ Express Browser";
 

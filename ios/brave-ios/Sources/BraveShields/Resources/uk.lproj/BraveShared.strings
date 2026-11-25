@@ -17,7 +17,7 @@
 "AntiAdBlockWarningDescription" = "Цей сайт почали блокувати деякі блокувальники реклами, тому він може працювати неналежним чином.";
 
 /* A descriptive message explaining to disable shields on this site. */
-"AntiAdBlockWarningDescription2" = "Щоб вирішити цю проблему, Brave може налаштувати Shields для вас. Після налаштування ви можете спробувати переглянути цей уміст у програвачі Brave.";
+"AntiAdBlockWarningDescription2" = "Щоб вирішити цю проблему, Express Browser може налаштувати Shields для вас. Після налаштування ви можете спробувати переглянути цей уміст у програвачі Brave.";
 
 /* A button that dismisses the warning and does nothing. */
 "AntiAdBlockWarningDismissButton" = "Зберегти поточні налаштування";
@@ -95,10 +95,10 @@
 "DomainBlockedGoBackAction" = "Перейти назад";
 
 /* A description in the warning page that appears when a page was blocked */
-"DomainBlockedPageDescription" = "Оскільки ви попросили агресивно блокувати стеження і рекламу, Brave блокує цей сайт перед його першим з’єднанням з мережею.";
+"DomainBlockedPageDescription" = "Оскільки ви попросили агресивно блокувати стеження і рекламу, Express Browser блокує цей сайт перед його першим з’єднанням з мережею.";
 
 /* A message in the warning page that appears when a page was blocked */
-"DomainBlockedPageMessage" = "Brave запобіг завантаженню наступного сайту:";
+"DomainBlockedPageMessage" = "Express Browser запобіг завантаженню наступного сайту:";
 
 /* A title in the warning page that appears when a page was blocked */
 "DomainBlockedPageTitle" = "Цей вебсайт може спробувати відстежити вас на інших вебсайтах";
@@ -110,7 +110,7 @@
 "DomainBlockedTitle" = "Домен заблоковано";
 
 /* A description of what the Enable GPC toggle does */
-"EnableGPCDescription" = "Забороніть сайтам продавати або передавати ваші дані. [Дізнатися більше] (https://support.brave.app/hc/en-us/articles/360017989132-How-do-I-change-my-Privacy-Settings#h_01HHFRRT6B5YTRREA4ZDARGTWM)";
+"EnableGPCDescription" = "Забороніть сайтам продавати або передавати ваші дані.";
 
 /* A label of the GPC toggle */
 "EnableGPCLabel" = "Увімкнути глобальні налаштування конфіденційності ";

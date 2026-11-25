@@ -69,7 +69,7 @@ var package = Package(
     .package(url: "https://github.com/siteline/SwiftUI-Introspect", from: "0.1.3"),
     .package(url: "https://github.com/apple/swift-algorithms", from: "1.0.0"),
     .package(url: "https://github.com/devxoul/Then", from: "2.7.0"),
-    .package(url: "https://github.com/mkrd/Swift-BigInt", from: "2.3.0"),
+    .package(url: "https://github.com/mkrd/Swift-BigInt", from: "2.4.0"),
     .package(url: "https://github.com/GuardianFirewall/GuardianConnect", exact: "2.0.1"),
     .package(url: "https://github.com/pointfreeco/swift-custom-dump", from: "0.6.0"),
     .package(
@@ -119,6 +119,7 @@ var package = Package(
         "Web",
         "BraveShields",
         "BraveTalk",
+        "ExpressCore",
       ],
       exclude: [
         "Frontend/UserContent/UserScripts/AllFrames",
@@ -201,6 +202,9 @@ var package = Package(
         .copy("Frontend/UserContent/UserScripts/Scripts_Dynamic/Scripts/Paged/gpc.js"),
         .copy(
           "Frontend/UserContent/UserScripts/Scripts_Dynamic/Scripts/Paged/MediaBackgroundingScript.js"
+        ),
+        .copy(
+          "Frontend/UserContent/UserScripts/Scripts_Dynamic/Scripts/Paged/ExpressYouTubeScript.js"
         ),
         .copy("Frontend/UserContent/UserScripts/Scripts_Dynamic/Scripts/Paged/PlaylistScript.js"),
         .copy(
@@ -487,6 +491,8 @@ var package = Package(
       plugins: ["LoggerPlugin"]
     ),
     .target(name: "Preferences", dependencies: ["Shared"], plugins: ["LoggerPlugin"]),
+    // Express Browser: networking, account and feed models for the Express backend.
+    .target(name: "ExpressCore", plugins: ["LoggerPlugin"]),
     .target(
       name: "Onboarding",
       dependencies: [

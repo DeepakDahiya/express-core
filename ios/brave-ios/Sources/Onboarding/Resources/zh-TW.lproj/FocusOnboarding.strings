@@ -2,7 +2,7 @@
 "focusOnboarding.continueButtonTitle" = "繼續";
 
 /* The subtitle of the screen that requests user to set Brave as default */
-"focusOnboarding.defaultBrowserScreenDescription" = "立即將 Brave 設為預設瀏覽器。";
+"focusOnboarding.defaultBrowserScreenDescription" = "立即將 Express Browser 設為預設瀏覽器。";
 
 /* The title of the screen that requests user to set Brave as default */
 "focusOnboarding.defaultBrowserScreenTitle" = "讓您前往的每個網站都有廣告攔截功能";
@@ -38,5 +38,5 @@
 "focusOnboarding.urlBarIndicatorDescription" = "開始串流，享受更少的廣告 & 追蹤器。";
 
 /* The title of the popup which points to URL Bar after onboarding */
-"focusOnboarding.urlBarIndicatorTitle" = "瞭解 Brave 的差異";
+"focusOnboarding.urlBarIndicatorTitle" = "瞭解 Express Browser 的差異";
 

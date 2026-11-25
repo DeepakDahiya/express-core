@@ -123,7 +123,9 @@ extension BrowserViewController: TabPolicyDecider {
     // Universal links do not work if the request originates from the app, manual handling is required.
     if let mainDocURL = request.mainDocumentURL,
       let universalLink = UniversalLinkManager.universalLinkType(for: mainDocURL, checkPath: true),
-      universalLink == .buyVPN
+      universalLink == .buyVPN,
+      // Express Browser hides Brave VPN, so these links load as ordinary pages.
+      profileController.profile.prefs.isBraveVPNAvailable
     {
       presentCorrespondingVPNViewController()
       return .cancel

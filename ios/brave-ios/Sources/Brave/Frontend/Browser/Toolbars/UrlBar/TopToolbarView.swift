@@ -44,6 +44,7 @@ protocol TopToolbarDelegate: AnyObject {
   func topToolbarDidTapWalletButton(_ urlBar: TopToolbarView)
   func topToolbarDidTapSecureContentState(_ urlBar: TopToolbarView)
   func topToolbarIsShieldsEnabled(_ topToolbar: TopToolbarView, for url: URL?) -> Bool
+  func topToolbarDidTapExpressAvatarButton(_ topToolbar: TopToolbarView)
 }
 
 class TopToolbarView: UIView, ToolbarProtocol {
@@ -54,6 +55,7 @@ class TopToolbarView: UIView, ToolbarProtocol {
     static let locationPadding: CGFloat = 8
     static let locationHeight: CGFloat = 44
     static let textFieldCornerRadius: CGFloat = 10
+    static let locationShadowOpacity: Float = 0.1
   }
 
   // MARK: URLBarButton
@@ -216,8 +218,15 @@ class TopToolbarView: UIView, ToolbarProtocol {
   lazy var actionButtons: [UIButton] = [
     shareButton, tabsButton, shortcutButton,
     forwardButton, backButton, menuButton,
-    shieldsButton, rewardsButton,
+    shieldsButton, rewardsButton, expressAvatarButton,
   ].compactMap { $0 }
+
+  /// The Express avatar (Android's `profile_button`) at the leading edge.
+  private(set) lazy var expressAvatarButton: ExpressAvatarToolbarButton = {
+    let button = ExpressAvatarToolbarButton()
+    button.addTarget(self, action: #selector(didTapExpressAvatarButton), for: .touchUpInside)
+    return button
+  }()
 
   private let mainStackView = UIStackView().then {
     $0.spacing = 8
@@ -281,7 +290,8 @@ class TopToolbarView: UIView, ToolbarProtocol {
 
   private(set) lazy var shieldsButton: ToolbarButton = {
     let button = ToolbarButton()
-    button.setImage(UIImage(sharedNamed: "brave.logo"), for: .normal)
+    // Express Browser shows a neutral shield instead of the Brave logo.
+    button.setImage(UIImage(braveSystemNamed: "leo.shield.done"), for: .normal)
     button.addTarget(self, action: #selector(didTapBraveShieldsButton), for: .touchUpInside)
     button.imageView?.contentMode = .scaleAspectFit
     button.accessibilityLabel = Strings.bravePanel
@@ -289,6 +299,9 @@ class TopToolbarView: UIView, ToolbarProtocol {
     button.accessibilityIdentifier = "urlBar-shieldsButton"
     button.contentHorizontalAlignment = .fill
     button.contentVerticalAlignment = .fill
+    // Express Browser: the trust marker in the URL bar took its place (Android removes it too);
+    // Shields stay reachable from the trust sheet's Advanced Controls and Settings.
+    button.isHidden = true
     return button
   }()
 
@@ -338,7 +351,7 @@ class TopToolbarView: UIView, ToolbarProtocol {
     $0.layer.shadowOffset = .init(width: 0, height: 1)
     $0.layer.shadowRadius = 2
     $0.layer.shadowColor = UIColor.black.cgColor
-    $0.layer.shadowOpacity = 0.1
+    $0.layer.shadowOpacity = UX.locationShadowOpacity
   }
 
   // The location container has a second shadow but we can't apply 2 shadows in UIKit, so adding a second view
@@ -351,6 +364,42 @@ class TopToolbarView: UIView, ToolbarProtocol {
   }
 
   private var speechRecognizer: SpeechRecognizer
+
+  // MARK: Express new tab page
+
+  /// Express: how far the address field has taken over from the new tab page header's search
+  /// box (Android `BraveNewTabPageLayout.getToolbarTransitionPercentage`). At 0 the field is
+  /// hidden and the bar takes the feed's colour (its buttons stay); it fades back as this
+  /// reaches 1. `nil` away from the new tab page. Editing always shows the normal bar.
+  var expressNTPTransition: CGFloat? {
+    didSet {
+      if oldValue != expressNTPTransition { updateExpressNTPAppearance() }
+    }
+  }
+
+  /// The feed's colour behind the bar's items while the header's search box stands in for the
+  /// address field (Android shows the new tab page through its see-through toolbar).
+  private let expressNTPBackdrop = UIView().then {
+    $0.backgroundColor = ExpressColors.feedBackground
+    $0.isUserInteractionEnabled = false
+    $0.alpha = 0
+  }
+
+  /// How much of the normal bar shows: the field, its shadows and the bar's own colour.
+  private var expressNTPFieldVisibility: CGFloat {
+    inOverlayMode ? 1 : min(1, max(0, expressNTPTransition ?? 1))
+  }
+
+  private func updateExpressNTPAppearance() {
+    let visibility = expressNTPFieldVisibility
+    expressNTPBackdrop.alpha = 1 - visibility
+    locationView.alpha = visibility
+    secondLocationShadowView.alpha = visibility
+    locationContainer.layer.shadowOpacity = UX.locationShadowOpacity * Float(visibility)
+    // A hidden field isn't tapped or read out; the header's box stands in for it.
+    locationView.isUserInteractionEnabled = visibility > 0
+    locationView.accessibilityElementsHidden = visibility == 0
+  }
 
   // MARK: Lifecycle
 
@@ -365,6 +414,10 @@ class TopToolbarView: UIView, ToolbarProtocol {
 
     [scrollToTopButton, tabsButton, cancelButton].forEach(addSubview(_:))
     addSubview(mainStackView)
+    insertSubview(expressNTPBackdrop, at: 0)
+    expressNTPBackdrop.snp.makeConstraints {
+      $0.edges.equalToSuperview()
+    }
 
     helper = ToolbarHelper(toolbar: self)
 
@@ -402,8 +455,8 @@ class TopToolbarView: UIView, ToolbarProtocol {
     shieldsRewardsStack.addArrangedSubview(rewardsButton)
 
     [
-      leadingItemsStackView, locationContainer, shieldsRewardsStack, trailingItemsStackView,
-      cancelButton,
+      expressAvatarButton, leadingItemsStackView, locationContainer, shieldsRewardsStack,
+      trailingItemsStackView, cancelButton,
     ].forEach {
       mainStackView.addArrangedSubview($0)
     }
@@ -810,7 +863,8 @@ class TopToolbarView: UIView, ToolbarProtocol {
     shareButton.stackViewAnimationSafeIsHidden = toolbarIsShowing || inOverlayMode
     trailingItemsStackView.stackViewAnimationSafeIsHidden = toolbarIsShowing || inOverlayMode
     locationView.contentView.stackViewAnimationSafeIsHidden = inOverlayMode
-    shieldsRewardsStack.stackViewAnimationSafeIsHidden = inOverlayMode
+    refreshShieldsRewardsVisibility()
+    expressAvatarButton.stackViewAnimationSafeIsHidden = inOverlayMode
 
     let selectedShortcut: WidgetShortcut? = Preferences.General.toolbarShortcutButton.value.flatMap(
       WidgetShortcut.init
@@ -824,6 +878,14 @@ class TopToolbarView: UIView, ToolbarProtocol {
       .allSatisfy(\.isHidden)
   }
 
+  /// Express hides the Shields button (the trust marker replaced it) and Rewards. With both
+  /// hidden the stack still took the row's spare width (about 80 pt beside the address field),
+  /// so it's hidden too. Call again when either button's visibility changes.
+  func refreshShieldsRewardsVisibility() {
+    shieldsRewardsStack.stackViewAnimationSafeIsHidden =
+      inOverlayMode || shieldsRewardsStack.arrangedSubviews.allSatisfy(\.isHidden)
+  }
+
   private func animateToOverlayState(overlayMode overlay: Bool, didCancel cancel: Bool = false) {
     inOverlayMode = overlay
 
@@ -834,7 +896,7 @@ class TopToolbarView: UIView, ToolbarProtocol {
     if inOverlayMode {
       [
         leadingItemsStackView, shortcutButton, shieldsRewardsStack, trailingItemsStackView,
-        locationView.contentView,
+        locationView.contentView, expressAvatarButton,
       ].forEach {
         $0?.isHidden = true
       }
@@ -845,6 +907,20 @@ class TopToolbarView: UIView, ToolbarProtocol {
     }
 
     layoutIfNeeded()
+
+    // On the new tab page the field shows at once as editing starts (the text field appears
+    // with it) and fades back out when editing ends.
+    if !overlay, let transition = expressNTPTransition, transition < 1 {
+      UIView.animate(
+        withDuration: 0.2,
+        delay: 0,
+        options: [.beginFromCurrentState, .allowUserInteraction]
+      ) {
+        self.updateExpressNTPAppearance()
+      }
+    } else {
+      updateExpressNTPAppearance()
+    }
   }
 
   private func updateLocationBarRightView(showToolbarActions: Bool) {
@@ -867,23 +943,24 @@ class TopToolbarView: UIView, ToolbarProtocol {
 
   /// Update the shields icon based on whether or not shields are enabled for this site
   func refreshShieldsStatus() {
-    // Default on
-    var shieldIcon = "brave.logo"
-    let shieldsOffIcon = "brave.logo.greyscale"
+    // Default on. Express Browser shows a neutral shield instead of the Brave logo,
+    // dimmed when shields are off (Brave used a greyscale logo for that).
+    var isShieldsOn = true
     if let currentURL = currentURL, currentURL.isWebPage(includeDataURIs: false) {
       let isShieldsEnabled =
         delegate?.topToolbarIsShieldsEnabled(self, for: currentURL) ?? true
       if !isShieldsEnabled {
-        shieldIcon = shieldsOffIcon
+        isShieldsOn = false
       }
       if currentURL.isLocal || currentURL.isLocalUtility {
-        shieldIcon = shieldsOffIcon
+        isShieldsOn = false
       }
     } else {
-      shieldIcon = shieldsOffIcon
+      isShieldsOn = false
     }
 
-    shieldsButton.setImage(UIImage(sharedNamed: shieldIcon), for: .normal)
+    shieldsButton.setImage(UIImage(braveSystemNamed: "leo.shield.done"), for: .normal)
+    shieldsButton.alpha = isShieldsOn ? 1 : 0.4
   }
 
   // MARK: Actions
@@ -929,6 +1006,10 @@ class TopToolbarView: UIView, ToolbarProtocol {
 
   @objc private func didTapBraveRewardsButton() {
     delegate?.topToolbarDidTapBraveRewardsButton(self)
+  }
+
+  @objc private func didTapExpressAvatarButton() {
+    delegate?.topToolbarDidTapExpressAvatarButton(self)
   }
 }
 

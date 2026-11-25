@@ -2,7 +2,7 @@
 "focusOnboarding.continueButtonTitle" = "Продовжити";
 
 /* The subtitle of the screen that requests user to set Brave as default */
-"focusOnboarding.defaultBrowserScreenDescription" = "Зробити Brave браузером за умовчанням.";
+"focusOnboarding.defaultBrowserScreenDescription" = "Зробити Express Browser браузером за умовчанням.";
 
 /* The title of the screen that requests user to set Brave as default */
 "focusOnboarding.defaultBrowserScreenTitle" = "Отримуйте блокування реклами на кожному сайті, який ви відвідуєте";
@@ -38,5 +38,5 @@
 "focusOnboarding.urlBarIndicatorDescription" = "Починайте трансляції та насолоджуйтеся меншою кількістю реклами та трекерів.";
 
 /* The title of the popup which points to URL Bar after onboarding */
-"focusOnboarding.urlBarIndicatorTitle" = "Переконайтеся в перевагах Brave";
+"focusOnboarding.urlBarIndicatorTitle" = "Переконайтеся в перевагах Express Browser";
 

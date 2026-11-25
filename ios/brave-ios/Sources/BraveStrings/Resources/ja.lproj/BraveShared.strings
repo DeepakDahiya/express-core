@@ -2,7 +2,7 @@
 "About" = "企業情報";
 
 /* The title of the screen explaining Brave Shields */
-"AboutBraveShields" = "Brave Shieldについて";
+"AboutBraveShields" = "Shieldについて";
 
 /* The body of the screen explaining Brave Shields */
 "AboutBraveShieldsBody" = "多くのサイトには、お客様とお客様のデバイスを識別するためのクッキーやスクリプトが含まれています。これによってインターネット上のいたる所であなたを特定・追跡し、行動データを収集しようとしています。\n\nBraveはそういったものをブロックするので、あなたが追跡されることなくブラウジングすることが可能になります。";
@@ -11,7 +11,7 @@
 "AccessPhotoDeniedAlertMessage" = "カメラロールに画像を保存します。";
 
 /* See http://mzl.la/1G7uHo7 */
-"AccessPhotoDeniedAlertTitle" = "Brave が写真にアクセスしようとしています";
+"AccessPhotoDeniedAlertTitle" = "Express Browser が写真にアクセスしようとしています";
 
 /* Label to display in the Discoverability overlay for keyboard shortcuts */
 "addBookmarkTitle" = "ブックマーク追加";
@@ -44,7 +44,7 @@
 "AlwaysShow" = "オン";
 
 /* Touch ID or PIN entry prompt subtitle when accessing Brave with the Browser Lock feature enabled */
-"AuthenticationLoginsTouchReason" = "これによりBraveへのアクセスを認証します";
+"AuthenticationLoginsTouchReason" = "これによりExpress Browserへのアクセスを認証します";
 
 /* Label for Cancel button */
 "AuthPromptAlertCancelButtonTitle" = "キャンセル";
@@ -176,7 +176,7 @@
 "BraveShieldsAdvancedControls" = "詳細設定";
 
 /* No comment provided by engineer. */
-"BraveShieldsAndPrivacy" = "Brave Shieldsとプライバシー";
+"BraveShieldsAndPrivacy" = "Shieldsとプライバシー";
 
 /* No comment provided by engineer. */
 "BraveShieldsAndPrivacyTitle" = "Shieldsとプライバシー";
@@ -203,7 +203,7 @@
 "BraveShieldsSiteBroken" = "もしサイトに正しく表示されていない場合は、Shieldをオフにしてみてください";
 
 /* Context: 'Brave Shields Up' or 'Brave Shields Down' */
-"BraveShieldsStatusTitle" = "Brave Shields";
+"BraveShieldsStatusTitle" = "Shields";
 
 /* Context: The 'Down' in 'Brave Shields Down' */
 "BraveShieldsStatusValueDown" = "オフ";
@@ -212,7 +212,7 @@
 "BraveShieldsStatusValueUp" = "オン";
 
 /* The accessibility hint spoken when focused on the main shields toggle */
-"BraveShieldsToggleHint" = "ダブルタップでBrave Shieldを切り替える";
+"BraveShieldsToggleHint" = "ダブルタップでShieldを切り替える";
 
 /* The name of the feature */
 "bravetalk.braveTalkTitle" = "Brave Talk";
@@ -227,13 +227,13 @@
 "BraveTranslate.searchInputTitle" = "検索";
 
 /* This text is for the settings menu for all Brave-Translate options. */
-"BraveTranslate.settingsMenuTitle" = "Brave翻訳";
+"BraveTranslate.settingsMenuTitle" = "翻訳";
 
 /* This text is for the translate settings screen. It's the title of the settings menu. */
-"BraveTranslate.settingsScreenTitle" = "Brave翻訳";
+"BraveTranslate.settingsScreenTitle" = "翻訳";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
-"BraveTranslate.settingsTranslateEnabledOptionDescription" = "有効にすると、Brave翻訳が自動的にページの言語を検出し、URLバーに翻訳ボタンを表示します。";
+"BraveTranslate.settingsTranslateEnabledOptionDescription" = "有効にすると、Express Browserが自動的にページの言語を検出し、URLバーに翻訳ボタンを表示します。";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
 "BraveTranslate.settingsTranslateEnabledOptionTitle" = "翻訳を有効にしました";
@@ -248,7 +248,7 @@
 "BrowserLock" = "ブラウザのロック";
 
 /* Description for setting to enable the browser lock privacy feature */
-"BrowserLockDescription" = "BraveをTouch ID、Face ID、システムパスコードでロック解除する";
+"BrowserLockDescription" = "Express BrowserをTouch ID、Face ID、システムパスコードでロック解除する";
 
 /* Settings item for clearing browsing history */
 "BrowsingHistory" = "閲覧履歴";
@@ -263,13 +263,13 @@
 "callout.bottomBarCalloutDescription" = "アドレスバー、タブ、ブックマーク、その他のツールをブラウザの下部に移動します。";
 
 /* Title for Bottom Bar Callout View */
-"callout.bottomBarCalloutTitle" = "Braveタブバーをカスタマイズする";
+"callout.bottomBarCalloutTitle" = "Express Browserタブバーをカスタマイズする";
 
 /* Description - Description used for main button in Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutButtonDescription" = "Braveをデフォルトのブラウザに設定しますか？";
+"callout.defaultBrowserCalloutButtonDescription" = "Express Browserをデフォルトのブラウザに設定しますか？";
 
 /* Subtitle - Description for Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutDescription" = "Braveをデフォルトに設定すると、すべてのリンクをBraveのプライバシー保護により開くことができます。";
+"callout.defaultBrowserCalloutDescription" = "Express Browserをデフォルトに設定すると、すべてのリンクをExpress Browserのプライバシー保護により開くことができます。";
 
 /* Title for main button in Default Browser Full Screen Callout */
 "callout.defaultBrowserCalloutPrimaryButtonTitle" = "デフォルトに設定する";
@@ -596,25 +596,25 @@
 "defaultBrowserCallout.introOpenSettingsButtonText" = "設定を開く";
 
 /* Primary text on default browser popup screen */
-"defaultBrowserCallout.introPrimaryText" = "プライバシーを保護するためすべてのリンクをBraveで開く";
+"defaultBrowserCallout.introPrimaryText" = "プライバシーを保護するためすべてのリンクをExpress Browserで開く";
 
 /* Secondary text on default browser popup. */
-"defaultBrowserCallout.introSecondaryText" = "Brave Shieldsはすべてのサイトでトラッカーと広告をブロックし、データ通信量と時間を節約します。";
+"defaultBrowserCallout.introSecondaryText" = "Shieldsはすべてのサイトでトラッカーと広告をブロックし、データ通信量と時間を節約します。";
 
 /* Tertiary text on default browser popup screen */
-"defaultBrowserCallout.introTertiaryText" = "アプリ設定画面で、「デフォルトのブラウザApp」をタップし、Braveを選択してください。";
+"defaultBrowserCallout.introTertiaryText" = "アプリ設定画面で、「デフォルトのブラウザApp」をタップし、Express Browserを選択してください。";
 
 /* Notification body to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationBody" = "Brave をデフォルト ブラウザに設定する";
+"defaultBrowserCallout.notificationBody" = "Express Browser をデフォルト ブラウザに設定する";
 
 /* Notification title to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationTitle" = "Braveですべてのリンクを保護しましょう";
+"defaultBrowserCallout.notificationTitle" = "Express Browserですべてのリンクを保護しましょう";
 
 /* No comment provided by engineer. */
 "defaultBrowserCalloutCloseAccesabilityLabel" = "デフォルトブラウザの設定メッセージを閉じる";
 
 /* Name for default Brave theme. */
-"defaultThemeName" = "Brave デフォルト";
+"defaultThemeName" = "Express Browser デフォルト";
 
 /* No comment provided by engineer. */
 "Delete" = "削除";
@@ -719,7 +719,7 @@
 "ErrorPageReloadButtonTitle" = "再読み込み";
 
 /* Additional warning text when clicking the Advanced button on error pages. %@ is a placeholder, do not localize it. Do not localize <br />. */
-"ErrorPagesAdvancedErrorPinningDetails" = "%1$@は通常、情報を保護するために暗号化を使用します。今回、Braveが%2$@に接続を試みた際、ウェブサイトから通常とは異なる不正な認証情報が返されました。これは、攻撃者が%3$@になりすまそうとしているときや、Wi-Fiサインイン画面により接続が中断したときに起こる可能性があります。Braveはデータが交換される前に接続を停止したため、お客様の情報はまだ安全です。<br />ウェブサイトは証明書のピン留めを使用しているため、現時点では%4$@にアクセスすることはできません。ネットワークエラーや攻撃は通常一時的なものなので、しばらくするとページの機能は回復します。";
+"ErrorPagesAdvancedErrorPinningDetails" = "%1$@は通常、情報を保護するために暗号化を使用します。今回、Express Browserが%2$@に接続を試みた際、ウェブサイトから通常とは異なる不正な認証情報が返されました。これは、攻撃者が%3$@になりすまそうとしているときや、Wi-Fiサインイン画面により接続が中断したときに起こる可能性があります。Express Browserはデータが交換される前に接続を停止したため、お客様の情報はまだ安全です。<br />ウェブサイトは証明書のピン留めを使用しているため、現時点では%4$@にアクセスすることはできません。ネットワークエラーや攻撃は通常一時的なものなので、しばらくするとページの機能は回復します。";
 
 /* Additional warning text when clicking the Advanced button on error pages */
 "ErrorPagesAdvancedWarningDetails" = "このサーバーは、%@ であることを証明できませんでした。セキュリティ証明書があなたのデバイスのオペレーションシステムによって信頼されていません。これは、設定の間違いか、あなたの接続に介入しようとする攻撃者によって生じている可能性があります。";
@@ -759,6 +759,39 @@
 
 /* Button label to temporarily continue to the site from the certificate error page */
 "ErrorPagesProceedAnywayButton" = "%@ （安全ではありません）に進む";
+
+/* Link on the private new tab page to a page about private mode. */
+"expressPrivateNTP.learnMore" = "詳細";
+
+/* Bullet point: data that private mode doesn't save. Data that websites save on the device, such as sign-in state. */
+"expressPrivateNTP.notSavedCookies" = "Cookie とサイトデータ";
+
+/* Bullet point: data that private mode doesn't save. Names, addresses, passwords etc. that people enter into forms on the web. */
+"expressPrivateNTP.notSavedForms" = "フォームに入力した情報";
+
+/* Introduces a bulleted list of data that private mode doesn't save. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.notSavedHeader" = "Express Browser には、次の情報は<em>保存されません</em>。";
+
+/* Bullet point: data that private mode doesn't save. 'Browsing history' is the history of visited websites. */
+"expressPrivateNTP.notSavedHistory" = "閲覧履歴";
+
+/* Subtitle of the private new tab page, under its title. */
+"expressPrivateNTP.subtitle" = "あなたのアクティビティはこのデバイスを使用する他のユーザーに表示されないため、プライバシーを守りながらブラウジングできます。アクセスしたウェブサイトと、そのウェブサイトが使用するサービス（Express Browser を含む）のデータ収集方法は変更されません。ダウンロードしたファイルとブックマークは保存されます。";
+
+/* Title of the private new tab page. Private mode hides your browsing from other people using the same device; it does not make you anonymous. */
+"expressPrivateNTP.title" = "プライベートモードです";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleEmployer" = "雇用主または学校";
+
+/* Introduces a bulleted list of who might still see what the user does in private mode. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.visibleHeader" = "ただし、次の相手に<em>あなたのアクティビティが知られる</em>可能性はあります。";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleProvider" = "ご利用のインターネット サービス プロバイダ";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleWebsites" = "訪問先のウェブサイト";
 
 /* %@ will launch an external application */
 "ExternalAppURLAlertMessage" = "%@ は他のアプリケーションを起動します";
@@ -1187,13 +1220,13 @@
 "OBSearchEngineDetail" = "デフォルトの検索エンジンを設定する";
 
 /* Title for search engine onboarding screen */
-"OBSearchEngineTitle" = "Braveブラウザにようこそ！";
+"OBSearchEngineTitle" = "Express Browserにようこそ！";
 
 /* Detail text for shields onboarding screen */
 "OBShieldsDetail" = "プライバシーを侵害するトラッカーをブロックすることで、インターネット上でつきまとわれずにブラウジングすることができます。";
 
 /* Title for shields onboarding screen */
-"OBShieldsTitle" = "Brave Shields";
+"OBShieldsTitle" = "Shields";
 
 /* Button to show the Brave Rewards Ads. */
 "OBShowMeButton" = "表示する";
@@ -1205,10 +1238,10 @@
 "onboarding.blockedAdsOnboardingBigTechInformationText" = "%1$@、その他%2$lldの広告とトラッカーをブロックしました";
 
 /* The footnote indicating what Brave shields is blocking */
-"onboarding.blockedAdsOnboardingFootnoteText" = "BraveのShieldによりあらゆるページでブロックされたすべての不要なアイテムを確認。";
+"onboarding.blockedAdsOnboardingFootnoteText" = "Express BrowserのShieldによりあらゆるページでブロックされたすべての不要なアイテムを確認。";
 
 /* The text describing user where they should press in order to open Shield panel */
-"onboarding.blockedAdsOnboardingInstructionsText" = "Brave Shieldを表示するにはタップ";
+"onboarding.blockedAdsOnboardingInstructionsText" = "Shieldを表示するにはタップ";
 
 /* The description text shown when there is no big tech tracker among trackers. Example usage: 31 Ads & trackers blocked. The number here is presented separately so it is not in translation. */
 "onboarding.blockedAdsOnboardingNoBigTechInformationText" = "個の広告 & トラッカーをブロックしました";
@@ -1232,13 +1265,13 @@
 "onboarding.ntpOnboardingPopOverTrackerDescription" = "トラッカーと広告をブロックすることで、ウェブサイトが使用するデータ通信量が減少し、より速く読み込むことができます。";
 
 /* Description for the Omnibox (URL Bar) pop-over that describes faster load times. */
-"onboarding.omniboxOnboardingPopOverDescription" = "Braveの違いを実感:\n広告もトラッカーもなし。高速でページを読み込み。";
+"onboarding.omniboxOnboardingPopOverDescription" = "Express Browserの違いを実感:\n広告もトラッカーもなし。高速でページを読み込み。";
 
 /* Title for the Omnibox (URL Bar) pop-over that describes faster load times. */
 "onboarding.omniboxOnboardingPopOverTitle" = "ウェブサイト名またはURLを入力";
 
 /* Title for Welcome Screen in Onboarding */
-"onboarding.welcomeScreenTitle" = "Braveへようこそ";
+"onboarding.welcomeScreenTitle" = "Express Browserへようこそ";
 
 /* Continue button to navigate to next onboarding screen. */
 "OnboardingContinueButton" = "続ける";
@@ -1280,7 +1313,7 @@
 "OpenMobileConfigurationAlertTitle" = "利用可能な設定プロファイルがあります";
 
 /* Context menu option for opening a link in a new private tab */
-"OpenNewPrivateTabButtonTitle" = "新しいプライベートタブで開く";
+"OpenNewPrivateTabButtonTitle" = "プライベートタブで開きます";
 
 /* Context menu item for opening a link in a new tab */
 "OpenNewTabButtonTitle" = "新しいタブで開く";
@@ -1487,7 +1520,7 @@
 "PersistentPrivateBrowsing" = "プライベートブラウジングモードを継続";
 
 /* Persistent private browsing alert message to existing users */
-"PersistentPrivateBrowsingAlertMessage" = "アプリを終了 / 再開した場合でも、Braveがプライベートブラウジングタブを復元できるようにします";
+"PersistentPrivateBrowsingAlertMessage" = "アプリを終了 / 再開した場合でも、Express Browserがプライベートブラウジングタブを復元できるようにします";
 
 /* Persistent private browsing alert title to existing users */
 "PersistentPrivateBrowsingAlertTitle" = "プライベートタブを復元";
@@ -1931,7 +1964,7 @@
 "privacyHub.lastWeekHeader" = "先週";
 
 /* Do NOT localize asterisk('*') characters, they are used to make the text bold in the app. It says which tracker was blocked on how many websites, example usage: 'Google Analytics was blocked by Brave Shields on 42 sites' */
-"privacyHub.mostFrequentTrackerAndAdBody" = "Brave Shieldsにより、**%1$@** が **%2$lld** 件のサイトでブロックされました";
+"privacyHub.mostFrequentTrackerAndAdBody" = "Shieldsにより、**%1$@** が **%2$lld** 件のサイトでブロックされました";
 
 /* Title under which we display a tracker which was most frequently detected by our ad blocking mechanism. */
 "privacyHub.mostFrequentTrackerAndAdTitle" = "最も検出頻度の高いトラッカーと広告";
@@ -1949,7 +1982,7 @@
 "privacyHub.notificationCalloutButtonText" = "通知を有効にする";
 
 /* Message of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
-"privacyHub.notificationMessage" = "Braveにより保護されたオンライン活動のまとめをお届けします。";
+"privacyHub.notificationMessage" = "Express Browserにより保護されたオンライン活動のまとめをお届けします。";
 
 /* Title of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
 "privacyHub.notificationTitle" = "週次プライバシーレポート";
@@ -2039,10 +2072,10 @@
 "PrivateBrowsingOnlyWarning" = "プライベートブラウジングのみモードでは、現在のタブがすべて閉じられ、すべてのサイトからログアウトされます。";
 
 /* Private tab details */
-"PrivateTabBody" = "プライベートタブはBraveに保存されませんが、オンライン上で匿名になるわけではありません。プライベートタブで訪問したサイトは、履歴には表示されず、そのサイトを閉じるとCookieは常に消滅し、Braveにはその痕跡が残りません。ただし、ダウンロードは保存されます。\nプライベートタブを利用していても、携帯電話会社（または接続しているWi-FiネットワークやVPNの所有者）は、あなたがどのサイトを訪れたかを知ることができ、それらのサイトはあなたの公開IPアドレスを知ることができます。";
+"PrivateTabBody" = "プライベートタブはExpress Browserに保存されませんが、オンライン上で匿名になるわけではありません。プライベートタブで訪問したサイトは、履歴には表示されず、そのサイトを閉じるとCookieは常に消滅し、Express Browserにはその痕跡が残りません。ただし、ダウンロードは保存されます。\nプライベートタブを利用していても、携帯電話会社（または接続しているWi-FiネットワークやVPNの所有者）は、あなたがどのサイトを訪れたかを知ることができ、それらのサイトはあなたの公開IPアドレスを知ることができます。";
 
 /* Private tab detail text */
-"PrivateTabDetails" = "プライベートタブを使うと、Braveがあなたのデバイス上で行うことが変わるだけで、他の人の行動が変わることはありません。\n\nお客様がサイトにアクセスすると、サイトは常にお客様のIPアドレスを取得します。このIPアドレスから、多くの場合、あなたがどこにいるか（通常は都市）を推測することができます。推測される場所は、より具体的な場合もあります。また、サイトは、検索キーワードなど、あなたが具体的に伝えたこともすべて把握しています。サイトにログインすると、あなたがそのアカウントの所有者であることがわかります。プライベートタブを閉じても、ログイン状態を維持するCookieがBraveによって破棄されるため、ログアウトされたままになります。\n\nあなたがインターネットに接続することを可能にしている人（あなたのISP）は、お客様のネットワーク活動をすべて見ることができます。多くの場合、これはあなたの携帯電話会社です。Wi-Fiネットワークに接続している場合は、そのネットワークの所有者であり、VPNを使用している場合は、そのVPNを運営している会社となります。あなたのISPは、あなたがどのサイトを訪れたかを見ることができます。それらのサイトがHTTPSを使用している場合、ISPはあなたがそのサイトで何をしているかについて、経験則に基づく推測以上のことはできません。しかし、サイトが HTTP のみを使用している場合、ISP は、あなたの検索用語、どのページを読んだか、どのリンクを辿ったかなど、すべてを見ることができます。\n\n雇用主があなたのデバイスを管理している場合は、あなたがそのデバイスで何をしているかを追跡しているかもしれません。プライベートタブを使用しても、あなたがどのサイトにアクセスしたかを雇用主に知られないようにすることはできないかもしれません。また、あなたのデバイスにアクセスできる誰かが、あなたの行動を監視するソフトウェアをインストールしている可能性もあり、プライベートタブを使用してもそうしたソフトウェアからあなたを保護することはできません。\n\n";
+"PrivateTabDetails" = "プライベートタブを使うと、Express Browserがあなたのデバイス上で行うことが変わるだけで、他の人の行動が変わることはありません。\n\nお客様がサイトにアクセスすると、サイトは常にお客様のIPアドレスを取得します。このIPアドレスから、多くの場合、あなたがどこにいるか（通常は都市）を推測することができます。推測される場所は、より具体的な場合もあります。また、サイトは、検索キーワードなど、あなたが具体的に伝えたこともすべて把握しています。サイトにログインすると、あなたがそのアカウントの所有者であることがわかります。プライベートタブを閉じても、ログイン状態を維持するCookieがExpress Browserによって破棄されるため、ログアウトされたままになります。\n\nあなたがインターネットに接続することを可能にしている人（あなたのISP）は、お客様のネットワーク活動をすべて見ることができます。多くの場合、これはあなたの携帯電話会社です。Wi-Fiネットワークに接続している場合は、そのネットワークの所有者であり、VPNを使用している場合は、そのVPNを運営している会社となります。あなたのISPは、あなたがどのサイトを訪れたかを見ることができます。それらのサイトがHTTPSを使用している場合、ISPはあなたがそのサイトで何をしているかについて、経験則に基づく推測以上のことはできません。しかし、サイトが HTTP のみを使用している場合、ISP は、あなたの検索用語、どのページを読んだか、どのリンクを辿ったかなど、すべてを見ることができます。\n\n雇用主があなたのデバイスを管理している場合は、あなたがそのデバイスで何をしているかを追跡しているかもしれません。プライベートタブを使用しても、あなたがどのサイトにアクセスしたかを雇用主に知られないようにすることはできないかもしれません。また、あなたのデバイスにアクセスできる誰かが、あなたの行動を監視するソフトウェアをインストールしている可能性もあり、プライベートタブを使用してもそうしたソフトウェアからあなたを保護することはできません。\n\n";
 
 /* Private tab information link */
 "PrivateTabLink" = "プライベートタブについて";
@@ -2054,7 +2087,7 @@
 "QuickSearchEngines" = "クイック検索エンジン";
 
 /* Open the App Store to rate Brave. */
-"RateBrave" = "Braveを評価する";
+"RateBrave" = "Express Browserを評価する";
 
 /* Accessibility label for button increasing font size in display settings of reader mode */
 "ReaderModeBiggerFontButtonAccessibilityLabel" = "テキストサイズを大きくする";
@@ -2243,10 +2276,10 @@
 "RestoreTabNegativeButtonTitle" = "いいえ";
 
 /* Restore Tabs Prompt Description */
-"RestoreTabOnCrashAlertMessage" = "Braveで問題が発生したか、適切に終了しませんでした。\nタブを復元しますか？";
+"RestoreTabOnCrashAlertMessage" = "Express Browserで問題が発生したか、適切に終了しませんでした。\nタブを復元しますか？";
 
 /* Restore Tabs Prompt Title */
-"RestoreTabOnCrashAlertTitle" = "Braveが予期せず終了しました。";
+"RestoreTabOnCrashAlertTitle" = "Express Browserが予期せず終了しました。";
 
 /* Body for Brave Talk rewards opt-in screen */
 "rewards.braveTalkRewardsOptInBody" = "Brave Rewardsにより、あなたはBrave Adsネットワークから提供される、プライバシーを保護した形の広告を閲覧することができます。トラッキングも、読み込み遅延もありません。あなたのデータが外部に漏れることもありません。";
@@ -2573,7 +2606,7 @@
 "searchSuggestionsSubtitle" = "検索候補を有効にしますか？";
 
 /* Title of an action that allows user to perform a one-click web search for selected text */
-"SearchWithBrave" = "Braveで検索";
+"SearchWithBrave" = "Express Browserで検索";
 
 /* Settings security section title */
 "Security" = "セキュリティ";
@@ -2582,16 +2615,16 @@
 "sendButtonTitle" = "送信";
 
 /* Message displayed in the crash dialog above the buttons used to select when sending reports */
-"SendCrashReportAlertMessage" = "Braveが問題を解決できるようにクラッシュレポートを送信しますか？";
+"SendCrashReportAlertMessage" = "Express Browserが問題を解決できるようにクラッシュレポートを送信しますか？";
 
 /* Title for prompt displayed to user after the app crashes */
-"SendCrashReportAlertTitle" = "申し訳ございません。Brave がクラッシュしました";
+"SendCrashReportAlertTitle" = "申し訳ございません。Express Browser がクラッシュしました";
 
 /* Used as a button label for crash dialog prompt */
 "SendReportButtonTitle" = "レポートを送信";
 
 /* No comment provided by engineer. */
-"setDefaultBrowserCalloutTitle" = "Braveをデフォルトのブラウザに設定できるようになりました。こちらをタップして設定を開始しましょう。";
+"setDefaultBrowserCalloutTitle" = "Express Browserをデフォルトのブラウザに設定できるようになりました。こちらをタップして設定を開始しましょう。";
 
 /* Settings item to set the Brave as a default browser on the iOS device. */
 "setDefaultBrowserSettingsCell" = "デフォルトブラウザに設定する";
@@ -2615,7 +2648,7 @@
 "settings.autocloseTabsSetting" = "タブを閉じる";
 
 /* Description of autoclose tabs feature. */
-"settings.autocloseTabsSettingFooter" = "しばらく見ていないタブをBraveが自動で閉じることを許可します。";
+"settings.autocloseTabsSettingFooter" = "しばらく見ていないタブをExpress Browserが自動で閉じることを許可します。";
 
 /* Label for the navigation link to quality settings view */
 "settings.highestQualityPlayback" = "高品質再生";
@@ -2630,7 +2663,7 @@
 "settings.media.rootSetting" = "メディア";
 
 /* A toggle label which lets the user always open YouTube urls in Brave */
-"settings.openYouTubeInBrave" = "BraveでYouTubeリンクを開く";
+"settings.openYouTubeInBrave" = "Express BrowserでYouTubeリンクを開く";
 
 /* No comment provided by engineer. */
 "settings.privacy.screenTimeSetting" = "スクリーンタイムを有効化";
@@ -2705,7 +2738,7 @@
 "shieldEducation.shareTheNewsTitle" = "お知らせをシェアする";
 
 /* Subtitle for Shield Education Tracker Ad Warning */
-"shieldEducation.trackerAdWarningSubTitle" = "Brave Shieldsがあなたのオンラインでのプライバシーを保護しました。";
+"shieldEducation.trackerAdWarningSubTitle" = "Shieldsがあなたのオンラインでのプライバシーを保護しました。";
 
 /* Subtitle for Shield Education Tracker Count Share */
 "shieldEducation.trackerCountShareSubtitle" = "おめでとうございます。あなたは特別な存在です。いつもBraveをご利用いただきありがとうございます。";
@@ -2720,13 +2753,13 @@
 "shieldEducation.videoAdBlockTitle" = "このサイトで動画を見ているとき広告はブロックされています。";
 
 /* Section title for adbblock, tracking protection, HTTPS-E, and cookies */
-"ShieldsDefaults" = "Brave Shieldsの全体のデフォルト設定";
+"ShieldsDefaults" = "Shieldsの全体のデフォルト設定";
 
 /* Section footer for global shields defaults */
 "ShieldsDefaultsFooter" = "今後アクセスするサイトに適用されるデフォルトのShield設定です。こちらを変更しても個別サイトの設定には影響しません。";
 
 /* No comment provided by engineer. */
-"ShieldsDownDisclaimer" = "現在Braveのプライバシー保護機能オフの状態でブラウジングしています。Shieldをオンにした状態では不具合が発生しますか？";
+"ShieldsDownDisclaimer" = "現在Express Browserのプライバシー保護機能オフの状態でブラウジングしています。Shieldをオンにした状態では不具合が発生しますか？";
 
 /* shields overview message */
 "ShieldsOverview" = "サイトの保護機能では、サイト毎に広告やトラッカーをブロックするか設定することができます。特定のサイトで広告を表示させたい場合、ここで設定することができます。";
@@ -2753,7 +2786,7 @@
 "shortcuts.activityTypeClearHistorySuggestedPhrase" = "ブラウザの履歴を消去する";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeClearHistoryTitle" = "Braveでのブラウジングの履歴を消去する";
+"shortcuts.activityTypeClearHistoryTitle" = "Express Browserでのブラウジングの履歴を消去する";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeEnableVPNDescription" = "新タブでブラウザを立ち上げ、VPNを有効にする";
@@ -2762,7 +2795,7 @@
 "shortcuts.activityTypeEnableVPNSuggestedPhrase" = "VPNを有効にする";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeEnableVPNTitle" = "Braveブラウザを開き、VPNを有効にする";
+"shortcuts.activityTypeEnableVPNTitle" = "Express Browserを開き、VPNを有効にする";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeNewPrivateTabSuggestedPhrase" = "新しくプライベートブラウジングタブを開く";
@@ -2783,7 +2816,7 @@
 "shortcuts.activityTypeOpenBookmarksSuggestedPhrase" = "ブックマークを開く";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenBookmarksTitle" = "Braveブラウザのブックマークを開く";
+"shortcuts.activityTypeOpenBookmarksTitle" = "Express Browserのブックマークを開く";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenBraveNewsTitle" = "Brave Newsを開く";
@@ -2798,7 +2831,7 @@
 "shortcuts.activityTypeOpenHistoryListSuggestedPhrase" = "ブラウザ履歴を開く";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenHistoryListTitle" = "Braveブラウザの履歴を開く";
+"shortcuts.activityTypeOpenHistoryListTitle" = "Express Browserの履歴を開く";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenPlaylistDescription" = "Playlist内の動画を再生開始する";
@@ -2819,7 +2852,7 @@
 "shortcuts.activityTypeOpenSyncedTabsTitle" = "他のデバイスからのタブを開く";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeTabDescription" = "Braveでwebを安全に検索する";
+"shortcuts.activityTypeTabDescription" = "Express Browserでwebを安全に検索する";
 
 /* No comment provided by engineer. */
 "shortcuts.customIntentOpenBookmarkSuggestedPhrase" = "ブックマークのウェブサイトを開く";
@@ -2831,7 +2864,7 @@
 "shortcuts.customIntentOpenWebsiteSuggestedPhrase" = "ウェブサイトを開く";
 
 /* Description for opening Brave Settings for altering Siri shortcut. */
-"shortcuts.shortcutOpenApplicationSettingsDescription" = "この項目は、Braveの設定を開きます。様々なSiriオプションを変更するには、「Siriと検索」メニューを選択し、設定をカスタマイズしてください。";
+"shortcuts.shortcutOpenApplicationSettingsDescription" = "この項目は、Express Browserの設定を開きます。様々なSiriオプションを変更するには、「Siriと検索」メニューを選択し、設定をカスタマイズしてください。";
 
 /* Button title that open application settings */
 "shortcuts.shortcutOpenApplicationSettingsTitle" = "設定を開く";
@@ -2927,10 +2960,10 @@
 "SiteShieldSettings" = "Shield (保護機能)";
 
 /* Title used when in warning pop-over when domain specific data save appears */
-"socialSharing.domainSpecificDataSavedTitle" = "Braveでwebを閲覧してデータを節約しています";
+"socialSharing.domainSpecificDataSavedTitle" = "Express Browserでwebを閲覧してデータを節約しています";
 
 /* Text used for social sharing together with Brave Shield values */
-"socialSharing.shareDescriptionTitle" = "Braveでwebを閲覧してデータを節約しています";
+"socialSharing.shareDescriptionTitle" = "Express Browserでwebを閲覧してデータを節約しています";
 
 /* Open search section of settings */
 "StandardTabSearch" = "通常タブ";
@@ -3356,7 +3389,7 @@
 "themeQRCodeShareButton" = "共有";
 
 /* Title for QR popup encouraging users to share the code with their friends. */
-"themeQRCodeShareTitle" = "Braveを友だちに教えてあげよう！";
+"themeQRCodeShareTitle" = "Express Browserを友だちに教えてあげよう！";
 
 /* Selection to automatically color/style the user interface. */
 "ThemesAutomaticOption" = "自動";
@@ -3509,19 +3542,19 @@
 "today.promoted" = "プロモーション";
 
 /* Title for long press action sheet list which has item for rate / hide */
-"today.rateBraveCardActionSheetTitle" = "App StoreでBraveを評価";
+"today.rateBraveCardActionSheetTitle" = "App StoreでExpress Browserを評価";
 
 /* Title for long press action that will hide Brave Rate Card */
 "today.rateBraveCardHideActionTitle" = "非表示";
 
 /* Button title / Title for long press action that will perform an action which open AppStore Rate screen */
-"today.rateBraveCardRateActionTitle" = "Braveを評価する";
+"today.rateBraveCardRateActionTitle" = "Express Browserを評価する";
 
 /* Subtitle shown on the Rate Brave Card */
 "today.rateBraveCardSubtitle" = "ご意見をお聞かせください！";
 
 /* Title shown on the Rate Brave Card */
-"today.rateBraveCardTitle" = "Braveを気に入っていますか？";
+"today.rateBraveCardTitle" = "Express Browserを気に入っていますか？";
 
 /* No comment provided by engineer. */
 "today.refresh" = "更新";
@@ -3602,13 +3635,13 @@
 "ViewOn" = "View on %@";
 
 /* Explanation for warning alert why the microphone access required. */
-"voice.search.microphone.description.required" = "Braveで匿名音声検索を使用するには、iOSのシステム設定でマイクへのアクセスを許可してください。";
+"voice.search.microphone.description.required" = "Express Browserで匿名音声検索を使用するには、iOSのシステム設定でマイクへのアクセスを許可してください。";
 
 /* Title for warning alert microphone access is required. */
 "voice.search.microphone.title.required" = "マイクへのアクセスが必要です";
 
 /* Disclaimer for screen to search using voice. */
-"voice.search.screen.disclaimer" = "Braveが音声検索結果を保存または共有することはありません。";
+"voice.search.screen.disclaimer" = "Express Browserが音声検索結果を保存または共有することはありません。";
 
 /* The date your wallet was created */
 "WalletCreationDate" = "ウォレット作成日";

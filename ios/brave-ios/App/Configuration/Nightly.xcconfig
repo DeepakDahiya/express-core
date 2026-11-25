@@ -7,12 +7,12 @@
 
 #include "Base.xcconfig"
 
-MOZ_BUNDLE_DISPLAY_NAME = Brave Nightly
+MOZ_BUNDLE_DISPLAY_NAME = Express Nightly
 
-BRAVE_URL_SCHEME = brave-nightly
+BRAVE_URL_SCHEME = express-nightly
 
 // Bundle Identifier
-MOZ_BUNDLE_ID = $(BASE_BUNDLE_ID).BrowserBeta
+MOZ_BUNDLE_ID = $(BASE_BUNDLE_ID).browser.nightly
 BRAVE_GROUP_ID = group.$(MOZ_BUNDLE_ID).unique
 
 // Flag to indicate if we want to include the debug settings bundle or not

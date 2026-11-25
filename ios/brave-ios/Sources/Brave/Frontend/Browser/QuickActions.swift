@@ -13,6 +13,8 @@ enum ShortcutType: String {
   case newTab = "NewTab"
   case newPrivateTab = "NewPrivateTab"
   case scanQRCode = "ScanQRCode"
+  /// Express Browser's Golden YouTube quick action, added from its sheet (`ExpressGoldenShortcut`).
+  case goldenYouTube = "golden-youtube"
 
   init?(fullType: String) {
     guard let last = fullType.components(separatedBy: ".").last else { return nil }
@@ -92,6 +94,11 @@ public class QuickActions: NSObject {
       }
     case .scanQRCode:
       handleScanQR(withBrowserViewController: browserViewController)
+    case .goldenYouTube:
+      // Android's pinned shortcut opens YouTube in the browser; this opens it in a new tab.
+      MainActor.assumeIsolated {
+        ExpressGoldenShortcut.open(in: browserViewController)
+      }
     }
   }
 

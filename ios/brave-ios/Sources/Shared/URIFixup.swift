@@ -87,6 +87,11 @@ public class URIFixup {
     // Use `URL(string: entry)` so it doesn't double percent escape URLs.
     if let url = entryURL as URL?, url.schemeIsValid {
       guard let match = AutocompleteClassifier.classify(url.absoluteString) else {
+        // The classifier returns nil before the profile has loaded (a link opening the
+        // app at launch). Keep plain web links instead of dropping them.
+        if ["http", "https"].contains(url.scheme?.lowercased()), url.host?.isEmpty == false {
+          return url
+        }
         return nil
       }
 

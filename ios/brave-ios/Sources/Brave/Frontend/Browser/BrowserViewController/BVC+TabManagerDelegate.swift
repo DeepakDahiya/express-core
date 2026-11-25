@@ -9,6 +9,7 @@ import BraveShields
 import BraveUI
 import BraveWallet
 import Data
+import ExpressCore
 import Foundation
 import Preferences
 import Shared
@@ -191,6 +192,14 @@ extension BrowserViewController: TabManagerDelegate {
   }
 
   func tabManager(_ tabManager: TabManager, didAddTab tab: some TabState) {
+    // Android's `Tab Opened` / `Incognito Tab Opened` (not for tabs restored at launch).
+    if !tabManager.isRestoring {
+      ExpressAnalytics.shared.capture(
+        "Tab Opened",
+        ["incognito": tab.isPrivate, "background": tab !== tabManager.selectedTab]
+      )
+      if tab.isPrivate { ExpressAnalytics.shared.capture("Incognito Tab Opened") }
+    }
     // If we are restoring tabs then we update the count once at the end
     if !tabManager.isRestoring {
       updateToolbarUsingTabManager(tabManager)

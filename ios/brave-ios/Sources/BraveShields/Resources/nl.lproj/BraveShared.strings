@@ -17,7 +17,7 @@
 "AntiAdBlockWarningDescription" = "Deze site blokkeert nu bepaalde advertentieblokkeringen, waardoor de site mogelijk niet zoals verwacht werkt.";
 
 /* A descriptive message explaining to disable shields on this site. */
-"AntiAdBlockWarningDescription2" = "Om dit probleem op te lossen, kan Brave de Shields-instellingen voor jou aanpassen. Daarna kun je deze content in Brave Player bekijken.";
+"AntiAdBlockWarningDescription2" = "Om dit probleem op te lossen, kan Express Browser de Shields-instellingen voor jou aanpassen. Daarna kun je deze content in Brave Player bekijken.";
 
 /* A button that dismisses the warning and does nothing. */
 "AntiAdBlockWarningDismissButton" = "Behoud huidige instellingen";
@@ -95,10 +95,10 @@
 "DomainBlockedGoBackAction" = "Ga terug";
 
 /* A description in the warning page that appears when a page was blocked */
-"DomainBlockedPageDescription" = "Je hebt gekozen voor de agressieve blokkering van trackers en advertenties. Daarom blokkeert Brave deze site vóór de eerste netwerkverbinding.";
+"DomainBlockedPageDescription" = "Je hebt gekozen voor de agressieve blokkering van trackers en advertenties. Daarom blokkeert Express Browser deze site vóór de eerste netwerkverbinding.";
 
 /* A message in the warning page that appears when a page was blocked */
-"DomainBlockedPageMessage" = "Brave heeft voorkomen dat de volgende site werd geladen:";
+"DomainBlockedPageMessage" = "Express Browser heeft voorkomen dat de volgende site werd geladen:";
 
 /* A title in the warning page that appears when a page was blocked */
 "DomainBlockedPageTitle" = "Deze site probeert je mogelijk via andere sites te volgen";
@@ -110,7 +110,7 @@
 "DomainBlockedTitle" = "Domein geblokkeerd";
 
 /* A description of what the Enable GPC toggle does */
-"EnableGPCDescription" = "Vraag websites om je gegevens niet te verkopen of te delen. [Meer informatie](https://support.brave.app/hc/en-us/articles/360017989132-How-do-I-change-my-Privacy-Settings#h_01HHFRRT6B5YTRREA4ZDARGTWM)";
+"EnableGPCDescription" = "Vraag websites om je gegevens niet te verkopen of te delen.";
 
 /* A label of the GPC toggle */
 "EnableGPCLabel" = "Schakel Global Privacy Control in";

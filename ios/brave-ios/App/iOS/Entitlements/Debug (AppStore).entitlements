@@ -6,13 +6,12 @@
 	<string>development</string>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:vpn.brave.com</string>
+		<string>applinks:browser.express</string>
+		<string>applinks:www.browser.express</string>
 	</array>
 	<key>com.apple.developer.authentication-services.autofill-credential-provider</key>
 	<true/>
 	<key>com.apple.developer.browser.app-installation</key>
-	<true/>
-	<key>com.apple.developer.carplay-audio</key>
 	<true/>
 	<key>com.apple.developer.networking.networkextension</key>
 	<array>
@@ -26,8 +25,6 @@
 	<array>
 		<string>TAG</string>
 	</array>
-	<key>com.apple.developer.playable-content</key>
-	<true/>
 	<key>com.apple.developer.siri</key>
 	<true/>
 	<key>com.apple.developer.web-browser</key>

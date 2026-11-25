@@ -11,20 +11,12 @@ import Shared
 import Static
 import Web
 
-private struct FooterViewUX {
-  static let font = UIFont.preferredFont(forTextStyle: .footnote)
-  static let textColor = UIColor.braveLabel
-  static let linkUnderlineStyle = 1
-  static let textAlignment = NSTextAlignment.left
-  static let insets = UIEdgeInsets(top: 10, left: 15, bottom: 10, right: 15)
-}
-
 class NTPTableViewController: TableViewController {
+  // Express Browser: sponsored images are off and its new tab page is its own feed, so the
+  // sponsored-images options and their "supports Brave's mission" footer are removed.
   enum BackgroundType: RepresentableOptionType {
 
     case defaultImages
-    case sponsoredImages
-    case sponsoredImagesAndVideos(String)
     case superReferrer(String)
 
     var key: String {
@@ -34,8 +26,6 @@ class NTPTableViewController: TableViewController {
     public var displayString: String {
       switch self {
       case .defaultImages: return "\(Strings.NTP.settingsDefaultImagesOnly)"
-      case .sponsoredImages: return Strings.NTP.settingsSponsoredImagesSelection
-      case .sponsoredImagesAndVideos(let displayString): return displayString
       case .superReferrer(let referrer): return referrer
       }
     }
@@ -80,92 +70,28 @@ class NTPTableViewController: TableViewController {
       ]
     )
 
-    if Preferences.NewTabPage.backgroundImages.value {
+    // Express Browser: with the sponsored options gone, "Media Type" only chooses between the
+    // default images and an installed referral theme, so it shows only when one is installed.
+    if Preferences.NewTabPage.backgroundImages.value,
+      !Preferences.NewTabPage.installedCustomThemes.value.isEmpty
+    {
       imageSection.rows.append(backgroundImagesSetting(section: imageSection))
     }
 
-    let widgetSection = Section(
-      header: .title(Strings.Widgets.widgetTitle.uppercased()),
-      rows: [
-        .boolRow(
-          title: Strings.PrivacyHub.privacyReportsTitle,
-          option: Preferences.NewTabPage.showNewTabPrivacyHub
-        ),
-        .boolRow(
-          title: Strings.Widgets.favoritesWidgetTitle,
-          option: Preferences.NewTabPage.showNewTabFavourites
-        ),
-      ]
-    )
-
-    dataSource.sections = [imageSection, widgetSection]
+    // Express Browser: the Privacy Reports and Favorites widget toggles are hidden. The Express
+    // new tab page (header and feed) shows neither widget, so the toggles did nothing.
+    dataSource.sections = [imageSection]
   }
 
   private func selectedItem() -> BackgroundType {
     if let referrer = Preferences.NewTabPage.selectedCustomTheme.value {
       return .superReferrer(referrer)
     }
-
-    switch Preferences.NewTabPage.backgroundMediaType {
-    case .defaultImages:
-      return BackgroundType.defaultImages
-    case .sponsoredImages:
-      return BackgroundType.sponsoredImages
-    case .sponsoredImagesAndVideos:
-      return rewards?.ads.shouldShowSponsoredImagesAndVideosSetting() == true
-        ? BackgroundType.sponsoredImagesAndVideos(
-          Strings.NTP.settingsSponsoredImagesAndVideosSelection
-        )
-        : BackgroundType.sponsoredImagesAndVideos(Strings.NTP.settingsSponsoredImagesSelection)
-    }
-  }
-
-  private func imageTypeSelectionDescription() -> UIView {
-    let footerLabel = LinkLabel().then {
-      $0.font = FooterViewUX.font
-      $0.textColor = FooterViewUX.textColor
-      $0.linkColor = FooterViewUX.textColor
-      $0.linkUnderlineStyle = FooterViewUX.linkUnderlineStyle
-      $0.textAlignment = FooterViewUX.textAlignment
-      $0.text =
-        "\(Strings.NTP.imageTypeSelectionDescription) \(Strings.NTP.imageTypeSelectionDescriptionLearnMore)"
-      $0.setURLInfo([
-        Strings.NTP.imageTypeSelectionDescriptionLearnMore: "learn-more"
-      ])
-    }
-
-    footerLabel.onLinkedTapped = { [unowned self] link in
-      self.dismiss(animated: true) {
-        switch link.absoluteString {
-        case "learn-more":
-          self.linkTapped?(URLRequest(url: .brave.newTabTakeoverLearnMoreLinkUrl))
-        default:
-          assertionFailure()
-        }
-      }
-    }
-
-    let footerView = UITableViewHeaderFooterView().then {
-      $0.contentView.addSubview(footerLabel)
-      footerLabel.snp.makeConstraints {
-        $0.edges.equalToSuperview().inset(FooterViewUX.insets)
-      }
-      $0.isUserInteractionEnabled = true
-    }
-    return footerView
+    return .defaultImages
   }
 
   private func backgroundImageOptions() -> [BackgroundType] {
     var available: [BackgroundType] = [.defaultImages]
-    if rewards?.ads.shouldShowSponsoredImagesAndVideosSetting() == true {
-      available += [
-        .sponsoredImages,
-        .sponsoredImagesAndVideos(Strings.NTP.settingsSponsoredImagesAndVideosSelection),
-      ]
-    } else {
-      available += [.sponsoredImagesAndVideos(Strings.NTP.settingsSponsoredImagesSelection)]
-    }
-
     available += Preferences.NewTabPage.installedCustomThemes.value.map {
       .superReferrer($0)
     }
@@ -184,7 +110,6 @@ class NTPTableViewController: TableViewController {
       // Show options for tab bar visibility
       let optionsViewController = OptionSelectionViewController<BackgroundType>(
         headerText: Strings.NTP.settingsBackgroundImageSubMenu,
-        footerView: self.imageTypeSelectionDescription(),
         style: .insetGrouped,
         options: self.backgroundImageOptions(),
         selectedOption: self.selectedItem(),
@@ -193,12 +118,6 @@ class NTPTableViewController: TableViewController {
           switch option {
           case .defaultImages:
             Preferences.NewTabPage.backgroundMediaType = .defaultImages
-            Preferences.NewTabPage.selectedCustomTheme.value = nil
-          case .sponsoredImages:
-            Preferences.NewTabPage.backgroundMediaType = .sponsoredImages
-            Preferences.NewTabPage.selectedCustomTheme.value = nil
-          case .sponsoredImagesAndVideos:
-            Preferences.NewTabPage.backgroundMediaType = .sponsoredImagesAndVideos
             Preferences.NewTabPage.selectedCustomTheme.value = nil
           case .superReferrer(let referrer):
             Preferences.NewTabPage.selectedCustomTheme.value = referrer

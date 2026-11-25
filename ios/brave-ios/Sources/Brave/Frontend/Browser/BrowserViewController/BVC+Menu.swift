@@ -19,7 +19,7 @@ import Web
 import os.log
 
 extension BrowserViewController {
-  private var settingsController: SettingsViewController {
+  var settingsController: SettingsViewController {
     let isPrivateMode = privateBrowsingManager.isPrivateBrowsing
     let keyringService = BraveWallet.KeyringServiceFactory.get(privateMode: isPrivateMode)
     let walletService = BraveWallet.ServiceFactory.get(privateMode: isPrivateMode)
@@ -189,6 +189,7 @@ extension BrowserViewController {
       .map { .init(id: $0, attributes: .disabled) }
     actions.append(contentsOf: pageActivities)
     actions.append(contentsOf: remainingPageActivities)
+    actions.removeAll { Action.Identifier.hiddenInExpressBrowser.contains($0.id) }
     let browserMenu = BrowserMenuController(
       actions: actions,
       handlePresentation: { [unowned self] action in

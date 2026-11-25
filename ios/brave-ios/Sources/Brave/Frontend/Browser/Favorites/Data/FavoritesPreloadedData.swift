@@ -22,11 +22,12 @@ struct FavoritesPreloadedData {
     url: URL(string: "https://www.facebook.com/")!,
     title: "Facebook"
   )
-  static let brave = FavoriteSite(
-    url: URL(string: "https://brave.com/whats-new/")!,
-    title: "What's new in Brave"
+  // Express Browser replaces Brave's "What's new in Brave" tile with Google.
+  static let google = FavoriteSite(
+    url: URL(string: "https://www.google.com/")!,
+    title: "Google"
   )
-  static let popularFavorites = [youtube, wikipedia, facebook, brave]
+  static let popularFavorites = [youtube, wikipedia, facebook, google]
 
   private struct TopSiteForRegion: Codable {
     let region: String

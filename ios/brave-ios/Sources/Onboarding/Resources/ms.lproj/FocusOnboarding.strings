@@ -2,7 +2,7 @@
 "focusOnboarding.continueButtonTitle" = "Teruskan";
 
 /* The subtitle of the screen that requests user to set Brave as default */
-"focusOnboarding.defaultBrowserScreenDescription" = "Tetapkan Brave sebagai penyemak imbas lalai anda hari ini.";
+"focusOnboarding.defaultBrowserScreenDescription" = "Tetapkan Express Browser sebagai penyemak imbas lalai anda hari ini.";
 
 /* The title of the screen that requests user to set Brave as default */
 "focusOnboarding.defaultBrowserScreenTitle" = "Dapatkan Sekatan Iklan Dengan Setiap Laman yang Anda Lawati";
@@ -38,5 +38,5 @@
 "focusOnboarding.urlBarIndicatorDescription" = "Mula menstrim dengan iklan & penjejak yang semakin sedikit.";
 
 /* The title of the popup which points to URL Bar after onboarding */
-"focusOnboarding.urlBarIndicatorTitle" = "Lihat perbezaan Brave";
+"focusOnboarding.urlBarIndicatorTitle" = "Lihat perbezaan Express Browser";
 

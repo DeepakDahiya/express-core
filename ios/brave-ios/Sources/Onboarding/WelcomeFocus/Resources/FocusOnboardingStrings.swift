@@ -79,7 +79,7 @@ extension Strings {
       "focusOnboarding.defaultBrowserScreenDescription",
       tableName: "FocusOnboarding",
       bundle: .module,
-      value: "Set Brave as your default browser today.",
+      value: "Set Express Browser as your default browser today.",
       comment: "The subtitle of the screen that requests user to set Brave as default"
     )
 
@@ -111,7 +111,7 @@ extension Strings {
       "focusOnboarding.urlBarIndicatorTitle",
       tableName: "FocusOnboarding",
       bundle: .module,
-      value: "See the Brave difference",
+      value: "See the Express Browser difference",
       comment: "The title of the popup which points to URL Bar after onboarding"
     )
 

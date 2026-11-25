@@ -17,7 +17,7 @@
 "AntiAdBlockWarningDescription" = "Dette nettstedet har begynt å blokkere enkelte annonseblokkere, noe som betyr at nettstedet kanskje ikke fungerer som forventet.";
 
 /* A descriptive message explaining to disable shields on this site. */
-"AntiAdBlockWarningDescription2" = "For å løse dette problemet kan Brave justere skjoldinnstillingene dine for deg. Når disse er justert, kan du prøve å se dette innholdet i Brave Player i stedet.";
+"AntiAdBlockWarningDescription2" = "For å løse dette problemet kan Express Browser justere skjoldinnstillingene dine for deg. Når disse er justert, kan du prøve å se dette innholdet i Brave Player i stedet.";
 
 /* A button that dismisses the warning and does nothing. */
 "AntiAdBlockWarningDismissButton" = "Behold nåværende innstillinger";
@@ -95,10 +95,10 @@
 "DomainBlockedGoBackAction" = "Gå tilbake";
 
 /* A description in the warning page that appears when a page was blocked */
-"DomainBlockedPageDescription" = "Siden du har bedt om aggressiv blokkering av sporere og annonser, blokkerer Brave denne siden før første nettverkstilkobling.";
+"DomainBlockedPageDescription" = "Siden du har bedt om aggressiv blokkering av sporere og annonser, blokkerer Express Browser denne siden før første nettverkstilkobling.";
 
 /* A message in the warning page that appears when a page was blocked */
-"DomainBlockedPageMessage" = "Brave har blokkert denne siden fra å lastes inn:";
+"DomainBlockedPageMessage" = "Express Browser har blokkert denne siden fra å lastes inn:";
 
 /* A title in the warning page that appears when a page was blocked */
 "DomainBlockedPageTitle" = "Denne siden kan prøve å spore deg på tvers av andre sider";
@@ -110,7 +110,7 @@
 "DomainBlockedTitle" = "Blokkert domene";
 
 /* A description of what the Enable GPC toggle does */
-"EnableGPCDescription" = "Be nettsteder om å verken selge eller dele dataene dine. [Les mer] (https://support.brave.app/hc/en-us/articles/360017989132-How-do-I-change-my-Privacy-Settings#h_01HHFRRT6B5YTRREA4ZDARGTWM)";
+"EnableGPCDescription" = "Be nettsteder om å verken selge eller dele dataene dine.";
 
 /* A label of the GPC toggle */
 "EnableGPCLabel" = "Aktiver Global Privacy Control";

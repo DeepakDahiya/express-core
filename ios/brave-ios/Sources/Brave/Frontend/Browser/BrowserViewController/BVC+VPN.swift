@@ -9,6 +9,9 @@ import UIKit
 extension BrowserViewController {
   /// Shows a vpn screen based on vpn state.
   public func presentCorrespondingVPNViewController() {
+    // Express Browser hides Brave VPN.
+    guard profileController.profile.prefs.isBraveVPNAvailable else { return }
+
     if BraveSkusManager.keepShowingSessionExpiredState {
       let alert = BraveSkusManager.sessionExpiredStateAlert(loginCallback: { [unowned self] _ in
         self.openURLInNewTab(

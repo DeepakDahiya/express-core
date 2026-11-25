@@ -11,8 +11,7 @@ struct BraveWidgets: WidgetBundle {
   var body: some Widget {
     ShortcutsWidget()
     FavoritesWidget()
-    TopNewsWidget()
-    TopNewsListWidget()
+    // Express Browser: Brave News is hidden (as on Android), so its two widgets aren't offered.
     SingleStatWidget()
     StatsWidget()
     LockScreenShortcutWidget()

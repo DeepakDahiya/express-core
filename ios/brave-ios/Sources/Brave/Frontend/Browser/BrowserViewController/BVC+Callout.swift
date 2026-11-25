@@ -41,11 +41,16 @@ extension BrowserViewController {
 
     switch type {
     case .p3a:
+      // Kept: Brave's analytics (P3A) are on by default, and this screen is where people hear
+      // about them and can opt out. Android Express keeps the same checkbox in its onboarding.
       presentP3AScreenCallout()
     case .bottomBar:
-      presentBottomBarCallout(skipSafeGuards: skipSafeGuards)
+      // Express Browser: the address bar stays at the top by default, as on Android, so Brave's
+      // "switch to the bottom bar" screen isn't shown (Settings still has the choice).
+      break
     case .defaultBrowser:
-      presentDefaultBrowserScreenCallout(skipSafeGuards: skipSafeGuards)
+      // Express Browser: Android's prompt after 5 comment scrolls replaces Brave's screen.
+      break
     case .rewards:
       presentBraveRewardsScreenCallout(skipSafeGuards: skipSafeGuards)
     case .vpnLinkReceipt:
@@ -294,8 +299,9 @@ extension BrowserViewController {
   func presentVPNInAppEventCallout() {
     // If the onboarding has not completed or VPN is not available we do not show any promo screens.
     // This will most likely be the case for users who have not installed the app yet.
-    if profileController.profile.prefs.isBraveVPNAvailable,
-      Preferences.Onboarding.basicOnboardingCompleted.value != OnboardingState.completed.rawValue
+    // Express Browser hides Brave VPN, so this returns whenever VPN isn't available.
+    if !profileController.profile.prefs.isBraveVPNAvailable
+      || Preferences.Onboarding.basicOnboardingCompleted.value != OnboardingState.completed.rawValue
     {
       return
     }

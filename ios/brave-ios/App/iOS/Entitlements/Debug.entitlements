@@ -6,7 +6,8 @@
 	<string>development</string>
 	<key>com.apple.developer.associated-domains</key>
 	<array>
-		<string>applinks:vpn.brave.com</string>
+		<string>applinks:browser.express</string>
+		<string>applinks:www.browser.express</string>
 	</array>
 	<key>com.apple.developer.authentication-services.autofill-credential-provider</key>
 	<true/>
@@ -28,7 +29,5 @@
 	<array>
 		<string>group.$(MOZ_BUNDLE_ID).unique</string>
 	</array>
-	<key>com.apple.developer.carplay-audio</key>
-	<true/>
 </dict>
 </plist>

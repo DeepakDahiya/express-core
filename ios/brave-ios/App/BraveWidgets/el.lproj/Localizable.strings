@@ -32,7 +32,7 @@
 "widgets.newsClusteringWidgetTitle" = "Κορυφαίες ειδήσεις";
 
 /* This shows when you add a widget but have no favorites added in your app */
-"widgets.noFavoritesFound" = "Ανοίξτε το Brave για να δείτε τα αγαπημένα σας εδώ";
+"widgets.noFavoritesFound" = "Ανοίξτε το Express Browser για να δείτε τα αγαπημένα σας εδώ";
 
 /* QR Code section title */
 "widgets.QRCode" = "Κωδικός QR";
@@ -41,7 +41,7 @@
 "widgets.searchShortcutTitle" = "Αναζήτηση";
 
 /* Description for Brave Shields widget on 'add widget' screen. */
-"widgets.shieldStatsDescription" = "Μια σύνοψη του τρόπου με τον οποίο η Brave σάς εξοικονομεί χρόνο και σας προστατεύει online.";
+"widgets.shieldStatsDescription" = "Μια σύνοψη του τρόπου με τον οποίο η Express Browser σάς εξοικονομεί χρόνο και σας προστατεύει online.";
 
 /* Title for Brave Shields widget on 'add widget' screen. */
 "widgets.shieldStatsTitle" = "Στατιστικά απορρήτου";
@@ -62,13 +62,13 @@
 "widgets.shortcutsPrivateTabButton" = "Ιδιωτική καρτέλα";
 
 /* Description for shortcuts widget on 'add widget' screen. */
-"widgets.shortcutsWidgetDescription" = "Αποκτήστε γρήγορα πρόσβαση για αναζήτηση στον ιστό ή άνοιγμα ιστοσελίδων στο Brave.";
+"widgets.shortcutsWidgetDescription" = "Αποκτήστε γρήγορα πρόσβαση για αναζήτηση στον ιστό ή άνοιγμα ιστοσελίδων στο Express Browser.";
 
 /* Title for shortcuts widget on 'add widget' screen. */
 "widgets.shortcutsWidgetTitle" = "Συντομεύσεις";
 
 /* Description for Brave Shields single stat widget on 'add widget' screen. */
-"widgets.singleStatDescription" = "Μια σύνοψη του τρόπου με τον οποίο η Brave σάς προστάτευσε online.";
+"widgets.singleStatDescription" = "Μια σύνοψη του τρόπου με τον οποίο η Express Browser σάς προστάτευσε online.";
 
 /* Title for Brave Shields single stat widget on 'add widget' screen. */
 "widgets.singleStatTitle" = "Στατιστικό απορρήτου";

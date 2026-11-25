@@ -78,10 +78,11 @@ extension Preferences {
       key: "general.show-bookmark-toolbar-shortcut",
       default: nil
     )
-    /// Controls whether or not media should continue playing in the background
+    /// Controls whether or not media should continue playing in the background. On by default
+    /// in Express Browser: background play is one of its YouTube features.
     static let mediaAutoBackgrounding = Option<Bool>(
       key: "general.media-auto-backgrounding",
-      default: false
+      default: true
     )
     /// Controls whether or not youtube videos should play with the highest quality by default
     static let youtubeHighQuality = Option<String>(
@@ -109,9 +110,11 @@ extension Preferences {
     )
 
     /// Whether or not the app will always load YouTube in Brave
+    /// Express Browser: on, as on Android (`brave_profile_prefs.cc` registers it true), so a
+    /// YouTube link keeps its comments, background play and picture in picture.
     public static let keepYouTubeInBrave = Option<Bool>(
       key: "general.follow-universal-links.youtube",
-      default: false
+      default: true
     )
 
     /// Whether or not the pull-to-refresh control is added to web views
@@ -247,13 +250,15 @@ extension Preferences {
   }
   final public class NewTabPage {
     /// Whether bookmark image are enabled / shown
-    static let backgroundImages = Option<Bool>(key: "newtabpage.background-images", default: true)
+    /// Off by default: Express Browser shows no Brave wallpapers, matching its Android app.
+    static let backgroundImages = Option<Bool>(key: "newtabpage.background-images", default: false)
 
     /// Determines the type of sponsored media to include in the background image rotation
     /// - Warning: You should not access this directly but  through ``backgroundMediaType``
+    /// Express Browser defaults to no sponsored media.
     static let backgroundMediaTypeRaw = Option<Int>(
       key: "newtabpage.background-media-type",
-      default: BackgroundMediaType.sponsoredImagesAndVideos.rawValue
+      default: BackgroundMediaType.defaultImages.rawValue
     )
 
     /// A  variable to access the ``backgroundMediaTypeRaw`` preference value

@@ -32,7 +32,7 @@
 "widgets.newsClusteringWidgetTitle" = "Toppnyheter";
 
 /* This shows when you add a widget but have no favorites added in your app */
-"widgets.noFavoritesFound" = "Åpne Brave for å se favorittene dine her";
+"widgets.noFavoritesFound" = "Åpne Express Browser for å se favorittene dine her";
 
 /* QR Code section title */
 "widgets.QRCode" = "QR-kode";
@@ -41,7 +41,7 @@
 "widgets.searchShortcutTitle" = "Søk";
 
 /* Description for Brave Shields widget on 'add widget' screen. */
-"widgets.shieldStatsDescription" = "En oversikt over hvordan Brave beskytter deg på nettet og gjør at du sparer tid.";
+"widgets.shieldStatsDescription" = "En oversikt over hvordan Express Browser beskytter deg på nettet og gjør at du sparer tid.";
 
 /* Title for Brave Shields widget on 'add widget' screen. */
 "widgets.shieldStatsTitle" = "Personvernstatistikk";
@@ -62,13 +62,13 @@
 "widgets.shortcutsPrivateTabButton" = "Privat fane";
 
 /* Description for shortcuts widget on 'add widget' screen. */
-"widgets.shortcutsWidgetDescription" = "Rask tilgang til å søke på nettet eller åpne nettsider i Brave.";
+"widgets.shortcutsWidgetDescription" = "Rask tilgang til å søke på nettet eller åpne nettsider i Express Browser.";
 
 /* Title for shortcuts widget on 'add widget' screen. */
 "widgets.shortcutsWidgetTitle" = "Snarveier";
 
 /* Description for Brave Shields single stat widget on 'add widget' screen. */
-"widgets.singleStatDescription" = "En oversikt over hvordan Brave beskytter deg på nettet.";
+"widgets.singleStatDescription" = "En oversikt over hvordan Express Browser beskytter deg på nettet.";
 
 /* Title for Brave Shields single stat widget on 'add widget' screen. */
 "widgets.singleStatTitle" = "Personvernstatistikk";

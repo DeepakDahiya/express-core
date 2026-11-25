@@ -17,7 +17,7 @@
 "AntiAdBlockWarningDescription" = "بدأ هذا الموقع في حظر بعض أدوات حظر الإعلانات ، مما يعني أن موقعهم قد لا يعمل كما هو متوقع.";
 
 /* A descriptive message explaining to disable shields on this site. */
-"AntiAdBlockWarningDescription2" = "لمعالجة هذه المشكلة، يمكن لـ Brave ضبط إعدادات الدروع Shields نيابة عنك. بمجرد التعديل، يمكنك محاولة مشاهدة هذا المحتوى في مشغّل Brave بدلًا من ذلك.";
+"AntiAdBlockWarningDescription2" = "لمعالجة هذه المشكلة، يمكن لـ Express Browser ضبط إعدادات الدروع Shields نيابة عنك. بمجرد التعديل، يمكنك محاولة مشاهدة هذا المحتوى في مشغّل Brave بدلًا من ذلك.";
 
 /* A button that dismisses the warning and does nothing. */
 "AntiAdBlockWarningDismissButton" = "احتفاظ بالإعدادات الحالية";
@@ -95,10 +95,10 @@
 "DomainBlockedGoBackAction" = "العودة";
 
 /* A description in the warning page that appears when a page was blocked */
-"DomainBlockedPageDescription" = "نظرًا لطلبك حجب المتتبعين والإعلانات بشكل قاطع، يحجب متصفح Brave هذا الموقع قبل إجراء أول اتصال بالشبكة.";
+"DomainBlockedPageDescription" = "نظرًا لطلبك حجب المتتبعين والإعلانات بشكل قاطع، يحجب متصفح Express Browser هذا الموقع قبل إجراء أول اتصال بالشبكة.";
 
 /* A message in the warning page that appears when a page was blocked */
-"DomainBlockedPageMessage" = "قام Brave بمنع الموقع التالي من التحميل:";
+"DomainBlockedPageMessage" = "قام Express Browser بمنع الموقع التالي من التحميل:";
 
 /* A title in the warning page that appears when a page was blocked */
 "DomainBlockedPageTitle" = "قد يحاول هذا الموقع تتبعك عبر مواقع أخرى";
@@ -110,7 +110,7 @@
 "DomainBlockedTitle" = "نطاق تم حظره";
 
 /* A description of what the Enable GPC toggle does */
-"EnableGPCDescription" = "اطلب من المواقع الإلكترونية عدم بيع بياناتك أو مشاركتها. [اعرف المزيد] (https://support.brave.app/hc/en-us/articles/360017989132-How-do-I-change-my-Privacy-Settings#h_01HHFRRT6B5YTRREA4ZDARGTWM)";
+"EnableGPCDescription" = "اطلب من المواقع الإلكترونية عدم بيع بياناتك أو مشاركتها.";
 
 /* A label of the GPC toggle */
 "EnableGPCLabel" = "تمكين التحكم في الخصوصية العالمية";

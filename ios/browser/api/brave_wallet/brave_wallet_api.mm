@@ -58,7 +58,8 @@ BraveWalletProviderScriptKey const BraveWalletProviderScriptKeyWalletStandard =
 }
 
 - (bool)isAllowed {
-  return brave_wallet::IsAllowed(_profile->GetPrefs());
+  // Express Browser hides Brave Wallet, matching its Android app.
+  return false;
 }
 
 + (id<BraveWalletBlockchainRegistry>)blockchainRegistry {

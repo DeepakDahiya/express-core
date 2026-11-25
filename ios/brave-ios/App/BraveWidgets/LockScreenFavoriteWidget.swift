@@ -119,9 +119,12 @@ private struct LockScreenFavoriteView: View {
         .widgetLabel(fav.title ?? "")
         .widgetURL(fav.url)
       } else {
-        Image(braveSystemName: "leo.brave.icon-monochrome")
-          .imageScale(.large)
-          .font(.system(size: 24))
+        // Express Browser's glyph (the logo's speech bubble and globe) in place of Brave's lion.
+        Image("express-glyph")
+          .renderingMode(.template)
+          .resizable()
+          .scaledToFit()
+          .frame(width: 28, height: 28)
           .foregroundColor(Color.black)
           .frame(maxWidth: .infinity, maxHeight: .infinity)
           .background(

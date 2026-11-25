@@ -2,7 +2,7 @@
 "focusOnboarding.continueButtonTitle" = "계속";
 
 /* The subtitle of the screen that requests user to set Brave as default */
-"focusOnboarding.defaultBrowserScreenDescription" = "지금 Brave를 기본 브라우저로 설정하세요.";
+"focusOnboarding.defaultBrowserScreenDescription" = "지금 Express Browser를 기본 브라우저로 설정하세요.";
 
 /* The title of the screen that requests user to set Brave as default */
 "focusOnboarding.defaultBrowserScreenTitle" = "방문하는 모든 사이트에서 광고 차단";
@@ -38,5 +38,5 @@
 "focusOnboarding.urlBarIndicatorDescription" = "광고와 트래커가 한결 적어진 스트리밍을 시작하세요.";
 
 /* The title of the popup which points to URL Bar after onboarding */
-"focusOnboarding.urlBarIndicatorTitle" = "Brave의 차별점 보기";
+"focusOnboarding.urlBarIndicatorTitle" = "Express Browser의 차별점 보기";
 

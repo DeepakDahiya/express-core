@@ -14,6 +14,7 @@ import BraveWallet
 import CertificateUtilities
 import CoreData
 import Data
+import ExpressCore
 import Favicon
 import Growth
 import NetworkExtension
@@ -124,6 +125,39 @@ public class BrowserViewController: UIViewController {
   // Single data source used for all favorites vcs
   public let backgroundDataSource: NTPDataSource
   let feedDataSource: FeedDataSource
+  /// Express Browser's new tab page feed, shared by every tab's new tab page.
+  lazy var expressFeedDataSource = ExpressFeedDataSource()
+  /// Express Browser's floating comments pill (Android's bottom-bar pill).
+  let expressCommentsPillModel = ExpressCommentsPillModel()
+  /// Keeps the address bar's Express avatar current.
+  var expressAvatarCancellable: AnyCancellable?
+  /// YouTube access sheet, picture in picture, background play and referral links.
+  lazy var expressYouTube = ExpressYouTubeCoordinator(browser: self)
+  /// Back to the new tab page after time away (Express).
+  lazy var expressNewTabReturn = ExpressNewTabReturn()
+  /// The new tab page header's search box standing in for the address field (Express).
+  lazy var expressNTPAddressBar = ExpressNTPAddressBarState()
+  var expressPromptObservers: [NSObjectProtocol] = []
+  lazy var expressCommentsPill: UIHostingController<ExpressCommentsPillView> = {
+    let host = UIHostingController(
+      rootView: ExpressCommentsPillView(
+        model: self.expressCommentsPillModel,
+        onHome: { [weak self] in self?.expressPillDidTapHome() },
+        onComments: { [weak self] in self?.expressPillDidTapComments() }
+      )
+    )
+    host.view.backgroundColor = .clear
+    host.sizingOptions = .intrinsicContentSize
+    return host
+  }()
+  /// YouTube preview comments that rise above the pill (Android).
+  lazy var expressPillPreviews: UIHostingController<ExpressPillPreviewCards> = {
+    let host = UIHostingController(rootView: ExpressPillPreviewCards(model: self.expressCommentsPillModel))
+    host.view.backgroundColor = .clear
+    host.view.isUserInteractionEnabled = false
+    host.sizingOptions = .intrinsicContentSize
+    return host
+  }()
 
   private var postSetupTasks: [() -> Void] = []
   private var setupTasksCompleted: Bool = false
@@ -692,6 +726,9 @@ public class BrowserViewController: UIViewController {
     topToolbar.currentURL = currentURL
     collapsedURLBarView.currentURL = currentURL
     updateScreenTimeUrl(currentURL)
+    // A page loading from the new tab page (a card, a site, a search) brings the address
+    // field back at once.
+    updateExpressNTPAddressBar()
   }
 
   override public func willTransition(
@@ -820,6 +857,7 @@ public class BrowserViewController: UIViewController {
       updateTabsBarVisibility()
       updateStatusBarOverlayColor()
       updateViewConstraints()
+      updateExpressNTPAddressBar()
     }
   }
 
@@ -849,6 +887,16 @@ public class BrowserViewController: UIViewController {
     view.addSubview(bottomTouchArea)
     view.addSubview(topTouchArea)
     view.addSubview(bottomBarKeyboardBackground)
+    // Express comments pill: above the touch areas, below the toolbars.
+    addChild(expressCommentsPill)
+    view.addSubview(expressCommentsPill.view)
+    expressCommentsPill.didMove(toParent: self)
+    addChild(expressPillPreviews)
+    view.addSubview(expressPillPreviews.view)
+    expressPillPreviews.didMove(toParent: self)
+    observeExpressAvatar()
+    installExpressTrustMarker()
+    installExpressPrompts()
     view.addSubview(footer)
     view.addSubview(statusBarOverlay)
     view.addSubview(header)
@@ -972,12 +1020,11 @@ public class BrowserViewController: UIViewController {
       }
     }
 
-    // Schedule Default Browser Local Notification
-    // If notification is not already scheduled or
-    // an external URL opened in Brave (which indicates Brave is set as default)
-    if !Preferences.DefaultBrowserIntro.defaultBrowserNotificationScheduled.value {
-      scheduleDefaultBrowserNotification()
-    }
+    // Express Browser: Android schedules no local notifications (and drops Chromium's startup
+    // notification permission request, `BraveNotificationPermissionController`). Express has its
+    // own default-browser sheet, so Brave's "set as default" reminder isn't scheduled, nor is the
+    // quiet (provisional) permission it asked for; Express asks in `ExpressPushManager`.
+    // SceneDelegate clears a reminder left pending by an earlier build.
 
     privateModeCancellable = privateBrowsingManager
       .$isPrivateBrowsing
@@ -1147,6 +1194,8 @@ public class BrowserViewController: UIViewController {
 
     // Shred Domain's with SiteShieldLevel.appExit
     self.tabManager.forgetDataOnAppExitDomains()
+    // Express: "Clear data when I close Express" takes effect as the browser starts.
+    self.runExpressClearOnLaunchIfNeeded()
 
     if !setupTasksCompleted {
       for task in postSetupTasks {
@@ -1226,6 +1275,8 @@ public class BrowserViewController: UIViewController {
   override public func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
     updateToolbarUsingTabManager(tabManager)
+    // Back from the tab tray (or another full-screen page) to a new tab page.
+    resumeExpressNTPAddressBar()
   }
 
   public override func viewIsAppearing(_ animated: Bool) {
@@ -1463,6 +1514,21 @@ public class BrowserViewController: UIViewController {
       }
     }
 
+    // The Express comments pill floats just above the bottom bar (or the bottom URL bar) and
+    // moves with it as the toolbars collapse.
+    expressCommentsPill.view.snp.remakeConstraints { make in
+      make.centerX.equalTo(self.view)
+      if self.isUsingBottomBar {
+        make.bottom.equalTo(self.header.snp.top).offset(-12)
+      } else {
+        make.bottom.equalTo(self.footer.snp.top).offset(-12)
+      }
+    }
+    expressPillPreviews.view.snp.remakeConstraints { make in
+      make.left.right.equalTo(self.view.safeAreaLayoutGuide)
+      make.bottom.equalTo(self.expressCommentsPill.view.snp.top).offset(-8)
+    }
+
     alertStackView.snp.remakeConstraints { make in
       make.centerX.equalTo(self.view)
       make.width.equalTo(self.view.safeArea.width)
@@ -1506,6 +1572,7 @@ public class BrowserViewController: UIViewController {
         profilePrefs: profileController.profile.prefs,
         dataSource: backgroundDataSource,
         feedDataSource: feedDataSource,
+        expressFeed: expressFeedDataSource,
         rewards: rewards,
         privateBrowsingManager: privateBrowsingManager,
         p3aHelper: ntpP3AHelper
@@ -1580,12 +1647,17 @@ public class BrowserViewController: UIViewController {
   }
 
   func updateInContentHomePanel(_ url: URL?) {
+    // Leaving or coming back to a new tab page sets the address bar for it at once.
+    defer { updateExpressNTPAddressBar() }
+
     let isAboutHomeURL = { () -> Bool in
       if let url = url {
         return InternalURL(url)?.isAboutHomeURL == true
       }
       return false
     }()
+
+    updateExpressCommentsPill(for: url, isNewTabPage: isAboutHomeURL)
 
     if !topToolbar.inOverlayMode {
       guard let url = url else {
@@ -1794,7 +1866,8 @@ public class BrowserViewController: UIViewController {
       navigationToolbar.updateForwardStatus(tab.canGoForward)
     }
 
-    navigationToolbar.updateBackStatus(tab.canGoBack)
+    // Express Browser: on a YouTube video that can float, Back floats it (even with no history).
+    navigationToolbar.updateBackStatus(tab.canGoBack || expressYouTube.backFloatsVideo(in: tab))
   }
 
   func updateUIForReaderHomeStateForTab(_ tab: some TabState) {
@@ -2723,6 +2796,16 @@ extension BrowserViewController: ToolbarUrlActionsDelegate {
 }
 
 extension BrowserViewController: NewTabPageDelegate {
+  /// The new tab page's mic (Android's NTP voice search): the same as the address bar's.
+  func startExpressVoiceSearch() {
+    ExpressAnalytics.shared.capture("Voice Search Used", ["source": "ntp"])
+    topToolbarDidPressVoiceSearchButton(topToolbar)
+  }
+
+  var isExpressVoiceSearchAvailable: Bool {
+    speechRecognizer.isVoiceSearchAvailable
+  }
+
   func navigateToInput(_ input: String, inNewTab: Bool, switchingToPrivateMode: Bool) {
     handleURLInput(
       input,
@@ -3086,6 +3169,10 @@ extension BrowserViewController: UNUserNotificationCenterDelegate {
     didReceive response: UNNotificationResponse,
     withCompletionHandler completionHandler: @escaping () -> Void
   ) {
+    if ExpressPushManager.shared.handleTap(response) {
+      completionHandler()
+      return
+    }
     if response.notification.request.identifier == Self.defaultBrowserNotificationId {
       guard let settingsUrl = URL(string: UIApplication.openSettingsURLString) else {
         Logger.module.error("Failed to unwrap iOS settings URL")
@@ -3096,6 +3183,17 @@ extension BrowserViewController: UNUserNotificationCenterDelegate {
       openPrivacyReport()
     }
     completionHandler()
+  }
+
+  /// Like and reply notifications also show while the app is open.
+  public func userNotificationCenter(
+    _ center: UNUserNotificationCenter,
+    willPresent notification: UNNotification,
+    withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
+  ) {
+    let isExpress = ExpressPushManager.shared.isExpressNotification(notification)
+    if isExpress { ExpressPushManager.shared.noteReceived(notification) }
+    completionHandler(isExpress ? [.banner, .list, .sound] : [])
   }
 }
 

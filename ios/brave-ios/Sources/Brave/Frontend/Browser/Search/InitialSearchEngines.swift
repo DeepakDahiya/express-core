@@ -179,9 +179,8 @@ class InitialSearchEngines {
       replaceOrInsert(engineId: .ecosia, customId: nil)
     }
 
-    if braveSearchDefaultRegions.contains(region) {
-      defaultSearchEngine = .braveSearch
-    }
+    // Express Browser keeps Google as the default where Brave would pick Brave Search,
+    // matching its Android app. Brave Search stays available in the list.
 
     if naverDefaultRegions.contains(region) {
       defaultSearchEngine = .naver

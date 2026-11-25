@@ -91,14 +91,16 @@ public enum NavigationPath: Equatable {
     case .vpnCrossPlatformPromo:
       bvc.presentVPNInAppEventCallout()
     case .braveLeo:
-      bvc.presentBraveLeoDeepLink()
+      // Express Browser hides Leo.
+      break
     case .playlist:
-      let helper = BrowserNavigationHelper(bvc)
-      helper.openPlaylist()
+      // Express Browser hides Playlist.
+      break
     case .browserMenu:
       bvc.presentMenu(from: bvc.navigationToolbar)
     case .setDefaultBrowser:
-      bvc.presentDefaultBrowserScreenCallout(skipSafeGuards: true)
+      // Express Browser uses its own default-browser sheet, not Brave's full-screen one.
+      break
     case .importData:
       bvc.presentDataImporter()
     }
@@ -162,24 +164,10 @@ public enum NavigationPath: Equatable {
           bvc.displayOpenDownloadsError()
         }
       }
-    case .playlist:
-      bvc.navigationHelper.openPlaylist()
-    case .wallet:
-      bvc.navigationHelper.openWallet()
     case .scanQRCode:
       bvc.scanQRCode()
-    case .braveNews:
-      bvc.openBlankNewTab(attemptLocationFieldFocus: false, isPrivate: false, isExternal: true)
-      bvc.popToBVC()
-      guard let newTabPageController = bvc.tabManager.selectedTab?.newTabPageViewController else {
-        return
-      }
-      newTabPageController.scrollToBraveNews()
-    case .braveLeo:
-      bvc.popToBVC()
-      bvc.openBraveLeo()
     @unknown default:
-      assertionFailure()
+      // Includes the shortcuts Express Browser no longer offers (Playlist, Wallet, News, Leo).
       break
     }
   }

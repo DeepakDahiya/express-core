@@ -82,7 +82,19 @@ class LoginsScriptHandler: TabContentScript {
     }
   }
 
+  /// Express Browser: no "Save password?" on Google or YouTube sign-in (the golden YouTube
+  /// shortcut goes through it), as on Android (`chrome_password_manager_client.cc`, which
+  /// checks `url.DomainIs("google.com")` and `"youtube.com"`).
+  private static func suppressesSavePrompt(for url: URL) -> Bool {
+    guard let host = url.host?.lowercased() else { return false }
+    return ["google.com", "youtube.com"].contains { host == $0 || host.hasSuffix("." + $0) }
+  }
+
   private func updateORSaveCredentials(for url: URL, script: [String: Any], tab: some TabState) {
+    if Self.suppressesSavePrompt(for: url) {
+      Logger.module.debug("Express: no save-password prompt on Google or YouTube")
+      return
+    }
     guard let scriptCredentials = passwordAPI.fetchFromScript(url, script: script),
       let username = scriptCredentials.usernameValue,
       scriptCredentials.usernameElement != nil,

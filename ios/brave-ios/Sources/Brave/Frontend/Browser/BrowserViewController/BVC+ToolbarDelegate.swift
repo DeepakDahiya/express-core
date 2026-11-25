@@ -3,6 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import ExpressCore
 import AVFoundation
 import BraveCore
 import BraveNews
@@ -42,6 +43,9 @@ extension BrowserViewController: TopToolbarDelegate {
     }
 
     isTabTrayActive = true
+    // The tray shrinks the browser into its tab: the address bar shows normally from now
+    // until the browser is back (Android resets its new tab page toolbar in the tab switcher).
+    suspendExpressNTPAddressBarForTabTray()
 
     if FeatureList.kModernTabTrayEnabled.enabled {
       let tabTrayController = TabGridHostingController(
@@ -272,10 +276,26 @@ extension BrowserViewController: TopToolbarDelegate {
       if !isBraveSearchPromotion,
         await submitValidURL(text, isUserDefinedURLNavigation: isUserDefinedURLNavigation)
       {
+        // Android's `URL Entered` (domain and site only, not the address).
+        if !privateBrowsingManager.isPrivateBrowsing, let url = URIFixup.getURL(text),
+          url.scheme == "http" || url.scheme == "https"
+        {
+          ExpressAnalytics.shared.capture("URL Entered", ExpressAnalytics.pageProperties(url))
+        }
         return
       } else {
         // We couldn't build a URL, so pass it on to the search engine.
         submitSearchText(text, isBraveSearchPromotion: isBraveSearchPromotion)
+        // Android's `Search Performed`: the engine's domain and the search terms.
+        if !privateBrowsingManager.isPrivateBrowsing,
+          let searchURL = profile.searchEngines.defaultEngine(forType: .standard)?
+            .searchURLForQuery(text, isBraveSearchPromotion: false)
+        {
+          ExpressAnalytics.shared.capture(
+            "Search Performed",
+            ExpressAnalytics.pageProperties(searchURL, searchQuery: text)
+          )
+        }
 
         if !privateBrowsingManager.isPrivateBrowsing {
           RecentSearch.addItem(type: .text, text: text, websiteUrl: nil)
@@ -359,15 +379,14 @@ extension BrowserViewController: TopToolbarDelegate {
 
   /// Handles displaying a Chromium web view for brave:// url that would display WebUI
   func handleChromiumWebUIURL(_ url: URL) -> Bool {
+    // Express Browser hides Brave Sync, VPN/SKUs and Ads, so sync-internals, skus-internals and
+    // ads-internals aren't offered.
     let supportedPages = [
       "flags",
       "histograms",
       "local-state",
       "version",
-      "skus-internals",
-      "ads-internals",
       "credits",
-      "sync-internals",
       "policy",
     ]
     guard let host = url.host, supportedPages.contains(host) else {
@@ -400,6 +419,8 @@ extension BrowserViewController: TopToolbarDelegate {
   func topToolbarDidEnterOverlayMode(_ topToolbar: TopToolbarView) {
     updateTabsBarVisibility()
     displayFavoritesController()
+    // Editing on the new tab page shows the whole address bar.
+    updateExpressNTPAddressBar()
   }
 
   func topToolbarDidLeaveOverlayMode(_ topToolbar: TopToolbarView) {
@@ -490,7 +511,7 @@ extension BrowserViewController: TopToolbarDelegate {
     }
   }
 
-  private func changedShieldSettings() {
+  func changedShieldSettings() {
     let currentDomain = self.tabManager.selectedTab?.visibleURL?.baseDomain
     let browsers = UIApplication.shared.connectedScenes.compactMap({ $0 as? UIWindowScene })
       .compactMap({ $0.browserViewController })
@@ -1024,6 +1045,16 @@ extension BrowserViewController: ToolbarDelegate {
   }
 
   func tabToolbarDidPressBack(_ tabToolbar: ToolbarProtocol, button: UIButton) {
+    // Express Browser: Back on a YouTube video floats it and shows YouTube home, as Android's
+    // Back does; it goes back as usual when the video can't float.
+    let handledByYouTube = expressYouTube.handleBackOnWatchPage { [weak self] in
+      self?.expressGoBack()
+    }
+    if handledByYouTube { return }
+    expressGoBack()
+  }
+
+  private func expressGoBack() {
     tabManager.selectedTab?.goBack()
     tabManager.selectedTab?.browserData?.resetExternalAlertProperties()
     recordNavigationActionP3A(isNavigationActionForward: false)

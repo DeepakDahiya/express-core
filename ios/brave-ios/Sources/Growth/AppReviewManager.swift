@@ -14,6 +14,9 @@ import UIKit
 /// Singleton Manager handles App Review Criteria
 public class AppReviewManager: ObservableObject {
 
+  /// Express Browser turns Brave's rating prompts off (see `handleAppReview`).
+  static let isDisabledForExpress = true
+
   struct Constants {
     // Legacy Review Constants
     static let firstThreshold = 14
@@ -116,6 +119,10 @@ public class AppReviewManager: ObservableObject {
 
   public func handleAppReview(for logicType: AppReviewLogicType, using controller: UIViewController)
   {
+    // Express Browser: Brave's own rating prompts are off, as on Android, where
+    // `showBraveRateDialog` is commented out. The only ask is the one after background play
+    // (ExpressBackgroundPlayRating).
+    if Self.isDisabledForExpress { return }
     guard logicType == activeAppReviewLogicType else {
       return
     }

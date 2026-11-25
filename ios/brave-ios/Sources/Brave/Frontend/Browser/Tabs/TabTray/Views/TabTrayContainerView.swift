@@ -67,11 +67,6 @@ extension TabTrayController {
     }
 
     private(set) lazy var privateModeInfo = TabTrayPrivateModeInfoView().then {
-      $0.learnMoreButton.addTarget(
-        self,
-        action: #selector(privateModeLearnMoreAction),
-        for: .touchUpInside
-      )
       $0.setContentHuggingPriority(.defaultLow, for: .vertical)
       $0.isHidden = true
     }
@@ -124,27 +119,6 @@ extension TabTrayController {
 
         // FIXME: with `animated: true` it glitches out.
         collectionView.setCollectionViewLayout(layout, animated: false)
-      }
-    }
-
-    @objc func privateModeLearnMoreAction() {
-      privateModeInfo.detailsLabel.alpha = 0.0
-      UIView.animate(
-        withDuration: 0.15,
-        animations: {
-          self.privateModeInfo.learnMoreButton.isHidden = true
-          self.privateModeInfo.detailsLabel.isHidden = false
-        },
-        completion: { _ in
-          UIView.animate(withDuration: 0.15) {
-            self.privateModeInfo.detailsLabel.alpha = 1.0
-          }
-        }
-      )
-      // Needs to be done in a separate call so the stack view's height is updated properly based on the hidden
-      // status of learnMoreButton/detailsLabel
-      UIView.animate(withDuration: 0.2) {
-        self.privateModeInfo.updateContentInset()
       }
     }
 

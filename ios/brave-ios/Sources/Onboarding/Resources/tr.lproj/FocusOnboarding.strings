@@ -2,7 +2,7 @@
 "focusOnboarding.continueButtonTitle" = "Devam";
 
 /* The subtitle of the screen that requests user to set Brave as default */
-"focusOnboarding.defaultBrowserScreenDescription" = "Brave'i hemen varsayılan tarayıcınız olarak ayarlayın.";
+"focusOnboarding.defaultBrowserScreenDescription" = "Express Browser'ı hemen varsayılan tarayıcınız olarak ayarlayın.";
 
 /* The title of the screen that requests user to set Brave as default */
 "focusOnboarding.defaultBrowserScreenTitle" = "Ziyaret Ettiğiniz Her Sitede Reklam Engelleme";
@@ -38,5 +38,5 @@
 "focusOnboarding.urlBarIndicatorDescription" = "Daha az reklam & izleyiciyle seyretmenin tadını çıkarın.";
 
 /* The title of the popup which points to URL Bar after onboarding */
-"focusOnboarding.urlBarIndicatorTitle" = "Brave farkını görün";
+"focusOnboarding.urlBarIndicatorTitle" = "Express Browser farkını görün";
 

@@ -20,6 +20,7 @@ import Shared
 import Storage
 import SwiftUI
 import UIKit
+import UserNotifications
 import os.log
 
 extension Logger {
@@ -93,6 +94,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
   private var windowProtection: WindowProtection?
   static var shouldHandleUrpLookup = false
   static var shouldHandleInstallAttributionFetch = false
+  /// Express Browser: Brave's local notifications left pending are cleared once per launch.
+  private static var clearedBraveLocalNotifications = false
 
   // We currently only load a single (default) profile, so no need to create multiple states per
   // window/scene created.
@@ -216,6 +219,13 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
       else {
         Logger.module.error("[SCENE] - Invalid Navigation Path: \(context.url)")
         return
+      }
+
+      // A referral link passed in through the app's own scheme (open-url?url=…).
+      if case .url(let navigationPathURL, _) = routerpath, let pathURL = navigationPathURL,
+        !pathURL.isFileURL
+      {
+        scene.browserViewController?.handleExpressIncomingURL(pathURL)
       }
 
       if case .url(let navigationPathURL, _) = routerpath, let pathURL = navigationPathURL,
@@ -431,7 +441,16 @@ extension SceneDelegate {
         Preferences.General.isFirstLaunch.value
     }
 
-    PrivacyReportsManager.scheduleNotification(debugMode: !AppConstants.isOfficialBuild)
+    // Express Browser: Android schedules no local notifications. The weekly privacy report
+    // (Brave's Privacy Hub) and the default-browser reminder (Express has its own sheet) aren't
+    // scheduled any more; clear any an earlier build left pending.
+    if !SceneDelegate.clearedBraveLocalNotifications {
+      SceneDelegate.clearedBraveLocalNotifications = true
+      UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: [
+        BrowserViewController.defaultBrowserNotificationId,
+        PrivacyReportsManager.notificationID,
+      ])
+    }
     PrivacyReportsManager.consolidateData()
     PrivacyReportsManager.scheduleProcessingBlockedRequests(
       isPrivateBrowsing: browserViewController.privateBrowsingManager.isPrivateBrowsing
@@ -556,13 +575,7 @@ extension SceneDelegate {
 
       return
     case ActivityType.enableBraveVPN.identifier:
-      if let browserViewController = scene.browserViewController {
-        ActivityShortcutManager.shared.performShortcutActivity(
-          type: .enableBraveVPN,
-          using: browserViewController
-        )
-      }
-
+      // Express Browser hides Brave VPN.
       return
     case ActivityType.openBraveNews.identifier:
       let isNewsAvailable =
@@ -576,26 +589,18 @@ extension SceneDelegate {
 
       return
     case ActivityType.openPlayList.identifier:
-      if let browserViewController = scene.browserViewController {
-        ActivityShortcutManager.shared.performShortcutActivity(
-          type: .openPlayList,
-          using: browserViewController
-        )
-      }
-
+      // Express Browser hides Playlist.
+      return
     case ActivityType.openSyncedTabs.identifier:
-      if let browserViewController = scene.browserViewController {
-        ActivityShortcutManager.shared.performShortcutActivity(
-          type: .openSyncedTabs,
-          using: browserViewController
-        )
-      }
+      // Express Browser hides Sync.
       return
     default:
       break
     }
 
     if let url = userActivity.webpageURL {
+      // browser.express/refer?code=… attributes this install to the friend who shared it.
+      scene.browserViewController?.handleExpressIncomingURL(url)
       switch UniversalLinkManager.universalLinkType(for: url, checkPath: false) {
       case .buyVPN:
         scene.browserViewController?.presentCorrespondingVPNViewController()

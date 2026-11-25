@@ -173,22 +173,77 @@ struct StandardBrowserColors: BrowserColors {
   }
 }
 
-/// The set of browser colors specific to private mode
+/// The Express Browser Android app's private-tab colours.
+///
+/// Express Android removed Brave's purple private theme, so its private tabs use Chromium's
+/// incognito palette (`ui/android/java/res/values/color_palette.xml` and
+/// `semantic_colors_non_adaptive.xml`), which is dark in both light and dark mode. Values are
+/// resolved the way the Android app resolves them.
+enum ExpressIncognitoColors {
+  /// `toolbar_background_incognito`: `gm3_baseline_surface_dark`.
+  static let toolbar = UIColor(rgb: 0x131314)
+  /// Chromium's `toolbar_text_box_background_incognito`:
+  /// `gm3_baseline_surface_container_highest_dark`. (Express Android still overrides this one
+  /// with Brave's `primitive_private_window_10`, #22005D, in `brave_colors.xml`.)
+  static let textBox = UIColor(rgb: 0x333537)
+  /// `ntp_bg_incognito` and the private tab switcher (`default_bg_color_dark`): Chromium's
+  /// #131314, and Express's `values-night` #202124 in dark mode.
+  static let pageBackground = UIColor {
+    $0.userInterfaceStyle == .dark ? UIColor(rgb: 0x202124) : UIColor(rgb: 0x131314)
+  }
+  /// `default_text_color_light` (`baseline_neutral_90`), also `default_icon_color_light`.
+  static let textPrimary = UIColor(rgb: 0xE3E3E3)
+  /// `default_text_color_secondary_light` (`baseline_neutral_variant_80`), also the address
+  /// bar's hint text.
+  static let textSecondary = UIColor(rgb: 0xC4C7C5)
+  /// `default_text_color_disabled_light` / `default_icon_color_disabled_light`
+  /// (`baseline_neutral_90` at 38%).
+  static let textDisabled = UIColor(rgba: 0xE3E3_E361)
+  /// `incognito_emphasis`: the highlighted words on the private new tab page.
+  static let emphasis = UIColor.white
+  /// `ntp_incognito_icon_color` (`baseline_neutral_95`), the tint of the page's icon.
+  static let pageIcon = UIColor(rgb: 0xF2F2F2)
+  /// `default_text_color_link_light` (`baseline_primary_80`), which Brave's Android colours
+  /// set to #FF7654, and #FA7250 in dark mode.
+  static let link = UIColor {
+    $0.userInterfaceStyle == .dark ? UIColor(rgb: 0xFA7250) : UIColor(rgb: 0xFF7654)
+  }
+  /// Tab switcher cards (`gm3_baseline_surface_container_highest_dark`).
+  static let card = UIColor(rgb: 0x333537)
+  /// The tab switcher's mode toggle (`pane_switcher_background_incognito`).
+  static let toggleBackground = UIColor(rgb: 0x1E1F20)
+  /// The selected item of that toggle (`pane_switcher_selected_tab_incognito`).
+  static let toggleSelected = UIColor(rgb: 0x37393B)
+  /// `divider_line_bg_color_light` (`baseline_neutral_variant_30`).
+  static let divider = UIColor(rgb: 0x444746)
+  /// The address bar's suggestions: `omnibox_dropdown_bg_incognito`.
+  static let suggestionsBackground = UIColor(rgb: 0x282A2C)
+  /// `omnibox_scrolled_bg_incognito` (`gm3_baseline_surface_container_dark`).
+  static let suggestionsSection = UIColor(rgb: 0x1E1F20)
+  /// A suggestion row: `omnibox_suggestion_bg_incognito`.
+  static let suggestion = UIColor(rgb: 0x1B1B1B)
+  /// `default_scrim_color` (black at 65%).
+  static let scrim = UIColor(rgba: 0x0000_00A6)
+}
+
+/// The set of browser colors specific to private mode: Express Browser uses its Android app's
+/// grey (Chromium incognito) colours instead of Brave's purple private theme.
 struct PrivateModeBrowserColors: BrowserColors {
   var textPrimary: UIColor {
-    .init(braveSystemName: .primitivePrivateWindow98)
+    ExpressIncognitoColors.textPrimary
   }
 
   var textSecondary: UIColor {
-    .init(braveSystemName: .primitivePrivateWindow80)
+    ExpressIncognitoColors.textSecondary
   }
 
   var textTertiary: UIColor {
-    .init(braveSystemName: .primitivePrivateWindow70)
+    // Android's address bar hint uses the secondary text colour.
+    ExpressIncognitoColors.textSecondary
   }
 
   var textDisabled: UIColor {
-    .init(rgba: 0xEEEB_FF80)
+    ExpressIncognitoColors.textDisabled
   }
 
   var textInteractive: UIColor {
@@ -196,11 +251,11 @@ struct PrivateModeBrowserColors: BrowserColors {
   }
 
   var iconDefault: UIColor {
-    .init(braveSystemName: .primitivePrivateWindow70)
+    ExpressIncognitoColors.textPrimary
   }
 
   var iconDisabled: UIColor {
-    .init(rgba: 0xA380_FF80)
+    ExpressIncognitoColors.textDisabled
   }
 
   var iconActive: UIColor {
@@ -208,19 +263,19 @@ struct PrivateModeBrowserColors: BrowserColors {
   }
 
   var browserButtonBackgroundHover: UIColor {
-    .init(braveSystemName: .primitivePrivateWindow20)
+    ExpressIncognitoColors.toggleSelected
   }
 
   var browserButtonBackgroundActive: UIColor {
-    .init(braveSystemName: .primitivePrivateWindow5)
+    ExpressIncognitoColors.toggleBackground
   }
 
   var tabSwitcherForeground: UIColor {
-    .init(braveSystemName: .privateWindow20)
+    ExpressIncognitoColors.card
   }
 
   var tabSwitcherCellBackground: UIColor {
-    .init(braveSystemName: .privateWindow20)
+    ExpressIncognitoColors.card
   }
 
   var tabSwitcherSelectedCellBorder: UIColor {
@@ -228,11 +283,11 @@ struct PrivateModeBrowserColors: BrowserColors {
   }
 
   var tabSwitcherBackground: UIColor {
-    .init(braveSystemName: .privateWindow5)
+    ExpressIncognitoColors.pageBackground
   }
 
   var containerBackground: UIColor {
-    .init(braveSystemName: .primitivePrivateWindow10)
+    ExpressIncognitoColors.textBox
   }
 
   var containerInteractive: UIColor {
@@ -240,43 +295,45 @@ struct PrivateModeBrowserColors: BrowserColors {
   }
 
   var containerScrim: UIColor {
-    .init(rgba: 0x1305_2AB3)
+    ExpressIncognitoColors.scrim
   }
 
   var containerFrostedGlass: UIColor {
-    .init(rgba: 0x2A0D_58EB)
+    ExpressIncognitoColors.toolbar.withAlphaComponent(0.92)
   }
 
   var chromeBackground: UIColor {
-    .init(braveSystemName: .primitivePrivateWindow5)
+    ExpressIncognitoColors.toolbar
   }
 
   var dividerSubtle: UIColor {
-    .init(rgba: 0x7B63_BF66)
+    ExpressIncognitoColors.divider
   }
 
   var dividerStrong: UIColor {
-    .init(rgba: 0xA380_FF66)
+    // `baseline_neutral_variant_50`
+    UIColor(rgb: 0x747775)
   }
 
   var tabBarTabBackground: UIColor {
-    .init(braveSystemName: .primitivePrivateWindow5)
+    ExpressIncognitoColors.toolbar
   }
 
   var tabBarTabActiveBackground: UIColor {
-    .init(braveSystemName: .primitivePrivateWindow10)
+    // `gm3_baseline_surface_container_high_dark`
+    UIColor(rgb: 0x282A2C)
   }
 
   var favoritesAndSearchScreenBackground: UIColor {
-    .init(light: .primitivePrivateWindow25, dark: .primitivePrivateWindow5)
+    ExpressIncognitoColors.suggestionsBackground
   }
 
   var favoritesAndSearchScreenSectionBackground: UIColor {
-    .init(light: .primitivePrivateWindow40, dark: .primitivePrivateWindow15)
+    ExpressIncognitoColors.suggestionsSection
   }
 
   var favoritesAndSearchScreenSectionGroupBackground: UIColor {
-    .init(light: .primitivePrivateWindow50, dark: .primitivePrivateWindow25)
+    ExpressIncognitoColors.suggestion
   }
 }
 

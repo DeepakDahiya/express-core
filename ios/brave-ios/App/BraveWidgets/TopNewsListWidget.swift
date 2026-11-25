@@ -92,7 +92,8 @@ private struct TopNewsListView: View {
       Link(
         destination: URL(
           string:
-            "\(AppURLScheme.appURLScheme)://shortcut?path=\(WidgetShortcut.braveNews.rawValue)"
+            // News isn't in Express Browser (this widget isn't offered), so this opens a new tab.
+            "\(AppURLScheme.appURLScheme)://shortcut?path=\(WidgetShortcut.newTab.rawValue)"
         )!
       ) {
         Text(Strings.Widgets.newsClusteringReadMoreButtonTitle)

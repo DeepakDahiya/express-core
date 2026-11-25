@@ -2,7 +2,7 @@
 "About" = "Despre";
 
 /* The title of the screen explaining Brave Shields */
-"AboutBraveShields" = "Despre Brave Shields";
+"AboutBraveShields" = "Despre Shields";
 
 /* The body of the screen explaining Brave Shields */
 "AboutBraveShieldsBody" = "Site-urile adesea includ cookie-uri și script-uri care încearcă să te identifice pe tine și dispozitivul tău. Vor să afle cine ești și te urmăresc pe internet, monitorizându-ți activitatea pe fiecare site.\n\nBrave le blochează astfel încât să poți naviga pe internet fără să fii urmărit.";
@@ -11,7 +11,7 @@
 "AccessPhotoDeniedAlertMessage" = "Asta îți va permite să salvezi imaginea în Galerie.";
 
 /* See http://mzl.la/1G7uHo7 */
-"AccessPhotoDeniedAlertTitle" = "Brave dorește să acceseze galeria ta de poze.";
+"AccessPhotoDeniedAlertTitle" = "Express Browser dorește să acceseze galeria ta de poze.";
 
 /* Label to display in the Discoverability overlay for keyboard shortcuts */
 "addBookmarkTitle" = "Adaugă marcaj";
@@ -44,7 +44,7 @@
 "AlwaysShow" = "Activat";
 
 /* Touch ID or PIN entry prompt subtitle when accessing Brave with the Browser Lock feature enabled */
-"AuthenticationLoginsTouchReason" = "Asta îți autentifică accesul la Brave";
+"AuthenticationLoginsTouchReason" = "Asta îți autentifică accesul la Express Browser";
 
 /* Label for Cancel button */
 "AuthPromptAlertCancelButtonTitle" = "Anulare";
@@ -176,7 +176,7 @@
 "BraveShieldsAdvancedControls" = "Controale avansate";
 
 /* No comment provided by engineer. */
-"BraveShieldsAndPrivacy" = "Brave Shields și Confidențialitate";
+"BraveShieldsAndPrivacy" = "Shields și Confidențialitate";
 
 /* No comment provided by engineer. */
 "BraveShieldsAndPrivacyTitle" = "Shields și Confidențialitate";
@@ -203,7 +203,7 @@
 "BraveShieldsSiteBroken" = "Dacă site-ul pare nefuncțional, încearcă să dezactivezi Shields";
 
 /* Context: 'Brave Shields Up' or 'Brave Shields Down' */
-"BraveShieldsStatusTitle" = "Brave Shields";
+"BraveShieldsStatusTitle" = "Shields";
 
 /* Context: The 'Down' in 'Brave Shields Down' */
 "BraveShieldsStatusValueDown" = "Jos";
@@ -212,7 +212,7 @@
 "BraveShieldsStatusValueUp" = "Sus";
 
 /* The accessibility hint spoken when focused on the main shields toggle */
-"BraveShieldsToggleHint" = "Apasă de două ori pentru a activa sau dezactiva Brave Shields";
+"BraveShieldsToggleHint" = "Apasă de două ori pentru a activa sau dezactiva Shields";
 
 /* The name of the feature */
 "bravetalk.braveTalkTitle" = "Brave Talk";
@@ -227,13 +227,13 @@
 "BraveTranslate.searchInputTitle" = "Căutare";
 
 /* This text is for the settings menu for all Brave-Translate options. */
-"BraveTranslate.settingsMenuTitle" = "Brave Translate";
+"BraveTranslate.settingsMenuTitle" = "Translate";
 
 /* This text is for the translate settings screen. It's the title of the settings menu. */
-"BraveTranslate.settingsScreenTitle" = "Brave Translate";
+"BraveTranslate.settingsScreenTitle" = "Translate";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
-"BraveTranslate.settingsTranslateEnabledOptionDescription" = "Atunci când este activat, Brave Translate va detecta automat limba curentă a paginii tale și va afișa un buton de traducere în bara URL.";
+"BraveTranslate.settingsTranslateEnabledOptionDescription" = "Atunci când este activat, Express Browser va detecta automat limba curentă a paginii tale și va afișa un buton de traducere în bara URL.";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
 "BraveTranslate.settingsTranslateEnabledOptionTitle" = "Traducere activată";
@@ -248,7 +248,7 @@
 "BrowserLock" = "Blocare Browser";
 
 /* Description for setting to enable the browser lock privacy feature */
-"BrowserLockDescription" = "Deblocare Brave cu Touch ID, Face ID sau passcode de sistem.";
+"BrowserLockDescription" = "Deblocare Express Browser cu Touch ID, Face ID sau passcode de sistem.";
 
 /* Settings item for clearing browsing history */
 "BrowsingHistory" = "Istoric de navigare";
@@ -263,13 +263,13 @@
 "callout.bottomBarCalloutDescription" = "Mută bara de adrese, filele, marcajele și alte instrumente în partea de jos a browser-ului.";
 
 /* Title for Bottom Bar Callout View */
-"callout.bottomBarCalloutTitle" = "Personalizează bara de file Brave";
+"callout.bottomBarCalloutTitle" = "Personalizează bara de file Express Browser";
 
 /* Description - Description used for main button in Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutButtonDescription" = "Setează Brave ca browser implicit?";
+"callout.defaultBrowserCalloutButtonDescription" = "Setează Express Browser ca browser implicit?";
 
 /* Subtitle - Description for Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutDescription" = "Atunci când Brave este setat ca browser implicit, orice link pe care îl accesezi va beneficia de setările de confidențialitate ale lui Brave.  ";
+"callout.defaultBrowserCalloutDescription" = "Atunci când Express Browser este setat ca browser implicit, orice link pe care îl accesezi va beneficia de setările de confidențialitate ale lui Express Browser.  ";
 
 /* Title for main button in Default Browser Full Screen Callout */
 "callout.defaultBrowserCalloutPrimaryButtonTitle" = "Setează ca implicit";
@@ -596,25 +596,25 @@
 "defaultBrowserCallout.introOpenSettingsButtonText" = "Deschide Setările";
 
 /* Primary text on default browser popup screen */
-"defaultBrowserCallout.introPrimaryText" = "Deschide toate link-urile în Brave pentru a îți proteja confidențialitatea";
+"defaultBrowserCallout.introPrimaryText" = "Deschide toate link-urile în Express Browser pentru a îți proteja confidențialitatea";
 
 /* Secondary text on default browser popup. */
-"defaultBrowserCallout.introSecondaryText" = "Brave Shields blochează reclamele și urmăritorii și îți economisește date și timp la fiecare site vizitat";
+"defaultBrowserCallout.introSecondaryText" = "Shields blochează reclamele și urmăritorii și îți economisește date și timp la fiecare site vizitat";
 
 /* Tertiary text on default browser popup screen */
-"defaultBrowserCallout.introTertiaryText" = "Deschide Setările, apasă pe \"Aplicație implicită browser\" și selectează Brave.";
+"defaultBrowserCallout.introTertiaryText" = "Deschide Setările, apasă pe \"Aplicație implicită browser\" și selectează Express Browser.";
 
 /* Notification body to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationBody" = "Setează Brave ca browser implicit";
+"defaultBrowserCallout.notificationBody" = "Setează Express Browser ca browser implicit";
 
 /* Notification title to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationTitle" = "Obține protecția Brave pentru fiecare link";
+"defaultBrowserCallout.notificationTitle" = "Obține protecția Express Browser pentru fiecare link";
 
 /* No comment provided by engineer. */
 "defaultBrowserCalloutCloseAccesabilityLabel" = "Închide fereastra de browser implicit";
 
 /* Name for default Brave theme. */
-"defaultThemeName" = "Brave implicit";
+"defaultThemeName" = "Express Browser implicit";
 
 /* No comment provided by engineer. */
 "Delete" = "Șterge";
@@ -719,7 +719,7 @@
 "ErrorPageReloadButtonTitle" = "Reîncarcă";
 
 /* Additional warning text when clicking the Advanced button on error pages. %@ is a placeholder, do not localize it. Do not localize <br />. */
-"ErrorPagesAdvancedErrorPinningDetails" = "%1$@ utilizează în mod normal criptarea pentru a-ți proteja informațiile. Când Brave a încercat să se conecteze la %2$@ de data aceasta, site-ul a trimis înapoi acreditări neobișnuite și incorecte. Acest lucru se poate întâmpla atunci când un atacator încearcă să pretindă că este %3$@ sau un ecran de conectare Wi-Fi a întrerupt conexiunea. Informațiile tale sunt în continuare securizate, deoarece Brave a întrerupt conexiunea înainte ca orice date să fie schimbate.<br />Nu poți vizita %4$@ în acest moment, deoarece site-ul web utilizează certificate pinning. Erorile de rețea și atacurile sunt de obicei temporare, astfel încât această pagină va funcționa probabil mai târziu.";
+"ErrorPagesAdvancedErrorPinningDetails" = "%1$@ utilizează în mod normal criptarea pentru a-ți proteja informațiile. Când Express Browser a încercat să se conecteze la %2$@ de data aceasta, site-ul a trimis înapoi acreditări neobișnuite și incorecte. Acest lucru se poate întâmpla atunci când un atacator încearcă să pretindă că este %3$@ sau un ecran de conectare Wi-Fi a întrerupt conexiunea. Informațiile tale sunt în continuare securizate, deoarece Express Browser a întrerupt conexiunea înainte ca orice date să fie schimbate.<br />Nu poți vizita %4$@ în acest moment, deoarece site-ul web utilizează certificate pinning. Erorile de rețea și atacurile sunt de obicei temporare, astfel încât această pagină va funcționa probabil mai târziu.";
 
 /* Additional warning text when clicking the Advanced button on error pages */
 "ErrorPagesAdvancedWarningDetails" = "Acest server nu a putut dovedi că este %@; certificatul său de securitate nu este recunoscut de către sistemul de operare. Acest lucru poate fi cauzat de o configurație greșită sau de un atacator care încearcă să îți intercepteze conexiunea.";
@@ -759,6 +759,39 @@
 
 /* Button label to temporarily continue to the site from the certificate error page */
 "ErrorPagesProceedAnywayButton" = "Continuă către %@ (nesigur)";
+
+/* Link on the private new tab page to a page about private mode. */
+"expressPrivateNTP.learnMore" = "Află mai multe";
+
+/* Bullet point: data that private mode doesn't save. Data that websites save on the device, such as sign-in state. */
+"expressPrivateNTP.notSavedCookies" = "cookie-urile și datele privind site-urile,";
+
+/* Bullet point: data that private mode doesn't save. Names, addresses, passwords etc. that people enter into forms on the web. */
+"expressPrivateNTP.notSavedForms" = "informațiile introduse în formulare.";
+
+/* Introduces a bulleted list of data that private mode doesn't save. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.notSavedHeader" = "Express Browser <em>nu va salva</em>:";
+
+/* Bullet point: data that private mode doesn't save. 'Browsing history' is the history of visited websites. */
+"expressPrivateNTP.notSavedHistory" = "istoricul de navigare,";
+
+/* Subtitle of the private new tab page, under its title. */
+"expressPrivateNTP.subtitle" = "Alte persoane care folosesc acest dispozitiv nu îți vor vedea activitatea, astfel că poți naviga în mod privat. Acest lucru nu va schimba modul în care site-urile pe care le accesezi și serviciile pe care acestea le folosesc, inclusiv Express Browser, colectează datele. Descărcările și marcajele se vor salva.";
+
+/* Title of the private new tab page. Private mode hides your browsing from other people using the same device; it does not make you anonymous. */
+"expressPrivateNTP.title" = "Ați trecut în modul incognito";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleEmployer" = "angajatorul sau școala ta;";
+
+/* Introduces a bulleted list of who might still see what the user does in private mode. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.visibleHeader" = "Este posibil ca activitatea ta <em>să fie în continuare vizibilă</em> pentru:";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleProvider" = "furnizorul de servicii de internet.";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleWebsites" = "site-urile pe care le accesezi;";
 
 /* %@ will launch an external application */
 "ExternalAppURLAlertMessage" = "%@ va lansa o aplicație externă";
@@ -1187,13 +1220,13 @@
 "OBSearchEngineDetail" = "Selectează motorul de căutare implicit";
 
 /* Title for search engine onboarding screen */
-"OBSearchEngineTitle" = "Bun venit la browser-ul Brave";
+"OBSearchEngineTitle" = "Bun venit la browser-ul Express Browser";
 
 /* Detail text for shields onboarding screen */
 "OBShieldsDetail" = "Blochează urmăritorii ce îți afectează confidențialitatea astfel încât să poți naviga fără a fi urmărit pe internet";
 
 /* Title for shields onboarding screen */
-"OBShieldsTitle" = "Brave Shields";
+"OBShieldsTitle" = "Shields";
 
 /* Button to show the Brave Rewards Ads. */
 "OBShowMeButton" = "Arată-mi";
@@ -1205,10 +1238,10 @@
 "onboarding.blockedAdsOnboardingBigTechInformationText" = "%1$@ și încă %2$lld alte reclame și urmăritori blocați";
 
 /* The footnote indicating what Brave shields is blocking */
-"onboarding.blockedAdsOnboardingFootnoteText" = "Vizualizează toate lucrurile dăunătoare pe care Brave le-a blocat cu ajutorul Shields pe fiecare pagină.";
+"onboarding.blockedAdsOnboardingFootnoteText" = "Vizualizează toate lucrurile dăunătoare pe care Express Browser le-a blocat cu ajutorul Shields pe fiecare pagină.";
 
 /* The text describing user where they should press in order to open Shield panel */
-"onboarding.blockedAdsOnboardingInstructionsText" = "Apasă pentru a deschide Brave Shields.  ";
+"onboarding.blockedAdsOnboardingInstructionsText" = "Apasă pentru a deschide Shields.  ";
 
 /* The description text shown when there is no big tech tracker among trackers. Example usage: 31 Ads & trackers blocked. The number here is presented separately so it is not in translation. */
 "onboarding.blockedAdsOnboardingNoBigTechInformationText" = "Reclame & monitoare de activitate blocate";
@@ -1232,13 +1265,13 @@
 "onboarding.ntpOnboardingPopOverTrackerDescription" = "Prin blocarea urmăritorilor și a reclamelor, site-urile web utilizează mai puține date și se încarcă mult mai repede.";
 
 /* Description for the Omnibox (URL Bar) pop-over that describes faster load times. */
-"onboarding.omniboxOnboardingPopOverDescription" = "Vezi diferența Brave:\nFără reclame. Fără urmăritori. Încărcarea paginii este mult mai rapidă.";
+"onboarding.omniboxOnboardingPopOverDescription" = "Vezi diferența Express Browser:\nFără reclame. Fără urmăritori. Încărcarea paginii este mult mai rapidă.";
 
 /* Title for the Omnibox (URL Bar) pop-over that describes faster load times. */
 "onboarding.omniboxOnboardingPopOverTitle" = "Tastează numele sau adresa URL a unui site";
 
 /* Title for Welcome Screen in Onboarding */
-"onboarding.welcomeScreenTitle" = "Bun venit la Brave";
+"onboarding.welcomeScreenTitle" = "Bun venit la Express Browser";
 
 /* Continue button to navigate to next onboarding screen. */
 "OnboardingContinueButton" = "Continuă";
@@ -1280,7 +1313,7 @@
 "OpenMobileConfigurationAlertTitle" = "Profil de configurare disponibil";
 
 /* Context menu option for opening a link in a new private tab */
-"OpenNewPrivateTabButtonTitle" = "Deschide în filă privată nouă";
+"OpenNewPrivateTabButtonTitle" = "Deschideți într-o filă incognito";
 
 /* Context menu item for opening a link in a new tab */
 "OpenNewTabButtonTitle" = "Deschide în filă nouă";
@@ -1487,7 +1520,7 @@
 "PersistentPrivateBrowsing" = "Navigare privată persistentă";
 
 /* Persistent private browsing alert message to existing users */
-"PersistentPrivateBrowsingAlertMessage" = "Permite ca Brave să restabilească filele de navigare privată chiar dacă închizi / redeschizi aplicația";
+"PersistentPrivateBrowsingAlertMessage" = "Permite ca Express Browser să restabilească filele de navigare privată chiar dacă închizi / redeschizi aplicația";
 
 /* Persistent private browsing alert title to existing users */
 "PersistentPrivateBrowsingAlertTitle" = "Restabilește filele private";
@@ -1931,7 +1964,7 @@
 "privacyHub.lastWeekHeader" = "Săptămâna trecută";
 
 /* Do NOT localize asterisk('*') characters, they are used to make the text bold in the app. It says which tracker was blocked on how many websites, example usage: 'Google Analytics was blocked by Brave Shields on 42 sites' */
-"privacyHub.mostFrequentTrackerAndAdBody" = "**%1$@** a fost blocat de Brave Shields pe **%2$lld** site-uri.";
+"privacyHub.mostFrequentTrackerAndAdBody" = "**%1$@** a fost blocat de Shields pe **%2$lld** site-uri.";
 
 /* Title under which we display a tracker which was most frequently detected by our ad blocking mechanism. */
 "privacyHub.mostFrequentTrackerAndAdTitle" = "Cel mai frecvent urmăritor / reclamă";
@@ -1949,7 +1982,7 @@
 "privacyHub.notificationCalloutButtonText" = "Activează notificările";
 
 /* Message of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
-"privacyHub.notificationMessage" = "O recapitulare a modului în care Brave te-a protejat online în această săptămână.";
+"privacyHub.notificationMessage" = "O recapitulare a modului în care Express Browser te-a protejat online în această săptămână.";
 
 /* Title of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
 "privacyHub.notificationTitle" = "Raportul săptămânal de confidențialitate ";
@@ -2039,10 +2072,10 @@
 "PrivateBrowsingOnlyWarning" = "Navigarea exclusiv privată va închide toate filele curente și te va deconecta de pe toate site-urile.";
 
 /* Private tab details */
-"PrivateTabBody" = "Filele private nu sunt salvate în Brave insă asta nu îți acordă anonimitate online. Site-urile pe care le vizitezi într-o filă privată  nu vor apărea în istoric iar cookie-urile asociate dispar întotdeauna când le închizi - nu va rămâne nicio urmă a acestora în Brave. Cu toate acestea, descărcările vor fi salvate.\nOperatorul tău de telefonie mobilă (sau proprietarul rețelei Wi-Fi sau VPN la care ești conectat) poate vedea ce site-uri vizitezi iar aceste site-uri vor afla adresa ta IP publică chiar și în navigarea din filele private.";
+"PrivateTabBody" = "Filele private nu sunt salvate în Express Browser insă asta nu îți acordă anonimitate online. Site-urile pe care le vizitezi într-o filă privată  nu vor apărea în istoric iar cookie-urile asociate dispar întotdeauna când le închizi - nu va rămâne nicio urmă a acestora în Express Browser. Cu toate acestea, descărcările vor fi salvate.\nOperatorul tău de telefonie mobilă (sau proprietarul rețelei Wi-Fi sau VPN la care ești conectat) poate vedea ce site-uri vizitezi iar aceste site-uri vor afla adresa ta IP publică chiar și în navigarea din filele private.";
 
 /* Private tab detail text */
-"PrivateTabDetails" = "Utilizarea filelor private modifică doar ceea ce face Brave pe dispozitiv, nu schimbă comportamentul altcuiva.\n\nSite-urile îți află adresa IP de fiecare dată când le vizitezi. Pe baza adresei IP pot aproxima deseori unde te afli - de obicei, orașul tău. Uneori, această localizare poate fi mult mai specifică. De asemenea, site-urile știu tot ceea ce le spui în mod specific, cum ar fi termenii de căutare. Dacă te conectezi la un site prin folosirea de credențiale, site-ul te va asocia ca proprietarul acelui cont. Vei fi în continuare deconectat atunci când închizi fila privată deoarece Brave va elimina cookie-urile care te mențin conectat.\n\nCine te conectează la Internet (ISP-ul) poate vedea toată activitatea ta în rețea. Adesea, acesta este operatorul tău de telefonie mobilă. Dacă ești conectat la o rețea Wi-Fi, acesta este proprietarul rețelei respective iar dacă utilizezi un VPN, atunci este cel care administrează acel VPN. ISP-ul poate vedea ce site-uri vizitezi pe măsură ce le vizitezi. Dacă acele site-uri utilizează HTTPS, nu pot face mai mult decât o presupunere despre ceea ce faci pe acele site-uri. Dacă un site utilizează însă doar HTTP, atunci ISP-ul poate vedea totul: termenii de căutare, paginile pe care le citești cât și link-urile pe care le urmezi.\n\nÎn cazul în care un angajator îți gestionează dispozitivul, acesta ar putea, de asemenea, să urmărească to ce faci cu el. Folosirea filelor private probabil că nu îi va împiedica să știe ce site-uri ai accesat. Altcineva care are acces la dispozitiv ar putea, de asemenea, să fi instalat un software care îți monitorizează activitatea, iar filele private nu te vor proteja nici în acest caz.";
+"PrivateTabDetails" = "Utilizarea filelor private modifică doar ceea ce face Express Browser pe dispozitiv, nu schimbă comportamentul altcuiva.\n\nSite-urile îți află adresa IP de fiecare dată când le vizitezi. Pe baza adresei IP pot aproxima deseori unde te afli - de obicei, orașul tău. Uneori, această localizare poate fi mult mai specifică. De asemenea, site-urile știu tot ceea ce le spui în mod specific, cum ar fi termenii de căutare. Dacă te conectezi la un site prin folosirea de credențiale, site-ul te va asocia ca proprietarul acelui cont. Vei fi în continuare deconectat atunci când închizi fila privată deoarece Express Browser va elimina cookie-urile care te mențin conectat.\n\nCine te conectează la Internet (ISP-ul) poate vedea toată activitatea ta în rețea. Adesea, acesta este operatorul tău de telefonie mobilă. Dacă ești conectat la o rețea Wi-Fi, acesta este proprietarul rețelei respective iar dacă utilizezi un VPN, atunci este cel care administrează acel VPN. ISP-ul poate vedea ce site-uri vizitezi pe măsură ce le vizitezi. Dacă acele site-uri utilizează HTTPS, nu pot face mai mult decât o presupunere despre ceea ce faci pe acele site-uri. Dacă un site utilizează însă doar HTTP, atunci ISP-ul poate vedea totul: termenii de căutare, paginile pe care le citești cât și link-urile pe care le urmezi.\n\nÎn cazul în care un angajator îți gestionează dispozitivul, acesta ar putea, de asemenea, să urmărească to ce faci cu el. Folosirea filelor private probabil că nu îi va împiedica să știe ce site-uri ai accesat. Altcineva care are acces la dispozitiv ar putea, de asemenea, să fi instalat un software care îți monitorizează activitatea, iar filele private nu te vor proteja nici în acest caz.";
 
 /* Private tab information link */
 "PrivateTabLink" = "Află mai multe despre filele private.";
@@ -2054,7 +2087,7 @@
 "QuickSearchEngines" = "Motoare de căutare rapidă";
 
 /* Open the App Store to rate Brave. */
-"RateBrave" = "Evaluează Brave";
+"RateBrave" = "Evaluează Express Browser";
 
 /* Accessibility label for button increasing font size in display settings of reader mode */
 "ReaderModeBiggerFontButtonAccessibilityLabel" = "Măreste dimensiunea textului";
@@ -2243,10 +2276,10 @@
 "RestoreTabNegativeButtonTitle" = "Nu";
 
 /* Restore Tabs Prompt Description */
-"RestoreTabOnCrashAlertMessage" = "Din păcate, Brave s-a blocat sau nu a fost închis corect.\nRestabilește filele?";
+"RestoreTabOnCrashAlertMessage" = "Din păcate, Express Browser s-a blocat sau nu a fost închis corect.\nRestabilește filele?";
 
 /* Restore Tabs Prompt Title */
-"RestoreTabOnCrashAlertTitle" = "Brave s-a închis în mod neașteptat.";
+"RestoreTabOnCrashAlertTitle" = "Express Browser s-a închis în mod neașteptat.";
 
 /* Body for Brave Talk rewards opt-in screen */
 "rewards.braveTalkRewardsOptInBody" = "Cu Brave Rewards poți vizualiza reclame care protejează confidențialitatea din rețeaua Brave Ads. Fără urmăritori. Fără încetiniri. Datele tale rămân complet în siguranță.";
@@ -2573,7 +2606,7 @@
 "searchSuggestionsSubtitle" = "Doriți să activezi sugestiile de Căutare?";
 
 /* Title of an action that allows user to perform a one-click web search for selected text */
-"SearchWithBrave" = "Caută cu Brave";
+"SearchWithBrave" = "Caută cu Express Browser";
 
 /* Settings security section title */
 "Security" = "Securitate";
@@ -2582,16 +2615,16 @@
 "sendButtonTitle" = "Trimite";
 
 /* Message displayed in the crash dialog above the buttons used to select when sending reports */
-"SendCrashReportAlertMessage" = "Trimite un raport de crash astfel încât Brave să poată rezolva problema?";
+"SendCrashReportAlertMessage" = "Trimite un raport de crash astfel încât Express Browser să poată rezolva problema?";
 
 /* Title for prompt displayed to user after the app crashes */
-"SendCrashReportAlertTitle" = "Oops! Brave s-a blocat";
+"SendCrashReportAlertTitle" = "Oops! Express Browser s-a blocat";
 
 /* Used as a button label for crash dialog prompt */
 "SendReportButtonTitle" = "Trimite raportul";
 
 /* No comment provided by engineer. */
-"setDefaultBrowserCalloutTitle" = "Brave poate fi acum setat ca browser implicit în iOS. Apasă aici pentru a deschide setările.";
+"setDefaultBrowserCalloutTitle" = "Express Browser poate fi acum setat ca browser implicit în iOS. Apasă aici pentru a deschide setările.";
 
 /* Settings item to set the Brave as a default browser on the iOS device. */
 "setDefaultBrowserSettingsCell" = "Setează ca browser implicit";
@@ -2615,7 +2648,7 @@
 "settings.autocloseTabsSetting" = "Închide filele";
 
 /* Description of autoclose tabs feature. */
-"settings.autocloseTabsSettingFooter" = "Permite ca Brave să închidă automat filele care nu au fost vizualizate recent.";
+"settings.autocloseTabsSettingFooter" = "Permite ca Express Browser să închidă automat filele care nu au fost vizualizate recent.";
 
 /* Label for the navigation link to quality settings view */
 "settings.highestQualityPlayback" = "Redare de cea mai înaltă calitate";
@@ -2630,7 +2663,7 @@
 "settings.media.rootSetting" = "Media";
 
 /* A toggle label which lets the user always open YouTube urls in Brave */
-"settings.openYouTubeInBrave" = "Deschide link-urile YouTube în Brave";
+"settings.openYouTubeInBrave" = "Deschide link-urile YouTube în Express Browser";
 
 /* No comment provided by engineer. */
 "settings.privacy.screenTimeSetting" = "Activează Screen Time";
@@ -2705,7 +2738,7 @@
 "shieldEducation.shareTheNewsTitle" = "Distribuie știrea";
 
 /* Subtitle for Shield Education Tracker Ad Warning */
-"shieldEducation.trackerAdWarningSubTitle" = "Brave Shields tocmai ți-a protejat confidențialitatea online.";
+"shieldEducation.trackerAdWarningSubTitle" = "Shields tocmai ți-a protejat confidențialitatea online.";
 
 /* Subtitle for Shield Education Tracker Count Share */
 "shieldEducation.trackerCountShareSubtitle" = "Felicitări, ai atins performanțe remarcabile.";
@@ -2720,13 +2753,13 @@
 "shieldEducation.videoAdBlockTitle" = "Reclamele sunt blocate în timp ce vizionezi videoclipuri pe acest website.";
 
 /* Section title for adbblock, tracking protection, HTTPS-E, and cookies */
-"ShieldsDefaults" = "Setări globale implicite Brave Shields";
+"ShieldsDefaults" = "Setări globale implicite Shields";
 
 /* Section footer for global shields defaults */
 "ShieldsDefaultsFooter" = "Acestea sunt setările implicite pentru Shields. Modificarea lor nu va afecta setările existente per site.";
 
 /* No comment provided by engineer. */
-"ShieldsDownDisclaimer" = "Navighezi pe acest site fără protecția de confidențialitate oferită de Brave. Nu este în regulă cu scuturile activate?";
+"ShieldsDownDisclaimer" = "Navighezi pe acest site fără protecția de confidențialitate oferită de Express Browser. Nu este în regulă cu scuturile activate?";
 
 /* shields overview message */
 "ShieldsOverview" = "Site Shields îți permit să controlezi momentul în care reclamele și urmăritorii sunt blocate pentru fiecare site pe care îl vizitezi. Dacă preferi să vezi reclame pe un anumit site, le poți activa aici.";
@@ -2753,7 +2786,7 @@
 "shortcuts.activityTypeClearHistorySuggestedPhrase" = "Șterge istoricul de browser";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeClearHistoryTitle" = "Șterge istoricul de navigare Brave";
+"shortcuts.activityTypeClearHistoryTitle" = "Șterge istoricul de navigare Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeEnableVPNDescription" = "Deschide browser-ul într-o filă nouă și activează VPN-ul";
@@ -2762,7 +2795,7 @@
 "shortcuts.activityTypeEnableVPNSuggestedPhrase" = "Activează VPN";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeEnableVPNTitle" = "Deschide Brave browser și activează VPN";
+"shortcuts.activityTypeEnableVPNTitle" = "Deschide Express Browser și activează VPN";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeNewPrivateTabSuggestedPhrase" = "Deschide o filă privată nouă";
@@ -2783,7 +2816,7 @@
 "shortcuts.activityTypeOpenBookmarksSuggestedPhrase" = "Deschide marcajele";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenBookmarksTitle" = "Deschide marcajele Brave browser";
+"shortcuts.activityTypeOpenBookmarksTitle" = "Deschide marcajele Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenBraveNewsTitle" = "Deschide Brave News";
@@ -2798,7 +2831,7 @@
 "shortcuts.activityTypeOpenHistoryListSuggestedPhrase" = "Deschide istoric browser";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenHistoryListTitle" = "Deschide istoricul Brave browser";
+"shortcuts.activityTypeOpenHistoryListTitle" = "Deschide istoricul Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenPlaylistDescription" = "Începe să redai videoclipurile tale în Playlist";
@@ -2819,7 +2852,7 @@
 "shortcuts.activityTypeOpenSyncedTabsTitle" = "File deschise pe alte dispozitive";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeTabDescription" = "Începe să cauți în siguranță pe web cu Brave";
+"shortcuts.activityTypeTabDescription" = "Începe să cauți în siguranță pe web cu Express Browser";
 
 /* No comment provided by engineer. */
 "shortcuts.customIntentOpenBookmarkSuggestedPhrase" = "Deschide site web din marcaje";
@@ -2831,7 +2864,7 @@
 "shortcuts.customIntentOpenWebsiteSuggestedPhrase" = "Deschide site web";
 
 /* Description for opening Brave Settings for altering Siri shortcut. */
-"shortcuts.shortcutOpenApplicationSettingsDescription" = "Această opțiune va deschide setările Brave. Pentru a modifica diverse opțiuni Siri, selectează elementul de meniu „Siri și căutare” și personalizează-ți opțiunile.";
+"shortcuts.shortcutOpenApplicationSettingsDescription" = "Această opțiune va deschide setările Express Browser. Pentru a modifica diverse opțiuni Siri, selectează elementul de meniu „Siri și căutare” și personalizează-ți opțiunile.";
 
 /* Button title that open application settings */
 "shortcuts.shortcutOpenApplicationSettingsTitle" = "Deschide Setările";
@@ -2927,10 +2960,10 @@
 "SiteShieldSettings" = "Shields";
 
 /* Title used when in warning pop-over when domain specific data save appears */
-"socialSharing.domainSpecificDataSavedTitle" = "În fiecare zi economisesc date folosind browserul Brave.";
+"socialSharing.domainSpecificDataSavedTitle" = "În fiecare zi economisesc date folosind browserul Express Browser.";
 
 /* Text used for social sharing together with Brave Shield values */
-"socialSharing.shareDescriptionTitle" = "În fiecare zi economisesc date folosind browserul Brave.";
+"socialSharing.shareDescriptionTitle" = "În fiecare zi economisesc date folosind browserul Express Browser.";
 
 /* Open search section of settings */
 "StandardTabSearch" = "Filă standard";
@@ -3356,7 +3389,7 @@
 "themeQRCodeShareButton" = "Trimite...";
 
 /* Title for QR popup encouraging users to share the code with their friends. */
-"themeQRCodeShareTitle" = "Împărtășește Brave cu prietenii tăi!";
+"themeQRCodeShareTitle" = "Împărtășește Express Browser cu prietenii tăi!";
 
 /* Selection to automatically color/style the user interface. */
 "ThemesAutomaticOption" = "Automat";
@@ -3509,19 +3542,19 @@
 "today.promoted" = "Promovat";
 
 /* Title for long press action sheet list which has item for rate / hide */
-"today.rateBraveCardActionSheetTitle" = "Evaluează Brave în App Store";
+"today.rateBraveCardActionSheetTitle" = "Evaluează Express Browser în App Store";
 
 /* Title for long press action that will hide Brave Rate Card */
 "today.rateBraveCardHideActionTitle" = "Ascunde";
 
 /* Button title / Title for long press action that will perform an action which open AppStore Rate screen */
-"today.rateBraveCardRateActionTitle" = "Evaluează Brave";
+"today.rateBraveCardRateActionTitle" = "Evaluează Express Browser";
 
 /* Subtitle shown on the Rate Brave Card */
 "today.rateBraveCardSubtitle" = "Spune-ne părerea ta!";
 
 /* Title shown on the Rate Brave Card */
-"today.rateBraveCardTitle" = "Îți place Brave?";
+"today.rateBraveCardTitle" = "Îți place Express Browser?";
 
 /* No comment provided by engineer. */
 "today.refresh" = "Actualizează";
@@ -3602,13 +3635,13 @@
 "ViewOn" = "Vezi pe %@";
 
 /* Explanation for warning alert why the microphone access required. */
-"voice.search.microphone.description.required" = "Te rog să permiți accesul lui Brave la microfon în setările de sistem iOS pentru a putea utiliza căutarea vocală anonimă.";
+"voice.search.microphone.description.required" = "Te rog să permiți accesul lui Express Browser la microfon în setările de sistem iOS pentru a putea utiliza căutarea vocală anonimă.";
 
 /* Title for warning alert microphone access is required. */
 "voice.search.microphone.title.required" = "Este necesar accesul la microfon";
 
 /* Disclaimer for screen to search using voice. */
-"voice.search.screen.disclaimer" = "Brave nu stochează și nu distribuie căutările tale vocale.";
+"voice.search.screen.disclaimer" = "Express Browser nu stochează și nu distribuie căutările tale vocale.";
 
 /* The date your wallet was created */
 "WalletCreationDate" = "Data creării portofelului";

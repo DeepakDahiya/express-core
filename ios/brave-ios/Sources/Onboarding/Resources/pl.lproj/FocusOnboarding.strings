@@ -2,7 +2,7 @@
 "focusOnboarding.continueButtonTitle" = "Kontynuuj";
 
 /* The subtitle of the screen that requests user to set Brave as default */
-"focusOnboarding.defaultBrowserScreenDescription" = "Ustaw Brave jako domyślną przeglądarkę już dziś.";
+"focusOnboarding.defaultBrowserScreenDescription" = "Ustaw Express Browser jako domyślną przeglądarkę już dziś.";
 
 /* The title of the screen that requests user to set Brave as default */
 "focusOnboarding.defaultBrowserScreenTitle" = "Blokowanie reklam w każdej odwiedzanej witrynie";
@@ -38,5 +38,5 @@
 "focusOnboarding.urlBarIndicatorDescription" = "Oglądaj wideo i ciesz się mniejszą liczbą reklam i elementów śledzących.";
 
 /* The title of the popup which points to URL Bar after onboarding */
-"focusOnboarding.urlBarIndicatorTitle" = "Zobacz, czym wyróżnia się Brave";
+"focusOnboarding.urlBarIndicatorTitle" = "Zobacz, czym wyróżnia się Express Browser";
 

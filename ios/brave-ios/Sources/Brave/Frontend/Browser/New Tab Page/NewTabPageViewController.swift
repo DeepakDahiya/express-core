@@ -11,6 +11,7 @@ import Combine
 import CoreData
 import Data
 import DesignSystem
+import ExpressCore
 import Growth
 import Preferences
 import Shared
@@ -92,6 +93,17 @@ protocol NewTabPageDelegate: AnyObject {
   func tappedQRCodeButton(url: URL)
   func showNTPOnboarding()
   func showNewTabTakeoverInfoBarIfNeeded()
+  /// Express Browser: opens the comments sheet (from a feed card).
+  func startExpressVoiceSearch()
+  var isExpressVoiceSearchAvailable: Bool { get }
+  func presentExpressComments(for target: ExpressCommentsTarget)
+  /// Express Browser: the comments, opened at `focusCommentID` (a card's first new take).
+  func presentExpressComments(for target: ExpressCommentsTarget, focusCommentID: String?)
+  /// Express Browser: a video post full screen, over its comments.
+  func presentExpressPostVideo(_ post: ExpressPost, videoURL: URL, startSeconds: Double?)
+  /// Express Browser: the header's search box moved (a scroll, a layout or the page coming
+  /// back), so the address bar can take over from it (Android `OnSearchBoxScrollListener`).
+  func expressNewTabPageSearchBoxDidMove(_ newTabPage: NewTabPageViewController)
 }
 
 /// The new tab page. Shows users a variety of information, including stats and
@@ -158,6 +170,12 @@ class NewTabPageViewController: UIViewController {
   )
 
   private let feedDataSource: FeedDataSource
+  /// Express Browser's feed, shared across tabs.
+  private let expressFeed: ExpressFeedDataSource
+  /// Whether this page has appeared before. The controller lives with its tab
+  /// (`TabBrowserData.newTabPageViewController`), so its first appearance is a newly opened
+  /// new tab page; later ones are the tab coming back to it.
+  private var hasAppearedBefore = false
   private let feedOverlayView = NewTabPageFeedOverlayView()
   private var preventReloadOnBraveNewsEnabledChange = false
 
@@ -173,6 +191,7 @@ class NewTabPageViewController: UIViewController {
     profilePrefs: any PrefService,
     dataSource: NTPDataSource,
     feedDataSource: FeedDataSource,
+    expressFeed: ExpressFeedDataSource,
     rewards: BraveRewards,
     privateBrowsingManager: PrivateBrowsingManager,
     p3aHelper: NewTabPageP3AHelper
@@ -181,6 +200,7 @@ class NewTabPageViewController: UIViewController {
     self.profilePrefs = profilePrefs
     self.rewards = rewards
     self.feedDataSource = feedDataSource
+    self.expressFeed = expressFeed
     self.privateBrowsingManager = privateBrowsingManager
     self.backgroundButtonsView = NewTabPageBackgroundButtonsView(
       privateBrowsingManager: privateBrowsingManager,
@@ -195,69 +215,62 @@ class NewTabPageViewController: UIViewController {
     Preferences.NewTabPage.showNewTabPrivacyHub.observe(from: self)
     Preferences.NewTabPage.showNewTabFavourites.observe(from: self)
 
-    sections = [
-      StatsSectionProvider(
-        isPrivateBrowsing: tab.isPrivate,
-        openPrivacyHubPressed: { [weak self] in
-          if self?.privateBrowsingManager.isPrivateBrowsing == true {
-            return
-          }
-
-          let host = UIHostingController(
-            rootView: PrivacyReportsManager.prepareView(
-              isPrivateBrowsing: privateBrowsingManager.isPrivateBrowsing
-            )
+    // Express Browser uses its Android app's new tab page: a header with the logo, search box,
+    // four sites and the tutorial video, then the Express feed. Brave's favorites, privacy
+    // hub, default-browser callout and Brave News are not shown.
+    if privateBrowsingManager.isPrivateBrowsing {
+      // Private tabs show Android's private new tab page (Chromium's "You've gone Private"
+      // page) instead.
+      sections = [
+        ExpressPrivateNTPSectionProvider(openURL: { [weak self] url in
+          self?.delegate?.navigateToInput(
+            url.absoluteString,
+            inNewTab: false,
+            switchingToPrivateMode: false
           )
-          host.rootView.onDismiss = { [weak self] in
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-              guard let self = self else { return }
-
-              // Handle App Rating
-              // User finished viewing the privacy report (tapped close)
-              AppReviewManager.shared.handleAppReview(for: .revised, using: self)
-            }
+        })
+      ]
+    } else {
+      sections = [
+        ExpressHeaderSectionProvider(
+          focusSearch: { [weak self] in self?.delegate?.focusURLBar() },
+          voiceSearch: { [weak self] in self?.delegate?.startExpressVoiceSearch() },
+          showsVoiceSearch: { [weak self] in self?.delegate?.isExpressVoiceSearchAvailable ?? false },
+          openURL: { [weak self] url in
+            self?.delegate?.navigateToInput(url.absoluteString, inNewTab: false, switchingToPrivateMode: false)
           }
+        )
+      ]
+    }
 
-          host.rootView.openPrivacyReportsUrl = { [weak self] in
+    // The feed is not shown in private tabs.
+    if !privateBrowsingManager.isPrivateBrowsing {
+      sections.append(
+        ExpressFeedSectionProvider(
+          dataSource: expressFeed,
+          openURL: { [weak self] url in
             self?.delegate?.navigateToInput(
-              URL.brave.privacyFeatures.absoluteString,
+              url.absoluteString,
               inNewTab: false,
-              // Privacy Reports view is unavailable in private mode.
               switchingToPrivateMode: false
             )
+          },
+          openPost: { [weak self] post, indexPath, opening in
+            // Android scrolls the card to the top before its comments or video open, so it's
+            // in place when they close.
+            self?.scrollExpressFeedItemToTop(at: indexPath)
+            let target = ExpressCommentsTarget.post(id: post.id, title: post.caption)
+            switch opening {
+            case .comments:
+              self?.delegate?.presentExpressComments(for: target)
+            case .newTakes(let firstID):
+              self?.delegate?.presentExpressComments(for: target, focusCommentID: firstID)
+            case .video(let url, let startSeconds):
+              self?.delegate?.presentExpressPostVideo(post, videoURL: url, startSeconds: startSeconds)
+            }
           }
-
-          self?.present(host, animated: true)
-        },
-        hidePrivacyHubPressed: { [weak self] in
-          self?.hidePrivacyHub()
-        }
-      ),
-      FavoritesSectionProvider(
-        action: { [weak self] bookmark, action in
-          self?.handleFavoriteAction(favorite: bookmark, action: action)
-        },
-        legacyLongPressAction: { [weak self] alertController in
-          self?.present(alertController, animated: true)
-        },
-        isPrivateBrowsing: privateBrowsingManager.isPrivateBrowsing
-      ),
-      FavoritesOverflowSectionProvider(action: { [weak self] in
-        self?.delegate?.focusURLBar()
-      }),
-    ]
-
-    var isBackgroundNTPSI = false
-    if let ntpBackground = background.currentBackground, case .sponsoredMedia = ntpBackground {
-      isBackgroundNTPSI = true
-    }
-    let ntpDefaultBrowserCalloutProvider = NTPDefaultBrowserCalloutProvider(
-      isBackgroundNTPSI: isBackgroundNTPSI
-    )
-
-    // This is a one-off view, adding it to the NTP only if necessary.
-    if ntpDefaultBrowserCalloutProvider.shouldShowCallout() {
-      sections.insert(ntpDefaultBrowserCalloutProvider, at: 0)
+        )
+      )
     }
 
     if !privateBrowsingManager.isPrivateBrowsing, profilePrefs.isBraveNewsAvailable {
@@ -309,6 +322,12 @@ class NewTabPageViewController: UIViewController {
       name: UIApplication.didBecomeActiveNotification,
       object: nil
     )
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(expressAppWillEnterForeground),
+      name: UIApplication.willEnterForegroundNotification,
+      object: nil
+    )
 
     let braveNewsFeatureUsage = P3AFeatureUsage.braveNewsFeatureUsage
     if isBraveNewsVisible && Preferences.BraveNews.isEnabled.value {
@@ -339,6 +358,11 @@ class NewTabPageViewController: UIViewController {
     view.addSubview(feedOverlayView)
 
     collectionView.backgroundView = backgroundButtonsView
+    // Express Browser's feed background (Android `browser_express_feed_background`). Private
+    // tabs use Android's private new tab page background (`ntp_bg_incognito`).
+    collectionView.backgroundColor =
+      privateBrowsingManager.isPrivateBrowsing
+      ? ExpressIncognitoColors.pageBackground : ExpressColors.feedBackground
 
     feedOverlayView.headerView.settingsButton.addTarget(
       self,
@@ -383,6 +407,10 @@ class NewTabPageViewController: UIViewController {
       $0.edges.equalTo(backgroundView)
     }
 
+    expressHeader?.searchBox.onFrameChange = { [weak self] in
+      self?.reportExpressSearchBoxMoved()
+    }
+
     sections.enumerated().forEach { (index, provider) in
       provider.registerCells(to: collectionView)
       if let observableProvider = provider as? NTPObservableSectionProvider {
@@ -406,6 +434,22 @@ class NewTabPageViewController: UIViewController {
   override func viewWillAppear(_ animated: Bool) {
     super.viewWillAppear(animated)
     checkForUpdatedFeed()
+    if !privateBrowsingManager.isPrivateBrowsing {
+      let isNewTab = !hasAppearedBefore
+      hasAppearedBefore = true
+      // A tab coming back to an old feed shows its top, where the new first page lands (a new
+      // page is there already).
+      if expressFeed.pageWillAppear(isNewTab: isNewTab), !isNewTab {
+        scrollExpressFeedToTop()
+      }
+    }
+  }
+
+  override func viewWillDisappear(_ animated: Bool) {
+    super.viewWillDisappear(animated)
+    if !privateBrowsingManager.isPrivateBrowsing {
+      expressFeed.videos.isPageVisible = false
+    }
   }
 
   override func viewDidLayoutSubviews() {
@@ -420,10 +464,20 @@ class NewTabPageViewController: UIViewController {
     updateVideoAdPlayer()
 
     calculateBackgroundCenterPoints()
+
+    // A rotation or a new size moves the header's search box under the address bar.
+    reportExpressSearchBoxMoved()
   }
 
   override func viewDidAppear(_ animated: Bool) {
     super.viewDidAppear(animated)
+    if !privateBrowsingManager.isPrivateBrowsing {
+      // Feed videos autoplay only while this page is on screen.
+      expressFeed.videos.isPageVisible = true
+    }
+    NotificationCenter.default.post(name: .expressNewTabPageDidAppear, object: self)
+    // Back on this page: the address bar follows its header from where it was left.
+    reportExpressSearchBoxMoved()
 
     reportSponsoredBackgroundEvent(.servedImpression) { [weak self] _ in
       self?.delegate?.showNewTabTakeoverInfoBarIfNeeded()
@@ -468,6 +522,76 @@ class NewTabPageViewController: UIViewController {
     {
       calculateBackgroundCenterPoints()
     }
+  }
+
+  // MARK: - Express feed
+
+  /// Back in the app on this page (no appearance comes with it): a feed 30 minutes old loads
+  /// its first page again.
+  @objc private func expressAppWillEnterForeground() {
+    guard !privateBrowsingManager.isPrivateBrowsing, parent != nil, viewIfLoaded?.window != nil
+    else { return }
+    if expressFeed.refreshIfStale() {
+      scrollExpressFeedToTop()
+    }
+  }
+
+  /// The top of the page, so a new first page doesn't land under a reader deep in the old one
+  /// (Android builds the page afresh, at the top).
+  private func scrollExpressFeedToTop() {
+    collectionView.setContentOffset(
+      CGPoint(x: 0, y: -collectionView.adjustedContentInset.top),
+      animated: false
+    )
+  }
+
+  /// Android `PostListAdapter.openPost`: the tapped card goes to the top of the feed, just
+  /// under the toolbar, before its comments or video open, so it's in place when they close.
+  /// Cards near the end go as far up as the feed scrolls.
+  private func scrollExpressFeedItemToTop(at indexPath: IndexPath) {
+    guard isViewLoaded,
+      indexPath.section < collectionView.numberOfSections,
+      indexPath.item < collectionView.numberOfItems(inSection: indexPath.section),
+      let frame = collectionView.layoutAttributesForItem(at: indexPath)?.frame
+    else { return }
+    let inset = collectionView.adjustedContentInset
+    let minY = -inset.top
+    let maxY = max(
+      minY,
+      collectionView.contentSize.height + inset.bottom - collectionView.bounds.height
+    )
+    let y = min(max(frame.minY - inset.top, minY), maxY)
+    guard abs(y - collectionView.contentOffset.y) > 0.5 else { return }
+    collectionView.setContentOffset(CGPoint(x: collectionView.contentOffset.x, y: y), animated: false)
+  }
+
+  // MARK: - Express address bar
+
+  private var expressHeader: ExpressHeaderSectionProvider? {
+    sections.lazy.compactMap { $0 as? ExpressHeaderSectionProvider }.first
+  }
+
+  /// The header's search box in `target`'s coordinates, for the address bar's hand-off
+  /// (Android `BraveNewTabPageLayout.getToolbarTransitionPercentage`); nil before the page is
+  /// laid out.
+  func expressSearchBoxFrame(in target: UIView) -> CGRect? {
+    guard isViewLoaded, collectionView.bounds.width > 0,
+      let section = sections.firstIndex(where: { $0 is ExpressHeaderSectionProvider }),
+      let header = sections[section] as? ExpressHeaderSectionProvider,
+      let frame = header.searchBoxFrame(in: collectionView, section: section)
+    else { return nil }
+    return collectionView.convert(frame, to: target)
+  }
+
+  /// The header's search box gives way to the address field (Android `setSearchBoxAlpha` and
+  /// the fade on focus). Only shows once the header marks its box with `expressNTPSearchBox()`.
+  func setExpressSearchBoxOpacity(_ opacity: CGFloat) {
+    expressHeader?.searchBox.setOpacity(Double(opacity))
+  }
+
+  private func reportExpressSearchBoxMoved() {
+    guard isViewLoaded, parent != nil else { return }
+    delegate?.expressNewTabPageSearchBoxDidMove(self)
   }
 
   // MARK: - Background
@@ -1218,6 +1342,7 @@ extension NewTabPageViewController {
     for section in sections {
       section.scrollViewDidScroll?(scrollView)
     }
+    reportExpressSearchBoxMoved()
     guard isBraveNewsVisible, let newsSection = layout.braveNewsSection else { return }
     if collectionView.numberOfItems(inSection: newsSection) > 0 {
       // Hide the buttons as Brave News feeds appear

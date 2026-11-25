@@ -82,7 +82,7 @@ extension Strings {
     "OpenNewPrivateTabButtonTitle",
     tableName: "BraveShared",
     bundle: .module,
-    value: "Open in New Private Tab",
+    value: "Open in Private Tab",
     comment: "Context menu option for opening a link in a new private tab"
   )
   public static let deleteLoginButtonTitle = NSLocalizedString(
@@ -188,14 +188,14 @@ extension Strings {
     "SendCrashReportAlertTitle",
     tableName: "BraveShared",
     bundle: .module,
-    value: "Oops! Brave crashed",
+    value: "Oops! Express Browser crashed",
     comment: "Title for prompt displayed to user after the app crashes"
   )
   public static let sendCrashReportAlertMessage = NSLocalizedString(
     "SendCrashReportAlertMessage",
     tableName: "BraveShared",
     bundle: .module,
-    value: "Send a crash report so Brave can fix the problem?",
+    value: "Send a crash report so Express Browser can fix the problem?",
     comment:
       "Message displayed in the crash dialog above the buttons used to select when sending reports"
   )
@@ -224,14 +224,14 @@ extension Strings {
     "RestoreTabOnCrashAlertTitle",
     tableName: "BraveShared",
     bundle: .module,
-    value: "Brave Closed Unexpectedly.",
+    value: "Express Browser Closed Unexpectedly.",
     comment: "Restore Tabs Prompt Title"
   )
   public static let restoreTabOnCrashAlertMessage = NSLocalizedString(
     "RestoreTabOnCrashAlertMessage",
     tableName: "BraveShared",
     bundle: .module,
-    value: "Unfortunately, Brave crashed or did not close properly.\nRestore your tabs?",
+    value: "Unfortunately, Express Browser crashed or did not close properly.\nRestore your tabs?",
     comment: "Restore Tabs Prompt Description"
   )
   public static let restoreTabNegativeButtonTitle = NSLocalizedString(
@@ -450,7 +450,7 @@ extension Strings {
     "AuthenticationLoginsTouchReason",
     tableName: "BraveShared",
     bundle: .module,
-    value: "This authenticates your access to Brave",
+    value: "This authenticates your access to Express Browser",
     comment:
       "Touch ID or PIN entry prompt subtitle when accessing Brave with the Browser Lock feature enabled"
   )
@@ -484,7 +484,7 @@ extension Strings {
     "AccessPhotoDeniedAlertTitle",
     tableName: "BraveShared",
     bundle: .module,
-    value: "Brave would like to access your Photos",
+    value: "Express Browser would like to access your Photos",
     comment: "See http://mzl.la/1G7uHo7"
   )
   public static let accessPhotoDeniedAlertMessage = NSLocalizedString(
@@ -622,7 +622,7 @@ extension Strings {
         "defaultBrowserCallout.introPrimaryText",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Open all links with Brave to protect your privacy",
+        value: "Open all links with Express Browser to protect your privacy",
         comment: "Primary text on default browser popup screen"
       )
     public static let introSecondaryText =
@@ -631,7 +631,7 @@ extension Strings {
         tableName: "BraveShared",
         bundle: .module,
         value:
-          "Brave Shields block trackers & ads, saves data, and saves you time on every site you visit",
+          "Shields block trackers & ads, saves data, and saves you time on every site you visit",
         comment: "Secondary text on default browser popup."
       )
     public static let introTertiaryText =
@@ -639,7 +639,7 @@ extension Strings {
         "defaultBrowserCallout.introTertiaryText",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Open Settings, tap Default Browser App, and select Brave.",
+        value: "Open Settings, tap Default Browser App, and select Express Browser.",
         comment: "Tertiary text on default browser popup screen"
       )
     public static let introOpenSettingsButtonText =
@@ -663,7 +663,7 @@ extension Strings {
         "defaultBrowserCallout.notificationTitle",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Get Brave protection, on every link",
+        value: "Get Express Browser protection, on every link",
         comment: "Notification title to promote setting Brave app as default browser"
       )
 
@@ -672,7 +672,7 @@ extension Strings {
         "defaultBrowserCallout.notificationBody",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Set Brave as your default browser",
+        value: "Set Express Browser as your default browser",
         comment: "Notification body to promote setting Brave app as default browser"
       )
   }
@@ -695,7 +695,7 @@ extension Strings {
         "callout.defaultBrowserCalloutDescription",
         tableName: "BraveShared",
         bundle: .module,
-        value: "With Brave as default, every link you tap opens with Brave's privacy protections.",
+        value: "With Express Browser as default, every link you tap opens with Express Browser's privacy protections.",
         comment: "Subtitle - Description for Default Browser Full Screen Callout"
       )
     public static let defaultBrowserCalloutButtonDescription =
@@ -703,7 +703,7 @@ extension Strings {
         "callout.defaultBrowserCalloutButtonDescription",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Set Brave as Default Browser?",
+        value: "Set Express Browser as Default Browser?",
         comment:
           "Description - Description used for main button in Default Browser Full Screen Callout"
       )
@@ -779,7 +779,7 @@ extension Strings {
         tableName: "BraveShared",
         bundle: .module,
         value:
-          "This helps us learn what Brave features are used most often. Change at any time in Brave Settings under ‘Brave Shields and Other Privacy Settings.",
+          "This helps Brave learn which browser features are used most often. Change at any time in Settings under ‘Privacy & Security’ › ‘All Shields settings’.",
         comment: "Subtitle - Description for p3a (Privacy Preserving Analytics) Full Screen Callout"
       )
     public static let p3aCalloutToggleTitle =
@@ -813,7 +813,7 @@ extension Strings {
         "callout.bottomBarCalloutTitle",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Customize Brave Tabs Bar",
+        value: "Customize Express Browser Tabs Bar",
         comment: "Title for Bottom Bar Callout View"
       )
     public static let bottomBarCalloutDescription =
@@ -852,7 +852,7 @@ extension Strings {
         "onboarding.welcomeScreenTitle",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Welcome to Brave",
+        value: "Welcome to Express Browser",
         comment: "Title for Welcome Screen in Onboarding"
       )
     public static let ntpOnboardingPopOverTrackerDescription =
@@ -868,7 +868,7 @@ extension Strings {
         "onboarding.blockedAdsOnboardingInstructionsText",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Tap to view Brave Shields",
+        value: "Tap to view Shields",
         comment: "The text describing user where they should press in order to open Shield panel"
       )
     public static let blockedAdsOnboardingFootnoteText =
@@ -876,7 +876,7 @@ extension Strings {
         "onboarding.blockedAdsOnboardingFootnoteText",
         tableName: "BraveShared",
         bundle: .module,
-        value: "See all the bad stuff Brave blocked, on every page, with Shields.",
+        value: "See all the bad stuff Express Browser blocked, on every page, with Shields.",
         comment: "The footnote indicating what Brave shields is blocking"
       )
     public static let blockedAdsOnboardingNoBigTechInformationText =
@@ -927,7 +927,7 @@ extension Strings {
         "onboarding.omniboxOnboardingPopOverDescription",
         tableName: "BraveShared",
         bundle: .module,
-        value: "See the Brave difference:\nNo ads. No trackers. Way faster page load.",
+        value: "See the Express Browser difference:\nNo ads. No trackers. Way faster page load.",
         comment: "Description for the Omnibox (URL Bar) pop-over that describes faster load times."
       )
 
@@ -2250,7 +2250,7 @@ extension Strings {
       "setDefaultBrowserCalloutTitle",
       tableName: "BraveShared",
       bundle: .module,
-      value: "Brave can now be set as your default browser in iOS. Tap here to open settings.",
+      value: "Express Browser can now be set as your default browser in iOS. Tap here to open settings.",
       comment: ""
     )
   public static let defaultBrowserCalloutCloseAccesabilityLabel =
@@ -2295,7 +2295,7 @@ extension Strings {
         "settings.autocloseTabsSettingFooter",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Allow Brave to automatically close tabs that haven't recently been viewed.",
+        value: "Allow Express Browser to automatically close tabs that haven't recently been viewed.",
         comment: "Description of autoclose tabs feature."
       )
     public static let autocloseTabsManualOption =
@@ -2364,7 +2364,7 @@ extension Strings {
         "settings.openYouTubeInBrave",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Open YouTube links in Brave",
+        value: "Open YouTube links in Express Browser",
         comment: "A toggle label which lets the user always open YouTube urls in Brave"
       )
 
@@ -2600,7 +2600,7 @@ extension Strings {
     tableName: "BraveShared",
     bundle: .module,
     value:
-      "%@ normally uses encryption to protect your information. When Brave tried to connect to %@ this time, the website sent back unusual and incorrect credentials. This may happen when an attacker is trying to pretend to be %@, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Brave stopped the connection before any data was exchanged.<br />You cannot visit %@ right now because the website uses certificate pinning. Network errors and attacks are usually temporary, so this page will probably work later.",
+      "%@ normally uses encryption to protect your information. When Express Browser tried to connect to %@ this time, the website sent back unusual and incorrect credentials. This may happen when an attacker is trying to pretend to be %@, or a Wi-Fi sign-in screen has interrupted the connection. Your information is still secure because Express Browser stopped the connection before any data was exchanged.<br />You cannot visit %@ right now because the website uses certificate pinning. Network errors and attacks are usually temporary, so this page will probably work later.",
     comment:
       "Additional warning text when clicking the Advanced button on error pages. %@ is a placeholder, do not localize it. Do not localize <br />."
   )
@@ -2919,7 +2919,7 @@ extension Strings {
     "SearchWithBrave",
     tableName: "BraveShared",
     bundle: .module,
-    value: "Search with Brave",
+    value: "Search with Express Browser",
     comment:
       "Title of an action that allows user to perform a one-click web search for selected text"
   )
@@ -3077,7 +3077,7 @@ extension Strings {
     "BraveShieldsAndPrivacy",
     tableName: "BraveShared",
     bundle: .module,
-    value: "Brave Shields & Privacy",
+    value: "Shields & Privacy",
     comment: ""
   )
   public static let braveShieldsAndPrivacySettingsTitle = NSLocalizedString(
@@ -3193,7 +3193,7 @@ extension Strings {
     "PersistentPrivateBrowsingAlertMessage",
     tableName: "BraveShared",
     bundle: .module,
-    value: "Allows Brave to restore private browsing tabs, even if you close / re-open the app",
+    value: "Allows Express Browser to restore private browsing tabs, even if you close / re-open the app",
     comment: "Persistent private browsing alert message to existing users"
   )
   public static let persistentPrivateBrowsing = NSLocalizedString(
@@ -3207,7 +3207,7 @@ extension Strings {
     "ShieldsDefaults",
     tableName: "BraveShared",
     bundle: .module,
-    value: "Brave Shields Global Defaults",
+    value: "Shields Global Defaults",
     comment: "Section title for adbblock, tracking protection, HTTPS-E, and cookies"
   )
   public static let shieldsDefaultsFooter = NSLocalizedString(
@@ -3442,7 +3442,7 @@ extension Strings {
     "RateBrave",
     tableName: "BraveShared",
     bundle: .module,
-    value: "Rate Brave",
+    value: "Rate Express Browser",
     comment: "Open the App Store to rate Brave."
   )
   public static let reportABug = NSLocalizedString(
@@ -3471,7 +3471,7 @@ extension Strings {
     tableName: "BraveShared",
     bundle: .module,
     value:
-      "Private Tabs aren’t saved in Brave, but they don’t make you anonymous online. Sites you visit in a private tab won’t show up in your history and their cookies always vanish when you close them — there won’t be any trace of them left in Brave. However, downloads will be saved.\nYour mobile carrier (or the owner of the Wi-Fi network or VPN you’re connected to) can see which sites you visit and those sites will learn your public IP address, even in Private Tabs.",
+      "Private Tabs aren’t saved in Express Browser, but they don’t make you anonymous online. Sites you visit in a private tab won’t show up in your history and their cookies always vanish when you close them — there won’t be any trace of them left in Express Browser. However, downloads will be saved.\nYour mobile carrier (or the owner of the Wi-Fi network or VPN you’re connected to) can see which sites you visit and those sites will learn your public IP address, even in Private Tabs.",
     comment: "Private tab details"
   )
   public static let privateTabDetails = NSLocalizedString(
@@ -3479,7 +3479,7 @@ extension Strings {
     tableName: "BraveShared",
     bundle: .module,
     value:
-      "Using Private Tabs only changes what Brave does on your device, it doesn't change anyone else's behavior.\n\nSites always learn your IP address when you visit them. From this, they can often guess roughly where you are — typically your city. Sometimes that location guess can be much more specific. Sites also know everything you specifically tell them, such as search terms. If you log into a site, they'll know you're the owner of that account. You'll still be logged out when you close the Private Tabs because Brave will throw away the cookie which keeps you logged in.\n\nWhoever connects you to the Internet (your ISP) can see all of your network activity. Often, this is your mobile carrier. If you're connected to a Wi-Fi network, this is the owner of that network, and if you're using a VPN, then it's whoever runs that VPN. Your ISP can see which sites you visit as you visit them. If those sites use HTTPS, they can't make much more than an educated guess about what you do on those sites. But if a site only uses HTTP then your ISP can see everything: your search terms, which pages you read, and which links you follow.\n\nIf an employer manages your device, they might also keep track of what you do with it. Using Private Tabs probably won't stop them from knowing which sites you've visited. Someone else with access to your device could also have installed software which monitors your activity, and Private Tabs won't protect you from this either.",
+      "Using Private Tabs only changes what Express Browser does on your device, it doesn't change anyone else's behavior.\n\nSites always learn your IP address when you visit them. From this, they can often guess roughly where you are — typically your city. Sometimes that location guess can be much more specific. Sites also know everything you specifically tell them, such as search terms. If you log into a site, they'll know you're the owner of that account. You'll still be logged out when you close the Private Tabs because Express Browser will throw away the cookie which keeps you logged in.\n\nWhoever connects you to the Internet (your ISP) can see all of your network activity. Often, this is your mobile carrier. If you're connected to a Wi-Fi network, this is the owner of that network, and if you're using a VPN, then it's whoever runs that VPN. Your ISP can see which sites you visit as you visit them. If those sites use HTTPS, they can't make much more than an educated guess about what you do on those sites. But if a site only uses HTTP then your ISP can see everything: your search terms, which pages you read, and which links you follow.\n\nIf an employer manages your device, they might also keep track of what you do with it. Using Private Tabs probably won't stop them from knowing which sites you've visited. Someone else with access to your device could also have installed software which monitors your activity, and Private Tabs won't protect you from this either.",
     comment: "Private tab detail text"
   )
   public static let privateTabLink = NSLocalizedString(
@@ -3942,7 +3942,7 @@ extension Strings {
       "defaultThemeName",
       tableName: "BraveShared",
       bundle: .module,
-      value: "Brave default",
+      value: "Express Browser default",
       comment: "Name for default Brave theme."
     )
   public static let themeQRCodeShareTitle =
@@ -3950,7 +3950,7 @@ extension Strings {
       "themeQRCodeShareTitle",
       tableName: "BraveShared",
       bundle: .module,
-      value: "Share Brave with your friends!",
+      value: "Share Express Browser with your friends!",
       comment: "Title for QR popup encouraging users to share the code with their friends."
     )
   public static let themeQRCodeShareButton =
@@ -4050,7 +4050,7 @@ extension Strings {
     "OBSearchEngineTitle",
     tableName: "BraveShared",
     bundle: .module,
-    value: "Welcome to Brave Browser",
+    value: "Welcome to Express Browser",
     comment: "Title for search engine onboarding screen"
   )
   public static let OBSearchEngineDetail = NSLocalizedString(
@@ -4064,7 +4064,7 @@ extension Strings {
     "OBShieldsTitle",
     tableName: "BraveShared",
     bundle: .module,
-    value: "Brave Shields",
+    value: "Shields",
     comment: "Title for shields onboarding screen"
   )
   public static let OBShieldsDetail = NSLocalizedString(
@@ -4454,14 +4454,14 @@ extension Strings {
       "BraveShieldsToggleHint",
       tableName: "BraveShared",
       bundle: .module,
-      value: "Double-tap to toggle Brave Shields",
+      value: "Double-tap to toggle Shields",
       comment: "The accessibility hint spoken when focused on the main shields toggle"
     )
     public static let statusTitle = NSLocalizedString(
       "BraveShieldsStatusTitle",
       tableName: "BraveShared",
       bundle: .module,
-      value: "Brave Shields",
+      value: "Shields",
       comment: "Context: 'Brave Shields Up' or 'Brave Shields Down'"
     )
     public static let statusValueUp = NSLocalizedString(
@@ -4511,7 +4511,7 @@ extension Strings {
       "AboutBraveShields",
       tableName: "BraveShared",
       bundle: .module,
-      value: "About Brave Shields",
+      value: "About Shields",
       comment: "The title of the screen explaining Brave Shields"
     )
     public static let aboutBraveShieldsBody = NSLocalizedString(
@@ -4527,7 +4527,7 @@ extension Strings {
       tableName: "BraveShared",
       bundle: .module,
       value:
-        "You're browsing this site without Brave's privacy protections. Does it not work right with Shields up?",
+        "You're browsing this site without Express Browser's privacy protections. Does it not work right with Shields up?",
       comment: ""
     )
     public static let globalControls = NSLocalizedString(
@@ -4698,7 +4698,7 @@ extension Strings {
         "shieldEducation.trackerAdWarningSubTitle",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Brave Shields just protected your online privacy.",
+        value: "Shields just protected your online privacy.",
         comment: "Subtitle for Shield Education Tracker Ad Warning"
       )
 
@@ -4788,7 +4788,7 @@ extension Strings {
         "socialSharing.shareDescriptionTitle",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Every day I save data by browsing the web with Brave.",
+        value: "Every day I save data by browsing the web with Express Browser.",
         comment: "Text used for social sharing together with Brave Shield values"
       )
 
@@ -4797,7 +4797,7 @@ extension Strings {
         "socialSharing.domainSpecificDataSavedTitle",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Every day I save data by browsing the web with Brave.",
+        value: "Every day I save data by browsing the web with Express Browser.",
         comment: "Title used when in warning pop-over when domain specific data save appears "
       )
 
@@ -5977,7 +5977,7 @@ extension Strings {
         "shortcuts.activityTypeOpenBookmarksTitle",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Open Brave Browser Bookmarks",
+        value: "Open Express Browser Bookmarks",
         comment: ""
       )
 
@@ -5986,7 +5986,7 @@ extension Strings {
         "shortcuts.activityTypeOpenHistoryListTitle",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Open Brave Browser History",
+        value: "Open Express Browser History",
         comment: ""
       )
 
@@ -5995,7 +5995,7 @@ extension Strings {
         "shortcuts.activityTypeClearHistoryTitle",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Clear Brave Browsing History",
+        value: "Clear Express Browser Browsing History",
         comment: ""
       )
 
@@ -6004,7 +6004,7 @@ extension Strings {
         "shortcuts.activityTypeEnableVPNTitle",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Open Brave Browser and Enable VPN",
+        value: "Open Express Browser and Enable VPN",
         comment: ""
       )
 
@@ -6040,7 +6040,7 @@ extension Strings {
         "shortcuts.activityTypeTabDescription",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Start Searching the Web Securely with Brave",
+        value: "Start Searching the Web Securely with Express Browser",
         comment: ""
       )
 
@@ -6401,7 +6401,7 @@ extension Strings {
         tableName: "BraveShared",
         bundle: .module,
         value:
-          "This option will open Brave Settings. In order to change various Siri options, please select 'Siri & Search' menu item and customize your choices.",
+          "This option will open Express Browser Settings. In order to change various Siri options, please select 'Siri & Search' menu item and customize your choices.",
         comment: "Description for opening Brave Settings for altering Siri shortcut."
       )
   }
@@ -6511,7 +6511,7 @@ extension Strings {
         "BrowserLockDescription",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Unlock Brave with Touch ID, Face ID or system passcode.",
+        value: "Unlock Express Browser with Touch ID, Face ID or system passcode.",
         comment: "Description for setting to enable the browser lock privacy feature"
       )
     public static let tabTraySetPasscodeAlertDescription =
@@ -7364,7 +7364,7 @@ extension Strings {
       "today.rateBraveCardRateActionTitle",
       tableName: "BraveShared",
       bundle: .module,
-      value: "Rate Brave",
+      value: "Rate Express Browser",
       comment:
         "Button title / Title for long press action that will perform an action which open AppStore Rate screen"
     )
@@ -7379,14 +7379,14 @@ extension Strings {
       "today.rateBraveCardActionSheetTitle",
       tableName: "BraveShared",
       bundle: .module,
-      value: "Rate Brave in App Store",
+      value: "Rate Express Browser in App Store",
       comment: "Title for long press action sheet list which has item for rate / hide"
     )
     public static let rateBraveCardTitle = NSLocalizedString(
       "today.rateBraveCardTitle",
       tableName: "BraveShared",
       bundle: .module,
-      value: "Liking Brave?",
+      value: "Liking Express Browser?",
       comment: "Title shown on the Rate Brave Card "
     )
     public static let rateBraveCardSubtitle = NSLocalizedString(
@@ -8438,7 +8438,7 @@ extension Strings {
       "privacyHub.mostFrequentTrackerAndAdBody",
       tableName: "BraveShared",
       bundle: .module,
-      value: "**%@** was blocked by Brave Shields on **%lld** sites",
+      value: "**%@** was blocked by Shields on **%lld** sites",
       comment:
         "Do NOT localize asterisk('*') characters, they are used to make the text bold in the app. It says which tracker was blocked on how many websites, example usage: 'Google Analytics was blocked by Brave Shields on 42 sites'"
     )
@@ -8677,7 +8677,7 @@ extension Strings {
       "privacyHub.notificationMessage",
       tableName: "BraveShared",
       bundle: .module,
-      value: "A recap of how Brave protected you online this week.",
+      value: "A recap of how Express Browser protected you online this week.",
       comment:
         "Message of a notification we show to the user, on tapping it, the Privacy Hub screen will open."
     )
@@ -8998,7 +8998,7 @@ extension Strings {
         "voice.search.screen.disclaimer",
         tableName: "BraveShared",
         bundle: .module,
-        value: "Brave does not store or share your voice searches.",
+        value: "Express Browser does not store or share your voice searches.",
         comment: "Disclaimer for screen to search using voice."
       )
 
@@ -9017,7 +9017,7 @@ extension Strings {
         tableName: "BraveShared",
         bundle: .module,
         value:
-          "Please allow Microphone Access in iOS System Settings for Brave to use anonymous voice search.",
+          "Please allow Microphone Access in iOS System Settings for Express Browser to use anonymous voice search.",
         comment: "Explanation for warning alert why the microphone access required."
       )
   }
@@ -9183,7 +9183,7 @@ extension Strings {
     public static let showShieldsTitle = NSLocalizedString(
       "showShieldsTitle",
       bundle: .module,
-      value: "Open Brave Shields",
+      value: "Open Shields",
       comment:
         "Label to display in the Discoverability overlay for keyboard shortcuts which is for Showing Brave Shields"
     )
@@ -9454,7 +9454,7 @@ extension Strings {
       "BraveTranslate.settingsMenuTitle",
       tableName: "BraveShared",
       bundle: .module,
-      value: "Brave Translate",
+      value: "Translate",
       comment: "This text is for the settings menu for all Brave-Translate options."
     )
 
@@ -9462,7 +9462,7 @@ extension Strings {
       "BraveTranslate.settingsScreenTitle",
       tableName: "BraveShared",
       bundle: .module,
-      value: "Brave Translate",
+      value: "Translate",
       comment: "This text is for the translate settings screen. It's the title of the settings menu."
     )
 
@@ -9478,7 +9478,7 @@ extension Strings {
       "BraveTranslate.settingsTranslateEnabledOptionDescription",
       tableName: "BraveShared",
       bundle: .module,
-      value: "When enabled, Brave Translate will automatically detect your page's current language, and display a translate button in the URL bar.",
+      value: "When enabled, Express Browser will automatically detect your page's current language, and display a translate button in the URL bar.",
       comment: "This text is for a Toggle that allows the user to enable or disable page translation."
     )
 
@@ -9487,6 +9487,94 @@ extension Strings {
       bundle: .module,
       value: "Page Translation available",
       comment: "Accessibility message e.g. spoken by VoiceOver when page translation becomes available."
+    )
+  }
+}
+
+// MARK: - Private new tab page (Express Browser)
+
+extension Strings {
+  /// The private new tab page from Express Browser's Android app, which is Chromium's private
+  /// ("incognito") page with Brave's "Private" wording. The English text and the translations
+  /// come from the Android app's strings (`IDS_NEW_TAB_OTR_*`, `IDS_LEARN_MORE`). Text between
+  /// `<em>` and `</em>` is highlighted; keep both markers in translations.
+  public struct ExpressPrivateNTP {
+    public static let title = NSLocalizedString(
+      "expressPrivateNTP.title",
+      tableName: "BraveShared",
+      bundle: .module,
+      value: "You’ve gone Private",
+      comment: "Title of the private new tab page. Private mode hides your browsing from other people using the same device; it does not make you anonymous."
+    )
+    public static let subtitle = NSLocalizedString(
+      "expressPrivateNTP.subtitle",
+      tableName: "BraveShared",
+      bundle: .module,
+      value: "Others who use this device won’t see your activity, so you can browse more privately. This won't change how data is collected by websites you visit and the services they use, including Express Browser. Downloads and bookmarks will be saved.",
+      comment: "Subtitle of the private new tab page, under its title."
+    )
+    public static let notSavedHeader = NSLocalizedString(
+      "expressPrivateNTP.notSavedHeader",
+      tableName: "BraveShared",
+      bundle: .module,
+      value: "Express Browser <em>won’t save</em>:",
+      comment: "Introduces a bulleted list of data that private mode doesn't save. The text between <em> and </em> is highlighted."
+    )
+    public static let notSavedHistory = NSLocalizedString(
+      "expressPrivateNTP.notSavedHistory",
+      tableName: "BraveShared",
+      bundle: .module,
+      value: "Your browsing history",
+      comment: "Bullet point: data that private mode doesn't save. 'Browsing history' is the history of visited websites."
+    )
+    public static let notSavedCookies = NSLocalizedString(
+      "expressPrivateNTP.notSavedCookies",
+      tableName: "BraveShared",
+      bundle: .module,
+      value: "Cookies and site data",
+      comment: "Bullet point: data that private mode doesn't save. Data that websites save on the device, such as sign-in state."
+    )
+    public static let notSavedForms = NSLocalizedString(
+      "expressPrivateNTP.notSavedForms",
+      tableName: "BraveShared",
+      bundle: .module,
+      value: "Information entered in forms",
+      comment: "Bullet point: data that private mode doesn't save. Names, addresses, passwords etc. that people enter into forms on the web."
+    )
+    public static let visibleHeader = NSLocalizedString(
+      "expressPrivateNTP.visibleHeader",
+      tableName: "BraveShared",
+      bundle: .module,
+      value: "Your activity <em>might still be visible</em> to:",
+      comment: "Introduces a bulleted list of who might still see what the user does in private mode. The text between <em> and </em> is highlighted."
+    )
+    public static let visibleWebsites = NSLocalizedString(
+      "expressPrivateNTP.visibleWebsites",
+      tableName: "BraveShared",
+      bundle: .module,
+      value: "Websites you visit",
+      comment: "Bullet point: who might still see the user's private activity."
+    )
+    public static let visibleEmployer = NSLocalizedString(
+      "expressPrivateNTP.visibleEmployer",
+      tableName: "BraveShared",
+      bundle: .module,
+      value: "Your employer or school",
+      comment: "Bullet point: who might still see the user's private activity."
+    )
+    public static let visibleProvider = NSLocalizedString(
+      "expressPrivateNTP.visibleProvider",
+      tableName: "BraveShared",
+      bundle: .module,
+      value: "Your internet service provider",
+      comment: "Bullet point: who might still see the user's private activity."
+    )
+    public static let learnMore = NSLocalizedString(
+      "expressPrivateNTP.learnMore",
+      tableName: "BraveShared",
+      bundle: .module,
+      value: "Learn more",
+      comment: "Link on the private new tab page to a page about private mode."
     )
   }
 }

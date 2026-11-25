@@ -171,6 +171,19 @@ extension Action.Identifier {
     // passed into the share sheet so they will not all exist at all times when creating the menu
   ]
 
+  /// Brave services that Express Browser hides from the menu, matching its Android app.
+  public static let hiddenInExpressBrowser: Set<Action.Identifier> = [
+    .vpn,
+    .braveLeo,
+    .braveNews,
+    .braveTalk,
+    .braveWallet,
+    .playlist,
+    .braveRewards,
+    .addToPlaylist,
+    .addSourceNews,
+  ]
+
   public static let copyCleanLink: Self = .init(
     id: "CopyCleanLink",
     title: Strings.copyCleanLink,

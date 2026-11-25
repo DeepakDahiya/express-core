@@ -47,8 +47,27 @@ class TabCell: UICollectionViewCell {
   var closedTab: ((any TabState) -> Void)?
   weak var tab: (any TabState)?
 
+  /// Private tabs get Express Android's dark incognito cards (`#333537` with light text)
+  /// instead of the white ones.
+  private func applyStyle(isPrivate: Bool) {
+    let cardColor: UIColor = isPrivate ? ExpressIncognitoColors.card : .white
+    backgroundHolder.backgroundColor = cardColor
+    titleBackgroundView.gradientLayer.colors = [
+      cardColor.withAlphaComponent(0.98), cardColor.withAlphaComponent(0.9),
+      cardColor.withAlphaComponent(0.0),
+    ].map(\.cgColor)
+    titleLabel.textColor = isPrivate ? ExpressIncognitoColors.textPrimary : .black
+    let closeImage = UIImage(named: "tab_close", in: .module, compatibleWith: nil)!
+    closeButton.setImage(
+      isPrivate ? closeImage.withRenderingMode(.alwaysTemplate) : closeImage,
+      for: []
+    )
+    closeButton.tintColor = isPrivate ? ExpressIncognitoColors.textSecondary : nil
+  }
+
   func configure(with tab: some TabState) {
     self.tab = tab
+    applyStyle(isPrivate: tab.isPrivate)
     tab.onScreenshotUpdated = { [weak self, weak tab] in
       guard let self = self, let tab = tab else { return }
 

@@ -92,7 +92,12 @@ BraveIOSAutocompleteMatchType BraveTypeFromMatchType(
 + (BraveIOSAutocompleteMatch*)classify:(NSString*)text {
   std::vector<ProfileIOS*> profiles =
       GetApplicationContext()->GetProfileManager()->GetLoadedProfiles();
-  ProfileIOS* last_used_profile = profiles.at(0);
+  // A link can open the app before any profile has loaded; classify nothing
+  // instead of aborting on an empty vector.
+  if (profiles.empty()) {
+    return nil;
+  }
+  ProfileIOS* last_used_profile = profiles.front();
 
   AutocompleteClassifier* classifier =
       ios::AutocompleteClassifierFactory::GetForProfile(last_used_profile);

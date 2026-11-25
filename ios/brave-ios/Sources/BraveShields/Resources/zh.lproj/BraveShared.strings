@@ -17,7 +17,7 @@
 "AntiAdBlockWarningDescription" = "该网站已开始阻止某些广告拦截器，这意味着其网站可能无法正常运行。";
 
 /* A descriptive message explaining to disable shields on this site. */
-"AntiAdBlockWarningDescription2" = "为了解决这个问题，Brave 可以为你调整 shields 设置。调整后，你可以尝试在 Brave Player 中观看这些内容。";
+"AntiAdBlockWarningDescription2" = "为了解决这个问题，Express Browser 可以为你调整 shields 设置。调整后，你可以尝试在 Brave Player 中观看这些内容。";
 
 /* A button that dismisses the warning and does nothing. */
 "AntiAdBlockWarningDismissButton" = "保持当前设置";
@@ -95,10 +95,10 @@
 "DomainBlockedGoBackAction" = "返回";
 
 /* A description in the warning page that appears when a page was blocked */
-"DomainBlockedPageDescription" = "由于您要求积极阻止跟踪器和广告，Brave 会在第一次网络连接之前阻止该网站。";
+"DomainBlockedPageDescription" = "由于您要求积极阻止跟踪器和广告，Express Browser 会在第一次网络连接之前阻止该网站。";
 
 /* A message in the warning page that appears when a page was blocked */
-"DomainBlockedPageMessage" = "Brave 已阻止以下站点加载：";
+"DomainBlockedPageMessage" = "Express Browser 已阻止以下站点加载：";
 
 /* A title in the warning page that appears when a page was blocked */
 "DomainBlockedPageTitle" = "该网站可能会跨网站追踪您";
@@ -110,7 +110,7 @@
 "DomainBlockedTitle" = "已被阻止的域";
 
 /* A description of what the Enable GPC toggle does */
-"EnableGPCDescription" = "要求网站不出售或共享您的数据。[了解更多](https://support.brave.app/hc/en-us/articles/360017989132-How-do-I-change-my-Privacy-Settings#h_01HHFRRT6B5YTRREA4ZDARGTWM)";
+"EnableGPCDescription" = "要求网站不出售或共享您的数据。";
 
 /* A label of the GPC toggle */
 "EnableGPCLabel" = "啟用全球隱私控制";

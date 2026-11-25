@@ -96,7 +96,18 @@ public struct PrivacyReportsManager {
 
   public static let notificationID = "privacy-report-weekly-notification"
 
+  /// Express Browser: off. Android schedules no local notifications, and this weekly report opens
+  /// Brave's Privacy Hub, which Express doesn't use.
+  static let isWeeklyNotificationEnabled = false
+
   public static func scheduleNotification(debugMode: Bool) {
+    // Express Browser: Android schedules no local notifications; every caller (launch, the
+    // Shields data setting, the Privacy Hub callout) only clears one left by an earlier build.
+    if !isWeeklyNotificationEnabled {
+      cancelNotification()
+      return
+    }
+
     let notificationCenter = UNUserNotificationCenter.current()
 
     if debugMode {

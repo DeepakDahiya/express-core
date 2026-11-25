@@ -2,7 +2,7 @@
 "About" = "Tietoja asetuksista";
 
 /* The title of the screen explaining Brave Shields */
-"AboutBraveShields" = "Tietoja Brave Shieldsistä";
+"AboutBraveShields" = "Tietoja Shieldsistä";
 
 /* The body of the screen explaining Brave Shields */
 "AboutBraveShieldsBody" = "Sivustoilla on usein evästeitä ja merkkijonoja, joita käytetään sinun ja laitteesi tunnistamiseen. Ne tahtovat selvittää henkilöllisyytesi sekä seurata sinua verkossa, tarkkaillen jokaisen sivuston käyttöä.\n\nBrave estää kyseiset seuraimet, joten voit rauhassa selata nettiä ilman tarkkailijoita.";
@@ -11,7 +11,7 @@
 "AccessPhotoDeniedAlertMessage" = "Tämän avulla voit tallentaa kuvia kameran kuviin.";
 
 /* See http://mzl.la/1G7uHo7 */
-"AccessPhotoDeniedAlertTitle" = "Brave haluaa käyttää valokuviasi";
+"AccessPhotoDeniedAlertTitle" = "Express Browser haluaa käyttää valokuviasi";
 
 /* Label to display in the Discoverability overlay for keyboard shortcuts */
 "addBookmarkTitle" = "Lisää kirjanmerkki";
@@ -44,7 +44,7 @@
 "AlwaysShow" = "Käytössä";
 
 /* Touch ID or PIN entry prompt subtitle when accessing Brave with the Browser Lock feature enabled */
-"AuthenticationLoginsTouchReason" = "Tämä todentaa Braven käyttöoikeutesi";
+"AuthenticationLoginsTouchReason" = "Tämä todentaa Express Browserin käyttöoikeutesi";
 
 /* Label for Cancel button */
 "AuthPromptAlertCancelButtonTitle" = "Peruuta";
@@ -176,7 +176,7 @@
 "BraveShieldsAdvancedControls" = "Edistyneet kontrollit";
 
 /* No comment provided by engineer. */
-"BraveShieldsAndPrivacy" = "Brave-suojaukset ja yksityisyys";
+"BraveShieldsAndPrivacy" = "Suojaukset ja yksityisyys";
 
 /* No comment provided by engineer. */
 "BraveShieldsAndPrivacyTitle" = "Suojaukset ja yksityisyys";
@@ -203,7 +203,7 @@
 "BraveShieldsSiteBroken" = "Kokeile käyttöä ilman Shieldsiä, jos sivusto vaikuttaa olevan rikkinäinen.";
 
 /* Context: 'Brave Shields Up' or 'Brave Shields Down' */
-"BraveShieldsStatusTitle" = "Brave Shields";
+"BraveShieldsStatusTitle" = "Shields";
 
 /* Context: The 'Down' in 'Brave Shields Down' */
 "BraveShieldsStatusValueDown" = "Alas";
@@ -212,7 +212,7 @@
 "BraveShieldsStatusValueUp" = "Ylös";
 
 /* The accessibility hint spoken when focused on the main shields toggle */
-"BraveShieldsToggleHint" = "Vaihda Brave-suojauksen asetusta kaksoisnapauttamalla";
+"BraveShieldsToggleHint" = "Vaihda suojauksen asetusta kaksoisnapauttamalla";
 
 /* The name of the feature */
 "bravetalk.braveTalkTitle" = "Brave Talk";
@@ -227,13 +227,13 @@
 "BraveTranslate.searchInputTitle" = "Haku";
 
 /* This text is for the settings menu for all Brave-Translate options. */
-"BraveTranslate.settingsMenuTitle" = "Brave-kääntäjä";
+"BraveTranslate.settingsMenuTitle" = "Kääntäjä";
 
 /* This text is for the translate settings screen. It's the title of the settings menu. */
-"BraveTranslate.settingsScreenTitle" = "Brave-kääntäjä";
+"BraveTranslate.settingsScreenTitle" = "Kääntäjä";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
-"BraveTranslate.settingsTranslateEnabledOptionDescription" = "Kun Brave-kääntäjä on käytössä, se tunnistaa automaattisesti sivusi nykyisen kielen ja näyttää URL-palkissa käännä-painikkeen.";
+"BraveTranslate.settingsTranslateEnabledOptionDescription" = "Kun asetus on käytössä, Express Browser tunnistaa automaattisesti sivusi nykyisen kielen ja näyttää URL-palkissa käännä-painikkeen.";
 
 /* This text is for a Toggle that allows the user to enable or disable page translation. */
 "BraveTranslate.settingsTranslateEnabledOptionTitle" = "Kääntäminen käytössä";
@@ -248,7 +248,7 @@
 "BrowserLock" = "Selaimen lukitus";
 
 /* Description for setting to enable the browser lock privacy feature */
-"BrowserLockDescription" = "Avaa Braven lukitus Touch ID:llä, Face ID:llä tai salasanalla.";
+"BrowserLockDescription" = "Avaa Express Browserin lukitus Touch ID:llä, Face ID:llä tai salasanalla.";
 
 /* Settings item for clearing browsing history */
 "BrowsingHistory" = "Selaushistoria";
@@ -263,13 +263,13 @@
 "callout.bottomBarCalloutDescription" = "Siirrä osoitepalkki, välilehdet, kirjanmerkit ja muut työkalut selaimen alaosaan.";
 
 /* Title for Bottom Bar Callout View */
-"callout.bottomBarCalloutTitle" = "Mukauta Brave-välilehtipalkkia";
+"callout.bottomBarCalloutTitle" = "Mukauta Express Browser -välilehtipalkkia";
 
 /* Description - Description used for main button in Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutButtonDescription" = "Asetetaanko Brave oletusselaimeksi?";
+"callout.defaultBrowserCalloutButtonDescription" = "Asetetaanko Express Browser oletusselaimeksi?";
 
 /* Subtitle - Description for Default Browser Full Screen Callout */
-"callout.defaultBrowserCalloutDescription" = "Kun Brave on käytössä oletuksena, jokainen napsauttamasi linkki avautuu Braven tietosuoja-asetusten suojaamana.";
+"callout.defaultBrowserCalloutDescription" = "Kun Express Browser on käytössä oletuksena, jokainen napsauttamasi linkki avautuu Express Browserin tietosuoja-asetusten suojaamana.";
 
 /* Title for main button in Default Browser Full Screen Callout */
 "callout.defaultBrowserCalloutPrimaryButtonTitle" = "Aseta oletusarvoiseksi";
@@ -596,25 +596,25 @@
 "defaultBrowserCallout.introOpenSettingsButtonText" = "Avaa asetukset";
 
 /* Primary text on default browser popup screen */
-"defaultBrowserCallout.introPrimaryText" = "Avaa kaikki linkit Bravella suojellaksesi yksityisyyttäsi";
+"defaultBrowserCallout.introPrimaryText" = "Avaa kaikki linkit Express Browserilla suojellaksesi yksityisyyttäsi";
 
 /* Secondary text on default browser popup. */
-"defaultBrowserCallout.introSecondaryText" = "Brave-suojaus estää seurantaohjelmat ja mainokset sekä säästää dataa ja aikaa jokaisella vierailemallasi sivulla";
+"defaultBrowserCallout.introSecondaryText" = "Suojaus estää seurantaohjelmat ja mainokset sekä säästää dataa ja aikaa jokaisella vierailemallasi sivulla";
 
 /* Tertiary text on default browser popup screen */
-"defaultBrowserCallout.introTertiaryText" = "Avaa asetukset, napauta Oletusarvoinen selainsovellus ja valitse Brave.";
+"defaultBrowserCallout.introTertiaryText" = "Avaa asetukset, napauta Oletusarvoinen selainsovellus ja valitse Express Browser.";
 
 /* Notification body to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationBody" = "Aseta Brave oletusselaimeksi";
+"defaultBrowserCallout.notificationBody" = "Aseta Express Browser oletusselaimeksi";
 
 /* Notification title to promote setting Brave app as default browser */
-"defaultBrowserCallout.notificationTitle" = "Hanki Brave-suojaus jokaisen linkin kohdalla";
+"defaultBrowserCallout.notificationTitle" = "Hanki Express Browser -suojaus jokaisen linkin kohdalla";
 
 /* No comment provided by engineer. */
 "defaultBrowserCalloutCloseAccesabilityLabel" = "Sulje oletusarvoisen selaimen kehote";
 
 /* Name for default Brave theme. */
-"defaultThemeName" = "Oletisarvoinen Brave";
+"defaultThemeName" = "Oletisarvoinen Express Browser";
 
 /* No comment provided by engineer. */
 "Delete" = "Poista";
@@ -719,7 +719,7 @@
 "ErrorPageReloadButtonTitle" = "Lataa uudelleen";
 
 /* Additional warning text when clicking the Advanced button on error pages. %@ is a placeholder, do not localize it. Do not localize <br />. */
-"ErrorPagesAdvancedErrorPinningDetails" = "%1$@ käyttää yleensä salausta tietojesi suojaamiseen. Kun Brave yritti muodostaa yhteyden kohteeseen %2$@, sivusto lähetti tällä kertaa takaisin epätavalliset ja virheelliset kirjautumistiedot. Näin voi käydä, kun hyökkääjä yrittää teeskennellä olevansa %3$@ tai kun Wi-Fi-kirjautumisnäyttö on katkaissut yhteyden. Tietosi ovat edelleen turvassa, koska Brave katkaisi yhteyden ennen tietojen vaihtoa.<br />Et voi juuri nyt käytä kohteessa %4$@, koska verkkosivusto käyttää varmenteen kiinnitystä. Verkkovirheet ja hyökkäykset ovat yleensä tilapäisiä, joten tämä sivu todennäköisesti toimii myöhemmin.";
+"ErrorPagesAdvancedErrorPinningDetails" = "%1$@ käyttää yleensä salausta tietojesi suojaamiseen. Kun Express Browser yritti muodostaa yhteyden kohteeseen %2$@, sivusto lähetti tällä kertaa takaisin epätavalliset ja virheelliset kirjautumistiedot. Näin voi käydä, kun hyökkääjä yrittää teeskennellä olevansa %3$@ tai kun Wi-Fi-kirjautumisnäyttö on katkaissut yhteyden. Tietosi ovat edelleen turvassa, koska Express Browser katkaisi yhteyden ennen tietojen vaihtoa.<br />Et voi juuri nyt käytä kohteessa %4$@, koska verkkosivusto käyttää varmenteen kiinnitystä. Verkkovirheet ja hyökkäykset ovat yleensä tilapäisiä, joten tämä sivu todennäköisesti toimii myöhemmin.";
 
 /* Additional warning text when clicking the Advanced button on error pages */
 "ErrorPagesAdvancedWarningDetails" = "Palvelin ei pystynyt todistamaan, että se on %@; laitteesi käyttöjärjestelmä ei pidä suojausvarmennetta luotettavana. Tämä voi johtua virheellisestä määrityksestä tai siitä, että hyökkääjä yrittää siepata yhteytesi.";
@@ -759,6 +759,39 @@
 
 /* Button label to temporarily continue to the site from the certificate error page */
 "ErrorPagesProceedAnywayButton" = "Jatka kohteeseen %@ (vaarallinen)";
+
+/* Link on the private new tab page to a page about private mode. */
+"expressPrivateNTP.learnMore" = "Lisätietoja";
+
+/* Bullet point: data that private mode doesn't save. Data that websites save on the device, such as sign-in state. */
+"expressPrivateNTP.notSavedCookies" = "Evästeet ja sivustodata";
+
+/* Bullet point: data that private mode doesn't save. Names, addresses, passwords etc. that people enter into forms on the web. */
+"expressPrivateNTP.notSavedForms" = "Lomakkeisiin syötetyt tiedot";
+
+/* Introduces a bulleted list of data that private mode doesn't save. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.notSavedHeader" = "Express Browser <em>ei tallenna</em> näitä tietoja:";
+
+/* Bullet point: data that private mode doesn't save. 'Browsing history' is the history of visited websites. */
+"expressPrivateNTP.notSavedHistory" = "Selaushistoriasi";
+
+/* Subtitle of the private new tab page, under its title. */
+"expressPrivateNTP.subtitle" = "Muut laitteen käyttäjät eivät näe toimintaasi, joten voit selata yksityisesti. Tämä ei vaikuta siihen, miten avaamasi sivustot ja niiden käyttämät palvelut, mukaan lukien Express Browser, keräävät dataa. Lataukset ja kirjanmerkit tallennetaan.";
+
+/* Title of the private new tab page. Private mode hides your browsing from other people using the same device; it does not make you anonymous. */
+"expressPrivateNTP.title" = "Olet siirtynyt yksityiseen tilaan";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleEmployer" = "työnantajallesi tai oppilaitoksellesi";
+
+/* Introduces a bulleted list of who might still see what the user does in private mode. The text between <em> and </em> is highlighted. */
+"expressPrivateNTP.visibleHeader" = "Toimintasi <em>saattaa silti näkyä</em>";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleProvider" = "internetpalveluntarjoajallesi.";
+
+/* Bullet point: who might still see the user's private activity. */
+"expressPrivateNTP.visibleWebsites" = "käymillesi verkkosivustoille";
 
 /* %@ will launch an external application */
 "ExternalAppURLAlertMessage" = "%@ käynnistää ulkoisen sovelluksen";
@@ -1187,13 +1220,13 @@
 "OBSearchEngineDetail" = "Valitse oletushakukone";
 
 /* Title for search engine onboarding screen */
-"OBSearchEngineTitle" = "Tervetuloa Brave-selaimeen";
+"OBSearchEngineTitle" = "Tervetuloa Express Browseriin";
 
 /* Detail text for shields onboarding screen */
 "OBShieldsDetail" = "Estä yksityisyyttäsi loukkaavat mainokset ja seurantaohjelmat, jotta voit selata verkkoa ilman, että sinua seurataan.";
 
 /* Title for shields onboarding screen */
-"OBShieldsTitle" = "Brave Shields";
+"OBShieldsTitle" = "Shields";
 
 /* Button to show the Brave Rewards Ads. */
 "OBShowMeButton" = "Näytä";
@@ -1205,10 +1238,10 @@
 "onboarding.blockedAdsOnboardingBigTechInformationText" = "%1$@ ja %2$lld muuta mainosta ja seurantaohjelmaa estetty";
 
 /* The footnote indicating what Brave shields is blocking */
-"onboarding.blockedAdsOnboardingFootnoteText" = "Näet kaikki Braven jokaisella sivulla estämät huonot asiat Shieldsillä.";
+"onboarding.blockedAdsOnboardingFootnoteText" = "Näet kaikki Express Browserin jokaisella sivulla estämät huonot asiat Shieldsillä.";
 
 /* The text describing user where they should press in order to open Shield panel */
-"onboarding.blockedAdsOnboardingInstructionsText" = "Tarkastele Brave Shieldisiä napauttamalla";
+"onboarding.blockedAdsOnboardingInstructionsText" = "Tarkastele Shieldisiä napauttamalla";
 
 /* The description text shown when there is no big tech tracker among trackers. Example usage: 31 Ads & trackers blocked. The number here is presented separately so it is not in translation. */
 "onboarding.blockedAdsOnboardingNoBigTechInformationText" = "Mainosta ja seurantavälinettä estetty";
@@ -1232,13 +1265,13 @@
 "onboarding.ntpOnboardingPopOverTrackerDescription" = "Seurantaohjelmien ja mainosten estämisen jälkeen verkkosivustot käyttävät vähemmän dataa ja latautuvat paljon nopeammin.";
 
 /* Description for the Omnibox (URL Bar) pop-over that describes faster load times. */
-"onboarding.omniboxOnboardingPopOverDescription" = "Koe Braven takaama ero:\nEi mainoksia. Ei seurantaa. Nopeampi sivujen lataus.";
+"onboarding.omniboxOnboardingPopOverDescription" = "Koe Express Browserin takaama ero:\nEi mainoksia. Ei seurantaa. Nopeampi sivujen lataus.";
 
 /* Title for the Omnibox (URL Bar) pop-over that describes faster load times. */
 "onboarding.omniboxOnboardingPopOverTitle" = "Kirjoita verkkosivuston nimi tai URL";
 
 /* Title for Welcome Screen in Onboarding */
-"onboarding.welcomeScreenTitle" = "Tervetuloa Braveen";
+"onboarding.welcomeScreenTitle" = "Tervetuloa Express Browseriin";
 
 /* Continue button to navigate to next onboarding screen. */
 "OnboardingContinueButton" = "Jatka";
@@ -1280,7 +1313,7 @@
 "OpenMobileConfigurationAlertTitle" = "Asetusprofiili käytettävissä";
 
 /* Context menu option for opening a link in a new private tab */
-"OpenNewPrivateTabButtonTitle" = "Avaa uudessa yksityisessä välilehdessä";
+"OpenNewPrivateTabButtonTitle" = "Avaa Yksityisessä välilehdessä";
 
 /* Context menu item for opening a link in a new tab */
 "OpenNewTabButtonTitle" = "Avaa uudessa välilehdessä";
@@ -1487,7 +1520,7 @@
 "PersistentPrivateBrowsing" = "Jatkuva yksityinen selaus";
 
 /* Persistent private browsing alert message to existing users */
-"PersistentPrivateBrowsingAlertMessage" = "Sallii Braven palauttaa yksityisen selauksen välilehdet, vaikka sulkisit sovelluksen ja avaisit sen uudelleen.";
+"PersistentPrivateBrowsingAlertMessage" = "Sallii Express Browserin palauttaa yksityisen selauksen välilehdet, vaikka sulkisit sovelluksen ja avaisit sen uudelleen.";
 
 /* Persistent private browsing alert title to existing users */
 "PersistentPrivateBrowsingAlertTitle" = "Palauta yksityiset välilehdet";
@@ -1931,7 +1964,7 @@
 "privacyHub.lastWeekHeader" = "Viime viikko";
 
 /* Do NOT localize asterisk('*') characters, they are used to make the text bold in the app. It says which tracker was blocked on how many websites, example usage: 'Google Analytics was blocked by Brave Shields on 42 sites' */
-"privacyHub.mostFrequentTrackerAndAdBody" = "**Brave-suojaus esti kohteen **%1$@** **%2$ lld** sivustolla";
+"privacyHub.mostFrequentTrackerAndAdBody" = "**Suojaus esti kohteen **%1$@** **%2$ lld** sivustolla";
 
 /* Title under which we display a tracker which was most frequently detected by our ad blocking mechanism. */
 "privacyHub.mostFrequentTrackerAndAdTitle" = "Yleisin seurantaohjelma ja mainos";
@@ -1949,7 +1982,7 @@
 "privacyHub.notificationCalloutButtonText" = "Ota ilmoitukset käyttöön";
 
 /* Message of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
-"privacyHub.notificationMessage" = "Tiivistelmä siitä, kuinka Brave suojeli sinua verkossa tällä viikolla.";
+"privacyHub.notificationMessage" = "Tiivistelmä siitä, kuinka Express Browser suojeli sinua verkossa tällä viikolla.";
 
 /* Title of a notification we show to the user, on tapping it, the Privacy Hub screen will open. */
 "privacyHub.notificationTitle" = "Viikoittainen yksityisyysraportti";
@@ -2039,10 +2072,10 @@
 "PrivateBrowsingOnlyWarning" = "Vain yksityinen selaus -tila sulkee kaikki avoinna olevat välilehdet ja kirjaa sinut ulos kaikista sivustoista.";
 
 /* Private tab details */
-"PrivateTabBody" = "Yksityisiä välilehtiä ei tallenneta Braveen, mutta ne eivät tee sinusta anonyymiä verkossa. Sivustot, joilla käyt yksityisellä välilehdellä, eivät näy historiassasi, ja niiden evästeet katoavat aina, kun suljet ne – niistä ei jää jälkeäkään Braveen. Lataukset kuitenkin tallennetaan.\nMobiilioperaattorisi (tai sen Wi-Fi-verkon tai VPN:n omistaja, johon olet yhteydessä) voi nähdä, millä sivustoilla vierailet, ja kyseiset sivustot saavat tietoonsa julkisen IP-osoitteesi, jopa yksityisillä välilehdillä.";
+"PrivateTabBody" = "Yksityisiä välilehtiä ei tallenneta Express Browseriin, mutta ne eivät tee sinusta anonyymiä verkossa. Sivustot, joilla käyt yksityisellä välilehdellä, eivät näy historiassasi, ja niiden evästeet katoavat aina, kun suljet ne – niistä ei jää jälkeäkään Express Browseriin. Lataukset kuitenkin tallennetaan.\nMobiilioperaattorisi (tai sen Wi-Fi-verkon tai VPN:n omistaja, johon olet yhteydessä) voi nähdä, millä sivustoilla vierailet, ja kyseiset sivustot saavat tietoonsa julkisen IP-osoitteesi, jopa yksityisillä välilehdillä.";
 
 /* Private tab detail text */
-"PrivateTabDetails" = "Yksityisten välilehtien käyttäminen muuttaa vain sitä, mitä Brave voi tehdä laitteellasi, se ei muuta kenenkään muun käyttäytymistä.\n\nSivustot saavat aina tietoonsa IP-osoitteesi, kun vierailet niillä. Sen perusteella ne voivat usein arvata karkeasti missä olet – tyypillisesti kaupunkisi. Joskus tämä sijainnin arvaus voi olla paljon tarkempi. Sivustot tietävät myös kaiken, mitä kerrot niille, kuten hakutermit. Jos kirjaudut sisään sivustolle, ne tietävät sinun olevan kyseisen tilin omistaja. Olet silti kirjautuneena ulos, kun suljet yksityiset välilehdet, koska Brave poistaa evästeen, joka pitää sinut kirjautuneena sisään.\n\n Kuka tahansa, joka yhdistää sinut Internetiin (internet-palveluntarjoajasi), voi nähdä kaiken toimintasi verkossa. Usein tämä on mobiilioperaattorisi. Jos olet yhteydessä Wi-Fi-verkkoon, tämä on kyseisen verkon omistaja, ja jos käytät VPN:ää, se on VPN:n ylläpitäjä. Internet-palveluntarjoajasi voi nähdä, millä sivustoilla käyt. Jos kyseiset sivustot käyttävät HTTPS:ää, Internet-palveoluntarjoajasi voi tehdä enintään valistuneen arvauksen siitä, mitä teet kyseisillä sivustoilla. Mutta jos sivusto käyttää vain HTTP:tä, Internet-palveluntarjoajasi näkee kaiken: hakutermit, lukemasi sivut ja seuraamasi linkit.\n\n Jos työnantaja hallinnoi laitettasi, hän saattaa myös seurata, mitä teet sillä. Yksityisten välilehtien käyttäminen ei todennäköisesti estä työnantajaa selvittämästä, millä sivustoilla olet käynyt. Myös joku muu, jolla on pääsy käsiksi laitteeseesi, on voinut asentaa ohjelmiston, joka seuraa toimintaasi, eivätkä yksityiset välilehdet suojaa sinua tällaisessa tilanteessa.";
+"PrivateTabDetails" = "Yksityisten välilehtien käyttäminen muuttaa vain sitä, mitä Express Browser voi tehdä laitteellasi, se ei muuta kenenkään muun käyttäytymistä.\n\nSivustot saavat aina tietoonsa IP-osoitteesi, kun vierailet niillä. Sen perusteella ne voivat usein arvata karkeasti missä olet – tyypillisesti kaupunkisi. Joskus tämä sijainnin arvaus voi olla paljon tarkempi. Sivustot tietävät myös kaiken, mitä kerrot niille, kuten hakutermit. Jos kirjaudut sisään sivustolle, ne tietävät sinun olevan kyseisen tilin omistaja. Olet silti kirjautuneena ulos, kun suljet yksityiset välilehdet, koska Express Browser poistaa evästeen, joka pitää sinut kirjautuneena sisään.\n\n Kuka tahansa, joka yhdistää sinut Internetiin (internet-palveluntarjoajasi), voi nähdä kaiken toimintasi verkossa. Usein tämä on mobiilioperaattorisi. Jos olet yhteydessä Wi-Fi-verkkoon, tämä on kyseisen verkon omistaja, ja jos käytät VPN:ää, se on VPN:n ylläpitäjä. Internet-palveluntarjoajasi voi nähdä, millä sivustoilla käyt. Jos kyseiset sivustot käyttävät HTTPS:ää, Internet-palveoluntarjoajasi voi tehdä enintään valistuneen arvauksen siitä, mitä teet kyseisillä sivustoilla. Mutta jos sivusto käyttää vain HTTP:tä, Internet-palveluntarjoajasi näkee kaiken: hakutermit, lukemasi sivut ja seuraamasi linkit.\n\n Jos työnantaja hallinnoi laitettasi, hän saattaa myös seurata, mitä teet sillä. Yksityisten välilehtien käyttäminen ei todennäköisesti estä työnantajaa selvittämästä, millä sivustoilla olet käynyt. Myös joku muu, jolla on pääsy käsiksi laitteeseesi, on voinut asentaa ohjelmiston, joka seuraa toimintaasi, eivätkä yksityiset välilehdet suojaa sinua tällaisessa tilanteessa.";
 
 /* Private tab information link */
 "PrivateTabLink" = "Lue lisää yksityisistä välilehdistä.";
@@ -2054,7 +2087,7 @@
 "QuickSearchEngines" = "Pikahakukoneet";
 
 /* Open the App Store to rate Brave. */
-"RateBrave" = "Arvostele Brave";
+"RateBrave" = "Arvostele Express Browser";
 
 /* Accessibility label for button increasing font size in display settings of reader mode */
 "ReaderModeBiggerFontButtonAccessibilityLabel" = "Suurenna tekstin kokoa";
@@ -2243,10 +2276,10 @@
 "RestoreTabNegativeButtonTitle" = "Ei";
 
 /* Restore Tabs Prompt Description */
-"RestoreTabOnCrashAlertMessage" = "Valitettavasti Brave kaatui tai ei sulkeutunut kunnolla.\nPalautetaanko välilehdet?";
+"RestoreTabOnCrashAlertMessage" = "Valitettavasti Express Browser kaatui tai ei sulkeutunut kunnolla.\nPalautetaanko välilehdet?";
 
 /* Restore Tabs Prompt Title */
-"RestoreTabOnCrashAlertTitle" = "Brave suljettiin yllättäen.";
+"RestoreTabOnCrashAlertTitle" = "Express Browser suljettiin yllättäen.";
 
 /* Body for Brave Talk rewards opt-in screen */
 "rewards.braveTalkRewardsOptInBody" = "Brave-palkintojen avulla voit tarkastella Brave-mainosverkoston yksityisyyttä suojelevia mainoksia. Ei seurantaohjelmia. Ei hidastavia tekijöitä. Ja tietosi pysyvät täysin suojattuina.";
@@ -2573,7 +2606,7 @@
 "searchSuggestionsSubtitle" = "Haluatko ottaa hakuehdotukset käyttöön?";
 
 /* Title of an action that allows user to perform a one-click web search for selected text */
-"SearchWithBrave" = "Hae Bravella";
+"SearchWithBrave" = "Hae Express Browserilla";
 
 /* Settings security section title */
 "Security" = "Turvallisuus";
@@ -2582,16 +2615,16 @@
 "sendButtonTitle" = "Lähetä";
 
 /* Message displayed in the crash dialog above the buttons used to select when sending reports */
-"SendCrashReportAlertMessage" = "Lähetetäänkö virheraportti, jotta Brave voi korjata ongelman?";
+"SendCrashReportAlertMessage" = "Lähetetäänkö virheraportti, jotta Express Browser voi korjata ongelman?";
 
 /* Title for prompt displayed to user after the app crashes */
-"SendCrashReportAlertTitle" = "Hups! Brave kaatui";
+"SendCrashReportAlertTitle" = "Hups! Express Browser kaatui";
 
 /* Used as a button label for crash dialog prompt */
 "SendReportButtonTitle" = "Lähetä raportti";
 
 /* No comment provided by engineer. */
-"setDefaultBrowserCalloutTitle" = "Brave voidaan nyt asettaa oletusselaimeksi iOS-laitteissa. Avaa asetukset napauttamalla tätä.";
+"setDefaultBrowserCalloutTitle" = "Express Browser voidaan nyt asettaa oletusselaimeksi iOS-laitteissa. Avaa asetukset napauttamalla tätä.";
 
 /* Settings item to set the Brave as a default browser on the iOS device. */
 "setDefaultBrowserSettingsCell" = "Aseta oletusselaimeksi";
@@ -2615,7 +2648,7 @@
 "settings.autocloseTabsSetting" = "Sulje välilehdet";
 
 /* Description of autoclose tabs feature. */
-"settings.autocloseTabsSettingFooter" = "Anna Bravelle lupa sulkea automaattisesti välilehdet, joita ei ole äskettäin katsottu.";
+"settings.autocloseTabsSettingFooter" = "Anna Express Browserille lupa sulkea automaattisesti välilehdet, joita ei ole äskettäin katsottu.";
 
 /* Label for the navigation link to quality settings view */
 "settings.highestQualityPlayback" = "Korkealaatuisin toisto";
@@ -2630,7 +2663,7 @@
 "settings.media.rootSetting" = "Media";
 
 /* A toggle label which lets the user always open YouTube urls in Brave */
-"settings.openYouTubeInBrave" = "Avaa YouTube-linkit Bravessa";
+"settings.openYouTubeInBrave" = "Avaa YouTube-linkit Express Browserissa";
 
 /* No comment provided by engineer. */
 "settings.privacy.screenTimeSetting" = "Ota näyttöaika käyttöön";
@@ -2705,7 +2738,7 @@
 "shieldEducation.shareTheNewsTitle" = "Jaa uutiset";
 
 /* Subtitle for Shield Education Tracker Ad Warning */
-"shieldEducation.trackerAdWarningSubTitle" = "Brave-suojaus suojasi yksityisyyttäsi vain verkossa.";
+"shieldEducation.trackerAdWarningSubTitle" = "Suojaus suojasi yksityisyyttäsi vain verkossa.";
 
 /* Subtitle for Shield Education Tracker Count Share */
 "shieldEducation.trackerCountShareSubtitle" = "Onnittelut, olet erityinen.";
@@ -2720,13 +2753,13 @@
 "shieldEducation.videoAdBlockTitle" = "Mainokset on estetty, kun katsot videoita tällä sivulla.";
 
 /* Section title for adbblock, tracking protection, HTTPS-E, and cookies */
-"ShieldsDefaults" = "Brave-suojausten yleiset oletukset";
+"ShieldsDefaults" = "Suojausten yleiset oletukset";
 
 /* Section footer for global shields defaults */
 "ShieldsDefaultsFooter" = "Nämä ovat oletusarvoiset suojausasetukset uusille sivustoille. Näiden muuttaminen ei vaikuta voimassa oleviin sivukohtaisiin asetuksiin.";
 
 /* No comment provided by engineer. */
-"ShieldsDownDisclaimer" = "Selaat tätä sivustoa ilman Braven tietosuojaa. Eikö se toimi kunnolla, kun Shields on käytössä?";
+"ShieldsDownDisclaimer" = "Selaat tätä sivustoa ilman Express Browserin tietosuojaa. Eikö se toimi kunnolla, kun Shields on käytössä?";
 
 /* shields overview message */
 "ShieldsOverview" = "Sivustosuojauksen avulla voit hallita, milloin mainokset ja seurantaohjelmat estetään kullakin sivustolla, jolla käyt. Jos haluat nähdä mainoksia tietyllä sivustolla, voit ottaa ne käyttöön täällä.";
@@ -2753,7 +2786,7 @@
 "shortcuts.activityTypeClearHistorySuggestedPhrase" = "Tyhjennä selaushistoria";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeClearHistoryTitle" = "Tyhjennä Brave-selaushistoria";
+"shortcuts.activityTypeClearHistoryTitle" = "Tyhjennä Express Browserin selaushistoria";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeEnableVPNDescription" = "Avaa selain uudessa välilehdessä ja ota VPN käyttöön";
@@ -2762,7 +2795,7 @@
 "shortcuts.activityTypeEnableVPNSuggestedPhrase" = "Ota VPN käyttöön";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeEnableVPNTitle" = "Avaa Brave-selain ja ota VPN käyttöön";
+"shortcuts.activityTypeEnableVPNTitle" = "Avaa Express Browser ja ota VPN käyttöön";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeNewPrivateTabSuggestedPhrase" = "Avaa uusi yksityinen välilehti";
@@ -2783,7 +2816,7 @@
 "shortcuts.activityTypeOpenBookmarksSuggestedPhrase" = "Avaa kirjanmerkit";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenBookmarksTitle" = "Avaa Brave-selaimen kirjanmerkit";
+"shortcuts.activityTypeOpenBookmarksTitle" = "Avaa Express Browserin kirjanmerkit";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenBraveNewsTitle" = "Avaa Brave-uutiset";
@@ -2798,7 +2831,7 @@
 "shortcuts.activityTypeOpenHistoryListSuggestedPhrase" = "Avaa selainhistoria";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeOpenHistoryListTitle" = "Avaa Brave-selainhistoria";
+"shortcuts.activityTypeOpenHistoryListTitle" = "Avaa Express Browserin selainhistoria";
 
 /* No comment provided by engineer. */
 "shortcuts.activityTypeOpenPlaylistDescription" = "Aloita videoiden toistaminen soittolistassa";
@@ -2819,7 +2852,7 @@
 "shortcuts.activityTypeOpenSyncedTabsTitle" = "Avaa välilehdet muista laitteista";
 
 /* No comment provided by engineer. */
-"shortcuts.activityTypeTabDescription" = "Aloita verkkohaku turvallisesti Braven avulla";
+"shortcuts.activityTypeTabDescription" = "Aloita verkkohaku turvallisesti Express Browserin avulla";
 
 /* No comment provided by engineer. */
 "shortcuts.customIntentOpenBookmarkSuggestedPhrase" = "Avaa kirjanmerkkisivusto";
@@ -2831,7 +2864,7 @@
 "shortcuts.customIntentOpenWebsiteSuggestedPhrase" = "Avaa verkkosivusto";
 
 /* Description for opening Brave Settings for altering Siri shortcut. */
-"shortcuts.shortcutOpenApplicationSettingsDescription" = "Tämä vaihtoehto avaa Braven asetukset. Jos haluat muuttaa eri Siri-asetuksia, valitse Siri ja haku -valikkokohta ja mukauta asetuksia.";
+"shortcuts.shortcutOpenApplicationSettingsDescription" = "Tämä vaihtoehto avaa Express Browserin asetukset. Jos haluat muuttaa eri Siri-asetuksia, valitse Siri ja haku -valikkokohta ja mukauta asetuksia.";
 
 /* Button title that open application settings */
 "shortcuts.shortcutOpenApplicationSettingsTitle" = "Avaa asetukset";
@@ -2927,10 +2960,10 @@
 "SiteShieldSettings" = "Suojaukset";
 
 /* Title used when in warning pop-over when domain specific data save appears */
-"socialSharing.domainSpecificDataSavedTitle" = "Joka päivä tallennan tietoja selaamalla verkkoa Brave-selaimella.";
+"socialSharing.domainSpecificDataSavedTitle" = "Joka päivä tallennan tietoja selaamalla verkkoa Express Browserilla.";
 
 /* Text used for social sharing together with Brave Shield values */
-"socialSharing.shareDescriptionTitle" = "Joka päivä tallennan tietoja selaamalla verkkoa Brave-selaimella.";
+"socialSharing.shareDescriptionTitle" = "Joka päivä tallennan tietoja selaamalla verkkoa Express Browserilla.";
 
 /* Open search section of settings */
 "StandardTabSearch" = "Normaali välilehti";
@@ -3356,7 +3389,7 @@
 "themeQRCodeShareButton" = "Jaa...";
 
 /* Title for QR popup encouraging users to share the code with their friends. */
-"themeQRCodeShareTitle" = "Jaa Brave ystävillesi!";
+"themeQRCodeShareTitle" = "Jaa Express Browser ystävillesi!";
 
 /* Selection to automatically color/style the user interface. */
 "ThemesAutomaticOption" = "Automaattinen";
@@ -3509,19 +3542,19 @@
 "today.promoted" = "Promootio";
 
 /* Title for long press action sheet list which has item for rate / hide */
-"today.rateBraveCardActionSheetTitle" = "Arvioi Brave App Storessa";
+"today.rateBraveCardActionSheetTitle" = "Arvioi Express Browser App Storessa";
 
 /* Title for long press action that will hide Brave Rate Card */
 "today.rateBraveCardHideActionTitle" = "Piilota";
 
 /* Button title / Title for long press action that will perform an action which open AppStore Rate screen */
-"today.rateBraveCardRateActionTitle" = "Arvostele Brave";
+"today.rateBraveCardRateActionTitle" = "Arvostele Express Browser";
 
 /* Subtitle shown on the Rate Brave Card */
 "today.rateBraveCardSubtitle" = "Kerro meille mielipiteesi!";
 
 /* Title shown on the Rate Brave Card */
-"today.rateBraveCardTitle" = "Tykkäätkö Bravesta?";
+"today.rateBraveCardTitle" = "Tykkäätkö Express Browserista?";
 
 /* No comment provided by engineer. */
 "today.refresh" = "Päivitä";
@@ -3602,13 +3635,13 @@
 "ViewOn" = "Näytä kohteessa %@";
 
 /* Explanation for warning alert why the microphone access required. */
-"voice.search.microphone.description.required" = "Myönnä mikrofonin käyttöoikeus iOS-järjestelmäasetuksissa, jotta Brave voi käyttää anonyymiä äänihakua.";
+"voice.search.microphone.description.required" = "Myönnä mikrofonin käyttöoikeus iOS-järjestelmäasetuksissa, jotta Express Browser voi käyttää anonyymiä äänihakua.";
 
 /* Title for warning alert microphone access is required. */
 "voice.search.microphone.title.required" = "Mikrofonin käyttöoikeus vaaditaan";
 
 /* Disclaimer for screen to search using voice. */
-"voice.search.screen.disclaimer" = "Brave ei tallenna tai jaa äänellä tehtyjä hakuja.";
+"voice.search.screen.disclaimer" = "Express Browser ei tallenna tai jaa äänellä tehtyjä hakuja.";
 
 /* The date your wallet was created */
 "WalletCreationDate" = "Lompakon luontipäivä";

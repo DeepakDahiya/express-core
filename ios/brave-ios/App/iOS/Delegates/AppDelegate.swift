@@ -439,6 +439,22 @@ extension AppDelegate: MFMailComposeViewControllerDelegate {
 }
 
 extension AppDelegate {
+  // MARK: Express push notifications
+
+  func application(
+    _ application: UIApplication,
+    didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
+  ) {
+    ExpressPushManager.shared.didRegister(deviceToken: deviceToken)
+  }
+
+  func application(
+    _ application: UIApplication,
+    didFailToRegisterForRemoteNotificationsWithError error: Error
+  ) {
+    ExpressPushManager.shared.didFailToRegister(error)
+  }
+
   // MARK: UISceneSession Lifecycle
 
   func application(

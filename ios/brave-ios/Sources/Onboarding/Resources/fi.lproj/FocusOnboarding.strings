@@ -2,7 +2,7 @@
 "focusOnboarding.continueButtonTitle" = "Jatka";
 
 /* The subtitle of the screen that requests user to set Brave as default */
-"focusOnboarding.defaultBrowserScreenDescription" = "Aseta Brave oletusselaimeksi jo tänään.";
+"focusOnboarding.defaultBrowserScreenDescription" = "Aseta Express Browser oletusselaimeksi jo tänään.";
 
 /* The title of the screen that requests user to set Brave as default */
 "focusOnboarding.defaultBrowserScreenTitle" = "Mainokset estetään jokaisella sivustolla, jolla käyt";
@@ -38,5 +38,5 @@
 "focusOnboarding.urlBarIndicatorDescription" = "Nauti suoratoistosta vähemmillä mainoksilla sekä seurantaohjelmilla.";
 
 /* The title of the popup which points to URL Bar after onboarding */
-"focusOnboarding.urlBarIndicatorTitle" = "Tutustu Braven mahdollistamaan eroon";
+"focusOnboarding.urlBarIndicatorTitle" = "Tutustu Express Browserin mahdollistamaan eroon";
 

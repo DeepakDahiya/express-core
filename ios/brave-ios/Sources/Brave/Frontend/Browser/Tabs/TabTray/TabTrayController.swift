@@ -100,7 +100,9 @@ class TabTrayController: AuthenticationController {
       applySnapshot()
 
       privateModeButton.isSelected = privateMode
-      tabTypeSelector.isHidden = privateMode
+      // Express Browser hides Brave Sync, so there's only the local-tabs segment and the
+      // selector stays hidden. The container stays for the shred button.
+      tabTypeSelector.isHidden = true
       tabTypeSelectorContainerView.isHidden =
         privateMode && !BraveCore.FeatureList.kBraveShredFeature.enabled
     }
@@ -132,6 +134,8 @@ class TabTrayController: AuthenticationController {
   private lazy var tabTypeSelector: UISegmentedControl = {
     let segmentedControl = UISegmentedControl(items: tabTypeSelectorItems).then {
       $0.selectedSegmentIndex = 0
+      // Express Browser: only the local-tabs segment exists, so the selector is never shown.
+      $0.isHidden = true
       $0.addTarget(self, action: #selector(typeSelectionDidChange(_:)), for: .valueChanged)
     }
     return segmentedControl
@@ -177,7 +181,9 @@ class TabTrayController: AuthenticationController {
     $0.accessibilityLabel = Strings.done
     $0.accessibilityIdentifier = "TabTrayController.privateButton"
     $0.tintColor = .braveLabel
-    $0.selectedBackgroundColor = UIColor(braveSystemName: .primitivePrivateWindow25)
+    // Express Android's selected private toggle (`pane_switcher_selected_tab_incognito`), not
+    // Brave's purple.
+    $0.selectedBackgroundColor = ExpressIncognitoColors.toggleSelected
 
     if Preferences.Privacy.privateBrowsingOnly.value {
       $0.alpha = 0
@@ -463,10 +469,9 @@ class TabTrayController: AuthenticationController {
   }
 
   private func createTypeSelectorItems() {
-    tabTypeSelectorItems = [
-      UIImage(braveSystemNamed: "leo.browser.mobile-tabs")!.template,
-      UIImage(braveSystemNamed: "leo.smartphone.laptop")!.template,
-    ]
+    // Express Browser hides Brave Sync, so the synced-tabs segment ("leo.smartphone.laptop"),
+    // which led to "Start a Sync Chain", isn't added.
+    tabTypeSelectorItems = [UIImage(braveSystemNamed: "leo.browser.mobile-tabs")!.template]
   }
 
   @objc func typeSelectionDidChange(_ sender: UISegmentedControl) {
@@ -889,7 +894,8 @@ class TabTrayController: AuthenticationController {
       navigationController?.setNavigationBarHidden(false, animated: false)
     }
 
-    tabTypeSelector.isHidden = privateMode
+    // Express Browser hides Brave Sync: the selector stays hidden in both modes.
+    tabTypeSelector.isHidden = true
     tabTypeSelectorContainerView.isHidden =
       privateMode && !BraveCore.FeatureList.kBraveShredFeature.enabled
   }
